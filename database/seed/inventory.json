@@ -1,178 +1,493 @@
-[{
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "Headphones/earbuds",
-    "item": "headphones",
-    "properties": [
-      "good quality"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "assignment book/planner",
-    "item": "planner",
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "Tennis shoes for Phy. Ed.",
-    "item": "tennis shoes",
-    "properties": [
-      "not crocs",
-      "not hey dudes"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "Clothes for Phy. Ed."
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 pocket folder red (English)",
-    "item": "folder",
-    "properties": [
-      "pocket",
-      "red"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 pocket folder blue (math)",
-    "item": "folder",
-    "properties": [
-      "pocket",
-      "blue"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 pocket folder yellow (history)",
-    "item": "folder",
-    "properties": [
-      "pocket",
-      "yellow"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 pocket folder green (science)",
-    "item": "folder",
-    "properties": [
-      "pocket",
-      "green",
-      "durable"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 pocket folder purple",
-    "item": "folder",
-    "properties": [
-      "pocket",
-      "purple"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 colored spiral notebook red (English)",
-    "item": "notebook",
-    "properties": [
-      "spiral bound",
-      "red"
-    ],
-    "quantity": 1,
-    "notes": "some students may want two notebooks for English"
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 colored spiral notebook blue (math)",
-    "item": "notebook",
-    "properties": [
-      "spiral bound",
-      "blue"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 colored spiral notebook yellow college ruled (history)",
-    "item": "notebook",
-    "properties": [
-      "spiral bound",
-      "yellow",
-      "college ruled"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 colored composition notebook green (science)",
-    "item": "notebook",
-    "properties": [
-      "composition",
-      "green"
-    ],
-    "quantity": 1,
-    "notes": "composition preferred"
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "1 colored spiral notebook purple",
-    "item": "notebook",
-    "properties": [
-      "spiral bound",
-      "purple"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "loose leaf paper",
-    "item": "pack of loose leaf paper",
-    "quantity": 1,
-    "notes": "requested by math"
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "Scissors",
-    "item": "scissors",
-    "properties": [
-      "7 inch"
-    ],
-    "quantity": 1
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "6 glue sticks",
-    "item": "glue stick",
-    "quantity": 6
-  },
-  {
-    "school": "MAHS",
-    "grade": "HS",
-    "description": "Sketchbook ",
-    "quantity": 1
-  }]
+[
+    {
+        "item": "10 Pack Markers (crayola)",
+        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "10 Pack Markers (unspecified)",
+        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "100 Pack Notecards",
+        "properties": "['3x5']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "2 Prong Pocket Folder (plastic)",
+        "properties": "['Red', 'Blue', 'Green', 'Yellow', 'Purple']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "21 Pack Expo Marker (fine)",
+        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "21 Pack Expo Marker (wide)",
+        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "3 Prong Pocket Folder (plastic)",
+        "properties": "['Red', 'Blue', 'Green', 'Yellow', 'Purple']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "3 Ring Binder",
+        "properties": "['1', '1/2']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "4 Pack Expo Marker (fine)",
+        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "4 Pack Expo Marker (wide)",
+        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "8 Pack Expo Marker (fine)",
+        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "8 Pack Expo Marker (wide)",
+        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "8 Pack Markers (crayola)",
+        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "8 Pack Markers (unspecified)",
+        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Backpacks",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Book Bag (no wheels)",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Bowls",
+        "properties": "['Paper Non-coated', 'Paper Coated', 'Styrofoam', 'Plastic']",
+        "description": "[]",
+        "quantity": "[0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Calculator",
+        "properties": "['Generic', 'Graphing', 'Scientific', 'TI30X', 'TI30XIIS',]",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Clothes",
+        "properties": "['Paint Shirt', 'Shorts', 'Shirt', 'Pants']",
+        "description": "[]",
+        "quantity": "[0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Composition Notebook",
+        "properties": "['College Ruled',]",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Computer Mouse",
+        "properties": "['Wired', 'Wireless',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Crayola Colored Pencils (sharpened)",
+        "properties": "['8 pack', '10 pack', '12 pack', '24 pack', '36 pack']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Crayons (crayola)",
+        "properties": "['16 Pack', '24 Pack',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Crayons (unspecified)",
+        "properties": "['16 Pack', '24 Pack',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Cups",
+        "properties": "['Styrofoam', 'Plastic', 'Paper']",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Dry Board Eraser",
+        "properties": "['1 pack', '2 pack', '3 pack', '4 pack']",
+        "description": "[]",
+        "quantity": "[0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Dry Erase Markers",
+        "properties": "['Fine Tip', 'Wide Tip',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Eraser",
+        "properties": "['Pencil Top', 'Mechanical', 'Regular', 'Soft', 'pink', 'large']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Glue Bottle (white)",
+        "properties": "['Elmers 4oz.', 'Elmers 6oz.', 'Elmers 8oz.',]",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Glue Stick (large)",
+        "properties": "['Elmers',]",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Glue Stick (regular)",
+        "properties": "['Elmers', 'Misc']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Headphones",
+        "properties": "['Wired', 'Wireless', 'Wired 3.5mm jack', 'Earbuds']",
+        "description": "[]",
+        "quantity": "[0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Highlighter",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Loose Leaf Paper",
+        "properties": "['Wide Ruled', 'College Ruled']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Notebook Wide Ruled Tablet",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Page Protector (clear)",
+        "properties": "['50', '100']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Page Protector (colored)",
+        "properties": "['50', '100']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Paper Bag",
+        "properties": "['Lunch', 'Grocery']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Paper Plates",
+        "properties": "['Coated', 'Non-coated',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Paper Towels",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Pen",
+        "properties": "['Red', 'Blue', 'Green', 'Black', ]",
+        "description": "[]",
+        "quantity": "[0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Pencil (non-sharpened)",
+        "properties": "['Yellow #2', 'Ticonderoga #2', 'Yellow Ticonderoga #2']",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Pencil (sharpened)",
+        "properties": "['Yellow #2', 'Ticonderoga #2', 'Yellow Ticonderoga #2']",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Pencil Box",
+        "properties": "['Plastic Box 8'x5'', 'Pouch', 'Travel Toothbrush Holder',]",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Pencil Sharpener",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Planner Notebook",
+        "properties": "['Red', 'Blue', 'Green', 'Yellow', 'Purple']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Plastic Bag",
+        "properties": "['Grocery']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Plastic Cups",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Plastic Utensil",
+        "properties": "['Fork/Spoon/Knife', 'Fork/Spoon', 'Fork', 'Spoon', 'Knife']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Post-It Notes",
+        "properties": "['Yellow', 'Pink', 'Multi-color',]",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Post-it Notes",
+        "properties": "['Standard']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Ruler",
+        "properties": "['Plastic', 'Metal', 'Rubber',]",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Scissors",
+        "properties": "['Regular Fiskar's Student', 'Kid']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Sharpie Permanent Marker",
+        "properties": "['Wide', 'Regular']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Sketchbook",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Small Blanket",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Snacks",
+        "properties": "['Box of Crackers', 'Individually Wrapped Snack',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Spiral Notebook (college ruled)",
+        "properties": "['Red', 'Blue', 'Green', 'Black', 'Yellow', 'Purple' ]",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Spiral Notebook (wide ruled)",
+        "properties": "['Red', 'Blue', 'Green', 'Black', 'Yellow', 'Purple' ]",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Subject Notebook",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Tennis Shoes",
+        "properties": "['Velcro', 'Laced',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Tissues (Kleenex)",
+        "properties": "['80 count', '120 count', '200 count', '230 count', '280 count']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Tissues (Puffs)",
+        "properties": "['80 count', '120 count', '200 count', '230 count', '280 count']",
+        "description": "[]",
+        "quantity": "[0,0,0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Unspecified Colored Pencils (non-sharpened)",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Unspecified Colored Pencils (sharpened)",
+        "properties": "['8 pack', '10 pack', '12 pack',]",
+        "description": "[]",
+        "quantity": "[0,0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Water Bottle",
+        "properties": "['']",
+        "description": "[]",
+        "quantity": "[0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Watercolor Paints (non-washable)",
+        "properties": "['Crayola Red', 'Crayola 8 Color']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Watercolor Paints (washable)",
+        "properties": "['Crayola Red', 'Crayola 8 Color']",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Wipes",
+        "properties": "['Lysol', 'Clorox',]",
+        "description": "[]",
+        "quantity": "[0,0]",
+        "notes": "[]"
+    },
+    {
+        "item": "Ziploc Bag",
+        "properties": "['Sandwich', 'Gallon', 'Snack', 'Quart']",
+        "description": "[]",
+        "quantity": "[0,0,0,0]",
+        "notes": "[]"
+    }
+]
+
