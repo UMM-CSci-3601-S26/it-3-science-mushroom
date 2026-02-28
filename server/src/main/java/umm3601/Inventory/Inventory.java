@@ -11,12 +11,13 @@ public class Inventory {
   @SuppressWarnings({"MemberName"})
   public String _id;
 
-
   public String school;
   public String grade;
   public String description;
   public int quantity;
   public String[] properties;
+  public String item;
+  public String notes;
 
   @Override
   public boolean equals(Object obj) {
@@ -24,12 +25,12 @@ public class Inventory {
       return false;
     }
     Inventory other = (Inventory) obj;
-    return _id.equals(other._id);
+    return _id != null && _id.equals(other._id);
   }
 
   @Override
   public int hashCode() {
-    return _id.hashCode();
+    return _id == null ? 0 : _id.hashCode();
   }
 
   @Override

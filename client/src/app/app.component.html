@@ -20,6 +20,10 @@
         <mat-icon matListItemIcon>business</mat-icon>
         Companies
       </a>
+      <a mat-list-item routerLink="/inventory" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+        <mat-icon matListItemIcon>inventory</mat-icon>
+        Inventory
+      </a>
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
