@@ -32,12 +32,16 @@ public class InventoryController implements Controller {
   private static final String API_INVENTORY = "/api/inventory";
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
 
-  static final String SCHOOL_KEY = "school";
-  static final String GRADE_KEY = "grade";
   static final String ITEM_KEY = "item";
+  static final String BRAND_KEY = "brand";
+  static final String COUNT_KEY = "count";
+  static final String SIZE_KEY = "size";
+  static final String COLOR_KEY = "color";
   static final String DESCRIPTION_KEY = "description";
   static final String QUANTITY_KEY = "quantity";
-  static final String PROPERTIES_KEY = "properties";
+  static final String NOTES_KEY = "notes";
+  static final String MATERIAL_KEY = "material";
+  static final String TYPE_KEY = "type";
   static final String SORT_ORDER_KEY = "sortorder";
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
@@ -88,14 +92,14 @@ public class InventoryController implements Controller {
   private Bson constructFilter(Context ctx) {
     List<Bson> filters = new ArrayList<>();
 
-    if (ctx.queryParamMap().containsKey(SCHOOL_KEY)) {
-      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(SCHOOL_KEY)), Pattern.CASE_INSENSITIVE);
-      filters.add(regex(SCHOOL_KEY, pattern));
+    if (ctx.queryParamMap().containsKey(BRAND_KEY)) {
+      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(BRAND_KEY)), Pattern.CASE_INSENSITIVE);
+      filters.add(regex(BRAND_KEY, pattern));
     }
 
-    if (ctx.queryParamMap().containsKey(GRADE_KEY)) {
-      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(GRADE_KEY)), Pattern.CASE_INSENSITIVE);
-      filters.add(regex(GRADE_KEY, pattern));
+    if (ctx.queryParamMap().containsKey(COUNT_KEY)) {
+      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(COUNT_KEY)), Pattern.CASE_INSENSITIVE);
+      filters.add(regex(COUNT_KEY, pattern));
     }
 
     if (ctx.queryParamMap().containsKey(ITEM_KEY)) {
@@ -117,25 +121,34 @@ public class InventoryController implements Controller {
         throw new BadRequestResponse("quantity must be an integer.");
       }
     }
-    if (ctx.queryParamMap().containsKey(PROPERTIES_KEY)) {
-      String propsParam = ctx.queryParam(PROPERTIES_KEY);
-      if (propsParam != null && !propsParam.trim().isEmpty()) {
-        String[] props = propsParam.split(",");
-        filters.add(Filters.in(PROPERTIES_KEY, (Object[]) props));
-      }
+    if (ctx.queryParamMap().containsKey(NOTES_KEY)) {
+      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(NOTES_KEY)), Pattern.CASE_INSENSITIVE);
+      filters.add(regex(NOTES_KEY, pattern));
     }
+    if (ctx.queryParamMap().containsKey(MATERIAL_KEY)) {
+      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(MATERIAL_KEY)), Pattern.CASE_INSENSITIVE);
+      filters.add(regex(MATERIAL_KEY, pattern));
+    }
+    if (ctx.queryParamMap().containsKey(TYPE_KEY)) {
+      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(TYPE_KEY)), Pattern.CASE_INSENSITIVE);
+      filters.add(regex(TYPE_KEY, pattern));
+    }
+
 
     return filters.isEmpty() ? new Document() : and(filters);
   }
 
+
   private Bson constructSortingOrder(Context ctx) {
     String sortBy = ctx.queryParam("sortby");
     if (sortBy == null || sortBy.trim().isEmpty()) {
-      sortBy = SCHOOL_KEY;
+      sortBy = ITEM_KEY;
     }
 
     List<String> allowed = Arrays.asList(
-      SCHOOL_KEY, GRADE_KEY, ITEM_KEY, DESCRIPTION_KEY, QUANTITY_KEY, PROPERTIES_KEY
+      BRAND_KEY, COUNT_KEY, ITEM_KEY, DESCRIPTION_KEY,
+      QUANTITY_KEY, NOTES_KEY, MATERIAL_KEY, TYPE_KEY,
+      SIZE_KEY, COLOR_KEY
     );
 
     if (!allowed.contains(sortBy)) {

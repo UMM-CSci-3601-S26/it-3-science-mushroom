@@ -1,493 +1,122 @@
 [
-    {
-        "item": "10 Pack Markers (crayola)",
-        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "10 Pack Markers (unspecified)",
-        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "100 Pack Notecards",
-        "properties": "['3x5']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "2 Prong Pocket Folder (plastic)",
-        "properties": "['Red', 'Blue', 'Green', 'Yellow', 'Purple']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "21 Pack Expo Marker (fine)",
-        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "21 Pack Expo Marker (wide)",
-        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "3 Prong Pocket Folder (plastic)",
-        "properties": "['Red', 'Blue', 'Green', 'Yellow', 'Purple']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "3 Ring Binder",
-        "properties": "['1', '1/2']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "4 Pack Expo Marker (fine)",
-        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "4 Pack Expo Marker (wide)",
-        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "8 Pack Expo Marker (fine)",
-        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "8 Pack Expo Marker (wide)",
-        "properties": "['Multicolor', 'Black', 'Red', 'Blue', 'Green']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "8 Pack Markers (crayola)",
-        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "8 Pack Markers (unspecified)",
-        "properties": "['Washable Wide', 'Regular Wide', 'Washable Fine', 'Regular Fine']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Backpacks",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Book Bag (no wheels)",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Bowls",
-        "properties": "['Paper Non-coated', 'Paper Coated', 'Styrofoam', 'Plastic']",
-        "description": "[]",
-        "quantity": "[0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Calculator",
-        "properties": "['Generic', 'Graphing', 'Scientific', 'TI30X', 'TI30XIIS',]",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Clothes",
-        "properties": "['Paint Shirt', 'Shorts', 'Shirt', 'Pants']",
-        "description": "[]",
-        "quantity": "[0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Composition Notebook",
-        "properties": "['College Ruled',]",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Computer Mouse",
-        "properties": "['Wired', 'Wireless',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Crayola Colored Pencils (sharpened)",
-        "properties": "['8 pack', '10 pack', '12 pack', '24 pack', '36 pack']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Crayons (crayola)",
-        "properties": "['16 Pack', '24 Pack',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Crayons (unspecified)",
-        "properties": "['16 Pack', '24 Pack',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Cups",
-        "properties": "['Styrofoam', 'Plastic', 'Paper']",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Dry Board Eraser",
-        "properties": "['1 pack', '2 pack', '3 pack', '4 pack']",
-        "description": "[]",
-        "quantity": "[0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Dry Erase Markers",
-        "properties": "['Fine Tip', 'Wide Tip',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Eraser",
-        "properties": "['Pencil Top', 'Mechanical', 'Regular', 'Soft', 'pink', 'large']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Glue Bottle (white)",
-        "properties": "['Elmers 4oz.', 'Elmers 6oz.', 'Elmers 8oz.',]",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Glue Stick (large)",
-        "properties": "['Elmers',]",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Glue Stick (regular)",
-        "properties": "['Elmers', 'Misc']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Headphones",
-        "properties": "['Wired', 'Wireless', 'Wired 3.5mm jack', 'Earbuds']",
-        "description": "[]",
-        "quantity": "[0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Highlighter",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Loose Leaf Paper",
-        "properties": "['Wide Ruled', 'College Ruled']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Notebook Wide Ruled Tablet",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Page Protector (clear)",
-        "properties": "['50', '100']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Page Protector (colored)",
-        "properties": "['50', '100']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Paper Bag",
-        "properties": "['Lunch', 'Grocery']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Paper Plates",
-        "properties": "['Coated', 'Non-coated',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Paper Towels",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Pen",
-        "properties": "['Red', 'Blue', 'Green', 'Black', ]",
-        "description": "[]",
-        "quantity": "[0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Pencil (non-sharpened)",
-        "properties": "['Yellow #2', 'Ticonderoga #2', 'Yellow Ticonderoga #2']",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Pencil (sharpened)",
-        "properties": "['Yellow #2', 'Ticonderoga #2', 'Yellow Ticonderoga #2']",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Pencil Box",
-        "properties": "['Plastic Box 8'x5'', 'Pouch', 'Travel Toothbrush Holder',]",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Pencil Sharpener",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Planner Notebook",
-        "properties": "['Red', 'Blue', 'Green', 'Yellow', 'Purple']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Plastic Bag",
-        "properties": "['Grocery']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Plastic Cups",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Plastic Utensil",
-        "properties": "['Fork/Spoon/Knife', 'Fork/Spoon', 'Fork', 'Spoon', 'Knife']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Post-It Notes",
-        "properties": "['Yellow', 'Pink', 'Multi-color',]",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Post-it Notes",
-        "properties": "['Standard']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Ruler",
-        "properties": "['Plastic', 'Metal', 'Rubber',]",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Scissors",
-        "properties": "['Regular Fiskar's Student', 'Kid']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Sharpie Permanent Marker",
-        "properties": "['Wide', 'Regular']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Sketchbook",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Small Blanket",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Snacks",
-        "properties": "['Box of Crackers', 'Individually Wrapped Snack',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Spiral Notebook (college ruled)",
-        "properties": "['Red', 'Blue', 'Green', 'Black', 'Yellow', 'Purple' ]",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Spiral Notebook (wide ruled)",
-        "properties": "['Red', 'Blue', 'Green', 'Black', 'Yellow', 'Purple' ]",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Subject Notebook",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Tennis Shoes",
-        "properties": "['Velcro', 'Laced',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Tissues (Kleenex)",
-        "properties": "['80 count', '120 count', '200 count', '230 count', '280 count']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Tissues (Puffs)",
-        "properties": "['80 count', '120 count', '200 count', '230 count', '280 count']",
-        "description": "[]",
-        "quantity": "[0,0,0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Unspecified Colored Pencils (non-sharpened)",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Unspecified Colored Pencils (sharpened)",
-        "properties": "['8 pack', '10 pack', '12 pack',]",
-        "description": "[]",
-        "quantity": "[0,0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Water Bottle",
-        "properties": "['']",
-        "description": "[]",
-        "quantity": "[0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Watercolor Paints (non-washable)",
-        "properties": "['Crayola Red', 'Crayola 8 Color']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Watercolor Paints (washable)",
-        "properties": "['Crayola Red', 'Crayola 8 Color']",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Wipes",
-        "properties": "['Lysol', 'Clorox',]",
-        "description": "[]",
-        "quantity": "[0,0]",
-        "notes": "[]"
-    },
-    {
-        "item": "Ziploc Bag",
-        "properties": "['Sandwich', 'Gallon', 'Snack', 'Quart']",
-        "description": "[]",
-        "quantity": "[0,0,0,0]",
-        "notes": "[]"
-    }
+  {
+    "item": "Pencil",
+    "brand": "Ticonderoga",
+    "count": 12,
+    "size": "Standard",
+    "color": "Yellow",
+    "type": "Writing",
+    "material": "Wood",
+    "description": "Standard #2 wooden pencil",
+    "quantity": 24,
+    "notes": "Sharpen before use"
+  },
+  {
+    "item": "Notebook",
+    "brand": "Mead",
+    "count": 1,
+    "size": "8.5x11",
+    "color": "Blue",
+    "type": "Paper",
+    "material": "Paper",
+    "description": "College ruled notebook",
+    "quantity": 15,
+    "notes": "Wide margin"
+  },
+  {
+    "item": "Eraser",
+    "brand": "PaperMate",
+    "count": 3,
+    "size": "Small",
+    "color": "Pink",
+    "type": "Correction",
+    "material": "Rubber",
+    "description": "Pink rubber eraser",
+    "quantity": 30,
+    "notes": "Non-smudge"
+  },
+  {
+    "item": "Colored Pencils",
+    "brand": "Crayola",
+    "count": 24,
+    "size": "Standard",
+    "color": "Multicolor",
+    "type": "Art",
+    "material": "Wood",
+    "description": "24-pack colored pencils",
+    "quantity": 10,
+    "notes": "Includes sharpener"
+  },
+  {
+    "item": "Glue Sticks",
+    "brand": "Elmer's",
+    "count": 6,
+    "size": "Medium",
+    "color": "Clear",
+    "type": "Adhesive",
+    "material": "Glue",
+    "description": "Washable glue sticks",
+    "quantity": 40,
+    "notes": "Non-toxic"
+  },
+  {
+    "item": "Scissors",
+    "brand": "Fiskars",
+    "count": 1,
+    "size": "5 inch",
+    "color": "Red",
+    "type": "Cutting",
+    "material": "Steel/Plastic",
+    "description": "Blunt tip safety scissors",
+    "quantity": 12,
+    "notes": "Child-safe"
+  },
+  {
+    "item": "Calculator",
+    "brand": "Texas Instruments",
+    "count": 1,
+    "size": "Handheld",
+    "color": "Black",
+    "type": "Electronics",
+    "material": "Plastic",
+    "description": "Scientific calculator",
+    "quantity": 8,
+    "notes": "Battery included"
+  },
+  {
+    "item": "Binder",
+    "brand": "Five Star",
+    "count": 1,
+    "size": "1 inch",
+    "color": "Green",
+    "type": "Organization",
+    "material": "Plastic",
+    "description": "3-ring binder",
+    "quantity": 18,
+    "notes": "Durable cover"
+  },
+  {
+    "item": "Loose Leaf Paper",
+    "brand": "Staples",
+    "count": 200,
+    "size": "8.5x11",
+    "color": "White",
+    "type": "Paper",
+    "material": "Paper",
+    "description": "Wide ruled loose leaf paper",
+    "quantity": 50,
+    "notes": "Reinforced holes"
+  },
+  {
+    "item": "Crayons",
+    "brand": "Crayola",
+    "count": 24,
+    "size": "Standard",
+    "color": "Multicolor",
+    "type": "Art",
+    "material": "Wax",
+    "description": "24-count crayon box",
+    "quantity": 22,
+    "notes": "Bright colors"
+  }
 ]
-

@@ -11,12 +11,15 @@ public class Inventory {
   @SuppressWarnings({"MemberName"})
   public String _id;
 
-  public String school;
-  public String grade;
+  public String item;
+  public String brand;
+  public int count;
+  public String size;
+  public String color;
+  public String type;
+  public String material;
   public String description;
   public int quantity;
-  public String[] properties;
-  public String item;
   public String notes;
 
   @Override
@@ -35,6 +38,6 @@ public class Inventory {
 
   @Override
   public String toString() {
-    return school + " " + grade + " " + description;
+    return item + " " + brand + " " + description;
   }
 }
