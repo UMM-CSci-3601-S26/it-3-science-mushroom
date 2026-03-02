@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync, fakeAsync,} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Observable } from 'rxjs';
 import { MockInventoryService } from 'src/testing/inventory.service.mock';
