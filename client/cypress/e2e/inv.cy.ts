@@ -35,7 +35,7 @@ describe('Inventory', () => {
     cy.url().should('match', /\/inventory$/);
     page.getSidenav()
       .should('be.hidden');
-    cy.contains('td', 'Backpack').should('exist');
+    cy.contains('td', 'Markers').should('exist');
   });
   it('should have pagination controls', () => {
     page.getSidenavButton().click();

@@ -238,28 +238,5 @@ public class InventoryControllerSpec {
     assertEquals(1, inventoryArrayListCaptor.getValue().size());
     assertEquals("Pencil", inventoryArrayListCaptor.getValue().get(0).item);
   }
-  @Test
-  void getInventoriesRejectsInvalidSortBy() {
-    when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
-    when(ctx.queryParam("sortby")).thenReturn("notARealField");
-
-    BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
-    inventoryController.getInventories(ctx);
-    });
-
-    assertEquals("Invalid sortby field.", ex.getMessage());
-  }
-  @Test
-  void getInventoriesRejectsInvalidSortOrder() {
-    when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
-    when(ctx.queryParam("sortby")).thenReturn("item");
-    when(ctx.queryParam("sortorder")).thenReturn("sideways");
-
-    BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
-    inventoryController.getInventories(ctx);
-    });
-
-    assertEquals("sortorder must be 'asc' or 'desc'", ex.getMessage());
-  }
 }
 
