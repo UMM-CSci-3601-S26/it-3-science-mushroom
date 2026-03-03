@@ -3,6 +3,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import umm3601.user.UserController;
 import umm3601.Inventory.InventoryController;
+import umm3601.supplylist.*;
 
 public class Main {
 
@@ -60,7 +61,8 @@ public class Main {
       //
       // You can also remove this UserController once you don't need it.
       new UserController(database),
-      new InventoryController(database)
+      new InventoryController(database),
+      new SupplyListController(database)
     };
     return controllers;
   }
