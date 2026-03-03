@@ -3,6 +3,8 @@ package umm3601.Inventory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 // import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 // import static org.junit.jupiter.api.Assertions.assertTrue;
 // import static org.mockito.ArgumentMatchers.any;
 // import static org.mockito.ArgumentMatchers.anyString;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 // import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
@@ -40,6 +43,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 // import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -102,7 +106,7 @@ public class InventoryControllerSpec {
             .append("color",  "yellow")
             .append("count",  1)
             .append("size",  "N/A")
-            .append("description",  "A standard pencil ")
+            .append("description",  "A standard pencil")
             .append("quantity", 10)
             .append("notes",  "N/A")
             .append("type", "#2")
@@ -114,7 +118,7 @@ public class InventoryControllerSpec {
             .append("color", "pink")
             .append("count", 1)
             .append("size", "N/A")
-            .append("description", "A standard eraser ")
+            .append("description", "A standard eraser")
             .append("quantity", 5)
             .append("notes", "N/A")
             .append("type", "rubber")
@@ -126,7 +130,7 @@ public class InventoryControllerSpec {
             .append("color", "blue")
             .append("count", 1)
             .append("size", "N/A")
-            .append("description", "A standard notebook ")
+            .append("description", "A standard notebook")
             .append("quantity", 3)
             .append("notes", "N/A")
             .append("type", "spiral")
@@ -139,10 +143,10 @@ public class InventoryControllerSpec {
         .append("brand", "JanSport")
         .append("color", "black")
         .append("count", 1)
-        .append("size", "N/A")
-        .append("description", "A standard backpack ")
+        .append("size", "Standard")
+        .append("description", "A standard backpack")
         .append("quantity", 2)
-        .append("notes", "N/A")
+        .append("notes", "Plain colors only")
         .append("type", "shoulder bag")
         .append("material", "fabric");
 
@@ -237,6 +241,108 @@ public class InventoryControllerSpec {
 
     assertEquals(1, inventoryArrayListCaptor.getValue().size());
     assertEquals("Pencil", inventoryArrayListCaptor.getValue().get(0).item);
+  }
+
+  @Test
+  void canFilterInventoryByBrandCaseInsensitive() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("brand", List.of("tIcOnDeRoGa")));
+    when(ctx.queryParam("brand")).thenReturn("tIcOnDeRoGa");
+
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(1, inventoryArrayListCaptor.getValue().size());
+    assertEquals("Ticonderoga", inventoryArrayListCaptor.getValue().get(0).brand);
+  }
+
+  @Test
+  void canFilterInventoryByColorCaseInsensitive() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("color", List.of("yElLoW")));
+    when(ctx.queryParam("color")).thenReturn("yElLoW");
+
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(1, inventoryArrayListCaptor.getValue().size());
+    assertEquals("yellow", inventoryArrayListCaptor.getValue().get(0).color);
+  }
+
+  @Test
+  void canFilterInventoryBySizeCaseInsensitive() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("size", List.of("sTaNdArD")));
+    when(ctx.queryParam("size")).thenReturn("sTaNdArD");
+
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(1, inventoryArrayListCaptor.getValue().size());
+    assertEquals("Standard", inventoryArrayListCaptor.getValue().get(0).size);
+  }
+
+  @Test
+  void canFilterInventoryByDescriptionCaseInsensitive() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("description", List.of("A standard backpack")));
+    when(ctx.queryParam("description")).thenReturn("A standard backpack");
+
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(1, inventoryArrayListCaptor.getValue().size());
+    assertEquals("A standard backpack", inventoryArrayListCaptor.getValue().get(0).description);
+  }
+
+  @Test
+  void canFilterInventoryByNotesCaseInsensitive() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("notes", List.of("Plain colors only")));
+    when(ctx.queryParam("notes")).thenReturn("Plain colors only");
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(1, inventoryArrayListCaptor.getValue().size());
+    assertEquals("Plain colors only", inventoryArrayListCaptor.getValue().get(0).notes);
+  }
+
+  @Test
+  void canFilterInventoryByMaterialCaseInsensitive() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("material", List.of("wood")));
+    when(ctx.queryParam("material")).thenReturn("wood");
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(1, inventoryArrayListCaptor.getValue().size());
+    assertEquals("wood", inventoryArrayListCaptor.getValue().get(0).material);
+  }
+
+  @Test
+  void canFilterInventoryByTypeCaseInsensitive() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("type", List.of("shoulder bag")));
+    when(ctx.queryParam("type")).thenReturn("shoulder bag");
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(1, inventoryArrayListCaptor.getValue().size());
+    assertEquals("shoulder bag", inventoryArrayListCaptor.getValue().get(0).type);
+  }
+
+  @Test
+  void addsRoutes() {
+    Javalin mockServer = mock(Javalin.class);
+    inventoryController.addRoutes(mockServer);
+    verify(mockServer, Mockito.atLeast(1)).get(any(), any());
   }
 }
 

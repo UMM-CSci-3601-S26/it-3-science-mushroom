@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, tick, fakeAsync } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Observable } from 'rxjs';
 import { MockInventoryService } from 'src/testing/inventory.service.mock';
@@ -15,8 +15,7 @@ import { HarnessLoader } from '@angular/cdk/testing';;
 
 describe('Inventory Table', () => {
   let inventoryTable: InventoryComponent;
-  let fixture: ComponentFixture<InventoryComponent>;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let fixture: ComponentFixture<InventoryComponent>
   let inventoryService: InventoryService;
   let loader: HarnessLoader
 
@@ -37,8 +36,8 @@ describe('Inventory Table', () => {
       fixture = TestBed.createComponent(InventoryComponent);
       inventoryTable = fixture.componentInstance;
       inventoryService = TestBed.inject(InventoryService);
-      loader = TestbedHarnessEnvironment.loader(fixture);
       fixture.detectChanges();
+      loader = TestbedHarnessEnvironment.loader(fixture);
     });
   }));
 
@@ -52,15 +51,83 @@ describe('Inventory Table', () => {
     expect(Array.isArray(inventory)).toBe(true);
   });
 
-  it('should load all paginator harnesses', async () => {
+  it('should load the paginator harnesses', async () => {
     const paginators = await loader.getAllHarnesses(MatPaginatorHarness);
     expect(paginators.length).toBe(1);
   });
 
-  it('should load harness for a table', async () => {
+  it('should load harness for the table', async () => {
     const tables = await loader.getAllHarnesses(MatTableHarness);
     expect(tables.length).toBe(1);
   });
+
+  it('should call getInventory() when item signal changes', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.item.set('Markers');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: 'Markers', brand: undefined, color: undefined, size: undefined, type: undefined, material: undefined });
+  }));
+
+  it('should call getInventory() when brand signal changes', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.brand.set('Crayola');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: undefined, size: undefined, type: undefined, material: undefined });
+  }));
+
+  it('should call getInventory() when color signal changes', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.color.set('Red');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: 'Red', size: undefined, type: undefined, material: undefined });
+  }));
+
+  it('should call getInventory() when size signal changes', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.size.set('Wide Ruled');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: 'Wide Ruled', type: undefined, material: undefined });
+  }));
+
+  it('should call getInventory() when type signal changes', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.type.set('Spiral');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: 'Spiral', material: undefined });
+  }));
+
+  it('should call getInventory() when material signal changes', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.material.set('Plastic');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: undefined, material: 'Plastic' });
+  }));
+
+  it('should call getInventory() when brand and color signals change', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.color.set('Black');
+    inventoryTable.brand.set('Crayola');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: 'Black', size: undefined, type: undefined, material: undefined });
+  }));
+
+  it('should call getInventory() when item, brand, color, and material signals change', fakeAsync(() => {
+    const spy = spyOn(inventoryService, 'getInventory').and.callThrough();
+    inventoryTable.item.set('Notebook');
+    inventoryTable.brand.set('Five Star');
+    inventoryTable.color.set('Yellow');
+    inventoryTable.type.set('Spiral');
+    fixture.detectChanges();
+    tick(300);
+    expect(spy).toHaveBeenCalledWith({ item: 'Notebook', brand: 'Five Star', color: 'Yellow', size: undefined, type: 'Spiral', material: undefined });
+  }));
 
   it('should not show error message on successful load', () => {
     expect(inventoryTable.errMsg()).toBeUndefined();
@@ -73,7 +140,7 @@ describe('Misbehaving Inventory Table', () => {
 
   let inventoryServiceStub: {
     getInventory: () => Observable<Inventory[]>;
-    filterInventory: () => Inventory[];
+    //filterInventory: () => Inventory[];
   };
 
   beforeEach(() => {
@@ -82,7 +149,7 @@ describe('Misbehaving Inventory Table', () => {
         new Observable((observer) => {
           observer.error('getInventory() Observer generates an error');
         }),
-      filterInventory: () => []
+      //filterInventory: () => []
     };
   });
 
@@ -99,11 +166,12 @@ describe('Misbehaving Inventory Table', () => {
       .compileComponents();
   }));
 
-  beforeEach(() => {
+  beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(InventoryComponent);
     inventoryTable = fixture.componentInstance;
     fixture.detectChanges();
-  });
+    tick(300);
+  }));
 
   it("generates an error if we don't set up a InventoryService", () => {
     expect(inventoryTable.serverFilteredInventory())
@@ -111,6 +179,6 @@ describe('Misbehaving Inventory Table', () => {
       .toEqual([]);
     expect(inventoryTable.errMsg())
       .withContext('the error message will be')
-      .toContain('Problem contacting the server');
+      .toContain('Problem contacting the server – Error Code:');
   });
 });
