@@ -13,7 +13,7 @@ export class MockInventoryService implements Pick<InventoryService, 'getInventor
     {
       item: "Markers",
       description: "8 Pack of Washable Wide Markers",
-      brand: "N/A",
+      brand: "Crayola",
       color: "N/A",
       count: 8,
       size: "Wide",
@@ -37,7 +37,7 @@ export class MockInventoryService implements Pick<InventoryService, 'getInventor
     {
       item: "Notebook",
       description: "Yellow Wide Ruled Spiral Notebook",
-      brand: "N/A",
+      brand: "Five Star",
       color: "Yellow",
       count: 1,
       size: "Wide Ruled",
@@ -49,7 +49,7 @@ export class MockInventoryService implements Pick<InventoryService, 'getInventor
   ];
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  getInventory(_filters: { item?: string }): Observable<Inventory[]> {
+  getInventory(_filters: { item?: string, brand?: string, color?: string, size?: string, type?: string, material?: string }): Observable<Inventory[]> {
     return of(MockInventoryService.testInventory);
   }
 }

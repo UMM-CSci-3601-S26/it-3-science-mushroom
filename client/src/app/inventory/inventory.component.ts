@@ -86,9 +86,12 @@ export class InventoryComponent {
         this.inventoryService.getInventory({ item, brand, color, size, type, material})
       ),
       catchError((err) => {
-        const msg = `Problem contacting the server - Error Code: ${err.status}\nMessage: ${err.message}`;
-        this.errMsg.set(msg);
-        this.snackBar.open(msg, 'OK', { duration: 6000 });
+        if (!(err.error instanceof ErrorEvent)) {
+          this.errMsg.set(
+            `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`
+          )
+        };
+        this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
         return of<Inventory[]>([]);
       })
     ),

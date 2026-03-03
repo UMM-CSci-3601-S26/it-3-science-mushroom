@@ -42,8 +42,9 @@ describe('Inventory', () => {
     page.getSidenav()
       .should('be.hidden');
     nextTick(300)
-    cy.contains('td', 'Markers').should('exist');
+    cy.contains('td', 'Test Item').should('exist'); //First item in the table, once 'test item' gets removed, need to update
   });
+
   it('should have pagination controls', () => {
     page.getSidenavButton().click();
     page.getNavLink('Inventory').click();
