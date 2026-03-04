@@ -6,15 +6,41 @@
       </mat-card-header>
 
       <mat-card-content>
+<<<<<<< website-cleanup
         <p class="page-description">
           Welcome to the Supply List page! Here, you can view the items a student in each grade at each school needs, as well as filter them by various attributes. In the future, functionality for generating supply sheets and other similar features may be added!
         </p>
         <hr style="margin: 1rem 0;" />
+=======
+
+        <mat-form-field appearance="outline">
+        <mat-label>Grade</mat-label>
+        <input
+          matInput
+          [ngModel]="grade() ?? ''"
+          (ngModelChange)="grade.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-item"
+        />
+  </mat-form-field>
+
+        <mat-form-field appearance="outline">
+        <mat-label>Item</mat-label>
+        <input
+          matInput
+          [ngModel]="item() ?? ''"
+          (ngModelChange)="item.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-item"
+        />
+  </mat-form-field>
+>>>>>>> main
 
         <p class="filters-description">
           Use the fields below to filter the inventory by school, grade, item, brand, color, size, type, and material. The filters will be applied as you type, and you can clear them all at once using the "Clear" button on the bottom.
         </p>
 
+<<<<<<< website-cleanup
         <!-- Filter Fields -->
         <div class="filter-container">
           <mat-form-field appearance="outline">
@@ -100,47 +126,83 @@
             Count: {{ serverFilteredSupplyList().length }}
             </div>
         </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-</div>
 
-<!--Supply List Display-->
-<div>
-  <mat-card class="search-grid">
-    <div class="tree-container" role="Display Items">
-      @for (schoolGroup of groupedSupplyList(); track schoolGroup.school) {
-        <section class="school-group">
-          <h2 class="school-heading" data-cy="supplylist-school">{{ schoolGroup.school }}</h2>
+=======
+      <mat-form-field appearance="outline">
+        <mat-label>Color</mat-label>
+        <input
+          matInput
+          [ngModel]="color() ?? ''"
+          (ngModelChange)="color.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-color"
+        />
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+        <mat-label>Size</mat-label>
+        <input
+          matInput
+          [ngModel]="size() ?? ''"
+          (ngModelChange)="size.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-size"
+        />
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+        <mat-label>Type</mat-label>
+        <input
+          matInput
+          [ngModel]="type() ?? ''"
+          (ngModelChange)="type.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-type"
+        />
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+        <mat-label>Material</mat-label>
+        <input
+          matInput
+          [ngModel]="material() ?? ''"
+          (ngModelChange)="material.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-material"
+        />
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+        <mat-label>School</mat-label>
+        <input
+          matInput
+          [ngModel]="school() ?? ''"
+          (ngModelChange)="school.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-school"
+        />
+  </mat-form-field>
 
-          @for (gradeGroup of schoolGroup.grades; track gradeGroup.grade) {
-            <section class="grade-group">
-              <h3 class="grade-heading" data-cy="supplylist-grade"><strong>Grade(s):</strong> {{ gradeGroup.grade }}</h3>
+  <button
+    mat-stroked-button
+    type="button"
+    (click)="school.set(undefined); grade.set(undefined); item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined); type.set(undefined); material.set(undefined)"
+    data-cy="filter-clear"
+  >
+    Clear
+  </button>
+>>>>>>> main
 
-              @for (teacherGroup of gradeGroup.teachers; track teacherGroup.teacher) {
-                <section class="teacher-group">
-                  <h4 class="teacher-heading"><strong>Teacher(s):</strong> {{ teacherGroup.teacher }}</h4>
 
-                  <div class="item-grid">
-                    @for (element of teacherGroup.items; track $index) {
-                      <article>
-                        <div class="field" data-cy="supplylist-item"><strong>Item:</strong> {{ element.item }}</div>
-                        <div class="field" data-cy="supplylist-brand"><strong>Brand:</strong> {{ element.brand }}</div>
-                        <div class="field" data-cy="supplylist-color"><strong>Color:</strong> {{ element.color }}</div>
-                        <div class="field" data-cy="supplylist-size"><strong>Size:</strong> {{ element.size }}</div>
-                        <div class="field" data-cy="supplylist-type"><strong>Type:</strong> {{ element.type }}</div>
-                        <div class="field" data-cy="supplylist-material"><strong>Material:</strong> {{ element.material }}</div>
-                        <div class="field" data-cy="supplylist-quantity"><strong>Quantity:</strong> {{ element.quantity }}</div>
-                        <div class="field" data-cy="supplylist-notes"><strong>Notes:</strong> {{ element.notes }}</div>
-                      </article>
-                    }
-                  </div>
-                </section>
-              }
-            </section>
-          }
-        </section>
-      }
-    </div>
-  </mat-card>
-</div>
+  <mat-list role="Display Items">
+    @for (element of serverFilteredSupplyList(); track $index) {
+      <mat-list-item role="Display Items">
+        <div class = "list-style">
+          <div class="field" data-cy="supplylist-school"><strong>School:</strong> {{ element.school}} </div>
+          <div class="field" data-cy="supplylist-grade"><strong>Grade:</strong> {{ element.grade}} </div>
+          <div class="field" data-cy="supplylist-item"><strong>Item:</strong> {{ element.item }}</div>
+          <div class="field" data-cy="supplylist-brand"><strong>Brand:</strong> {{ element.brand }}</div>
+          <div class="field" data-cy="supplylist-color"><strong>Color:</strong> {{ element.color }}</div>
+          <div class="field" data-cy="supplylist-size"><strong>Size:</strong> {{ element.size }}</div>
+          <div class="field" data-cy="supplylist-type"><strong>Type:</strong> {{ element.type }}</div>
+          <div class="field" data-cy="supplylist-material"><strong>Material:</strong> {{ element.material }}</div>
+        </div>
+      </mat-list-item>
+    }
+  </mat-list>
