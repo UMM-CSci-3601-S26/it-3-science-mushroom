@@ -105,18 +105,18 @@ describe('SupplyListService', () => {
       });
     });
 
-    // it('correctly calls api/inventory with filter parameter \'school\'', () => {
-    //   const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testSupplyList));
+    it('correctly calls api/inventory with filter parameter \'school\'', () => {
+      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testSupplyList));
 
-    //   supplylistService.getSupplyList({ school: 'get' }).subscribe(() => {
-    //     expect(mockedMethod)
-    //       .withContext('one call')
-    //       .toHaveBeenCalledTimes(1);
-    //     expect(mockedMethod)
-    //       .withContext('talks to the correct endpoint')
-    //       .toHaveBeenCalledWith(supplylistService.supplylistUrl, { params: new HttpParams().set('school', 'MHS') });
-    //   });
-    // });
+      supplylistService.getSupplyList({ school: 'Herman' }).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(supplylistService.supplylistUrl, { params: new HttpParams().set('school', 'Herman') });
+      });
+    });
 
     it('correctly calls api/inventory with filter parameter \'color\'', () => {
       const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testSupplyList));

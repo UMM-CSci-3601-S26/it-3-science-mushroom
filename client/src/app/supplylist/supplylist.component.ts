@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, effect, inject, signal, /*viewChild,*/ ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+//import { MatSort, MatSortModule } from '@angular/material/sort';
 import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { SupplyList } from './supplylist';
@@ -27,7 +27,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./supplylist.component.scss'],
   imports: [
     MatTableModule,
-    MatSortModule,
+    //MatSortModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -47,9 +47,9 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SupplyListComponent {
-  displayedColumns: string[] = ['school', 'grade', 'item', 'description', 'brand', 'color', 'size', 'type', 'material', 'count', 'quantity', 'notes'];
+  //displayedColumns: string[] = ['school', 'grade', 'item', 'description', 'brand', 'color', 'size', 'type', 'material', 'count', 'quantity', 'notes'];
   dataSource = new MatTableDataSource<SupplyList>([]);
-  readonly sort = viewChild<MatSort>(MatSort);
+  //readonly sort = viewChild<MatSort>(MatSort);
 
 
   private snackBar = inject(MatSnackBar);

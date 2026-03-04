@@ -44,14 +44,15 @@ describe('SupplyList Table', () => {
     expect(Array.isArray(SupplyList)).toBe(true);
   });
 
-  it('should call getSupplyList() when item signal changes', fakeAsync(() => {
+  it('should call getSupplyList() when School signal changes', fakeAsync(() => {
     const spy = spyOn(supplylistService, 'getSupplyList').and.callThrough();
-    supplylistTable.school.set('MHS');
+    supplylistTable.school.set('Herman');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ school: 'MHS', grade: undefined, item: undefined, brand: undefined, color: undefined, size: undefined, type: undefined, material: undefined });
+    expect(spy).toHaveBeenCalledWith({ school: 'Herman', grade: undefined, item: undefined, brand: undefined, color: undefined, size: undefined, type: undefined, material: undefined });
   }));
-  it('should call getSupplyList() when item signal changes', fakeAsync(() => {
+
+  it('should call getSupplyList() when grade signal changes', fakeAsync(() => {
     const spy = spyOn(supplylistService, 'getSupplyList').and.callThrough();
     supplylistTable.grade.set('PreK');
     fixture.detectChanges();

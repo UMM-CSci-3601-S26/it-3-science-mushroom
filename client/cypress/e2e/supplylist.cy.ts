@@ -60,6 +60,9 @@ describe('Supply List', () => {
       console.warn(message);
     }
     cy.get('body').then(($body) => {
+      if ($body.find('[data-cy="filter-school"]').length === 0) {
+        recordError(`Empty filter input for School`);
+      }
       if ($body.find('[data-cy="filter-item"]').length === 0) {
         recordError(`Empty filter input for Item`);
       }

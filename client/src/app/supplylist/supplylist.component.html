@@ -68,11 +68,21 @@
           data-cy="filter-material"
         />
   </mat-form-field>
+  <mat-form-field appearance="outline">
+        <mat-label>School</mat-label>
+        <input
+          matInput
+          [ngModel]="school() ?? ''"
+          (ngModelChange)="school.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-school"
+        />
+  </mat-form-field>
 
   <button
     mat-stroked-button
     type="button"
-    (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined); type.set(undefined); material.set(undefined)"
+    (click)="school.set(undefined); item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined); type.set(undefined); material.set(undefined)"
     data-cy="filter-clear"
   >
     Clear
