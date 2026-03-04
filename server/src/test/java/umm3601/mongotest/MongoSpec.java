@@ -1,7 +1,5 @@
 package umm3601.mongotest;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Projections.excludeId;
 import static com.mongodb.client.model.Projections.fields;
