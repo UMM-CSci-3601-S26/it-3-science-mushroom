@@ -6,6 +6,18 @@
         <mat-card-title class="supplylist-title">Supply List</mat-card-title>
       </mat-card-header>
       <mat-card-content>
+
+        <mat-form-field appearance="outline">
+        <mat-label>Grade</mat-label>
+        <input
+          matInput
+          [ngModel]="grade() ?? ''"
+          (ngModelChange)="grade.set($event?.trim() || undefined)"
+          placeholder="contains..."
+          data-cy="filter-item"
+        />
+  </mat-form-field>
+
         <mat-form-field appearance="outline">
         <mat-label>Item</mat-label>
         <input
