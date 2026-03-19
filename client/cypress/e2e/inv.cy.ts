@@ -11,6 +11,10 @@ const Filters_Test = {
 }
 
 describe('Inventory', () => {
+  before(() => {
+    cy.task('seed:database');
+  });
+
   beforeEach(() => {
     // Intercept the API call before navigating
     cy.intercept('GET', '/api/inventory*').as('getInventory');
@@ -35,7 +39,7 @@ describe('Inventory', () => {
     // Note: Once 'test item' gets removed, this needs to be updated (possibly update to not check the first?)
   });
 
-  it('should have pagination controls', () => {
+  it('Should have pagination controls', () => {
     page.getSidenavButton().click();
     page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);

@@ -1,4 +1,3 @@
-
 export class SupplyListPage {
   private readonly baseUrl = '/supplylist';
   private readonly titleSelector = '.supplylist-title';
