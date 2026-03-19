@@ -39,6 +39,8 @@ th.mat-sort-header-sorted {
   padding: 0 16px;
   min-height: 36px;
   display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .filter-extra {
@@ -56,6 +58,7 @@ th.mat-sort-header-sorted {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
 .page-description {
