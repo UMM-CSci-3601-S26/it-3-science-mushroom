@@ -48,7 +48,6 @@ import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
-import io.javalin.validation.ValidationException;
 // import umm3601.Family.Family;
 // import umm3601.Family.FamilyController;
 
@@ -298,17 +297,14 @@ class FamilyControllerSpec {
         () -> javalinJackson.fromJsonString(json, Family.class)
       ));
 
-    ValidationException exception =
-      assertThrows(ValidationException.class, () -> {
+    BadRequestResponse exception =
+      assertThrows(BadRequestResponse.class, () -> {
         familyController.addNewFamily(ctx);
       });
 
-    assertTrue(
-      exception.getErrors()
-        .get("REQUEST_BODY")
-        .get(0)
-        .toString()
-        .contains("valid email"));
+    assertTrue(exception.getMessage().contains("valid email"));
+    assertTrue(exception.getMessage().contains("email was not-an-email"));
+    assertTrue(exception.getMessage().contains("family was"));
   }
 
   @Test
