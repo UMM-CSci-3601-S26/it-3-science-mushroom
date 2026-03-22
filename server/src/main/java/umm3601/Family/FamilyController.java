@@ -92,12 +92,13 @@ public class FamilyController implements Controller {
   // POST new family
   public void addNewFamily(Context ctx) {
     String body = ctx.body();
-    Family newFamily = ctx.bodyValidator(Family.class)
-      .check(fam -> fam.email.matches(EMAIL_REGEX),
-        "Family must have a valid email; body was " + body)
-      // .check(fam -> fam.students,
-      //   "Family must have a legal family role; body was " + body)
-      .get();
+    Family newFamily = ctx.bodyValidator(Family.class).get();
+
+    // Validate email (has to be present and match regex)
+    if (newFamily.email == null || !newFamily.email.matches(EMAIL_REGEX)) {
+      throw new BadRequestResponse(
+        "Family must have a valid email; email was " + newFamily.email + "; family was " + body);
+    }
 
     familyCollection.insertOne(newFamily);
 
@@ -115,7 +116,7 @@ public class FamilyController implements Controller {
       throw new NotFoundResponse(
         "Was unable to delete Family ID"
           + id
-          + "; perhaps illegal Family ID or an ID for an item not in the system?");
+          + "; perhaps illegal Family ID or an ID for a Family not in the system?");
     }
     ctx.status(HttpStatus.OK);
   }
@@ -180,15 +181,16 @@ public class FamilyController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
-    server.get(API_FAMILY, this::getFamilies);
-    server.post(API_FAMILY, this::addNewFamily);
+    // GET routes
+    server.get(API_FAMILY_BY_ID, this::getFamily); // Family by ID
+    server.get(API_FAMILY, this::getFamilies); // All families
+    server.get(API_FAMILY_EXPORT, this::exportFamiliesAsCSV); // CSV export
+    server.get(API_DASHBOARD, this::getDashboardStats); // Dashboard stats
 
-    // Put specific routes FIRST
-    server.get(API_FAMILY_EXPORT, this::exportFamiliesAsCSV);
-    server.get(API_DASHBOARD, this::getDashboardStats);
+    // POST routes
+    server.post(API_FAMILY, this::addNewFamily); // Add family
 
-    // Put {id} routes LAST
-    server.get(API_FAMILY_BY_ID, this::getFamily);
-    server.delete(API_FAMILY_BY_ID, this::deleteFamily);
+    // DELETE routes
+    server.delete(API_FAMILY_BY_ID, this::deleteFamily); // Delete family
   }
 }
