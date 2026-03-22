@@ -1,0 +1,68 @@
+[
+  {
+    "guardianName": "Jane Doe",
+    "email": "jane@email.com",
+    "address": "123 Street",
+    "timeSlot": "9:00-10:00",
+    "students": [
+      {
+        "name": "Tim",
+        "grade": "3",
+        "school": "MAHS",
+        "requestedSupplies": ["Headphones"]
+      },
+      {
+        "name": "Sara",
+        "grade": "5",
+        "school": "MAHS",
+        "requestedSupplies": ["Backpack"]
+      }
+    ]
+  },
+  {
+    "guardianName": "John Doe",
+    "email": "john@email.com",
+    "address": "1232 Street",
+    "timeSlot": "9:00-10:00",
+    "students": [
+      {
+        "name": "Johnny Jr.",
+        "grade": "8",
+        "school": "HHS",
+        "requestedSupplies": ["Headphones, Backpack"]
+      },
+      {
+        "name": "Burtrum",
+        "grade": "6",
+        "school": "HHS",
+        "requestedSupplies": ["Backpack"]
+      },
+      {
+        "name": "Harold",
+        "grade": "4",
+        "school": "HHS",
+        "requestedSupplies": ["Backpack"]
+      }
+    ]
+  },
+  {
+    "guardianName": "Janis Dorothy",
+    "email": "jane@email.com",
+    "address": "123 Street",
+    "timeSlot": "9:00-10:00",
+    "students": [
+      {
+        "name": "Timothy",
+        "grade": "3",
+        "school": "MAHS",
+        "requestedSupplies": ["Headphones"]
+      },
+      {
+        "name": "Sarah",
+        "grade": "5",
+        "school": "MAHS",
+        "requestedSupplies": []
+      }
+    ]
+  }
+]
