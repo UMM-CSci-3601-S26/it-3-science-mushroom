@@ -45,9 +45,7 @@ export class AddFamilyPage {
   }
 
   getStudentField(index: number, field: string) {
-    return cy.get(
-      `[formarrayname="students"] [formgroupname="${index}"] [formcontrolname="${field}"]`
-    );
+    return cy.get(`[formarrayname="students"]`).find(`[formcontrolname="${field}"]`).eq(index);
   }
 
   addStudentButton() {
@@ -62,15 +60,16 @@ export class AddFamilyPage {
     this.getFormField(this.emailFieldName).type(newFamily.email);
 
     newFamily.students.forEach((student, i) => {
-      //this.addStudentButton().click();
+      this.addStudentButton().click();
+      cy.get('[formarrayname="students"] [formcontrolname="name"]').should('have.length.at.least', i + 1);
 
       this.getStudentField(i, 'name').type(student.name);
       this.getStudentField(i, 'grade').type(student.grade);
       this.getStudentField(i, 'school').type(student.school);
       if (student.requestedSupplies.length) {
-        this.getStudentField(i, 'requestedSupplies').type(student.requestedSupplies.join(', '));
+        this.getStudentField(i, 'requestedSupplies').type(student.requestedSupplies.join(', '), { force: true });
+        // Have to use force otherwise Cypress refuses to enter text in the field
       }
-      this.addStudentButton().click();
     });
     return this.addFamilyButton().click();
   }

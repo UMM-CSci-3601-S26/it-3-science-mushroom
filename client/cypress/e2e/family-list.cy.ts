@@ -27,7 +27,7 @@ describe('Family list', () => {
     // The URL should end with '/families/new'
     cy.url().should(url => expect(url.endsWith('/family/new')).to.be.true);
 
-    // On the page we were sent to, We should see the right title
+    // On the page we were sent to, we should see the right title
     cy.get('.add-family-title').should('have.text', 'New Family');
   });
 
