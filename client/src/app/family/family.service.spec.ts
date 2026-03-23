@@ -316,5 +316,5 @@ describe('FamilyService', () => {
     expect(req.request.responseType).toBe('text');
 
     req.flush(mockCsv);
-  })
+  });
 });

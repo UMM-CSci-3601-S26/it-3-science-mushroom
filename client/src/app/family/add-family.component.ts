@@ -24,7 +24,6 @@ export class AddFamilyComponent {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
 
-
   addFamilyForm = new FormGroup({
     guardianName: new FormControl('', Validators.compose([
       Validators.required,
@@ -39,7 +38,10 @@ export class AddFamilyComponent {
 
     address: new FormControl('', Validators.required),
 
-    timeSlot: new FormControl('', Validators.required),
+    timeSlot: new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.pattern(/^(?:1[0-2]|[1-9]):[0-5]\d-(?:1[0-2]|[1-9]):[0-5]\d$/) // Time slot must be HH:MM-HH:MM using 12-hour times
+    ])),
 
     students: new FormArray([], Validators.required)
   });
@@ -57,7 +59,7 @@ export class AddFamilyComponent {
       ])),
       grade: new FormControl('', Validators.compose([
         Validators.required,
-        Validators.pattern(/^(?:[0-9]+|k)$/i)
+        Validators.pattern(/^(?:[1-9]|Kindergarten|Pre-K)$/i) // Grades can only be 1-9, Kindergarten, or Pre-K
       ])),
       school: new FormControl('', Validators.compose([
         Validators.required,
@@ -87,7 +89,8 @@ export class AddFamilyComponent {
       { type: 'minlength', message: 'School must be at least 2 characters long' }
     ],
     timeSlot: [
-      { type: 'required', message: 'Time slot is required' }
+      { type: 'required', message: 'Time slot is required' },
+      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times' }
     ],
     students: {
       name: [
@@ -97,7 +100,7 @@ export class AddFamilyComponent {
       ],
       grade: [
         { type: 'required', message: 'Grade is required' },
-        { type: 'pattern', message: 'Grade must be a whole number' }
+        { type: 'pattern', message: 'Grade must be 1-9, Kindergarten, or Pre-K' }
       ],
       school: [
         { type: 'required', message: 'School is required' },
@@ -114,18 +117,17 @@ export class AddFamilyComponent {
   getErrorMessage(controlName: keyof typeof this.addFamilyValidationMessages): string {
     const messages = this.addFamilyValidationMessages[controlName];
     if (!Array.isArray(messages)) {
-      return ''; // either throws or ignores
+      return '';
     }
     for (const { type, message } of messages) {
       if (this.addFamilyForm.get(controlName)?.hasError(type)) {
         return message;
       }
     }
-    return 'Unknown error';
+    return 'Unknown error. Please check your form input.';
   }
 
   submitForm() {
-
     const rawForm = this.addFamilyForm.value;
 
     const payload = {
@@ -176,5 +178,4 @@ export class AddFamilyComponent {
       },
     });
   }
-
 }
