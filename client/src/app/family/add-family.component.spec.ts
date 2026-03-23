@@ -203,7 +203,7 @@ describe('AddFamilyComponent', () => {
       //"pre-k" should be an invalid input
       grade.setValue('pre-k');
       expect(grade.valid).toBeFalse();
-      expect(grade.hasError('pattern')).toBeTrue()
+      expect(grade.hasError('pattern')).toBeTrue();
 
       //"Pre-K" should be a valid input
       grade.setValue('Pre-K');
@@ -226,6 +226,15 @@ describe('AddFamilyComponent', () => {
 
       school.setValue('Lincoln Elementary');
       expect(school.valid).toBeTrue();
+    });
+
+    it('should be fine with optional requestedSupplies field left empty', () => {
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
+
+      const requestedSupplies = student.get('requestedSupplies')!;
+      requestedSupplies.setValue('');
+      expect(requestedSupplies.valid).toBeTrue();
     });
 
   });
@@ -273,8 +282,43 @@ describe('AddFamilyComponent', () => {
     });
   });
 
+  describe('control error helper methods', () => {
+    it('formControlHasError should return true for invalid touched family control', () => {
+      const controlName = 'guardianName';
+      const control = addFamilyComponent.addFamilyForm.get(controlName);
+
+      control?.setValue('');
+      control?.markAsTouched();
+
+      expect(addFamilyComponent.formControlHasError(controlName)).toBeTrue();
+    });
+
+    it('studentControlHasError should return true for invalid touched student control', () => {
+      addFamilyComponent.addStudent();
+      const studentIndex = 0;
+      const controlName: 'name' | 'grade' | 'school' = 'name';
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+
+      control?.setValue('');
+      control?.markAsTouched();
+
+      expect(addFamilyComponent.studentControlHasError(studentIndex, controlName)).toBeTrue();
+    });
+
+    it('studentControlHasError should return false when invalid student control is untouched', () => {
+      addFamilyComponent.addStudent();
+      const studentIndex = 0;
+      const controlName: 'name' | 'grade' | 'school' = 'name';
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+
+      control?.setValue('');
+
+      expect(addFamilyComponent.studentControlHasError(studentIndex, controlName)).toBeFalse();
+    });
+  });
+
   describe('getErrorMessage()', () => {
-    it('should return the correct error message', () => {
+    it('should return the correct error message for the family form', () => {
       // The type statement is needed to ensure that `controlName` isn't just any
       // random string, but rather one of the keys of the `addFamilyValidationMessages`
       // map in the component.
@@ -289,11 +333,27 @@ describe('AddFamilyComponent', () => {
       addFamilyComponent.addFamilyForm.get(controlName).setErrors({'required': true});
       expect(addFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Email is required');
 
-      controlName = 'email';
       addFamilyComponent.addFamilyForm.get(controlName).setErrors({'email': true});
       expect(addFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Email must be formatted properly');
     });
 
+    it('should return the correct error message for the student form', () => {
+      addFamilyComponent.addStudent();
+      const studentIndex = 0;
+      const controlName: 'name' | 'grade' | 'school' = 'name';
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+
+      control.setErrors({'required': true});
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name is required');
+
+      control.setErrors({'minlength': true});
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name must be at least 2 characters long');
+
+      control.setErrors({'maxlength': true});
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name cannot be more than 50 characters long');
+    });
+
+    // Family form
     it('should return "Unknown error. Please check your form input." if no error message is found', () => {
       // The type statement is needed to ensure that `controlName` isn't just any
       // random string, but rather one of the keys of the `addFamilyValidationMessages`
@@ -301,6 +361,21 @@ describe('AddFamilyComponent', () => {
       const controlName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'guardianName';
       addFamilyComponent.addFamilyForm.get(controlName).setErrors({'unknown': true});
       expect(addFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Unknown error. Please check your form input.');
+    });
+
+    // Student form
+    it('should return "Unknown error. Please check your form input." if no error message is found', () => {
+      // We don't use a type statement like family does because student form controls are under family, and so are error keys.
+      // Instead, we just have to set the control names to be valid keys of the student form controls and error keys.
+      addFamilyComponent.addStudent();
+      const studentIndex = 0;
+      const controlName: 'name' | 'grade' | 'school' = 'name';
+
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+      control.setErrors({'unknown': true});
+
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName))
+        .toEqual('Unknown error. Please check your form input.');
     });
 
     it('should return an empty string if the validation method is not an array', () => {

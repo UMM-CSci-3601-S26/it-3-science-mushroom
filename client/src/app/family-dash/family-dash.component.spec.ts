@@ -1,5 +1,6 @@
 // Angular Imports
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { throwError } from 'rxjs';
 
 // Family Imports
 import { FamilyDashComponent } from './family-dash.component';
@@ -26,4 +27,16 @@ describe('FamilyDashComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should set dashboardStats to undefined when getDashboardStats fails', () => {
+    spyOn(MockFamilyService.prototype, 'getDashboardStats')
+      .and.returnValue(throwError(() => new Error('Dashboard request failed')));
+
+    const errorFixture = TestBed.createComponent(FamilyDashComponent);
+    const errorComponent = errorFixture.componentInstance;
+    errorFixture.detectChanges();
+
+    expect(errorComponent.dashboardStats()).toBeUndefined();
+  });
+
 });
