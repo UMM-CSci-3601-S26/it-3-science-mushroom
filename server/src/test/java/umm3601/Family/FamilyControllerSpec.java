@@ -281,10 +281,38 @@ class FamilyControllerSpec {
   void addInvalidEmail() {
     String json = """
       {
-        "guardianName": "Bad Email",
-        "email": "not-an-email",
-        "address": "123 Street",
-        "timeSlot": "Morning",
+        "guardianName": "Invalid Email",
+        "email": "invalid-email",
+        "address": "",
+        "timeSlot": "",
+        "students": []
+      }
+      """;
+
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        Family.class,
+        () -> javalinJackson.fromJsonString(json, Family.class)
+      ));
+
+    BadRequestResponse exception =
+      assertThrows(BadRequestResponse.class, () -> {
+        familyController.addNewFamily(ctx);
+      });
+
+    assertTrue(exception.getMessage().contains("email was invalid-email"));
+  }
+
+  @Test
+  void addNullEmail() {
+    String json = """
+      {
+        "guardianName": "Null Email",
+        "email": null,
+        "address": "",
+        "timeSlot": "",
         "students": []
       }
       """;
@@ -303,8 +331,7 @@ class FamilyControllerSpec {
       });
 
     assertTrue(exception.getMessage().contains("valid email"));
-    assertTrue(exception.getMessage().contains("email was not-an-email"));
-    assertTrue(exception.getMessage().contains("family was"));
+    assertTrue(exception.getMessage().contains("email was null"));
   }
 
   // -- Family DELETE Tests -- \\
@@ -340,7 +367,21 @@ class FamilyControllerSpec {
     assertTrue(exception.getMessage().contains("Was unable to delete Family ID"));
   }
 
-  // -- Dashboard GET Tests -- \\
+  @Test
+  void deleteFamilyInvalidId() {
+    when(ctx.pathParam("id")).thenReturn("bad");
+
+    Throwable exception = assertThrows(BadRequestResponse.class, () -> {
+      familyController.deleteFamily(ctx);
+    });
+
+    assertEquals(
+      "The requested family id wasn't a legal Mongo Object ID.",
+      exception.getMessage());
+  }
+
+
+  // -- Dashboard Tests -- \\
 
   @Test
   void getDashboardStats() {
@@ -360,6 +401,30 @@ class FamilyControllerSpec {
     );
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  void dashboardSkipsFamiliesWithNullStudents() {
+    Document nullStudentsFamily = new Document()
+      .append("guardianName", "Null Students")
+      .append("email", "")
+      .append("address", "")
+      .append("timeSlot", "")
+      .append("students", null);
+
+    db.getCollection("family").insertOne(nullStudentsFamily);
+    familyController.getDashboardStats(ctx);
+
+    verify(ctx).json(dashboardCaptor.capture());
+
+    Map<String, Object> result = dashboardCaptor.getValue();
+
+    // Just check studentsPerSchool since that's where the students data is used
+    Map<String, Integer> studentsPerSchool = (Map<String, Integer>) result.get("studentsPerSchool");
+
+    // Should just be the 3 schools from the setup data, not a "null" school from the new family
+    assertEquals(3, studentsPerSchool.size());
+  }
+
   // -- CSV Tests -- \\
 
   @Test
@@ -374,7 +439,7 @@ class FamilyControllerSpec {
 
     String csv = resultCaptor.getValue();
 
-    // Check header
+    // Check headers
     assertTrue(csv.contains(
       "Guardian Name,Email,Address,Time Slot,Number of Students"));
 
@@ -420,4 +485,52 @@ class FamilyControllerSpec {
     assertTrue(csv.contains("\"123 Evil Beevil Street\""));
     assertTrue(csv.contains("\"'+1:00-2:00\""));
   }
+
+  @Test
+  void exportFamiliesAsCSVWithNoFamilies() {
+    db.getCollection("family").deleteMany(new Document());
+
+    familyController.exportFamiliesAsCSV(ctx);
+
+    ArgumentCaptor<String> resultCaptor = ArgumentCaptor.forClass(String.class);
+    verify(ctx).result(resultCaptor.capture());
+
+    String csv = resultCaptor.getValue();
+
+    // Should just be the headers, no rows
+    assertEquals("Guardian Name,Email,Address,Time Slot,Number of Students\n", csv);
+  }
+
+  @SuppressWarnings("static-access")
+  @Test
+  void cleanUpCSVHandlesNullValues() {
+    db.getCollection("family").deleteMany(new Document());
+
+    String cleaned = familyController.cleanUpCSV(null);
+
+    // Should just be an empty string, not "null" or anything else
+    assertEquals("", cleaned);
+  }
+
+  @Test
+  void exportFamiliesAsCSVHandlesNullStudents() {
+  Document familyWithNullStudents = new Document()
+    .append("guardianName", "Null Students")
+      .append("email", "")
+      .append("address", "")
+      .append("timeSlot", "")
+      .append("students", null);
+
+  db.getCollection("family").insertOne(familyWithNullStudents);
+
+  familyController.exportFamiliesAsCSV(ctx);
+
+  ArgumentCaptor<String> resultCaptor = ArgumentCaptor.forClass(String.class);
+  verify(ctx).result(resultCaptor.capture());
+
+  String csv = resultCaptor.getValue();
+
+  // Should have the family with 0 students
+  assertTrue(csv.contains("\"Null Students\",\"\",\"\",\"\",0"));
+}
 }

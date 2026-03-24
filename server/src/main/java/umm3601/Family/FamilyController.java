@@ -195,7 +195,7 @@ public class FamilyController implements Controller {
 
   // This method cleans up the CSV to ensure the generated CSV is formatted properly
   // and won't have issues with any spreadsheet software
-  private static String cleanUpCSV(String value) {
+  public static String cleanUpCSV(String value) {
     // Handle null values
     if (value == null) {
       return "";
