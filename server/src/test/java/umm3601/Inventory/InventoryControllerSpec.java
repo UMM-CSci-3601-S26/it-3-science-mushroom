@@ -98,52 +98,75 @@ public class InventoryControllerSpec {
         new Document()
             .append("item",  "Pencil")
             .append("brand",  "Ticonderoga")
-            .append("color",  "yellow")
             .append("count",  1)
             .append("size",  "N/A")
-            .append("description",  "A standard pencil")
-            .append("quantity", 10)
-            .append("notes",  "N/A")
+            .append("color",  "yellow")
             .append("type", "#2")
-            .append("material", "wood"));
+            .append("material", "wood")
+            .append("description",  "A standard pencil")
+            .append("quantity", 10) // Over stocked
+            .append("maxQuantity", 5)
+            .append("minQuantity", 1)
+            .append("notes",  "N/A"));
     testInventory.add(
         new Document()
             .append("item", "Eraser")
             .append("brand", "Pink Pearl")
-            .append("color", "pink")
             .append("count", 1)
             .append("size", "N/A")
-            .append("description", "A standard eraser")
-            .append("quantity", 5)
-            .append("notes", "N/A")
+            .append("color", "pink")
             .append("type", "rubber")
-            .append("material", "rubber"));
+            .append("material", "rubber")
+            .append("description", "A standard eraser")
+            .append("quantity", 5) // Properly stocked
+            .append("maxQuantity", 10)
+            .append("minQuantity", 1)
+            .append("notes", "N/A"));
     testInventory.add(
         new Document()
             .append("item", "Notebook")
             .append("brand", "Five Star")
-            .append("color", "blue")
             .append("count", 1)
             .append("size", "N/A")
-            .append("description", "A standard notebook")
-            .append("quantity", 3)
-            .append("notes", "N/A")
+            .append("color", "blue")
             .append("type", "spiral")
-            .append("material", "paper"));
+            .append("material", "paper")
+            .append("description", "A standard notebook")
+            .append("quantity", 3) // Under stocked
+            .append("maxQuantity", 10)
+            .append("minQuantity", 5)
+            .append("notes", "N/A"));
+    testInventory.add(
+        new Document()
+            .append("item", "Folder")
+            .append("brand", "Manilla")
+            .append("count", 1)
+            .append("size", "3 hole")
+            .append("color", "green")
+            .append("type", "3 hole")
+            .append("material", "paper")
+            .append("description", "A standard green manilla folder")
+            .append("quantity", 0) // Out of stock
+            .append("maxQuantity", 10)
+            .append("minQuantity", 5)
+            .append("notes", "N/A")
+);
 
     samsId = new ObjectId();
     Document sam = new Document()
         .append("_id", samsId)
         .append("item", "Backpack")
         .append("brand", "JanSport")
-        .append("color", "black")
         .append("count", 1)
         .append("size", "Standard")
+        .append("color", "black")
+        .append("type", "shoulder bag")
+        .append("material", "fabric")
         .append("description", "A standard backpack")
         .append("quantity", 2)
-        .append("notes", "Plain colors only")
-        .append("type", "shoulder bag")
-        .append("material", "fabric");
+        .append("maxQuantity", 10)
+        .append("minQuantity", 1)
+        .append("notes", "Plain colors only");
 
     inventoryDocuments.insertMany(testInventory);
     inventoryDocuments.insertOne(sam);
