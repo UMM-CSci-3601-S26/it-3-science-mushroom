@@ -46,6 +46,8 @@ public class InventoryController implements Controller {
   static final String COLOR_KEY = "color";
   static final String DESCRIPTION_KEY = "description";
   static final String QUANTITY_KEY = "quantity";
+  static final String MAX_QUANTITY_KEY = "maxQuantity";
+  static final String MIN_QUANTITY_KEY = "minQuantity";
   static final String NOTES_KEY = "notes";
   static final String MATERIAL_KEY = "material";
   static final String TYPE_KEY = "type";
@@ -127,6 +129,26 @@ public class InventoryController implements Controller {
         throw new BadRequestResponse("quantity must be an integer.");
       }
     }
+    /* // Commented out for now as these fields may not get filters in the inventory page
+    if (ctx.queryParamMap().containsKey(MAX_QUANTITY_KEY)) {
+      String qParam = ctx.queryParam(MAX_QUANTITY_KEY);
+      try {
+        int q = Integer.parseInt(qParam);
+        filters.add(Filters.eq(MAX_QUANTITY_KEY, q));
+      } catch (NumberFormatException e) {
+        throw new BadRequestResponse("max quantity must be an integer.");
+      }
+    }
+
+    if (ctx.queryParamMap().containsKey(MIN_QUANTITY_KEY)) {
+      String qParam = ctx.queryParam(MIN_QUANTITY_KEY);
+      try {
+        int q = Integer.parseInt(qParam);
+        filters.add(Filters.eq(MIN_QUANTITY_KEY, q));
+      } catch (NumberFormatException e) {
+        throw new BadRequestResponse("min quantity must be an integer.");
+      }
+    }*/
 
     if (ctx.queryParamMap().containsKey(NOTES_KEY)) {
       Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(NOTES_KEY)), Pattern.CASE_INSENSITIVE);

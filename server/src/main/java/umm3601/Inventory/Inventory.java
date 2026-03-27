@@ -22,6 +22,8 @@ public class Inventory {
   public String material;
   public String description;
   public int quantity;
+  public int maxQuantity;
+  public int minQuantity;
   public String notes;
 
   @Override
