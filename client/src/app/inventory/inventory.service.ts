@@ -28,6 +28,53 @@ export class InventoryService {
   private readonly quantityKey = 'quantity';
   private readonly notesKey = 'notes';
 
+  itemOptions = [
+    { value: 'pencil', label: 'Pencil' },
+    { value: 'colored pencils', label: 'Colored Pencils' },
+    { value: 'pencil sharpener', label: 'Pencil Sharpener' },
+    { value: 'markers', label: 'Markers' },
+    { value: 'highlighter', label: 'Highlighter' },
+    { value: 'dry erase markers', label: 'Dry Erase Markers' },
+    { value: 'crayons', label: 'Crayons' },
+    { value: 'pen', label: 'Pen' },
+    { value: 'eraser', label: 'Eraser' },
+    { value: 'folder', label: 'Folder' },
+    { value: 'binder', label: 'Binder' },
+    { value: 'notebook', label: 'Notebook' },
+    { value: 'glue', label: 'Glue' },
+    { value: 'ruler', label: 'Ruler' },
+    { value: 'scissors', label: 'Scissors' },
+    { value: 'headphones', label: 'Headphones' },
+    { value: 'backpack', label: 'Backpack' },
+    { value: 'blanket', label: 'Blanket' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  typeOptions = [
+    {value: 'Wide', label: "Wide"},
+    {value: 'Fine', label: "Fine"}
+  ];
+
+  brandOptions = [
+    {value: 'placeholder1', label: 'Placeholder1'},
+    {value: 'placeholder2', label: 'Placeholder2'}
+  ];
+
+  colorOptions = [
+    {value: 'placeholder1', label: 'Placeholder1'},
+    {value: 'placeholder2', label: 'Placeholder2'}
+  ];
+
+  sizeOptions = [
+    {value: 'placeholder1', label: 'Placeholder1'},
+    {value: 'placeholder2', label: 'Placeholder2'}
+  ];
+
+  materialOptions = [
+    {value: 'placeholder1', label: 'Placeholder1'},
+    {value: 'placeholder2', label: 'Placeholder2'}
+  ];
+
   getInventory(filters?: {item?: string; description?: string; brand?: string; color?: string;
     count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<Inventory[]> {
 
