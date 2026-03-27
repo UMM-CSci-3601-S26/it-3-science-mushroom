@@ -107,6 +107,7 @@ public class InventoryControllerSpec {
             .append("quantity", 10) // Over stocked
             .append("maxQuantity", 5)
             .append("minQuantity", 1)
+            .append("stockState", "Over-Stocked")
             .append("notes",  "N/A"));
     testInventory.add(
         new Document()
@@ -121,6 +122,7 @@ public class InventoryControllerSpec {
             .append("quantity", 5) // Properly stocked
             .append("maxQuantity", 10)
             .append("minQuantity", 1)
+            .append("stockState", "Stocked")
             .append("notes", "N/A"));
     testInventory.add(
         new Document()
@@ -135,6 +137,7 @@ public class InventoryControllerSpec {
             .append("quantity", 3) // Under stocked
             .append("maxQuantity", 10)
             .append("minQuantity", 5)
+            .append("stockState", "Under-Stocked")
             .append("notes", "N/A"));
     testInventory.add(
         new Document()
@@ -149,6 +152,7 @@ public class InventoryControllerSpec {
             .append("quantity", 0) // Out of stock
             .append("maxQuantity", 10)
             .append("minQuantity", 5)
+            .append("stockState", "Out of Stock")
             .append("notes", "N/A")
 );
 
@@ -166,6 +170,7 @@ public class InventoryControllerSpec {
         .append("quantity", 2)
         .append("maxQuantity", 10)
         .append("minQuantity", 1)
+        .append("stockState", "Stocked")
         .append("notes", "Plain colors only");
 
     inventoryDocuments.insertMany(testInventory);
