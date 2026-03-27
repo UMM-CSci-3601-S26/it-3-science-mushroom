@@ -1,12 +1,12 @@
 // Angular Imports
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 
 // RxJS Imports
 import { Observable } from 'rxjs';
 
 // Inventory Imports
-import { Inventory } from './inventory';
+import { Inventory, SelectOption } from './inventory';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -28,52 +28,38 @@ export class InventoryService {
   private readonly quantityKey = 'quantity';
   private readonly notesKey = 'notes';
 
-  itemOptions = [
-    { value: 'pencil', label: 'Pencil' },
-    { value: 'colored pencils', label: 'Colored Pencils' },
-    { value: 'pencil sharpener', label: 'Pencil Sharpener' },
-    { value: 'markers', label: 'Markers' },
-    { value: 'highlighter', label: 'Highlighter' },
-    { value: 'dry erase markers', label: 'Dry Erase Markers' },
-    { value: 'crayons', label: 'Crayons' },
-    { value: 'pen', label: 'Pen' },
-    { value: 'eraser', label: 'Eraser' },
-    { value: 'folder', label: 'Folder' },
-    { value: 'binder', label: 'Binder' },
-    { value: 'notebook', label: 'Notebook' },
-    { value: 'glue', label: 'Glue' },
-    { value: 'ruler', label: 'Ruler' },
-    { value: 'scissors', label: 'Scissors' },
-    { value: 'headphones', label: 'Headphones' },
-    { value: 'backpack', label: 'Backpack' },
-    { value: 'blanket', label: 'Blanket' },
-    { value: 'other', label: 'Other' }
-  ];
+  constructor() {
+    this.loadInventory();
+  }
 
-  typeOptions = [
-    {value: 'Wide', label: "Wide"},
-    {value: 'Fine', label: "Fine"}
-  ];
+  inventory = signal<Inventory[]>([]);
 
-  brandOptions = [
-    {value: 'placeholder1', label: 'Placeholder1'},
-    {value: 'placeholder2', label: 'Placeholder2'}
-  ];
+  loadInventory(filters?: Inventory): void {
+    this.getInventory(filters).subscribe(data => {
+      this.inventory.set(data);
+    });
+  }
 
-  colorOptions = [
-    {value: 'placeholder1', label: 'Placeholder1'},
-    {value: 'placeholder2', label: 'Placeholder2'}
-  ];
+  itemOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'item')
+  );
 
-  sizeOptions = [
-    {value: 'placeholder1', label: 'Placeholder1'},
-    {value: 'placeholder2', label: 'Placeholder2'}
-  ];
+  brandOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'brand')
+  )
+  colorOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'color')
+  )
+  sizeOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'size')
+  )
+  typeOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'type')
+  )
+  materialOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'material')
+  )
 
-  materialOptions = [
-    {value: 'placeholder1', label: 'Placeholder1'},
-    {value: 'placeholder2', label: 'Placeholder2'}
-  ];
 
   getInventory(filters?: {item?: string; description?: string; brand?: string; color?: string;
     count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<Inventory[]> {
@@ -102,4 +88,14 @@ export class InventoryService {
     }
     return this.httpClient.get<Inventory[]>(this.inventoryUrl, { params: httpParams });
   }
+
+  optionBuilder(data: Inventory[], key: keyof Inventory): SelectOption[] {
+    return [...new Set(
+      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v !== '')
+    )].map(value => ({
+      label: value,
+      value: value
+    }));
+  }
+
 }
