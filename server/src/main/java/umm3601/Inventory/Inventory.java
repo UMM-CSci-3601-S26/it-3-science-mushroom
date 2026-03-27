@@ -24,6 +24,7 @@ public class Inventory {
   public int quantity;
   public int maxQuantity;
   public int minQuantity;
+  public String stockState; // "Stocked", "Under-Stocked", "Over-Stocked", "Out of Stock"
   public String notes;
 
   @Override
