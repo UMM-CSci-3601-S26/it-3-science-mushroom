@@ -12,6 +12,8 @@ import { FamilyDashComponent } from './family-dash/family-dash.component';
 import { FamilyListComponent } from './family/family-list.component';
 import { AddFamilyComponent } from './family/add-family.component';
 
+import { StationOrderComponent } from './station-order/station-order.component';
+
 // Note: Any routes for adding new items need to come before the routes for getting an item by an individual ID
 // Ie: 'user/new' comes before 'users/:id'
 const routes: Routes = [
@@ -20,7 +22,8 @@ const routes: Routes = [
   {path: 'family', component: FamilyListComponent, title: 'Family'},
   {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'},
   {path: 'inventory', component: InventoryComponent, title: 'Inventory'},
-  {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'}
+  {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'},
+  {path: 'stationOrder', component: StationOrderComponent, title: 'Station Order'}
 ];
 
 @NgModule({
