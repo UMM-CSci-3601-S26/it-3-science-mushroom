@@ -9,6 +9,8 @@
         "material": "Test",
         "count": 50,
         "quantity": 100,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "This is a test item."
     },
     {
@@ -21,6 +23,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 10,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -33,6 +37,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 56,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -45,6 +51,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -57,6 +65,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 23,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -69,6 +79,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 124,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "no wheels"
     },
     {
@@ -81,6 +93,8 @@
         "material": "Non-coated Paper",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -93,6 +107,8 @@
         "material": "Coated Paper",
         "count": 1,
         "quantity": 12312,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -105,6 +121,8 @@
         "material": "Styrofoam",
         "count": 1,
         "quantity": 6,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -117,6 +135,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 1234,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -129,6 +149,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 81,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -141,6 +163,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -153,6 +177,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -165,6 +191,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -177,6 +205,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 12,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -189,6 +219,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5550,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "shirt that can get dirty"
     },
     {
@@ -201,6 +233,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 67,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -213,6 +247,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 547,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -225,6 +261,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 7387358,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -237,6 +275,8 @@
         "material": "N/A",
         "count": 24,
         "quantity": 72957,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -249,6 +289,8 @@
         "material": "N/A",
         "count": 36,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -261,6 +303,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 6876,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -273,6 +317,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 0,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -285,6 +331,8 @@
         "material": "N/A",
         "count": 24,
         "quantity": 654465,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -297,6 +345,8 @@
         "material": "N/A",
         "count": 36,
         "quantity": 4563,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -309,6 +359,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 4746,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -321,6 +373,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 466,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -333,6 +387,8 @@
         "material": "N/A",
         "count": 16,
         "quantity": 51,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -345,6 +401,8 @@
         "material": "N/A",
         "count": 16,
         "quantity": 545,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -357,6 +415,8 @@
         "material": "N/A",
         "count": 24,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -369,6 +429,8 @@
         "material": "N/A",
         "count": 24,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -381,6 +443,8 @@
         "material": "Styrofoam",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -393,6 +457,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -405,6 +471,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 6,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -417,6 +485,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 14,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -429,6 +499,8 @@
         "material": "N/A",
         "count": 2,
         "quantity": 786,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -441,6 +513,8 @@
         "material": "N/A",
         "count": 3,
         "quantity": 247,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -453,6 +527,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 6,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -465,6 +541,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -477,6 +555,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 72,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -489,6 +569,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 57,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -501,6 +583,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 62,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -513,6 +597,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 77,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -525,6 +611,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 62,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -537,6 +625,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 75,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -549,6 +639,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 3,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -561,6 +653,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -573,6 +667,8 @@
         "material": "N/A",
         "count": 21,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -585,6 +681,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 57,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -597,6 +695,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 0,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -609,6 +709,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -621,6 +723,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -633,6 +737,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -645,6 +751,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -657,6 +765,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -669,6 +779,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 4,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -681,6 +793,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 25,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -693,6 +807,8 @@
         "material": "N/A",
         "count": 4,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -705,6 +821,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 24,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -717,6 +835,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -729,6 +849,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -741,6 +863,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 127,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -753,6 +877,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 65,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -765,6 +891,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 6572,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -777,6 +905,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 76,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -789,6 +919,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 545,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -801,6 +933,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 367,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -813,6 +947,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -825,6 +961,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 65,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -837,6 +975,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 26,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -849,6 +989,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -861,6 +1003,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 756,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -873,6 +1017,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 42,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -885,6 +1031,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 76,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -897,6 +1045,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -909,6 +1059,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 57,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -921,6 +1073,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 37,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -933,6 +1087,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 67,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -945,6 +1101,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 52,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -957,6 +1115,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 767,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -969,6 +1129,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 23,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -981,6 +1143,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 24,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -993,6 +1157,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 767,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1005,6 +1171,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 72,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1017,6 +1185,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1029,6 +1199,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 67,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1041,6 +1213,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 557,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1053,6 +1227,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 27,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1065,6 +1241,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 37,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1077,6 +1255,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1089,6 +1269,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 67,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1101,6 +1283,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1113,6 +1297,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1125,6 +1311,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 2767,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1137,6 +1325,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 52,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1149,6 +1339,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 75,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1161,6 +1353,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 752,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1173,6 +1367,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1185,6 +1381,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 72,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1197,6 +1395,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1209,6 +1409,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1221,6 +1423,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1233,6 +1437,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 527,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1245,6 +1451,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1257,6 +1465,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1269,6 +1479,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 72,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1281,6 +1493,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1293,6 +1507,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 72,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1305,6 +1521,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 72,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1317,6 +1535,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1329,6 +1549,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 77,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1341,6 +1563,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1353,6 +1577,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1365,6 +1591,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 6,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1377,6 +1605,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1389,6 +1619,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1401,6 +1633,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 6,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1413,6 +1647,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 9,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1425,6 +1661,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1437,6 +1675,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 42,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1449,6 +1689,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 6,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1461,6 +1703,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1473,6 +1717,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 3,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1485,6 +1731,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 4,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1497,6 +1745,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1509,6 +1759,8 @@
         "material": "N/A",
         "count": 8,
         "quantity": 745,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1521,6 +1773,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1533,6 +1787,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 63,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1545,6 +1801,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1557,6 +1815,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 3,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1569,6 +1829,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1581,6 +1843,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1593,6 +1857,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1605,6 +1871,8 @@
         "material": "N/A",
         "count": 10,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1617,6 +1885,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 3,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1629,6 +1899,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1641,6 +1913,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1653,6 +1927,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 3,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1665,6 +1941,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 4,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1677,6 +1955,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1689,6 +1969,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 89,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1701,6 +1983,8 @@
         "material": "N/A",
         "count": 12,
         "quantity": 83,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1713,6 +1997,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1725,6 +2011,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 67,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1737,6 +2025,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 73,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1749,6 +2039,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 327,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1761,6 +2053,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 55,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1773,6 +2067,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 84,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1785,6 +2081,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 54,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1797,6 +2095,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 89632,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1809,6 +2109,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1821,6 +2123,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 9621,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1833,6 +2137,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 489,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1845,6 +2151,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 621,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1857,6 +2165,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 4896,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1869,6 +2179,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 369,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1881,6 +2193,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 841,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1893,6 +2207,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 214,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1905,6 +2221,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 89,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1917,6 +2235,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 84,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1929,6 +2249,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 25,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1941,6 +2263,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 841,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1953,6 +2277,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 58,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1965,6 +2291,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 963,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1977,6 +2305,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -1989,6 +2319,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 412,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2001,6 +2333,8 @@
         "material": "N/A",
         "count": 100,
         "quantity": 587,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2013,6 +2347,8 @@
         "material": "N/A",
         "count": 50,
         "quantity": 42,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2025,6 +2361,8 @@
         "material": "N/A",
         "count": 100,
         "quantity": 21,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2037,6 +2375,8 @@
         "material": "N/A",
         "count": 50,
         "quantity": 478,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2049,6 +2389,8 @@
         "material": "N/A",
         "count": 100,
         "quantity": 965,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2061,6 +2403,8 @@
         "material": "N/A",
         "count": 30,
         "quantity": 47,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2073,6 +2417,8 @@
         "material": "N/A",
         "count": 30,
         "quantity": 89,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2085,6 +2431,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 54,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2097,6 +2445,8 @@
         "material": "Paper",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2109,6 +2459,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 89,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2121,6 +2473,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2133,6 +2487,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2145,6 +2501,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2157,6 +2515,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 47,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2169,6 +2529,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2181,6 +2543,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2193,6 +2557,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 47,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2205,6 +2571,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2217,6 +2585,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2229,6 +2599,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 47,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2241,6 +2613,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2253,6 +2627,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2265,6 +2641,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 478,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2277,6 +2655,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 965,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2289,6 +2669,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 47,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2301,6 +2683,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2313,6 +2697,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 9,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2325,6 +2711,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 85,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2337,6 +2725,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 89,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2349,6 +2739,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 87,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2361,6 +2753,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 42,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2373,6 +2767,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2385,6 +2781,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 585,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2397,6 +2795,8 @@
         "material": "Coated Paper",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2409,6 +2809,8 @@
         "material": "Non-coated Paper",
         "count": 1,
         "quantity": 14,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2421,6 +2823,8 @@
         "material": "Coated Paper",
         "count": 1,
         "quantity": 785,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2433,6 +2837,8 @@
         "material": "Non-coated Paper",
         "count": 1,
         "quantity": 201,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2445,6 +2851,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 478,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2457,6 +2865,8 @@
         "material": "Styrofoam",
         "count": 1,
         "quantity": 963,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2469,6 +2879,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 20,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2481,6 +2893,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 148,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2493,6 +2907,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 96,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2505,6 +2921,8 @@
         "material": "Plastic",
         "count": 1,
         "quantity": 21,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2517,6 +2935,8 @@
         "material": "Metal",
         "count": 1,
         "quantity": 48,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2529,6 +2949,8 @@
         "material": "Rubber",
         "count": 1,
         "quantity": 96,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2541,6 +2963,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2553,6 +2977,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 18,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2565,6 +2991,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 96,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2577,6 +3005,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 55,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "Pair of scissors of any brand, size, type, etc"
     },
     {
@@ -2589,6 +3019,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2601,6 +3033,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 96,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2613,6 +3047,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2625,6 +3061,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 48,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2637,6 +3075,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 96,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2649,6 +3089,8 @@
         "material": "N/A",
         "count": 120,
         "quantity": 5,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2661,6 +3103,8 @@
         "material": "N/A",
         "count": 200,
         "quantity": 89,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2673,6 +3117,8 @@
         "material": "N/A",
         "count": 230,
         "quantity": 62,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2685,6 +3131,8 @@
         "material": "N/A",
         "count": 120,
         "quantity": 1,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2697,6 +3145,8 @@
         "material": "N/A",
         "count": 200,
         "quantity": 8,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2709,6 +3159,8 @@
         "material": "N/A",
         "count": 230,
         "quantity": 52,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2721,6 +3173,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 0,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2733,6 +3187,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2745,6 +3201,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 0,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "8 Color"
     },
     {
@@ -2757,6 +3215,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2769,6 +3229,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 65,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "8 Color"
     },
     {
@@ -2781,6 +3243,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 72,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2793,6 +3257,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 722572,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2805,6 +3271,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 7,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2817,6 +3285,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 52,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2829,6 +3299,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 75,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     },
     {
@@ -2841,6 +3313,8 @@
         "material": "N/A",
         "count": 1,
         "quantity": 2,
+        "maxQuantity": 10,
+        "minQuantity": 1,
         "notes": "N/A"
     }
 ]
