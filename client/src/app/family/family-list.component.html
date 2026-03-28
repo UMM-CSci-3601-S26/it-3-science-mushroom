@@ -14,12 +14,19 @@
     @if (dashboardStats(); as stats) {
       <div class="dashboard-grid">
 
-        <!-- Total Families Card -->
+        <!-- Total Families and Students Card -->
         <mat-card class="stat-card">
           <mat-card-title>Total Families</mat-card-title>
           <mat-card-content>
-            <div class="stat-number">
+            <div class="stat-number-family">
             {{ stats.totalFamilies }}
+            </div>
+          </mat-card-content>
+
+          <mat-card-title>Total Students</mat-card-title>
+          <mat-card-content>
+            <div class="stat-number">
+            {{ stats.totalStudents }}
             </div>
           </mat-card-content>
         </mat-card>

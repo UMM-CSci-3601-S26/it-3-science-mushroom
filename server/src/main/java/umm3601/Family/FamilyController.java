@@ -140,6 +140,8 @@ public class FamilyController implements Controller {
     Map<String, Integer> studentsPerSchool = new HashMap<>();
     Map<String, Integer> studentsPerGrade = new HashMap<>();
 
+    int totalStudents = 0;
+
     // Loop through all families and their students to count students per school and grade
     for (Family family : families) {
       if (family.students == null) {
@@ -151,6 +153,9 @@ public class FamilyController implements Controller {
 
         // Count per grade
         studentsPerGrade.merge(student.grade, 1, Integer::sum);
+
+        // Count of total students
+        totalStudents = totalStudents + 1;
       }
     }
 
@@ -159,6 +164,7 @@ public class FamilyController implements Controller {
     result.put("studentsPerSchool", studentsPerSchool);
     result.put("studentsPerGrade", studentsPerGrade);
     result.put("totalFamilies", families.size());
+    result.put("totalStudents", totalStudents);
 
     ctx.json(result);
     ctx.status(HttpStatus.OK);
