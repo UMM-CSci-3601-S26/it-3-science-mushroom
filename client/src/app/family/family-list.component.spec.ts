@@ -12,6 +12,7 @@ import { MockFamilyService } from 'src/testing/family.service.mock';
 import { Family } from './family';
 import { FamilyListComponent } from './family-list.component';
 import { FamilyService } from './family.service';
+import { DashboardStats } from '../family/family';
 
 describe('Family list', () => {
   let familyList: FamilyListComponent;
@@ -81,6 +82,7 @@ describe('Misbehaving Family List', () => {
 
   let familyServiceStub: {
     getFamilies: () => Observable<Family[]>;
+    getDashboardStats: () => Observable<DashboardStats>;
     exportFamilies: () => Observable<string>;
   };
 
@@ -90,6 +92,10 @@ describe('Misbehaving Family List', () => {
       getFamilies: () =>
         new Observable((observer) => {
           observer.error('getFamilies() Observer generates an error');
+        }),
+      getDashboardStats: () =>
+        new Observable((observer) => {
+          observer.error('getDashboardStats() Observer generates an error');
         }),
       exportFamilies: () => of('')
     };
