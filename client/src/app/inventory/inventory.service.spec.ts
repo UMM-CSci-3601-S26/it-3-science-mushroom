@@ -66,6 +66,9 @@ describe('InventoryService', () => {
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
     inventoryService = TestBed.inject(InventoryService);
+
+    const initReq = httpTestingController.expectOne(inventoryService.inventoryUrl);
+    initReq.flush(testInventory);
   });
 
   afterEach(() => {

@@ -1,5 +1,5 @@
 // Angular Imports
-import { ComponentFixture, TestBed, waitForAsync, tick, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, tick, fakeAsync} from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { InventoryService } from './inventory.service';
 import { provideHttpClient } from '@angular/common/http';
@@ -8,13 +8,14 @@ import { MatPaginatorHarness } from '@angular/material/paginator/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTableHarness } from '@angular/material/table/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
+import { signal } from '@angular/core';
 
 // RxJS Imports
 import { Observable } from 'rxjs';
 
 // Inventory Imports
 import { MockInventoryService } from 'src/testing/inventory.service.mock';
-import { Inventory } from './inventory';
+import { Inventory, SelectOption } from './inventory';
 import { InventoryComponent } from './inventory.component';
 
 
@@ -139,12 +140,56 @@ describe('Inventory Table', () => {
   });
 });
 
+describe('Filter Dropdown options', () => {
+  let inventoryTable: InventoryComponent;
+  let fixture: ComponentFixture<InventoryComponent>;
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [InventoryComponent],
+      providers: [
+        { provide: InventoryService, useClass: MockInventoryService },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(InventoryComponent);
+    inventoryTable = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should return all item options when item signal is empty', () => {
+    inventoryTable.item.set(undefined);
+    fixture.detectChanges();
+    const options = inventoryTable.filteredItemOptions();
+    expect(options.length).toBeGreaterThan(0);
+    expect(options.map(option => option.value)).toContain('Markers');
+    expect(options.map(option => option.value)).toContain('Folder');
+    expect(options.map(option => option.value)).toContain('Notebook');
+  });
+
+  it('should return empty options when item signal matches nothing',() => {
+    inventoryTable.item.set('someItem');
+    fixture.detectChanges();
+    expect(inventoryTable.filteredItemOptions().length).toBe(0);
+  });
+});
+
 describe('Misbehaving Inventory Table', () => {
   let inventoryTable: InventoryComponent;
   let fixture: ComponentFixture<InventoryComponent>;
 
   let inventoryServiceStub: {
     getInventory: () => Observable<Inventory[]>;
+    itemOptions: ReturnType<typeof signal<SelectOption[]>>;
+    brandOptions: ReturnType<typeof signal<SelectOption[]>>;
+    colorOptions: ReturnType<typeof signal<SelectOption[]>>;
+    sizeOptions: ReturnType<typeof signal<SelectOption[]>>;
+    typeOptions: ReturnType<typeof signal<SelectOption[]>>;
+    materialOptions: ReturnType<typeof signal<SelectOption[]>>;
     //filterInventory: () => Inventory[];
   };
 
@@ -154,6 +199,12 @@ describe('Misbehaving Inventory Table', () => {
         new Observable((observer) => {
           observer.error('getInventory() Observer generates an error');
         }),
+      itemOptions: signal<SelectOption[]>([]),
+      brandOptions: signal<SelectOption[]>([]),
+      colorOptions: signal<SelectOption[]>([]),
+      sizeOptions: signal<SelectOption[]>([]),
+      typeOptions: signal<SelectOption[]>([]),
+      materialOptions:signal<SelectOption[]>([]),
       //filterInventory: () => []
     };
   });
