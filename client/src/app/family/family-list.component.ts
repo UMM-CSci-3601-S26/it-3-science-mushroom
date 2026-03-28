@@ -27,7 +27,7 @@ import { DashboardStats } from '../family/family';
 @Component({
   selector: 'app-family',
   templateUrl: './family-list.component.html',
-  styleUrls: ['./family-list.component.scss'],
+  styleUrl: './family-list.component.scss',
   providers: [],
   imports: [
     MatCardModule,
@@ -48,8 +48,6 @@ import { DashboardStats } from '../family/family';
     MatCardTitle,
     MatCardContent
   ],
-  //templateUrl: './family-list.component.html',
-  //styleUrl: './family-list.component.scss',
 })
 
 export class FamilyListComponent {
@@ -61,10 +59,8 @@ export class FamilyListComponent {
     )
   );
 
-  private familyServiceDash = inject(FamilyService);
-
   dashboardStats = toSignal <DashboardStats | undefined>(
-    this.familyServiceDash.getDashboardStats().pipe(
+    this.familyService.getDashboardStats().pipe(
       catchError(() => of(undefined))
     )
   );
