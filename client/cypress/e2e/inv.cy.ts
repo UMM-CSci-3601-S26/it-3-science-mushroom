@@ -173,7 +173,7 @@ describe('Inventory', () => {
       page.getFilterItem().type("Mark");
       cy.get('mat-option').should('exist');
       cy.get('mat-option').should('contain', 'Markers');
-    })
+    });
     it('Should show autocomplete options when typing in the Brand filter', () => {
       page.getFilterBrand().type('Cray');
       cy.get('mat-option').should('exist');
