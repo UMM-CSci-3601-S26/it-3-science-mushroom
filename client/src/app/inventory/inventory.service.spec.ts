@@ -92,6 +92,81 @@ describe('InventoryService', () => {
     }));
   });
 
+  describe('optionBuilder', () => {
+    it('should build unique options from inventory data', () => {
+      const mockInventory: Inventory[] = [
+        { item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '' },
+        { item: 'Pants', description: '', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '' },
+        { item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '' },
+      ];
+
+      const result = inventoryService.optionBuilder(mockInventory, 'item');
+
+      expect(result).toEqual([
+        { label: 'Shirt', value: 'Shirt' },
+        { label: 'Pants', value: 'Pants' }
+      ]);
+    });
+
+    it('should filter out empty and null values', () => {
+      const mockInventory: Inventory[] = [
+        { item: 'Shirt', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '' },
+        { item: '', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '' },
+      ];
+
+      const result = inventoryService.optionBuilder(mockInventory, 'item');
+
+      expect(result).toEqual([
+        { label: 'Shirt', value: 'Shirt' }
+      ]);
+    });
+
+    it('should return an empty array when given empty data', () => {
+      const result = inventoryService.optionBuilder([], 'item');
+      expect(result).toEqual([]);
+    });
+
+    it('should filter out whitespace-only values', () => {
+      const mockInventory: Inventory[] = [
+        { item: '   ', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '' },
+        { item: 'Shirt', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '' },
+      ];
+
+      const result = inventoryService.optionBuilder(mockInventory, 'item');
+
+      expect(result).toEqual([
+        { label: 'Shirt', value: 'Shirt' }
+      ]);
+    });
+
+    it('should return a single option when all values are the same', () => {
+      const mockInventory: Inventory[] = [
+        { item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '' },
+        { item: 'Shirt', description: '', brand: 'Nike', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '' },
+        { item: 'Shirt', description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', count: 3, quantity: 3, notes: '' },
+      ];
+
+      const result = inventoryService.optionBuilder(mockInventory, 'item');
+
+      expect(result.length).toBe(1);
+      expect(result[0]).toEqual({ label: 'Shirt', value: 'Shirt' });
+    });
+
+    it('should only return options for rows where the key has a value', () => {
+      const mockInventory: Inventory[] = [
+        { item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '' },
+        { item: 'Pants', description: '', brand: '',     color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '' },
+        { item: 'Hat',   description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', count: 3, quantity: 3, notes: '' },
+      ];
+
+      const result = inventoryService.optionBuilder(mockInventory, 'brand');
+
+      expect(result).toEqual([
+        { label: 'Nike', value: 'Nike' }
+      ]);
+    });
+  });
+
   describe('When getInventory() is called with parameters, it correctly forms the HTTP request (Javalin/Server filtering)', () => {
 
     it('correctly calls api/inventory with filter parameter \'item\'', () => {

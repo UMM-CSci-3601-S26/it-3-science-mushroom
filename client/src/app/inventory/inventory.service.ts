@@ -91,7 +91,7 @@ export class InventoryService {
 
   optionBuilder(data: Inventory[], key: keyof Inventory): SelectOption[] {
     return [...new Set(
-      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v !== '')
+      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '')
     )].map(value => ({
       label: value,
       value: value
