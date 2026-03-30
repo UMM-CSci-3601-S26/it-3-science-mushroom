@@ -1,12 +1,12 @@
 // Angular Imports
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 
 // RxJS Imports
 import { Observable } from 'rxjs';
 
 // Inventory Imports
-import { Inventory } from './inventory';
+import { Inventory, SelectOption } from './inventory';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -30,6 +30,39 @@ export class InventoryService {
   private readonly minQuantityKey = 'minQuantity';
   private readonly stockStateKey = 'stockState';
   private readonly notesKey = 'notes';
+
+  constructor() {
+    this.loadInventory();
+  }
+
+  inventory = signal<Inventory[]>([]);
+
+  loadInventory(filters?: Inventory): void {
+    this.getInventory(filters).subscribe(data => {
+      this.inventory.set(data);
+    });
+  }
+
+  itemOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'item')
+  );
+
+  brandOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'brand')
+  )
+  colorOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'color')
+  )
+  sizeOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'size')
+  )
+  typeOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'type')
+  )
+  materialOptions = computed(() =>
+    this.optionBuilder(this.inventory(), 'material')
+  )
+
 
   getInventory(filters?: {item?: string; description?: string; brand?: string; color?: string;
     count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<Inventory[]> {
@@ -58,4 +91,14 @@ export class InventoryService {
     }
     return this.httpClient.get<Inventory[]>(this.inventoryUrl, { params: httpParams });
   }
+
+  optionBuilder(data: Inventory[], key: keyof Inventory): SelectOption[] {
+    return [...new Set(
+      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '')
+    )].map(value => ({
+      label: value,
+      value: value
+    }));
+  }
+
 }

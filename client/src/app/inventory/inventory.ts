@@ -13,3 +13,8 @@ export interface Inventory {
   stockState: string,
   notes: string
 }
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}
