@@ -60,7 +60,7 @@ public class BarcodeController implements Controller {
 
     Bson filter = or(
       eq("internalBarcode", code),
-      eq("manufacturedBarcode", code)
+      eq("externalBarcode", code)
     );
 
     Inventory inv = inventoryCollection.find(filter).first();
