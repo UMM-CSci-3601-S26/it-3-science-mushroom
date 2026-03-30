@@ -91,7 +91,7 @@ public class BarcodeControllerSpec {
         .append("type", "#2")
         .append("material", "wood")
         .append("internalBarcode", "ITEM-00001")
-        .append("manufacturedBarcode", Arrays.asList("MFG-ABC123")));
+        .append("externalBarcode", Arrays.asList("MFG-ABC123")));
 
     inventoryDocuments.insertOne(new Document()
         .append("item", "Eraser")
@@ -105,7 +105,7 @@ public class BarcodeControllerSpec {
         .append("type", "rubber")
         .append("material", "rubber")
         .append("internalBarcode", "ITEM-00002")
-        .append("manufacturedBarcode", Arrays.asList("MFG-DEF456")));
+        .append("externalBarcode", Arrays.asList("MFG-DEF456")));
 
     // Item with no Barcode
     inventoryDocuments.insertOne(new Document()
@@ -182,7 +182,7 @@ public class BarcodeControllerSpec {
     verify(ctx).json(inventoryCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
     assertEquals("Pencil", inventoryCaptor.getValue().item);
-    assertEquals("MFG-ABC123", inventoryCaptor.getValue().manufacturedBarcode.get(0));
+    assertEquals("MFG-ABC123", inventoryCaptor.getValue().externalBarcode.get(0));
   }
 
   @Test
@@ -212,7 +212,7 @@ public class BarcodeControllerSpec {
     newItem.count = 1;
     newItem.notes = "N/A";
     newItem.internalBarcode = "ITEM-00004";
-    newItem.manufacturedBarcode = Arrays.asList("MFG-GHI789");
+    newItem.externalBarcode = Arrays.asList("MFG-GHI789");
 
     when(ctx.bodyAsClass(Inventory.class)).thenReturn(newItem);
 
@@ -222,7 +222,7 @@ public class BarcodeControllerSpec {
     verify(ctx).status(HttpStatus.CREATED);
     assertEquals("Ruler", inventoryCaptor.getValue().item);
     assertEquals("ITEM-00004", inventoryCaptor.getValue().internalBarcode);
-    assertEquals("MFG-GHI789", inventoryCaptor.getValue().manufacturedBarcode.get(0));
+    assertEquals("MFG-GHI789", inventoryCaptor.getValue().externalBarcode.get(0));
     // Verify it was actually inserted into the database
     long count = db.getCollection("inventory")
         .countDocuments(new Document("internalBarcode", "ITEM-00004"));
