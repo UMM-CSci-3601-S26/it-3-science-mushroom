@@ -60,4 +60,29 @@ export class InventoryPage {
   getInventoryFilterClear() {
     return cy.get('[data-cy="inventory-clear"]');
   }
+
+  // filters
+  getFilterItem() {
+    return cy.get('[data-cy="filter-item"]');
+  }
+  getFilterBrand() {
+    return cy.get('[data-cy="filter-brand"]');
+  }
+  getFilterColor() {
+    return cy.get('[data-cy="filter-color"]');
+  }
+  getFilterSize() {
+    return cy.get('[data-cy="filter-size"]');
+  }
+  getFilterType() {
+    return cy.get('[data-cy="filter-type"]');
+  }
+  getFilterMaterial() {
+    return cy.get('[data-cy="filter-material"]');
+  }
+
+  selectAutoCompleteOption(filterSelector: string, text: string) {
+    cy.get(filterSelector).clear().type(text);
+    return cy.get('mat-option').contains(text).click();
+  }
 }
