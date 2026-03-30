@@ -21,7 +21,8 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Controller;
 
 public class BarcodeController implements Controller {
-    private static final String API_BARCODE_LOOKUP = "/api/barcode/{code}";
+    private static final String API_BARCODE_LOOKUP = "/api/barcode/lookup/{code}"; // find barcode in internal system
+    private static final String API_BARCODE_SCAN = "/api/barcode/scan/{code}"; // decide behavior for scanned code (internal vs manufactured)
     private static final String API_BARCODE_NEXT = "/api/barcode/next";
     private static final String API_BARCODE_ADD = "/api/inventory";
     private static final String API_BARCODE_QTY = "/api/inventory/{id}/quantity";
@@ -118,6 +119,7 @@ public class BarcodeController implements Controller {
   public void addRoutes(Javalin server) {
     server.get(API_BARCODE_LOOKUP, this::lookupBarcode);
     server.get(API_BARCODE_NEXT, this::getNextBarcode);
+    // server.post(API_BARCODE_SCAN, this::scanBarcode);
     server.post(API_BARCODE_ADD, this::addInventory);
     server.post(API_BARCODE_QTY, this::updateQuantity);
   }
