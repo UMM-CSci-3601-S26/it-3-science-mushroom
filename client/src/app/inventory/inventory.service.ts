@@ -18,14 +18,17 @@ export class InventoryService {
   readonly inventoryUrl: string = `${environment.apiUrl}inventory`;
 
   private readonly itemKey = 'item';
-  private readonly descriptionKey = 'description';
   private readonly brandKey = 'brand';
-  private readonly colorKey = 'color';
   private readonly countKey = 'count';
   private readonly sizeKey = 'size';
+  private readonly colorKey = 'color';
   private readonly typeKey = 'type';
   private readonly materialKey = 'material';
+  private readonly descriptionKey = 'description';
   private readonly quantityKey = 'quantity';
+  private readonly maxQuantityKey = 'maxQuantity';
+  private readonly minQuantityKey = 'minQuantity';
+  private readonly stockStateKey = 'stockState';
   private readonly notesKey = 'notes';
 
   getInventory(filters?: {item?: string; description?: string; brand?: string; color?: string;
