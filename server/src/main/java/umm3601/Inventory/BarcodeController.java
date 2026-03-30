@@ -49,7 +49,7 @@ public class BarcodeController implements Controller {
           // return 1 if not right format
       }
     }
-    String nextCode = String.format("ITEM=%05d", next);
+    String nextCode = String.format("ITEM-%05d", next);
     ctx.json(new Document("internalBarcode", nextCode));
     ctx.status(HttpStatus.OK);
   }
@@ -76,7 +76,7 @@ public class BarcodeController implements Controller {
     Inventory newItem = ctx.bodyAsClass(Inventory.class);
 
     if (newItem.item == null || newItem.item.isBlank()) {
-      throw new BadRequestResponse("Item name is required");
+      throw new BadRequestResponse("Item name is required.");
     }
 
     if (newItem.internalBarcode == null || newItem.internalBarcode.isBlank()) {
@@ -94,7 +94,7 @@ public class BarcodeController implements Controller {
     String action = body.getString("action");
 
     if (!"add".equals(action) && !"remove".equals(action)) {
-      throw new BadRequestResponse("Action must be 'add' or 'remove'");
+      throw new BadRequestResponse("action must be 'add' or 'remove'");
     }
 
     int delta = "add".equals(action) ? 1 : -1;
