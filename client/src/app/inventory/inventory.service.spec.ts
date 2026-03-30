@@ -15,38 +15,47 @@ describe('InventoryService', () => {
   const testInventory: Inventory[] = [
     {
       item: "Markers",
-      description: "8 Pack of Washable Wide Markers",
       brand: "Crayola",
-      color: "Black",
       count: 8,
       size: "Wide",
+      color: "Black",
       type: "Washable",
       material: "N/A",
+      description: "8 Pack of Washable Wide Markers",
       quantity: 0,
+      maxQuantity: 0,
+      minQuantity: 0,
+      stockState: '',
       notes: "N/A"
     },
     {
       item: "Folder",
-      description: "Red 2 Prong Plastic Pocket Folder",
       brand: "N/A",
-      color: "Red",
       count: 1,
       size: "N/A",
+      color: "Red",
       type: "2 Prong",
       material: "Plastic",
+      description: "Red 2 Prong Plastic Pocket Folder",
       quantity: 0,
+      maxQuantity: 0,
+      minQuantity: 0,
+      stockState: '',
       notes: "N/A"
     },
     {
       item: "Notebook",
-      description: "Yellow Wide Ruled Spiral Notebook",
       brand: "N/A",
-      color: "Yellow",
       count: 1,
       size: "Wide Ruled",
+      color: "Yellow",
       type: "Spiral",
       material: "N/A",
+      description: "Yellow Wide Ruled Spiral Notebook",
       quantity: 0,
+      maxQuantity: 0,
+      minQuantity: 0,
+      stockState: '',
       notes: "N/A"
     }
   ];
