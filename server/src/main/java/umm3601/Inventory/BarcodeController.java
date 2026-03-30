@@ -4,9 +4,6 @@ import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
 import static com.mongodb.client.model.Updates.inc;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
@@ -43,11 +40,11 @@ public class BarcodeController implements Controller {
       Inventory last = inventoryCollection.find(new Document("internalBarcode", new Document("$exists", true)))
       .sort(Sorts.descending("internalBarcode"))
       .first();
-
+      String prefix = "ITEM-";
       int next = 1;
-      if (last != null && last.internalBarcode != null && last.internalBarcode.startsWith("ITEM-")) {
+      if (last != null && last.internalBarcode != null && last.internalBarcode.startsWith(prefix)) {
         try {
-          next = Integer.parseInt(last.internalBarcode.substring(4)) + 1;
+          next = Integer.parseInt(last.internalBarcode.substring(prefix.length())) + 1;
         } catch (NumberFormatException e) {
           // return 1 if not right format
       }
@@ -96,7 +93,7 @@ public class BarcodeController implements Controller {
     Document body = ctx.bodyAsClass(Document.class);
     String action = body.getString("action");
 
-    if(!"add".equals(action) && !"remove".equals(action)) {
+    if (!"add".equals(action) && !"remove".equals(action)) {
       throw new BadRequestResponse("Action must be 'add' or 'remove'");
     }
 
