@@ -82,6 +82,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
   getDashboardStats() {
     const studentsPerSchool: { [school: string]: number } = {};
     const studentsPerGrade: { [grade: string]: number } = {};
+    let totalStudents = 0;
 
     MockFamilyService.testFamilies.forEach(family => {
       family.students.forEach(student => {
@@ -90,6 +91,8 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
 
         studentsPerGrade[student.grade] =
         (studentsPerGrade[student.grade] ?? 0) + 1;
+
+        totalStudents = totalStudents + 1
       });
     });
 
@@ -97,6 +100,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       studentsPerSchool,
       studentsPerGrade,
       totalFamilies: MockFamilyService.testFamilies.length,
+      totalStudents
     });
   }
 

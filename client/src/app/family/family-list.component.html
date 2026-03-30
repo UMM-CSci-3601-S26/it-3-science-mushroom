@@ -1,16 +1,6 @@
 <div class="flex-row">
   <div class="flex-1">
 
-    <!-- Search Field -->
-    <mat-card class="search-card">
-      <mat-card-header>
-        <mat-card-title class="family-list-title">Families</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-
-      </mat-card-content>
-    </mat-card>
-
     @if (dashboardStats(); as stats) {
       <div class="dashboard-grid">
 
@@ -68,6 +58,16 @@
     } @else {
       <p class="loading-test">Loading Dashboard..</p>
     }
+
+    <!-- Search Field -->
+    <mat-card class="search-card">
+      <mat-card-header>
+        <mat-card-title class="family-list-title">Families</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+
+      </mat-card-content>
+    </mat-card>
 
   </div>
 </div>
