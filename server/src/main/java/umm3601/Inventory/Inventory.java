@@ -23,6 +23,8 @@ public class Inventory {
   public String description;
   public int quantity;
   public String notes;
+  public String internalBarcode;
+  public String manufacturedBarcode;
 
   @Override
   public boolean equals(Object obj) {
