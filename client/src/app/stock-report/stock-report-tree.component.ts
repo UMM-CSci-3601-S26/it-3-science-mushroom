@@ -1,13 +1,16 @@
+// Angular Imports
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {MatTreeModule} from '@angular/material/tree';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import { Input } from '@angular/core';
 
 /**
- * Food data with nested structure.
- * Each node has a name and an optional list of children.
+ * Stock data with nested structure.
+ * All fields are optional.
+ * In the event some data is missing, the tree will still display what it can.
  */
-interface StockNode {
+export interface StockNode {
   description?: string;
   label?: string;
   quantity?: number;
@@ -18,7 +21,7 @@ interface StockNode {
 }
 
 /**
- * @title Tree with flat nodes
+ * Component for the Stock Report Tree. Displays inventory items in a flat tree structure, grouped by Stock State.
  */
 @Component({
   selector: 'app-stock-report-tree',
@@ -27,7 +30,8 @@ interface StockNode {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StockReportTreeComponent {
-  dataSource = EXAMPLE_DATA;
+  @Input() stockNodes: StockNode[] = [];
+  testDataSource = TEST_DATA;
 
   childrenAccessor = (node: StockNode) => node.children ?? [];
 
@@ -40,7 +44,7 @@ export class StockReportTreeComponent {
   }
 }
 
-const EXAMPLE_DATA: StockNode[] = [
+const TEST_DATA: StockNode[] = [
   {
     description: '#2 Ticonderoga Yellow Pencil',
     children:
