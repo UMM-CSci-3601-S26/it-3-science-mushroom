@@ -28,7 +28,7 @@ public class Inventory {
   public String notes;
   public String internalID;
   public String internalBarcode;
-  public List<String> manufacturedBarcode;
+  public List<String> externalBarcode;
 
   @Override
   public boolean equals(Object obj) {
