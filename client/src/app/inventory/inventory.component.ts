@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, effect, inject, signal, viewChild, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -15,13 +15,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 // Inventory Imports
-import { Inventory } from './inventory';
+import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 
 
@@ -44,7 +45,8 @@ import { InventoryService } from './inventory.service';
     MatButtonModule,
     MatTooltipModule,
     MatIconModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatAutocompleteModule
   ],
 })
 export class InventoryComponent {
@@ -74,6 +76,40 @@ export class InventoryComponent {
   quantity = signal<number | undefined>(undefined);
 
   errMsg = signal<string | undefined>(undefined);
+
+  private filterOptions(options: SelectOption[], input:string): SelectOption[] {
+    if (!input) return options;
+    const lower = input.toLowerCase();
+    return options.filter(option =>
+      option.label.toLowerCase().includes(lower)||
+      option.value.toLowerCase().includes(lower)
+    )
+  }
+
+  filteredItemOptions = computed(() =>
+    this.filterOptions(this.inventoryService.itemOptions(), (this.item() || '').toLowerCase())
+  );
+
+  filteredBrandOptions = computed(() =>
+    this.filterOptions(this.inventoryService.brandOptions(), (this.brand() || '').toLowerCase())
+  );
+
+  filteredColorOptions = computed(() =>
+    this.filterOptions(this.inventoryService.colorOptions(), (this.color() || '').toLowerCase())
+  );
+
+  filteredSizeOptions = computed(() =>
+    this.filterOptions(this.inventoryService.sizeOptions(), (this.size() || '').toLowerCase())
+  );
+
+  filteredTypeOptions = computed(() =>
+    this.filterOptions(this.inventoryService.typeOptions(), (this.type() || '').toLowerCase())
+  );
+
+  filteredMaterialOptions = computed(() =>
+    this.filterOptions(this.inventoryService.materialOptions(), (this.material() || '').toLowerCase())
+  );
+
 
   private item$ = toObservable(this.item);
   private brand$ = toObservable(this.brand);

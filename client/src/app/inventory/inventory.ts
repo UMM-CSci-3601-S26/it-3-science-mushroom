@@ -15,3 +15,8 @@ export interface Inventory {
 
   externalBarcode: []; // collection of barcodes from external sources (e.g. manufacturer UPCs) that reference this inventory item
 }
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}
