@@ -174,6 +174,7 @@ describe('Inventory', () => {
       cy.intercept('GET', '/api/inventory*').as('getInventory');
       cy.wait('@getInventory');
     });
+
     it("should show autocomplete options when typing in filter", () => {
       page.getFilterItem().type("Mark");
       cy.get('mat-option').should('exist');
