@@ -182,7 +182,7 @@ public class BarcodeControllerSpec {
     verify(ctx).json(inventoryCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
     assertEquals("Pencil", inventoryCaptor.getValue().item);
-    assertEquals("MFG-ABC123", inventoryCaptor.getValue().manufacturedBarcode);
+    assertEquals("MFG-ABC123", inventoryCaptor.getValue().manufacturedBarcode.get(0));
   }
 
   @Test
@@ -212,7 +212,7 @@ public class BarcodeControllerSpec {
     newItem.count = 1;
     newItem.notes = "N/A";
     newItem.internalBarcode = "ITEM-00004";
-    newItem.manufacturedBarcode = "MFG-GHI789";
+    newItem.manufacturedBarcode = Arrays.asList("MFG-GHI789");
 
     when(ctx.bodyAsClass(Inventory.class)).thenReturn(newItem);
 
@@ -222,7 +222,7 @@ public class BarcodeControllerSpec {
     verify(ctx).status(HttpStatus.CREATED);
     assertEquals("Ruler", inventoryCaptor.getValue().item);
     assertEquals("ITEM-00004", inventoryCaptor.getValue().internalBarcode);
-
+    assertEquals("MFG-GHI789", inventoryCaptor.getValue().manufacturedBarcode.get(0));
     // Verify it was actually inserted into the database
     long count = db.getCollection("inventory")
         .countDocuments(new Document("internalBarcode", "ITEM-00004"));
