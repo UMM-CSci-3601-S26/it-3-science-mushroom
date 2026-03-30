@@ -31,34 +31,59 @@
     Finalize Report
   </button>
 </div>
-<div class="flex-row">
-  @if (inventory()) {
-  <div class="flex-1">
-    <!--Stocked/Out-->
-      <div class="family-cards-container flex-row gap-8 flex-wrap">
 
-        <app-stock-report-tree></app-stock-report-tree>
+<mat-card class="report-sections-card">
+  <mat-card-header>
+    <mat-card-title class="stock-report-title">Report Sections</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p class="page-description">
+      Here you can see the sections for the report. Each section contains a tree view of relevent items.
+    </p>
+    <hr style="margin: 1rem 0;" />
+  </mat-card-content>
 
-        <p>Out-of-Stock Items here</p>
-      </div>
+  <div class="flex-row">
+    @if (inventory()) {
+    <div class="flex-1">
+      <!--Stocked/Out-->
+        <div class="stock-cards-container flex-row gap-8 flex-wrap">
+          <mat-card class="stock-card">
+            <mat-card-header>
+              <mat-card-title>Stocked Items</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-stock-report-tree [stockNodes]="stockedItems()"></app-stock-report-tree>
+            </mat-card-content>
+          </mat-card>
+          <mat-card class="stock-card">
+            <mat-card-header>
+              <mat-card-title>Out of Stock Items</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-stock-report-tree [stockNodes]="outOfStockItems()"></app-stock-report-tree>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
       <!--Over/Under-->
-      <div class="family-cards-container flex-row gap-8 flex-wrap">
-        <p>Over-Stocked Items here</p>
-        <p>Under-Stocked Items here</p>
-      </div>
-    </div>
-}  @else {
-  <div class="flex-1 stock-report-error">
-    <mat-error>
-      There was a problem loading the Stock Report. Possibly the server is down or perhaps there are network
-      issues.
-    </mat-error>
-    <mat-error>
-      Please wait a bit and try again or start the server.
-    </mat-error>
+          <app-stock-report-tree [stockNodes]="overStockedItems()"></app-stock-report-tree>
+          <app-stock-report-tree [stockNodes]="underStockedItems()"></app-stock-report-tree>
   </div>
-  }
-</div>
+
+  }  @else {
+    <div class="flex-1 stock-report-error">
+      <mat-error>
+        There was a problem loading the Stock Report. Possibly the server is down or perhaps there are network
+        issues.
+      </mat-error>
+      <mat-error>
+        Please wait a bit and try again or start the server.
+      </mat-error>
+    </div>
+    }
+  </div>
+</mat-card>
 
 <!--
 <button mat-raised-button (click)="downloadCSV()">

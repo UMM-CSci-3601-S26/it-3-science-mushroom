@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,7 +12,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
+import { MatTableDataSource } from '@angular/material/table';
+//import { RouterLink } from '@angular/router';
 
 // RxJS Imports
 import { catchError, of} from 'rxjs';
@@ -20,10 +21,10 @@ import { catchError, of} from 'rxjs';
 // Inventory Imports
 import { Inventory } from '../inventory/inventory';
 import { InventoryService } from '../inventory/inventory.service';
-import { MatTableDataSource } from '@angular/material/table';
 
 // Stock Report Imports
 import { StockReportTreeComponent } from './stock-report-tree.component';
+import { StockNode } from './stock-report-tree.component';
 
 @Component({
   selector: 'app-stock-report',
@@ -39,7 +40,7 @@ import { StockReportTreeComponent } from './stock-report-tree.component';
     MatOptionModule,
     MatRadioModule,
     MatListModule,
-    RouterLink,
+    //RouterLink,
     MatButtonModule,
     MatTooltipModule,
     MatIconModule,
@@ -57,6 +58,45 @@ export class StockReportComponent {
       catchError(() => of([]))
     )
   );
+
+  // Convert inventory to StockNode for tree display
+  private inventoryToStockNode(item: Inventory): StockNode {
+    return {
+      description: item.description,
+      children: [
+        { quantity: item.quantity, label: 'Current Quantity' },
+        { maxQuantity: item.maxQuantity, label: 'Max Quantity' },
+        { minQuantity: item.minQuantity, label: 'Min Quantity' },
+        { stockState: item.stockState, label: 'Stock State' }
+      ]
+    };
+  }
+
+  // Compute tree nodes from inventory data
+  // Each stock state gets its own
+  stockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Stocked')
+      .map(item => this.inventoryToStockNode(item)) ?? [];
+  });
+
+  outOfStockItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Out of Stock')
+      .map(item => this.inventoryToStockNode(item)) ?? [];
+  });
+
+  underStockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Under-Stocked')
+      .map(item => this.inventoryToStockNode(item)) ?? [];
+  });
+
+  overStockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Over-Stocked')
+      .map(item => this.inventoryToStockNode(item)) ?? [];
+  });
 
   // downloadCSV() {
   //   this.familyService.exportFamilies().subscribe(csvData => {
