@@ -12,6 +12,8 @@ export class MockInventoryService implements Pick<InventoryService,
 'getInventory' | 'itemOptions' | 'brandOptions' | 'colorOptions' | 'sizeOptions' | 'typeOptions' | 'materialOptions'> {
   static testInventory: Inventory[] = [
     {
+      internalID: "123456789",
+      internalBarcode: "ITEM-00001",
       item: "Markers",
       description: "8 Pack of Washable Wide Markers",
       brand: "Crayola",
@@ -21,9 +23,12 @@ export class MockInventoryService implements Pick<InventoryService,
       type: "Washable",
       material: "N/A",
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      externalBarcode: ["MFG-XYZ123"] // Example of an external barcode referencing this item
     },
     {
+      internalID: "987654321",
+      internalBarcode: "ITEM-00000",
       item: "Folder",
       description: "Red 2 Prong Plastic Pocket Folder",
       brand: "N/A",
@@ -33,9 +38,12 @@ export class MockInventoryService implements Pick<InventoryService,
       type: "2 Prong",
       material: "Plastic",
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      externalBarcode: ["MFG-ABC456"] // Example of an external barcode referencing this item
     },
     {
+      internalID: "456789123",
+      internalBarcode: "ITEM-00002",
       item: "Notebook",
       description: "Yellow Wide Ruled Spiral Notebook",
       brand: "Five Star",
@@ -45,7 +53,8 @@ export class MockInventoryService implements Pick<InventoryService,
       type: "Spiral",
       material: "N/A",
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      externalBarcode: ["MFG-DEF789"] // Example of an external barcode referencing this item
     }
   ];
 
