@@ -1,0 +1,72 @@
+<div class="flex-row">
+  <div class="flex-1">
+    <!-- Search Field -->
+    <mat-card class="search-card">
+      <mat-card-header>
+        <mat-card-title class="stock-report-title">Stock Report</mat-card-title>
+      </mat-card-header>
+      <!-- Page Description -->
+      <mat-card-content>
+        <p class="page-description">
+          Welcome to the Stock Reports page! Here, you can view the current stock levels of all items in the inventory, as well as save and export reports.
+        </p>
+        <p class="page-description">
+          "Finalize Report" will prompt you for information for the current report (such as the name) and save it to the server.
+        </p>
+        <p class="page-description">
+          You may then download the report / past reports in CSV or PDF format by opening the "Saved Reports" dropdown and clicking the appropriate "Download" button next to the report you want.
+        </p>
+        <hr style="margin: 1rem 0;" />
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Report Downloads Dropdown -->
+
+<!-- Report Sections -->
+<!-- Finalize Report Button -->
+<div class="flex-1">
+  <button mat-raised-button color="primary" (click)="finalizeReport()">
+    Finalize Report
+  </button>
+</div>
+<div class="flex-row">
+  @if (inventory()) {
+  <div class="flex-1">
+    <!--Stocked/Out-->
+      <div class="family-cards-container flex-row gap-8 flex-wrap">
+
+        <app-stock-report-tree></app-stock-report-tree>
+
+        <p>Out-of-Stock Items here</p>
+      </div>
+      <!--Over/Under-->
+      <div class="family-cards-container flex-row gap-8 flex-wrap">
+        <p>Over-Stocked Items here</p>
+        <p>Under-Stocked Items here</p>
+      </div>
+    </div>
+}  @else {
+  <div class="flex-1 stock-report-error">
+    <mat-error>
+      There was a problem loading the Stock Report. Possibly the server is down or perhaps there are network
+      issues.
+    </mat-error>
+    <mat-error>
+      Please wait a bit and try again or start the server.
+    </mat-error>
+  </div>
+  }
+</div>
+
+<!--
+<button mat-raised-button (click)="downloadCSV()">
+  Export CSV
+</button>
+
+<button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
+  data-test="addFamilyButton">
+  <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
+</button>
+-->

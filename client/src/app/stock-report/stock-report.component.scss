@@ -1,0 +1,23 @@
+.family-cards-container {
+  width: 100%;
+  position: relative;
+}
+
+.family-card {
+  margin-bottom: 10px;
+  flex: 1 1 280px;
+}
+
+.search-card {
+  margin-bottom: 10px;
+}
+
+mat-radio-button {
+  margin: 0 12px;
+}
+
+.add-family-fab {
+  position: fixed;
+  bottom: 15px;
+  right: 30px;
+}
