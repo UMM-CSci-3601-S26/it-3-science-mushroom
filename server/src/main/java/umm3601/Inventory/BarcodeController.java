@@ -22,7 +22,7 @@ import umm3601.Controller;
 
 public class BarcodeController implements Controller {
     private static final String API_BARCODE_LOOKUP = "/api/barcode/lookup/{code}"; // find barcode in internal system
-    private static final String API_BARCODE_SCAN = "/api/barcode/scan/{code}"; // decide behavior
+    // private static final String API_BARCODE_SCAN = "/api/barcode/scan"; // decide behavior
     private static final String API_BARCODE_NEXT = "/api/barcode/next";
     private static final String API_BARCODE_ADD = "/api/inventory";
     private static final String API_BARCODE_QTY = "/api/inventory/{id}/quantity";
