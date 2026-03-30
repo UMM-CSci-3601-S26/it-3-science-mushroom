@@ -13,7 +13,7 @@ export interface Inventory {
   quantity: number,
   notes: string
 
-  externalBarcode: []; // collection of barcodes from external sources (e.g. manufacturer UPCs) that reference this inventory item
+  externalBarcode?: string[]; // collection of barcodes from external sources (e.g. manufacturer UPCs) that reference this inventory item
 }
 
 export interface SelectOption {
