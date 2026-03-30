@@ -5,6 +5,9 @@ package umm3601.Inventory;
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
 
+// Java Imports
+import java.util.List;
+
 // Inventory Class
 @SuppressWarnings({"VisibilityModifier"})
 public class Inventory {
@@ -23,8 +26,9 @@ public class Inventory {
   public String description;
   public int quantity;
   public String notes;
+  public String internalID;
   public String internalBarcode;
-  public String manufacturedBarcode;
+  public List<String> manufacturedBarcode;
 
   @Override
   public boolean equals(Object obj) {
