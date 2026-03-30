@@ -91,7 +91,7 @@ public class BarcodeControllerSpec {
         .append("type", "#2")
         .append("material", "wood")
         .append("internalBarcode", "ITEM-00001")
-        .append("manufacturedBarcode", "MFG-ABC123"));
+        .append("manufacturedBarcode", Arrays.asList("MFG-ABC123")));
 
     inventoryDocuments.insertOne(new Document()
         .append("item", "Eraser")
@@ -105,7 +105,7 @@ public class BarcodeControllerSpec {
         .append("type", "rubber")
         .append("material", "rubber")
         .append("internalBarcode", "ITEM-00002")
-        .append("manufacturedBarcode", "MFG-DEF456"));
+        .append("manufacturedBarcode", Arrays.asList("MFG-DEF456")));
 
     // Item with no Barcode
     inventoryDocuments.insertOne(new Document()
