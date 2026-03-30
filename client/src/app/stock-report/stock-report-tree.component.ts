@@ -40,7 +40,7 @@ export class StockReportTreeComponent {
   // Add the labels to the node for displaying
   getChildDisplay(node: StockNode): string {
     const value = node.quantity ?? node.maxQuantity ?? node.minQuantity ?? node.stockState;
-    return value !== undefined ? `${node.label}: ${value}` : (node.description ?? '');
+    return value !== undefined ? `- ${node.label}: ${value}` : (node.description ?? '');
   }
 }
 
