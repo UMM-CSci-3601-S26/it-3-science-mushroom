@@ -55,8 +55,9 @@
 }
 
 .family-cards-container {
-  width: 100%;
-  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 .family-card {
