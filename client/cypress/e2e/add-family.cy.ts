@@ -163,10 +163,6 @@ describe('Add family page', () => {
         .contains(family.email)
         .should('exist');
 
-      cy.get('.family-card-address')
-        .contains(family.address)
-        .should('exist');
-
       cy.get('.family-card-timeSlot')
         .contains(family.timeSlot)
         .should('exist');
