@@ -13,7 +13,6 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 //import { MatTableDataSource } from '@angular/material/table';
-//import { RouterLink } from '@angular/router';
 
 // RxJS Imports
 import { catchError, of} from 'rxjs';
@@ -25,6 +24,9 @@ import { InventoryService } from '../inventory/inventory.service';
 // Stock Report Imports
 import { StockReportTreeComponent } from './stock-report-tree.component';
 import { StockNode } from './stock-report-tree.component';
+
+// PDF Generator Imports
+import { PdfGeneratorComponent } from '../pdf-generator/pdf-generator.component';
 
 @Component({
   selector: 'app-stock-report',
@@ -40,11 +42,11 @@ import { StockNode } from './stock-report-tree.component';
     MatOptionModule,
     MatRadioModule,
     MatListModule,
-    //RouterLink,
     MatButtonModule,
     MatTooltipModule,
     MatIconModule,
-    StockReportTreeComponent
+    StockReportTreeComponent,
+    PdfGeneratorComponent
   ],
 })
 
