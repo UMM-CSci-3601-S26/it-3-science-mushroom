@@ -394,11 +394,14 @@ class FamilyControllerSpec {
     assertTrue(result.containsKey("studentsPerSchool"));
     assertTrue(result.containsKey("studentsPerGrade"));
     assertTrue(result.containsKey("totalFamilies"));
+    assertTrue(result.containsKey("totalStudents"));
 
     assertEquals(
       (int) db.getCollection("family").countDocuments(),
       result.get("totalFamilies")
     );
+
+    assertEquals(6, result.get("totalStudents"));;
   }
 
   @SuppressWarnings("unchecked")
