@@ -7,7 +7,7 @@ export class FamilyListPage {
   private readonly familyListItemsSelector = '.family-nav-list .family-list-item';
   private readonly familyDashboard = '.dashboard-grid'
   private readonly totalFamiliesNum = '.stat-number-family'
-  private readonly totalStudentsNum = '.stat-number-students'
+  private readonly totalStudentsNum = '.stat-number-student'
   private readonly studentsPerSchool = '.stat-row-school'
   private readonly studentsPerGrade = '.stat-row-grade'
   //private readonly profileButtonSelector = '[data-test=viewProfileButton]';

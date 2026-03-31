@@ -28,19 +28,31 @@ describe('Family list', () => {
     page.getTotalStudents().should('contain.text', '7')
   });
 
-  // it('Should have the dashboard display the correct number of students per school', () => {
-  //   page.getStudentsPerSchool().each(e => {
-  //     cy.wrap(e).find('.stat-label').should('have.text', 'HHS');
-  //     cy.wrap(e).find('.stat-value').should('have.text', '3');
-  //   });
-  // });
+  it('Should have the dashboard display the correct number of students per school', () => {
+    const expectedValues = [
+      { label: 'HHS', value: '3'},
+      { label: 'MAHS', value: '4'}
+    ];
 
-  // it('Should have the dashboard display the correct number of students per grade', () => {
-  //   page.getStudentsPerGrade().each(e => {
-  //     cy.wrap(e).find('.stat-label').should('have.text', 'Grade: 10');
-  //     cy.wrap(e).find('.stat-value').should('have.text', '1');
-  //   });
-  // });
+    page.getStudentsPerSchool().each((e, i) => {
+      cy.wrap(e).find('.stat-label').should('have.text', expectedValues[i].label);
+      cy.wrap(e).find('.stat-value').should('have.text', expectedValues[i].value);
+    });
+  });
+
+  it('Should have the dashboard display the correct number of students per grade', () => {
+    const expectedValues = [
+      { label: 'Grade: 10', value: '1'},
+      { label: 'Grade: 11', value: '3'},
+      { label: 'Grade: 12', value: '1'},
+      { label: 'Grade: 9', value: '2'}
+    ];
+
+    page.getStudentsPerGrade().each((e, i) => {
+      cy.wrap(e).find('.stat-label').should('have.text', expectedValues[i].label);
+      cy.wrap(e).find('.stat-value').should('have.text', expectedValues[i].value);
+    });
+  });
 
   it('Should show 3 families in card view', () => {
     page.getFamilyCards().should('have.length', 3);
