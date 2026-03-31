@@ -15,6 +15,9 @@ import { AddFamilyComponent } from './family/add-family.component';
 // Stock Report Imports
 import { StockReportComponent } from './stock-report/stock-report.component';
 
+// PDF Generator Imports
+import { PdfGeneratorComponent } from './pdf-generator/pdf-generator.component';
+
 // Note: Any routes for adding new items need to come before the routes for getting an item by an individual ID
 // Ie: 'user/new' comes before 'users/:id'
 const routes: Routes = [
@@ -24,7 +27,8 @@ const routes: Routes = [
   {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'},
   {path: 'inventory', component: InventoryComponent, title: 'Inventory'},
   {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'},
-  {path: 'stock-report', component: StockReportComponent, title: 'Stock Report'}
+  {path: 'stock-report', component: StockReportComponent, title: 'Stock Report'},
+  {path: 'pdf-generator', component: PdfGeneratorComponent, title: 'PDF Generator'},
 ];
 
 @NgModule({
