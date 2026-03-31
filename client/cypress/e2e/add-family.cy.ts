@@ -122,18 +122,21 @@ describe('Add family page', () => {
             name: 'Lisa',
             grade: '6',
             school: "Morris High School",
+            teacher: "N/A",
             requestedSupplies: []
           },
           {
             name: 'Allie',
             grade: '7',
             school: "Morris High School",
+            teacher: "N/A",
             requestedSupplies: ['headphones']
           },
           {
             name: 'Joe',
             grade: '8',
             school: "Morris Elementary",
+            teacher: "N/A",
             requestedSupplies: ['backpack', 'markers']
           },
         ]
