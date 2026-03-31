@@ -83,6 +83,22 @@ export class InventoryPage {
 
   selectAutoCompleteOption(filterSelector: string, text: string) {
     cy.get(filterSelector).clear().type(text);
-    return cy.get('mat-option').contains(text).click();
+
+    cy.get('.cdk-overlay-pane span.mdc-list-item__primary-text')
+      .should('have.length.greaterThan', 0)
+      .then(($spans) => {
+        const normalize = (str: string) =>
+          str.replace(/\s+/g, ' ').trim();
+
+        const match = [...$spans].find(
+          (el) => normalize(el.innerText) === normalize(text)
+        );
+
+        if (!match) {
+          throw new Error(`Exact match for "${text}" not found`);
+        }
+
+        cy.wrap(match).click();
+      });
   }
 }
