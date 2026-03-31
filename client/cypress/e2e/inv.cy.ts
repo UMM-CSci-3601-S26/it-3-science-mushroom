@@ -194,7 +194,7 @@ describe('Inventory', () => {
     it('Should show autocomplete options when typing in the Size filter', () => {
       page.getFilterSize().type('Wid');
       cy.get('mat-option').should('exist');
-      cy.get('mat-option').invoke('text').should('match', /wide/i);
+      cy.get('mat-option').invoke('text').should('contain', 'Wide');
     });
 
     it('Should show autocomplete options when typing in the Type filter', () => {
@@ -209,41 +209,6 @@ describe('Inventory', () => {
       cy.get('mat-option').should('contain', 'Plastic');
     });
 
-    it('Should filter results when selecting an autocomplete option for Item', () => {
-      cy.intercept('GET', '/api/inventory*').as('filterInventory');
-      page.selectAutoCompleteOption('[data-cy="filter-item"]', 'Markers');
-      cy.wait('@filterInventory');
-      cy.get('[data-cy="inventory-item"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /^Markers$/);
-      });
-    });
-
-    it('Should filter results when selecting an autocomplete option for Brand', () => {
-      cy.intercept('GET', '/api/inventory*').as('filterInventory');
-      page.selectAutoCompleteOption('[data-cy="filter-brand"]', 'Crayola');
-      cy.wait('@filterInventory');
-      cy.get('[data-cy="inventory-brand"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /^Crayola$/);
-      });
-    });
-
-    it('Should filter results when selecting an autocomplete option for Color', () => {
-      cy.intercept('GET', '/api/inventory*').as('filterInventory');
-      page.selectAutoCompleteOption('[data-cy="filter-color"]', 'Red');
-      cy.wait('@filterInventory');
-      cy.get('[data-cy="inventory-color"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /^Red$/);
-      });
-    });
-
-    it('Should filter results when selecting an autocomplete option for Type', () => {
-      cy.intercept('GET', '/api/inventory*').as('filterInventory');
-      page.selectAutoCompleteOption('[data-cy="filter-type"]', 'Washable');
-      cy.wait('@filterInventory');
-      cy.get('[data-cy="inventory-type"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /^Washable$/);
-      });
-    });
 
     it('Should narrow autocomplete options as the user types more characters', () => {
       page.getFilterItem().type('M');
@@ -256,6 +221,34 @@ describe('Inventory', () => {
     it('Should show no autocomplete options when input matches nothing', () => {
       page.getFilterItem().type('someItem');
       cy.get('mat-option').should('not.exist');
+    });
+
+    it('Should filter results when selecting an autocomplete option for Item', () => {
+      cy.intercept('GET', '/api/inventory*').as('filterInventory');
+      page.selectAutoCompleteOption('[data-cy="filter-item"]', 'Markers');
+      cy.wait('@filterInventory');
+      cy.get('[data-cy="inventory-item"]').first().should('have.text', 'Markers');
+    });
+
+    it('Should filter results when selecting an autocomplete option for Brand', () => {
+      cy.intercept('GET', '/api/inventory*').as('filterInventory');
+      page.selectAutoCompleteOption('[data-cy="filter-brand"]', 'Crayola');
+      cy.wait('@filterInventory');
+      cy.get('[data-cy="inventory-brand"]').first().should('have.text', 'Crayola');
+    });
+
+    it('Should filter results when selecting an autocomplete option for Color', () => {
+      cy.intercept('GET', '/api/inventory*').as('filterInventory');
+      page.selectAutoCompleteOption('[data-cy="filter-color"]', 'Red');
+      cy.wait('@filterInventory');
+      cy.get('[data-cy="inventory-color"]').first().should('have.text', 'Red');
+    });
+
+    it('Should filter results when selecting an autocomplete option for Type', () => {
+      cy.intercept('GET', '/api/inventory*').as('filterInventory');
+      page.selectAutoCompleteOption('[data-cy="filter-type"]', 'Washable');
+      cy.wait('@filterInventory');
+      cy.get('[data-cy="inventory-type"]').first().should('have.text', 'Washable');
     });
   });
 

@@ -94,10 +94,6 @@ export class InventoryPage {
           (el) => normalize(el.innerText) === normalize(text)
         );
 
-        // 🔍 DEBUG (leave this in for now)
-        const options = [...$spans].map(el => `"${normalize(el.innerText)}"`);
-        console.log('OPTIONS:', options);
-
         if (!match) {
           throw new Error(`Exact match for "${text}" not found`);
         }
