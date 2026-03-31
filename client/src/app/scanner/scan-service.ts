@@ -1,6 +1,6 @@
 
-import { InventoryIndex } from "./inventory-index";
-import { scanRequest, scanResult } from "./inventory";
+import { InventoryIndex } from "../inventory/inventory-index";
+import { scanRequest, scanResult } from "./scanner";
 import { Injectable, inject } from "@angular/core";
 
 @Injectable({providedIn: 'root'})

@@ -214,7 +214,7 @@ describe('Inventory', () => {
       page.selectAutoCompleteOption('[data-cy="filter-item"]', 'Markers');
       cy.wait('@filterInventory');
       cy.get('[data-cy="inventory-item"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /Markers/i);
+        cy.wrap($cell).invoke('text').should('match', /^Markers$/);
       });
     });
 
@@ -223,7 +223,7 @@ describe('Inventory', () => {
       page.selectAutoCompleteOption('[data-cy="filter-brand"]', 'Crayola');
       cy.wait('@filterInventory');
       cy.get('[data-cy="inventory-brand"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /Crayola/i);
+        cy.wrap($cell).invoke('text').should('match', /^Crayola$/);
       });
     });
 
@@ -232,7 +232,7 @@ describe('Inventory', () => {
       page.selectAutoCompleteOption('[data-cy="filter-color"]', 'Red');
       cy.wait('@filterInventory');
       cy.get('[data-cy="inventory-color"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /Red/i);
+        cy.wrap($cell).invoke('text').should('match', /^Red$/);
       });
     });
 
@@ -241,7 +241,7 @@ describe('Inventory', () => {
       page.selectAutoCompleteOption('[data-cy="filter-type"]', 'Washable');
       cy.wait('@filterInventory');
       cy.get('[data-cy="inventory-type"]').each(($cell) => {
-        cy.wrap($cell).invoke('text').should('match', /Washable/i);
+        cy.wrap($cell).invoke('text').should('match', /^Washable$/);
       });
     });
 
