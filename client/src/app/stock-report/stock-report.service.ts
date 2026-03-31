@@ -1,54 +1,47 @@
-// // Angular Imports
-// import { HttpClient, HttpParams } from '@angular/common/http';
-// import { Injectable, inject } from '@angular/core';
+// Angular Imports
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 
-// // RxJS Imports
-// import { Observable } from 'rxjs';
-// import { map } from 'rxjs/operators';
+// RxJS Imports
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-// // Family Imports
-// import { environment } from '../../environments/environment';
-// import { Family, DashboardStats } from './stock-report';
+// Family Imports
+import { environment } from '../../environments/environment';
+import { StockReport } from './stock-report';
 
-// @Injectable({
-//   providedIn: 'root'
-// })
+@Injectable({
+  providedIn: 'root'
+})
 
-// export class FamilyService {
-//   private httpClient = inject(HttpClient);
+export class StockReportService {
+  private httpClient = inject(HttpClient);
 
-//   readonly familyUrl: string = `${environment.apiUrl}family`;
-//   readonly dashboardUrl: string = `${environment.apiUrl}dashboard`;
+  readonly stockReportUrl: string = `${environment.apiUrl}stockreport`;
 
-//   getFamilies(): Observable<Family[]> {
-//     const httpParams: HttpParams = new HttpParams();
-//     return this.httpClient.get<Family[]>(this.familyUrl, {
-//       params: httpParams,
-//     });
-//   }
+  getReports(): Observable<StockReport[]> {
+    const httpParams: HttpParams = new HttpParams();
+    return this.httpClient.get<StockReport[]>(this.stockReportUrl, {
+      params: httpParams,
+    });
+  }
 
-//   getFamilyById(id: string): Observable<Family> {
-//     return this.httpClient.get<Family>(`${this.familyUrl}/${id}`);
-//   }
+  getReportById(id: string): Observable<StockReport> {
+    return this.httpClient.get<StockReport>(`${this.stockReportUrl}/${id}`);
+  }
 
-//   addFamily(newFamily: Partial<Family>): Observable<string> {
-//     return this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(map(response => response.id));
-//   }
+  addNewReport(formData: FormData): Observable<string> {
+    return this.httpClient.post<{id: string}>(this.stockReportUrl, formData).pipe(map(response => response.id));
+  }
 
-//   deleteFamily(id: string): Observable<void> {
-//     return this.httpClient.delete<void>(`${this.familyUrl}/${id}`);
-//   }
+  deleteReport(id: string): Observable<void> {
+    return this.httpClient.delete<void>(`${this.stockReportUrl}/${id}`);
+  }
 
-//   getDashboardStats(): Observable<DashboardStats> {
-//     const httpParams: HttpParams = new HttpParams();
-//     return this.httpClient.get<DashboardStats>(this.dashboardUrl, {
-//       params: httpParams,
-//     });
-//   }
-
-//   exportFamilies(): Observable<string> {
-//     return this.httpClient.get(`${this.familyUrl}/export`, {
-//       responseType: 'text'
-//     });
-//   }
-// }
+  // Keeping for now since I might add CSV exporting for Stock Reports
+  // exportFamilies(): Observable<string> {
+  //   return this.httpClient.get(`${this.stockReportUrl}/export`, {
+  //     responseType: 'text'
+  //   });
+  // }
+}

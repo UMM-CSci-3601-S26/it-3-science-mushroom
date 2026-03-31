@@ -13,6 +13,9 @@ import autoTable from "jspdf-autotable";
 import { Inventory } from '../../inventory/inventory';
 import { InventoryService } from '../../inventory/inventory.service';
 
+// Stock Report Imports
+import { StockReportService } from '../stock-report.service';
+
 @Component({
   selector: "app-pdf-generator",
   templateUrl: "./pdf-generator.component.html",
@@ -20,6 +23,16 @@ import { InventoryService } from '../../inventory/inventory.service';
 })
 export class PdfGeneratorComponent {
   private inventoryService = inject(InventoryService);
+  private stockReportService = inject(StockReportService);
+  private dateTime = new Date();
+
+  // Helper function to format date and time for the PDF name and description
+  private formatDateTime(date: Date): string {
+    const day = date.getUTCDate();
+    const month = date.getUTCMonth() + 1; // Months are zero-indexed
+    const year = date.getUTCFullYear();
+    return `${month}-${day}-${year}`;
+  }
 
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
@@ -27,6 +40,7 @@ export class PdfGeneratorComponent {
     )
   );
 
+  // Compute arrays of items based on their stock state
   stockedItems = computed(() => {
     return this.inventory()
       ?.filter(item => item.stockState === 'Stocked')
@@ -51,6 +65,10 @@ export class PdfGeneratorComponent {
       .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
   });
 
+  /**
+   * Generates a PDF report of the inventory, grouped by Stock State. Each group has its own table with item description, quantity, max quantity, and min quantity.
+   * The PDF is saved with the name "StockReport_MM-DD-YYYY.pdf" where MM-DD-YYYY is the current date. The PDF also includes a title and description with the date.
+  */
   generatePDF() {
     const doc = new jsPDF();
     // Title
@@ -58,10 +76,10 @@ export class PdfGeneratorComponent {
     doc.text("Stock Report", 10, 10);
     // Description
     doc.setFontSize(12);
-    doc.text("This is a Stock Report of the inventory on HOUR:MINUTE, DAY/MONTH/YEAR", 10, 20);
+    doc.text("This is a Stock Report of the inventory on ${formattedDate}".replace("${formattedDate}", this.formatDateTime(this.dateTime)), 10, 20);
 
     // Table Constants
-    const headers = [["Item", "Quantity", "Max Quantity", "Min Quantity"]];
+    const headers = [["Item Description", "Quantity", "Max Quantity", "Min Quantity"]];
     const tableSpace = 10; // 10mm of space
     const titleSpace = 1; // 5mm of space
     const itemSpace = 80; // Item column width
@@ -176,6 +194,24 @@ export class PdfGeneratorComponent {
       },
     });
 
-    doc.save("stock-report.pdf");
+    // Save PDF with name to client
+    const filename = `StockReport_${this.formatDateTime(this.dateTime)}.pdf`;
+    doc.save(filename);
+
+    // Save PDF to server
+    const pdfBlob = doc.output('blob')
+
+    const formData = new FormData();
+    formData.append("uploadedPDF", pdfBlob);
+    formData.append("reportName", filename);
+
+    this.stockReportService.addNewReport(formData).subscribe({
+      next: (response) => {
+        console.log("PDF report saved to server with ID:", response);
+      },
+      error: (error) => {
+        console.error("Error saving PDF report to server:", error);
+      }
+    });
   }
 }
