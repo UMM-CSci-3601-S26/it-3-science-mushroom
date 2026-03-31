@@ -1,0 +1,21 @@
+.item-list {
+  width: auto;
+  border: solid 1px gray;
+  min-height: 60px;
+  border-radius: 8px;
+  margin-right: 3rem;
+  margin-bottom: 2rem;
+}
+
+.drag-box {
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: row;
+  font-size: 18px;
+}
+
+.list-container {
+  display: grid;
+  grid-template-columns: 1fr, 1fr;
+  margin-left: 3rem;
+}

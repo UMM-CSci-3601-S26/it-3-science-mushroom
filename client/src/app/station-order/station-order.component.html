@@ -1,1 +1,51 @@
-<p>station-order works!</p>
+<div class="flex-row">
+  <div class="flex-1">
+
+    <mat-card class="station-order-card">
+
+      <mat-card-header>
+        <mat-card-title>
+          Event Station Order
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        Order the Stations wooooo
+      </mat-card-content>
+
+        <div class="list-container">
+          <h2>Bank</h2>
+          <div
+            cdkDropList
+            #bankList="cdkDropList"
+            [cdkDropListData]="bank"
+            [cdkDropListConnectedTo]="[orderList]"
+            class="item-list"
+            (cdkDropListDropped)="drop($event)"
+          >
+
+          @for (item of bank; track item) {
+            <div class="drag-box" cdkDrag>{{ item }}</div>
+          }
+          </div>
+
+          <h2>Station Order</h2>
+          <div
+            cdkDropList
+            #orderList="cdkDropList"
+            [cdkDropListData]="stationOrder"
+            [cdkDropListConnectedTo]="[bankList]"
+            class="item-list"
+            (cdkDropListDropped)="drop($event)"
+          >
+            @for (item of stationOrder; track item) {
+              <div class="drag-box" cdkDrag>{{ item }}</div>
+            }
+          </div>
+        </div>
+
+    </mat-card>
+
+  </div>
+</div>
+
