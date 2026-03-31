@@ -12,7 +12,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatTableDataSource } from '@angular/material/table';
+//import { MatTableDataSource } from '@angular/material/table';
 //import { RouterLink } from '@angular/router';
 
 // RxJS Imports
@@ -51,8 +51,6 @@ import { StockNode } from './stock-report-tree.component';
 export class StockReportComponent {
   private inventoryService = inject(InventoryService);
 
-  dataSource = new MatTableDataSource<Inventory>([]);
-
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
       catchError(() => of([]))
@@ -64,10 +62,9 @@ export class StockReportComponent {
     return {
       description: item.description,
       children: [
-        { quantity: item.quantity, label: 'Current Quantity' },
-        { maxQuantity: item.maxQuantity, label: 'Max Quantity' },
-        { minQuantity: item.minQuantity, label: 'Min Quantity' },
-        { stockState: item.stockState, label: 'Stock State' }
+        { quantity: item.quantity, label: '- Current Quantity' },
+        { maxQuantity: item.maxQuantity, label: '- Max Quantity' },
+        { minQuantity: item.minQuantity, label: '- Min Quantity' },
       ]
     };
   }

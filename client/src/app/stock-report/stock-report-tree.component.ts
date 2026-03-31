@@ -1,8 +1,8 @@
 // Angular Imports
-import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {MatTreeModule} from '@angular/material/tree';
-import {MatIconModule} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MatTreeModule } from '@angular/material/tree';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { Input } from '@angular/core';
 
 /**
@@ -16,7 +16,6 @@ export interface StockNode {
   quantity?: number;
   maxQuantity?: number;
   minQuantity?: number;
-  stockState?: string;
   children?: StockNode[];
 }
 
@@ -31,7 +30,6 @@ export interface StockNode {
 })
 export class StockReportTreeComponent {
   @Input() stockNodes: StockNode[] = [];
-  testDataSource = TEST_DATA;
 
   childrenAccessor = (node: StockNode) => node.children ?? [];
 
@@ -39,40 +37,7 @@ export class StockReportTreeComponent {
 
   // Add the labels to the node for displaying
   getChildDisplay(node: StockNode): string {
-    const value = node.quantity ?? node.maxQuantity ?? node.minQuantity ?? node.stockState;
-    return value !== undefined ? `- ${node.label}: ${value}` : (node.description ?? '');
+    const value = node.quantity ?? node.maxQuantity ?? node.minQuantity;
+    return value !== undefined ? `${node.label}: ${value}` : (node.description ?? '');
   }
 }
-
-const TEST_DATA: StockNode[] = [
-  {
-    description: '#2 Ticonderoga Yellow Pencil',
-    children:
-    [
-      {quantity: 10, label: 'Current Quantity'},
-      {maxQuantity: 20, label: 'Max Quantity'},
-      {minQuantity: 5, label: 'Min Quantity'},
-      {stockState: 'Stocked', label: 'Current State'}
-    ],
-  },
-  {
-    description: 'Yellow Folder',
-    children:
-    [
-      {quantity: 10, label: 'Current Quantity'},
-      {maxQuantity: 20, label: 'Max Quantity'},
-      {minQuantity: 5, label: 'Min Quantity'},
-      {stockState: 'Stocked', label: 'Current State'}
-    ],
-  },
-  {
-    description: 'Yellow Notebook',
-    children:
-    [
-      {quantity: 10, label: 'Current Quantity'},
-      {maxQuantity: 20, label: 'Max Quantity'},
-      {minQuantity: 5, label: 'Min Quantity'},
-      {stockState: 'Stocked', label: 'Current State'}
-    ],
-  },
-];
