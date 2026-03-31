@@ -13,11 +13,12 @@
           </mat-list-item>
 
           <div class="student-card-container">
-            @for (student of family().students ?? []; track [student.name, student.school, student.grade]) {
+            @for (student of family().students ?? []; track [student.name, student.school, student.grade, student.teacher]) {
               <mat-card class="student-cards">
                 <p>Name: {{ student.name }}</p>
                 <p>School: {{ student.school }}</p>
                 <p>Grade: {{ student.grade }}</p>
+                <p>Teacher: {{ student.teacher }}</p>
               </mat-card>
             }
           </div>

@@ -2,6 +2,7 @@ export interface StudentInfo {
   name: string;
   grade: string;
   school: string;
+  teacher: string;
   requestedSupplies: string[];
 }
 
