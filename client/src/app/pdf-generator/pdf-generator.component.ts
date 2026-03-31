@@ -1,7 +1,17 @@
-// pdf-generator.component.ts
-import { Component } from "@angular/core";
+// Angular Imports
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+
+// RxJS Imports
+import { catchError, of} from 'rxjs';
+
+// jsPDF Imports
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+
+// Inventory Imports
+import { Inventory } from '../inventory/inventory';
+import { InventoryService } from '../inventory/inventory.service';
 
 @Component({
   selector: "app-pdf-generator",
@@ -9,6 +19,38 @@ import autoTable from "jspdf-autotable";
   styleUrls: ["./pdf-generator.component.scss"],
 })
 export class PdfGeneratorComponent {
+  private inventoryService = inject(InventoryService);
+
+  inventory = toSignal <Inventory[]>(
+    this.inventoryService.getInventory().pipe(
+      catchError(() => of([]))
+    )
+  );
+
+  stockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Stocked')
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+  });
+
+  outOfStockItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Out of Stock')
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+  });
+
+  overstockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Over-Stocked')
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+  });
+
+  understockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => item.stockState === 'Under-Stocked')
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+  });
+
   generatePDF() {
     const doc = new jsPDF();
     // Title
@@ -30,13 +72,9 @@ export class PdfGeneratorComponent {
 
     doc.setFontSize(12);
     doc.text("Stocked Items", 15, 30);
-    const stockedData = [
-      ["Pencil", 20, 100, 10],
-      ["Eraser", 1, 10, 0],
-    ];
     autoTable(doc, {
       head: headers,
-      body: stockedData,
+      body: this.stockedItems(),
       startY: startY1+titleSpace,
       theme: 'striped',
       columnStyles: {
@@ -63,13 +101,9 @@ export class PdfGeneratorComponent {
     // Out of Stock Table
     doc.setFontSize(12);
     doc.text("Out of Stock Items", 15, startY2);
-    const outOfStockData = [
-      ["Pencil", 0, 100, 10],
-      ["Eraser", 0, 10, 0],
-    ];
     autoTable(doc, {
       head: headers,
-      body: outOfStockData,
+      body: this.outOfStockItems(),
       startY: startY2+titleSpace,
       theme: 'striped',
       columnStyles: {
@@ -94,13 +128,9 @@ export class PdfGeneratorComponent {
     // Overstocked Table
     doc.setFontSize(12);
     doc.text("Overstocked Items", 15, startY3);
-    const overStockedData = [
-      ["Pencil", 100, 50, 10],
-      ["Eraser", 20, 10, 0],
-    ];
     autoTable(doc, {
       head: headers,
-      body: overStockedData,
+      body: this.overstockedItems(),
       startY: startY3+titleSpace,
       theme: 'striped',
       columnStyles: {
@@ -125,13 +155,9 @@ export class PdfGeneratorComponent {
     // Understocked Table
     doc.setFontSize(12);
     doc.text("Understocked Items", 15, startY4);
-    const underStockedData = [
-      ["Pencil", 5, 50, 10],
-      ["Eraser", 3, 10, 5],
-    ];
     autoTable(doc, {
       head: headers,
-      body: underStockedData,
+      body: this.understockedItems(),
       startY: startY4+titleSpace,
       theme: 'striped',
       columnStyles: {
