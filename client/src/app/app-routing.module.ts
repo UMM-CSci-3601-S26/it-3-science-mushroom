@@ -16,7 +16,7 @@ import { AddFamilyComponent } from './family/add-family.component';
 import { StockReportComponent } from './stock-report/stock-report.component';
 
 // PDF Generator Imports
-import { PdfGeneratorComponent } from './pdf-generator/pdf-generator.component';
+import { PdfGeneratorComponent } from './stock-report/pdf-generator/pdf-generator.component';
 
 // Note: Any routes for adding new items need to come before the routes for getting an item by an individual ID
 // Ie: 'user/new' comes before 'users/:id'

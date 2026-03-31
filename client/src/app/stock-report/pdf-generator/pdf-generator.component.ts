@@ -10,8 +10,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 // Inventory Imports
-import { Inventory } from '../inventory/inventory';
-import { InventoryService } from '../inventory/inventory.service';
+import { Inventory } from '../../inventory/inventory';
+import { InventoryService } from '../../inventory/inventory.service';
 
 @Component({
   selector: "app-pdf-generator",

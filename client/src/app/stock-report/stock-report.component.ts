@@ -26,7 +26,7 @@ import { StockReportTreeComponent } from './stock-report-tree.component';
 import { StockNode } from './stock-report-tree.component';
 
 // PDF Generator Imports
-import { PdfGeneratorComponent } from '../pdf-generator/pdf-generator.component';
+import { PdfGeneratorComponent } from './pdf-generator/pdf-generator.component';
 
 @Component({
   selector: 'app-stock-report',

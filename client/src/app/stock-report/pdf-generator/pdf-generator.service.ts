@@ -6,7 +6,7 @@ import { inject, Injectable, signal, computed } from '@angular/core';
 import { Observable } from 'rxjs';
 
 // Inventory Imports
-import { Inventory, SelectOption } from '../inventory/inventory';
+import { Inventory, SelectOption } from '../../inventory/inventory';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
