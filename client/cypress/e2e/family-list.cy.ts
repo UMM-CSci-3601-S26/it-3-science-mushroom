@@ -16,6 +16,32 @@ describe('Family list', () => {
     page.getFamilyTitle().should('have.text', 'Families');
   });
 
+  it('Should have the dashboard displayed', () => {
+    page.getDashbord().should('exist')
+  });
+
+  it('Should have the dashboard display the correct number of families', () => {
+    page.getTotalFamilies().should('contain.text', '3')
+  });
+
+  it('Should have the dashboard display the correct number of students', () => {
+    page.getTotalStudents().should('contain.text', '7')
+  });
+
+  // it('Should have the dashboard display the correct number of students per school', () => {
+  //   page.getStudentsPerSchool().each(e => {
+  //     cy.wrap(e).find('.stat-label').should('have.text', 'HHS');
+  //     cy.wrap(e).find('.stat-value').should('have.text', '3');
+  //   });
+  // });
+
+  // it('Should have the dashboard display the correct number of students per grade', () => {
+  //   page.getStudentsPerGrade().each(e => {
+  //     cy.wrap(e).find('.stat-label').should('have.text', 'Grade: 10');
+  //     cy.wrap(e).find('.stat-value').should('have.text', '1');
+  //   });
+  // });
+
   it('Should show 3 families in card view', () => {
     page.getFamilyCards().should('have.length', 3);
   });

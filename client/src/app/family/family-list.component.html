@@ -15,7 +15,7 @@
 
           <mat-card-title>Total Students</mat-card-title>
           <mat-card-content>
-            <div class="stat-number">
+            <div class="stat-number-students">
             {{ stats.totalStudents }}
             </div>
           </mat-card-content>
@@ -26,9 +26,9 @@
           <mat-card-title>Students Per School</mat-card-title>
           <mat-card-content>
 
-            <div class="stat-list">
+            <div class="stat-list-school">
             @for (school of stats.studentsPerSchool | keyvalue; track school.key) {
-              <div class="stat-row">
+              <div class="stat-row-school">
                 <span class="stat-label">{{ school.key }}</span>
                 <span class="stat-value">{{ school.value }}</span>
               </div>
@@ -43,9 +43,9 @@
           <mat-card-title>Students Per Grade</mat-card-title>
           <mat-card-content>
 
-            <div class="stat-list">
+            <div class="stat-list-grade">
               @for (grade of stats.studentsPerGrade | keyvalue; track grade.key) {
-                <div class="stat-row">
+                <div class="stat-row-grade">
                   <span class="stat-label">Grade: {{ grade.key }}</span>
                   <span class="stat-value">{{ grade.value }}</span>
                 </div>
