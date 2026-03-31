@@ -17,7 +17,7 @@ describe('Family list', () => {
   });
 
   it('Should have the dashboard displayed', () => {
-    page.getDashbord().should('exist')
+    page.getDashboard().should('exist')
   });
 
   it('Should have the dashboard display the correct number of families', () => {
@@ -29,19 +29,19 @@ describe('Family list', () => {
   });
 
   it('Should have the dashboard display the correct number of students per school', () => {
-    const expectedValues = [
+    const expectedValuesSchool = [
       { label: 'HHS', value: '3'},
       { label: 'MAHS', value: '4'}
     ];
 
     page.getStudentsPerSchool().each((e, i) => {
-      cy.wrap(e).find('.stat-label').should('have.text', expectedValues[i].label);
-      cy.wrap(e).find('.stat-value').should('have.text', expectedValues[i].value);
+      cy.wrap(e).find('.stat-label').should('have.text', expectedValuesSchool[i].label);
+      cy.wrap(e).find('.stat-value').should('have.text', expectedValuesSchool[i].value);
     });
   });
 
   it('Should have the dashboard display the correct number of students per grade', () => {
-    const expectedValues = [
+    const expectedValuesGrade = [
       { label: 'Grade: 10', value: '1'},
       { label: 'Grade: 11', value: '3'},
       { label: 'Grade: 12', value: '1'},
@@ -49,13 +49,32 @@ describe('Family list', () => {
     ];
 
     page.getStudentsPerGrade().each((e, i) => {
-      cy.wrap(e).find('.stat-label').should('have.text', expectedValues[i].label);
-      cy.wrap(e).find('.stat-value').should('have.text', expectedValues[i].value);
+      cy.wrap(e).find('.stat-label').should('have.text', expectedValuesGrade[i].label);
+      cy.wrap(e).find('.stat-value').should('have.text', expectedValuesGrade[i].value);
     });
   });
 
   it('Should show 3 families in card view', () => {
     page.getFamilyCards().should('have.length', 3);
+  });
+
+  it('Should show students cards with the right information', () => {
+    const expectedValuesStudent = [
+      { name: 'Name: Tim', school: 'School: MAHS', grade: 'Grade: 12', teacher: 'Teacher: N/A'},
+      { name: 'Name: Sara', school: 'School: MAHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
+      { name: 'Name: Johnny Jr.', school: 'School: HHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'},
+      { name: 'Name: Burtrum', school: 'School: HHS', grade: 'Grade: 10', teacher: 'Teacher: N/A'},
+      { name: 'Name: Harold', school: 'School: HHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
+      { name: 'Name: Timothy', school: 'School: MAHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
+      { name: 'Name: Sarah', school: 'School: MAHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'}
+    ];
+
+    page.getStudentCards().each((e, i) => {
+      cy.wrap(e).find('.student-name').should('have.text', expectedValuesStudent[i].name);
+      cy.wrap(e).find('.student-school').should('have.text', expectedValuesStudent[i].school);
+      cy.wrap(e).find('.student-grade').should('have.text', expectedValuesStudent[i].grade);
+      cy.wrap(e).find('.student-teacher').should('have.text', expectedValuesStudent[i].teacher);
+    });
   });
 
   it('Should click add family and go to the right URL', () => {
