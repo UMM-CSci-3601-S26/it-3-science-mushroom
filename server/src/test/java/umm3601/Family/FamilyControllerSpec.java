@@ -401,7 +401,7 @@ class FamilyControllerSpec {
       result.get("totalFamilies")
     );
 
-    assertEquals(6, result.get("totalStudents"));;
+    assertEquals(6, result.get("totalStudents"));
   }
 
   @SuppressWarnings("unchecked")
