@@ -135,6 +135,23 @@
             <button mat-stroked-button class="count-display">
             Count: {{ serverFilteredInventory().length }}
             </button>
+            <div class="scanner-wrapper" *ngIf="showScanner">
+            <p>Scanner is open</p>
+            <app-scanner (scanned)="onScanned($event)"></app-scanner>
+            </div>
+
+            <button
+            mat-stroked-button
+            type="button"
+            (click)="showScanner = !showScanner"
+            data-cy="scan-button"
+            >
+            {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
+            </button>
+            <div *ngIf="showScanner">
+            DEBUG: SCANNER MOUNTED
+            </div>
+
         </div>
       </mat-card-content>
     </mat-card>
