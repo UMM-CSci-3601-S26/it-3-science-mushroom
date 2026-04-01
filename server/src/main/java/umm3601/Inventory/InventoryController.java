@@ -50,6 +50,10 @@ public class InventoryController implements Controller {
   static final String MATERIAL_KEY = "material";
   static final String TYPE_KEY = "type";
   static final String SORT_ORDER_KEY = "sortorder";
+  private static final int EXACT_MATCH_SCORE = 3;
+  private static final int STARTS_WITH_SCORE = 2;
+  private static final int CONTAINS_SCORE = 1;
+  private static final int NO_MATCH_SCORE = 0;
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
 
@@ -60,6 +64,23 @@ public class InventoryController implements Controller {
       Inventory.class,
       UuidRepresentation.STANDARD
     );
+  }
+
+  private int getRelevanceScore(String value, String search) {
+    String v = value.toLowerCase();
+    String s = search.toLowerCase();
+
+    if (v.equals(s)) {
+      return EXACT_MATCH_SCORE;
+    }  // exact match
+    if (v.startsWith(s)) {
+      return STARTS_WITH_SCORE;
+    }    // starts with
+    if (v.contains(s)) {
+      return CONTAINS_SCORE;
+    }      // partial match
+
+    return NO_MATCH_SCORE;
   }
 
   public void getInventory(Context ctx) {
@@ -86,6 +107,22 @@ public class InventoryController implements Controller {
     FindIterable<Inventory> results = inventoryCollection.find(filter);
 
     ArrayList<Inventory> matching = results.into(new ArrayList<>());
+
+    String itemSearch = ctx.queryParam(ITEM_KEY);
+    if (itemSearch != null) {
+      matching.sort((a, b) -> {
+        int scoreA = getRelevanceScore(a.item, itemSearch);
+        int scoreB = getRelevanceScore(b.item, itemSearch);
+
+        // Higher score first
+        if (scoreA != scoreB) {
+          return Integer.compare(scoreB, scoreA);
+        }
+
+        // Tie-breaker: shorter string first
+        return Integer.compare(a.item.length(), b.item.length());
+      });
+    }
 
     ctx.json(matching);
     ctx.status(HttpStatus.OK);

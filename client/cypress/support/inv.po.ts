@@ -60,4 +60,45 @@ export class InventoryPage {
   getInventoryFilterClear() {
     return cy.get('[data-cy="inventory-clear"]');
   }
+
+  // filters
+  getFilterItem() {
+    return cy.get('[data-cy="filter-item"]');
+  }
+  getFilterBrand() {
+    return cy.get('[data-cy="filter-brand"]');
+  }
+  getFilterColor() {
+    return cy.get('[data-cy="filter-color"]');
+  }
+  getFilterSize() {
+    return cy.get('[data-cy="filter-size"]');
+  }
+  getFilterType() {
+    return cy.get('[data-cy="filter-type"]');
+  }
+  getFilterMaterial() {
+    return cy.get('[data-cy="filter-material"]');
+  }
+
+  selectAutoCompleteOption(filterSelector: string, text: string) {
+    cy.get(filterSelector).clear().type(text);
+
+    cy.get('.cdk-overlay-pane span.mdc-list-item__primary-text')
+      .should('have.length.greaterThan', 0)
+      .then(($spans) => {
+        const normalize = (str: string) =>
+          str.replace(/\s+/g, ' ').trim();
+
+        const match = [...$spans].find(
+          (el) => normalize(el.innerText) === normalize(text)
+        );
+
+        if (!match) {
+          throw new Error(`Exact match for "${text}" not found`);
+        }
+
+        cy.wrap(match).click();
+      });
+  }
 }
