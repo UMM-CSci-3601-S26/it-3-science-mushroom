@@ -16,6 +16,8 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { ScannerComponent } from '../scanner/scanner.component';
+import { CommonModule } from '@angular/common';
 
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
@@ -24,6 +26,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 // Inventory Imports
 import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
+import { InventoryIndex } from './inventory-index';
 
 
 @Component({
@@ -46,7 +49,9 @@ import { InventoryService } from './inventory.service';
     MatTooltipModule,
     MatIconModule,
     MatPaginatorModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    ScannerComponent,
+    CommonModule
   ],
 })
 export class InventoryComponent {
@@ -57,6 +62,9 @@ export class InventoryComponent {
 
   private snackBar = inject(MatSnackBar);
   private inventoryService = inject(InventoryService);
+  private inventoryIndex = inject(InventoryIndex);
+
+  showScanner = false;
 
   constructor() {
     effect(() => {
@@ -76,6 +84,11 @@ export class InventoryComponent {
   quantity = signal<number | undefined>(undefined);
 
   errMsg = signal<string | undefined>(undefined);
+
+  onScanned(code: string) {
+    this.inventoryService.addByScanAndUpdate(code); // This needs to be fixed
+    this.showScanner = false; // optional: close scanner after scan
+  }
 
   private filterOptions(options: SelectOption[], input:string): SelectOption[] {
     if (!input) return options;
