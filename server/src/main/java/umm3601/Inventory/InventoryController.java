@@ -22,6 +22,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 
 // IO Imports
 import io.javalin.Javalin;
@@ -64,6 +65,85 @@ public class InventoryController implements Controller {
       Inventory.class,
       UuidRepresentation.STANDARD
     );
+  }
+
+  private String generateNextID() { // generates the next available internal ID
+      Inventory last = inventoryCollection.find(new Document("internalID", new Document("$exists", true)))
+      .sort(Sorts.descending("internalID"))
+      .first();
+      String prefix = "ID-";
+      int next = 1;
+      if (last != null && last.internalID != null && last.internalID.startsWith(prefix)) {
+        try {
+          next = Integer.parseInt(last.internalID.substring(prefix.length())) + 1;
+        } catch (NumberFormatException e) {
+          // return 1 if not right format
+        }
+      }
+      return String.format("ID-%05d", next);
+  }
+
+  public void generateNextID(Context ctx) {
+    ctx.json(generateNextID());
+    ctx.status(HttpStatus.OK);
+  }
+
+  public void addInventory(Context ctx) {
+    Inventory newInv = ctx.bodyAsClass(Inventory.class);
+
+    if (newInv.item == null || newInv.item.isEmpty()) {
+      throw new BadRequestResponse("Item name is required.");
+    }
+
+    Inventory exists = inventoryCollection.find(eq("internalBarcode", newInv.internalBarcode)).first();
+    if (exists != null) {
+
+      int existingQuantity = (exists.quantity > 0) ? exists.quantity : 0; // Default to 0 if not provided or invalid
+      int newInvQuantity = (newInv.quantity > 0) ? newInv.quantity : 1; // Default to 1 if not provided or invalid
+      int newQuantity = existingQuantity + newInvQuantity;
+      inventoryCollection.updateOne(eq("_id", exists._id),
+        new Document("$set", new Document(QUANTITY_KEY, newQuantity)));
+      ctx.json(exists);
+    } else {
+      String newID = generateNextID();
+
+      newInv.internalID = newID;
+      newInv.quantity = 1;
+
+      inventoryCollection.insertOne(newInv);
+      ctx.json(newInv);
+    }
+    ctx.status(HttpStatus.CREATED);
+  }
+
+  public void removeInventory(Context ctx) {
+    Inventory inv = ctx.bodyAsClass(Inventory.class);
+
+    if (inv.internalBarcode == null || inv.internalBarcode.isEmpty()) {
+      throw new BadRequestResponse("Internal barcode is required.");
+    }
+
+    Inventory exists = inventoryCollection.find(eq("internalBarcode", inv.internalBarcode)).first();
+    if (exists == null) {
+      throw new NotFoundResponse("No item found for internal barcode: " + inv.internalBarcode);
+    }
+
+    int newQuantity = exists.quantity - 1;
+    if (newQuantity < 0) {
+      newQuantity = 0;
+    }
+
+    if (newQuantity == 0) {
+      inventoryCollection.deleteOne(eq("_id", exists._id));
+      ctx.status(HttpStatus.NO_CONTENT);
+      return;
+    } else {
+      inventoryCollection.updateOne(eq("_id", exists._id),
+      new Document("$set", new Document(QUANTITY_KEY, newQuantity)));
+    }
+    exists.quantity = newQuantity; // Update the quantity in the returned object
+    ctx.json(exists);
+    ctx.status(HttpStatus.OK);
   }
 
   private int getRelevanceScore(String value, String search) {
@@ -185,5 +265,8 @@ public class InventoryController implements Controller {
   public void addRoutes(Javalin server) {
     server.get(API_INVENTORY, this::getInventories);
     server.get(API_INVENTORY_BY_ID, this::getInventory);
+    server.post(API_INVENTORY, this::addInventory);
+    server.post(API_INVENTORY + "/remove", this::removeInventory);
+    server.get("/api/inventory/nextid", this::generateNextID);
   }
 }

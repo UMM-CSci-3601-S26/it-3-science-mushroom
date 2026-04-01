@@ -24,7 +24,6 @@ public class BarcodeController implements Controller {
     private static final String API_BARCODE_LOOKUP = "/api/barcode/lookup/{code}"; // find barcode in internal system
     // private static final String API_BARCODE_SCAN = "/api/barcode/scan"; // decide behavior
     private static final String API_BARCODE_NEXT = "/api/barcode/next";
-    private static final String API_BARCODE_ADD = "/api/inventory";
     private static final String API_BARCODE_QTY = "/api/inventory/{id}/quantity";
 
     private final JacksonMongoCollection<Inventory> inventoryCollection;
@@ -37,7 +36,7 @@ public class BarcodeController implements Controller {
           UuidRepresentation.STANDARD);
     }
 
-    public void getNextBarcode(Context ctx) {
+  public void getNextBarcode(Context ctx) {
       Inventory last = inventoryCollection.find(new Document("internalBarcode", new Document("$exists", true)))
       .sort(Sorts.descending("internalBarcode"))
       .first();
@@ -48,11 +47,11 @@ public class BarcodeController implements Controller {
           next = Integer.parseInt(last.internalBarcode.substring(prefix.length())) + 1;
         } catch (NumberFormatException e) {
           // return 1 if not right format
+        }
       }
-    }
-    String nextCode = String.format("ITEM-%05d", next);
-    ctx.json(new Document("internalBarcode", nextCode));
-    ctx.status(HttpStatus.OK);
+      String nextCode = String.format("ITEM-%05d", next);
+      ctx.json(new Document("internalBarcode", nextCode));
+      ctx.status(HttpStatus.OK);
   }
 
   public void lookupBarcode(Context ctx) {
@@ -120,7 +119,6 @@ public class BarcodeController implements Controller {
     server.get(API_BARCODE_LOOKUP, this::lookupBarcode);
     server.get(API_BARCODE_NEXT, this::getNextBarcode);
     // server.post(API_BARCODE_SCAN, this::scanBarcode);
-    server.post(API_BARCODE_ADD, this::addInventory);
     server.post(API_BARCODE_QTY, this::updateQuantity);
   }
 }
