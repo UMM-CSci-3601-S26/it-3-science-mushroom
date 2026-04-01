@@ -22,10 +22,31 @@
   </div>
 </div>
 
-<!-- Report Downloads Dropdown -->
+<!-- Saved Reports List -->
+<mat-card class="reports-card">
+  <mat-card-header>
+    <mat-card-title>Saved Reports</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (reports() && reports().length > 0) {
+      <div class="reports-list">
+        @for (report of reports(); track report._id) {
+          <div class="report-item">
+            <span>{{ report.reportName }}</span>
+            <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download PDF">
+              <mat-icon>download</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <p>No reports available</p>
+    }
+  </mat-card-content>
+</mat-card>
 
 <!-- Report Sections -->
-<app-pdf-generator></app-pdf-generator>
+<app-report-generator #reportGenerator></app-report-generator>
 
 <mat-card class="report-sections-card">
   <mat-card-header>

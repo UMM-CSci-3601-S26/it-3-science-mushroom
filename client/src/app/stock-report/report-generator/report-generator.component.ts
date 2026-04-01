@@ -14,13 +14,14 @@ import { InventoryService } from '../../inventory/inventory.service';
 
 // Stock Report Imports
 import { StockReportService } from '../stock-report.service';
+import { StockReport } from '../stock-report';
 
 @Component({
-  selector: "app-pdf-generator",
+  selector: "app-report-generator",
   templateUrl: "./report-generator.component.html",
   styleUrls: ["./report-generator.component.scss"],
 })
-export class PdfGeneratorComponent {
+export class ReportGeneratorComponent {
   private inventoryService = inject(InventoryService);
   private stockReportService = inject(StockReportService);
   private dateTime = new Date();
@@ -219,7 +220,7 @@ export class PdfGeneratorComponent {
     }
   }
 
-  downloadPdfReport() {
+  downloadNewPdfReport() {
     this.generatePDF(false);
   }
 
@@ -247,7 +248,7 @@ export class PdfGeneratorComponent {
   /**
    * Downloads all PDFs from the server as a ZIP file.
    */
-  downloadPdfReports () {
+  downloadAllPdfReports () {
     const zip = new JSZip();
     const usedFilenames = new Set<string>();
 
@@ -290,5 +291,20 @@ export class PdfGeneratorComponent {
         console.error("Error downloading PDF report to client:", error);
       }
     });
+  }
+
+  /**
+   * Download a single PDF report from the server.
+   */
+  downloadSinglePdfReport (report: StockReport) {
+    const pdfBlob = this.covertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
+    const url = window.URL.createObjectURL(pdfBlob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = report.reportName;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
   }
 }

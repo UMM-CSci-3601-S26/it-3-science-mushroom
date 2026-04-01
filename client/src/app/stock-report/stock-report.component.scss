@@ -21,3 +21,18 @@ mat-radio-button {
   bottom: 15px;
   right: 30px;
 }
+
+.reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

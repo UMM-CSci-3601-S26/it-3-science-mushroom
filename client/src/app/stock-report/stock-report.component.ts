@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ViewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,9 +24,11 @@ import { InventoryService } from '../inventory/inventory.service';
 // Stock Report Imports
 import { StockReportTreeComponent } from './stock-report-tree.component';
 import { StockNode } from './stock-report-tree.component';
+import { StockReportService } from './stock-report.service';
+import { StockReport } from './stock-report';
 
 // PDF Generator Imports
-import { PdfGeneratorComponent } from './report-generator/report-generator.component';
+import { ReportGeneratorComponent } from './report-generator/report-generator.component';
 
 @Component({
   selector: 'app-stock-report',
@@ -46,18 +48,32 @@ import { PdfGeneratorComponent } from './report-generator/report-generator.compo
     MatTooltipModule,
     MatIconModule,
     StockReportTreeComponent,
-    PdfGeneratorComponent
+    ReportGeneratorComponent
   ],
 })
 
 export class StockReportComponent {
   private inventoryService = inject(InventoryService);
+  private reportService = inject(StockReportService);
 
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
       catchError(() => of([]))
     )
   );
+
+  reports = toSignal<StockReport[]>(
+    this.reportService.getReports().pipe(
+      catchError(() => of([]))
+    )
+  );
+
+  @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
+  downloadSingleReport(report: StockReport) {
+    console.log("Hi!")
+    if (!this.reportGenerator || !report) return;
+    this.reportGenerator.downloadSinglePdfReport(report);
+  }
 
   // Convert inventory to StockNode for tree display
   private inventoryToStockNode(item: Inventory): StockNode {
