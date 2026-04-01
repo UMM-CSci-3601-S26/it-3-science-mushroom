@@ -1,122 +1,136 @@
-// // Angular Imports
-// import { provideHttpClient } from '@angular/common/http';
-// import { provideHttpClientTesting } from '@angular/common/http/testing';
-// import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-// import { provideRouter } from '@angular/router';
 
-// // RxJS Imports
-// import { Observable, of } from 'rxjs';
+// Angular Imports
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-// // Family Imports
-// import { MockFamilyService } from 'src/testing/family.service.mock';
-// import { Family } from './stock-report';
-// import { FamilyListComponent } from './stock-report-list.component';
-// import { FamilyService } from './stock-report.service';
+// RxJS Imports
+import { of } from 'rxjs';
 
-// describe('Family list', () => {
-//   let familyList: FamilyListComponent;
-//   let fixture: ComponentFixture<FamilyListComponent>;
-//   let familyService: FamilyService;
+// Stock Report Imports
+import { StockReport } from './stock-report';
+import { StockReportService } from './stock-report.service';
+import { StockReportComponent } from './stock-report.component';
 
-//   beforeEach(() => {
-//     TestBed.configureTestingModule({
-//       imports: [FamilyListComponent],
-//       providers: [
-//         provideHttpClient(),
-//         provideHttpClientTesting(),
-//         { provide: FamilyService, useClass: MockFamilyService },
-//         provideRouter([])
-//       ],
-//     });
-//   });
+// Inventory Imports
+import { Inventory } from '../inventory/inventory';
+import { InventoryService } from '../inventory/inventory.service';
 
-//   beforeEach(waitForAsync(() => {
-//     TestBed.compileComponents().then(() => {
-//       fixture = TestBed.createComponent(FamilyListComponent);
-//       familyList = fixture.componentInstance;
-//       familyService = TestBed.inject(FamilyService);
-//       fixture.detectChanges();
-//     });
-//   }));
+describe('StockReportComponent', () => {
+  let component: StockReportComponent;
+  let fixture: ComponentFixture<StockReportComponent>;
+  let inventoryService: InventoryService;
+  let stockReportService: StockReportService;
 
-//   it('should create the component', () => {
-//     expect(familyList).toBeTruthy();
-//   });
+  const mockInventory: Inventory[] = [
+    { item: 'Shirt', description: 'Stocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, maxQuantity: 10, minQuantity: 0, stockState: "Stocked", notes: '' },
+    { item: 'Pants', description: 'Understocked Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, maxQuantity: 10, minQuantity: 7, stockState: "Under-Stocked", notes: '' },
+    { item: 'Shirt', description: 'Overstocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 12, maxQuantity: 10, minQuantity: 0, stockState: "Over-Stocked", notes: '' },
+    { item: 'Pants', description: 'Out of Stock Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 0, maxQuantity: 10, minQuantity: 7, stockState: "Out of Stock", notes: '' },
+  ];
 
-//   it('should load families from service', () => {
-//     const families = familyList.families();
-//     // There are 3 families
-//     expect(families.length).toBe(3);
-//     // The first family's guardian is John Johnson
-//     expect(families[0].guardianName).toBe('John Johnson');
-//   });
+  const mockReports: StockReport[] = [
+    { _id: '1', stockReportPDF: 'pdfdata1', reportName: 'Report 1' },
+    { _id: '2', stockReportPDF: 'pdfdata2', reportName: 'Report 2' },
+  ];
 
-//   it('exportFamilies() should be called when CSV is downloaded', () => {
-//     spyOn(familyService, 'exportFamilies').and.returnValue(of('csv-data'));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [StockReportComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        StockReportService,
+        InventoryService
+      ]
+    }).compileComponents();
 
-//     spyOn(URL, 'createObjectURL').and.returnValue('blob-url');
-//     spyOn(URL, 'revokeObjectURL');
+    inventoryService = TestBed.inject(InventoryService);
+    stockReportService = TestBed.inject(StockReportService);
 
-//     const click = jasmine.createSpy('click');
-//     spyOn(document, 'createElement').and.returnValue({ click } as undefined);
+    // Mock the inventory service
+    spyOn(inventoryService, 'getInventory').and.returnValue(of(mockInventory));
 
-//     familyList.downloadCSV();
-//     expect(familyService.exportFamilies).toHaveBeenCalled();
-//     expect(document.createElement).toHaveBeenCalledWith('a');
-//     expect(click).toHaveBeenCalled();
-//     expect(URL.createObjectURL).toHaveBeenCalled();
-//     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob-url');
-//   });
-// });
+    // Mock the stock report service
+    spyOn(stockReportService, 'getReports').and.returnValue(of(mockReports));
 
-// /*
-// * This test is a little odd, but illustrates how we can use stubs
-// * to create mock objects (a service in this case) that be used for
-// * testing. Here we set up the mock FamilyService (familyServiceStub) so that
-// * _always_ fails (throws an exception) when you request a set of families.
-// */
-// describe('Misbehaving Family List', () => {
-//   let familyList: FamilyListComponent;
-//   let fixture: ComponentFixture<FamilyListComponent>;
+    fixture = TestBed.createComponent(StockReportComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-//   let familyServiceStub: {
-//     getFamilies: () => Observable<Family[]>;
-//     exportFamilies: () => Observable<string>;
-//   };
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
-//   beforeEach(() => {
-//     // stub FamilyService for test purposes
-//     familyServiceStub = {
-//       getFamilies: () =>
-//         new Observable((observer) => {
-//           observer.error('getFamilies() Observer generates an error');
-//         }),
-//       exportFamilies: () => of('')
-//     };
-//   });
+  describe('StockNode Conversions', () => {
+    it('should load inventory data', () => {
+      expect(component.inventory()).toEqual(mockInventory);
+    });
 
-//   // Construct the `familyList` used for the testing in the `it` statement
-//   // below.
-//   beforeEach(waitForAsync(() => {
-//     TestBed.configureTestingModule({
-//       imports: [
-//         FamilyListComponent
-//       ],
-//       providers: [{
-//         provide: FamilyService,
-//         useValue: familyServiceStub
-//       }, provideRouter([])],
-//     })
-//       .compileComponents();
-//   }));
+    it('should properly compute stocked items', () => {
+      const stockedItems = component.stockedItems();
+      expect(stockedItems.length).toBe(1);
+      expect(stockedItems[0]).toEqual({
+        description: 'Stocked Shirt',
+        children: [
+          { quantity: 10, label: '- Current Quantity' },
+          { maxQuantity: 10, label: '- Max Quantity' },
+          { minQuantity: 0, label: '- Min Quantity' },
+        ]
+      });
+    });
 
-//   beforeEach(() => {
-//     fixture = TestBed.createComponent(FamilyListComponent);
-//     familyList = fixture.componentInstance;
-//     fixture.detectChanges();
-//   });
+    it('should properly compute out of stock items', () => {
+      const outOfStockitems = component.outOfStockItems();
+      expect(outOfStockitems.length).toBe(1);
+      expect(outOfStockitems[0]).toEqual({
+        description: 'Out of Stock Pants',
+        children: [
+          { quantity: 0, label: '- Current Quantity' },
+          { maxQuantity: 10, label: '- Max Quantity' },
+          { minQuantity: 7, label: '- Min Quantity' },
+        ]
+      });
+    });
 
-//   it('it will return an empty array when the service experiences an error', () => {
-//     expect(familyList.families()).toEqual([]); // familyList should return an empty array
-//   });
-// });
+    it('should properly compute overstocked items', () => {
+      const overStockedItems = component.overStockedItems();
+      expect(overStockedItems.length).toBe(1);
+      expect(overStockedItems[0]).toEqual({
+        description: 'Overstocked Shirt',
+        children: [
+          { quantity: 12, label: '- Current Quantity' },
+          { maxQuantity: 10, label: '- Max Quantity' },
+          { minQuantity: 0, label: '- Min Quantity' },
+        ]
+      });
+    });
+
+    it('should properly compute understocked items', () => {
+      const underStockedItems = component.underStockedItems();
+      expect(underStockedItems.length).toBe(1);
+      expect(underStockedItems[0]).toEqual({
+        description: 'Understocked Pants',
+        children: [
+          { quantity: 5, label: '- Current Quantity' },
+          { maxQuantity: 10, label: '- Max Quantity' },
+          { minQuantity: 7, label: '- Min Quantity' },
+        ]
+      });
+    });
+  });
+
+  describe('Download Single Report', () => {
+    it('should load reports data', () => {
+      expect(component.reports()).toEqual(mockReports);
+    });
+
+    it('should call downloadSingleReport with the correct report', () => {
+      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Report 1' };
+      spyOn(component.reportGenerator, 'downloadSinglePdfReport');
+      component.downloadSingleReport(mockReport);
+      expect(component.reportGenerator.downloadSinglePdfReport).toHaveBeenCalledWith(mockReport);
+    });
+  });
+});

@@ -70,7 +70,6 @@ export class StockReportComponent {
 
   @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
   downloadSingleReport(report: StockReport) {
-    console.log("Hi!")
     if (!this.reportGenerator || !report) return;
     this.reportGenerator.downloadSinglePdfReport(report);
   }
