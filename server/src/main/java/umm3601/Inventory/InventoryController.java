@@ -129,6 +129,9 @@ public class InventoryController implements Controller {
       });
     }
 
+    for (Inventory inv : matching) {
+      updateStockState(inv);
+    }
     ctx.json(matching);
     ctx.status(HttpStatus.OK);
   }
