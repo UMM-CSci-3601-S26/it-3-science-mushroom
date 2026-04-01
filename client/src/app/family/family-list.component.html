@@ -67,33 +67,33 @@
       <mat-card-content>
 
       </mat-card-content>
+
+
+      <div class="flex-row">
+        @if (families()) {
+        <div class="flex-1">
+            <div class="family-cards-container flex-row gap-8 flex-wrap">
+              @for (family of families(); track family._id) {
+              <app-family-card class="family-card" [family]="family"></app-family-card>
+              }
+            </div>
+          </div>
+      }  @else {
+        <div class="flex-1 family-error">
+          <mat-error>
+            There was a problem loading the families. Possibly the server is down or perhaps there are network
+            issues.
+          </mat-error>
+          <mat-error>
+            Please wait a bit and try again or start the server.
+          </mat-error>
+        </div>
+        }
+      </div>
     </mat-card>
 
   </div>
 </div>
-
-<div class="flex-row">
-  @if (families()) {
-  <div class="flex-1">
-      <div class="family-cards-container flex-row gap-8 flex-wrap">
-        @for (family of families(); track family._id) {
-        <app-family-card class="family-card" [family]="family"></app-family-card>
-        }
-      </div>
-    </div>
-}  @else {
-  <div class="flex-1 family-error">
-    <mat-error>
-      There was a problem loading the families. Possibly the server is down or perhaps there are network
-      issues.
-    </mat-error>
-    <mat-error>
-      Please wait a bit and try again or start the server.
-    </mat-error>
-  </div>
-  }
-</div>
-
 
 <button mat-raised-button (click)="downloadCSV()">
   Export CSV
