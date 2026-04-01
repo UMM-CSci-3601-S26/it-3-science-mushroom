@@ -24,4 +24,15 @@ export class InventoryIndex {
       this.externalBarcodeMap.set(ext, item.internalID);
     }
   }
+  unregisterItem(internalID: string) {
+    const item = this.itemMap.get(internalID);
+    if (!item) {
+      return;
+    }
+    this.itemMap.delete(internalID);
+    this.internalBarcodeMap.delete(item.internalBarcode);
+    for (const ext of item.externalBarcode ?? []) {
+      this.externalBarcodeMap.delete(ext);
+    }
+  }
 }
