@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 // JS Imports
 import { catchError, of} from 'rxjs';
-import jsPDF from "jspdf";
+import jsPDF, { jsPDF as jsPDFClass } from "jspdf";
 import autoTable from "jspdf-autotable";
 import JSZip from "jszip";
 
@@ -15,6 +15,13 @@ import { InventoryService } from '../../inventory/inventory.service';
 // Stock Report Imports
 import { StockReportService } from '../stock-report.service';
 import { StockReport } from '../stock-report';
+
+// Type for jsPDF with autoTable metadata
+interface jsPDFWithAutoTable extends jsPDFClass {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
 
 @Component({
   selector: "app-report-generator",
@@ -71,7 +78,7 @@ export class ReportGeneratorComponent {
    * @param savePdf boolean indicating whether to save PDF to server (true) or download to client machine (false)
   */
   generatePDF(savePdf: boolean) {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as jsPDFWithAutoTable;
     // Title
     doc.setFontSize(16);
     doc.text("Stock Report", 10, 10);
@@ -114,8 +121,7 @@ export class ReportGeneratorComponent {
 
     // Calculate the startY for the second table
     // doc.lastAutoTable.finalY holds the Y-coordinate of the last drawn point of the table
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const startY2 = (doc as any).lastAutoTable.finalY + tableSpace;
+    const startY2 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
 
     // Out of Stock Table
     doc.setFontSize(12);
@@ -141,8 +147,7 @@ export class ReportGeneratorComponent {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const startY3 = (doc as any).lastAutoTable.finalY + tableSpace;
+    const startY3 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
 
     // Overstocked Table
     doc.setFontSize(12);
@@ -168,8 +173,7 @@ export class ReportGeneratorComponent {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const startY4 = (doc as any).lastAutoTable.finalY + tableSpace;
+    const startY4 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
 
     // Understocked Table
     doc.setFontSize(12);
