@@ -1,14 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { ReportGeneratorComponent } from './report-generator.component';
 
-describe('PdfGeneratorComponent', () => {
+describe('ReportGeneratorComponent', () => {
   let component: ReportGeneratorComponent;
   let fixture: ComponentFixture<ReportGeneratorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReportGeneratorComponent]
+      imports: [ReportGeneratorComponent, HttpClientTestingModule]
     })
       .compileComponents();
 
