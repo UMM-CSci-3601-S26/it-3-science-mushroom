@@ -25,6 +25,7 @@ export class StationOrderComponent {
   private SupplyListService = inject(SupplyListService);
 
   constructor() {
+    this.loadStationOrder();
     this.loadSupplyList();
   }
 
@@ -43,6 +44,17 @@ export class StationOrderComponent {
   stationOrder = [
   ];
 
+  loadStationOrder(): void {
+    const saved = localStorage.getItem('stationOrder');
+    if (saved) {
+      this.stationOrder = JSON.parse(saved);
+    }
+  }
+
+  saveStationOrder(): void {
+    localStorage.setItem('stationOrder', JSON.stringify(this.stationOrder));
+  }
+
   drop(event: CdkDragDrop<string[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
@@ -54,6 +66,7 @@ export class StationOrderComponent {
         event.currentIndex,
       );
     }
+    this.saveStationOrder();
   }
 
   optionBuilder(data: SupplyList[], key: keyof SupplyList): string[] {
