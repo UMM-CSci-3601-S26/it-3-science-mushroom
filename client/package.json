@@ -24,6 +24,8 @@
     "@angular/platform-browser": "^20.3.16",
     "@angular/platform-browser-dynamic": "^20.3.16",
     "@angular/router": "^20.3.16",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "eslint": "^9.28.0",
     "ngxtension": "^7.1.0",
     "rxjs": "^7.8.1",
