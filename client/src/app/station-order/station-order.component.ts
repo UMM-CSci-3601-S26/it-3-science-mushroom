@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import {CdkDrag, CdkDragDrop, CdkDragPlaceholder, CdkDropList, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 import { MatCardModule } from "@angular/material/card";
+import { MatIconModule } from "@angular/material/icon";
 
 @Component({
   selector: 'app-station-order',
@@ -8,7 +9,8 @@ import { MatCardModule } from "@angular/material/card";
     CdkDrag,
     CdkDropList,
     CdkDragPlaceholder,
-    MatCardModule
+    MatCardModule,
+    MatIconModule
   ],
   templateUrl: './station-order.component.html',
   styleUrl: './station-order.component.scss',

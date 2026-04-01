@@ -1,11 +1,12 @@
 .item-list {
-  width: 300px;
+  min-width: 400px;
   border: solid 1px gray;
   min-height: 60px;
   border-radius: 8px;
   margin-right: 3rem;
   margin-bottom: 2rem;
   margin-left: 3rem;
+  position: center;
 }
 
 .drag-box { //box item itself
@@ -14,6 +15,8 @@
   flex-direction: row;
   font-size: 18px;
   border-bottom: solid 1px gray;
+  text-align: center;
+  position: relative;
 }
 
 .cdk-drag-preview {
@@ -30,6 +33,15 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+.handle {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  cursor: move;
+  width: 24px;
+  height: 24px;
+}
+
 .list-container {
   display: flex;
   flex-direction: row;
@@ -39,6 +51,8 @@
   display: flex;
   flex-direction: column;
   margin-top: 1rem;
+  margin: auto;
+  position: center;
 }
 
 h2 {
