@@ -4,7 +4,6 @@ import { scanRequest, scanResult } from "./scanner";
 import { Injectable, inject } from "@angular/core";
 
 @Injectable({providedIn: 'root'})
-
 export class ScanService {
   private inventoryIndex = inject(InventoryIndex);
 
