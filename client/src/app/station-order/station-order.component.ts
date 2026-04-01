@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, computed, Injectable, signal, inject } from '@angular/core';
 import {CdkDrag, CdkDragDrop, CdkDragPlaceholder, CdkDropList, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
-
+import { SupplyList } from '../supplylist/supplylist';
+import { SupplyListService } from '../supplylist/supplylist.service';
 @Component({
   selector: 'app-station-order',
   imports: [
@@ -15,13 +16,29 @@ import { MatIconModule } from "@angular/material/icon";
   templateUrl: './station-order.component.html',
   styleUrl: './station-order.component.scss',
 })
-export class StationOrderComponent {
 
-  bank = [
-    'pencils',
-    'markers',
-    'crayons'
-  ];
+@Injectable({
+  providedIn: SupplyListService
+})
+
+export class StationOrderComponent {
+  private SupplyListService = inject(SupplyListService);
+
+  constructor() {
+    this.loadSupplyList();
+  }
+
+  loadSupplyList(filters?: SupplyList): void {
+    this.SupplyListService.getSupplyList(filters).subscribe(data => {
+      this.supplyList.set(data);
+    })
+  }
+
+  supplyList = signal<SupplyList[]>([]);
+
+  bank = computed(() =>
+    this.optionBuilder(this.supplyList(), 'item')
+  );
 
   stationOrder = [
   ];
@@ -38,4 +55,11 @@ export class StationOrderComponent {
       );
     }
   }
+
+  optionBuilder(data: SupplyList[], key: keyof SupplyList): string[] {
+    return [...new Set(
+      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '')
+    )]
+  }
 }
+

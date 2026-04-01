@@ -20,13 +20,13 @@
             <div
               cdkDropList
               #bankList="cdkDropList"
-              [cdkDropListData]="bank"
+              [cdkDropListData]="bank()"
               [cdkDropListConnectedTo]="[orderList]"
               class="item-list"
               (cdkDropListDropped)="drop($event)"
             >
 
-            @for (item of bank; track item) {
+            @for (item of bank(); track item) {
               <div class="drag-box" cdkDrag>
                 <div class="drag-box-placeholder" *cdkDragPlaceholder></div>
                 {{ item }}
