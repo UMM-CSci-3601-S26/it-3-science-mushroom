@@ -12,6 +12,7 @@
             <p matListItemTitle>Students</p>
           </mat-list-item>
 
+          <!-- card for the student inside of the family-->
           <div class="student-card-container">
             @for (student of family().students ?? []; track [student.name, student.school, student.grade, student.teacher]) {
               <mat-card class="student-cards">

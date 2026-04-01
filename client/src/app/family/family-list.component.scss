@@ -1,3 +1,4 @@
+// Rules for how the dashboard should be displayed and spacing in-between
 .dashboard-title {
   margin-bottom: 20px;
 }
@@ -13,6 +14,7 @@
   padding: 10px;
 }
 
+// Rules for the differing stats that are displayed
 .stat-number-family {
   font-size: 42px;
   font-weight: bold;
@@ -68,6 +70,7 @@
   font-style: italic;
 }
 
+//Rules for how the family cards should be displayed and spaced
 .family-cards-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
