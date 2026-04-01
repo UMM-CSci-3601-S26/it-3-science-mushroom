@@ -27,7 +27,10 @@
             >
 
             @for (item of bank; track item) {
-              <div class="drag-box" cdkDrag>{{ item }}</div>
+              <div class="drag-box" cdkDrag>
+                <div class="drag-box-placeholder" *cdkDragPlaceholder></div>
+                {{ item }}
+              </div>
             }
             </div>
           </div>
@@ -43,7 +46,10 @@
               (cdkDropListDropped)="drop($event)"
             >
               @for (item of stationOrder; track item) {
-                <div class="drag-box" cdkDrag>{{ item }}</div>
+                <div class="drag-box" cdkDrag>
+                  <div class="drag-box-placeholder" *cdkDragPlaceholder></div>
+                  {{ item }}
+                </div>
               }
             </div>
           </div>

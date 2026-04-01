@@ -13,7 +13,21 @@
   display: flex;
   flex-direction: row;
   font-size: 18px;
-  margin-left: 1rem;
+  border-bottom: solid 1px gray;
+}
+
+.cdk-drag-preview {
+  border: solid 1px gray;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background: darkgray;
+}
+
+.drag-box-placeholder {
+  background: lightgray;
+  border: dashed 1px gray;
+  min-height: 60px;
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 .list-container {
