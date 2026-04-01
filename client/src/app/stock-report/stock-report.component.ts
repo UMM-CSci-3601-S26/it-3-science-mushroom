@@ -26,7 +26,7 @@ import { StockReportTreeComponent } from './stock-report-tree.component';
 import { StockNode } from './stock-report-tree.component';
 
 // PDF Generator Imports
-import { PdfGeneratorComponent } from './pdf-generator/pdf-generator.component';
+import { PdfGeneratorComponent } from './report-generator/report-generator.component';
 
 @Component({
   selector: 'app-stock-report',
@@ -110,12 +110,4 @@ export class StockReportComponent {
   //     window.URL.revokeObjectURL(url);
   //   });
   // }
-
-  downloadPDF() {
-    console.log('PDF downloaded!');
-  }
-
-  finalizeReport() {
-    console.log('Report finalized!');
-  }
 }

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PdfGeneratorComponent } from './pdf-generator.component';
+import { PdfGeneratorComponent } from './report-generator.component';
 
 describe('PdfGeneratorComponent', () => {
   let component: PdfGeneratorComponent;

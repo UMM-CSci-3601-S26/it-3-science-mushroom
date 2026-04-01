@@ -18,8 +18,8 @@ import { StockReportService } from '../stock-report.service';
 
 @Component({
   selector: "app-pdf-generator",
-  templateUrl: "./pdf-generator.component.html",
-  styleUrls: ["./pdf-generator.component.scss"],
+  templateUrl: "./report-generator.component.html",
+  styleUrls: ["./report-generator.component.scss"],
 })
 export class PdfGeneratorComponent {
   private inventoryService = inject(InventoryService);
@@ -68,8 +68,9 @@ export class PdfGeneratorComponent {
   /**
    * Generates a PDF report of the inventory, grouped by Stock State. Each group has its own table with item description, quantity, max quantity, and min quantity.
    * The PDF is saved with the name "StockReport_MM-DD-YYYY.pdf" where MM-DD-YYYY is the current date. The PDF also includes a title and description with the date.
+   * @param savePdf boolean indicating whether to save PDF to server (true) or download to client machine (false)
   */
-  generatePDF() {
+  generatePDF(savePdf: boolean) {
     const doc = new jsPDF();
     // Title
     doc.setFontSize(16);
@@ -196,22 +197,41 @@ export class PdfGeneratorComponent {
 
     // Save PDF with name to client
     const filename = `StockReport_${this.formatDateTime(this.dateTime)}.pdf`;
-    doc.save(filename);
 
-    // Save PDF to server
-    const pdfBlob = doc.output('blob')
+    if(savePdf) {
+      // Save PDF to server
+      const pdfBlob = doc.output('blob');
 
-    const formData = new FormData();
-    formData.append("uploadedPDF", pdfBlob);
-    formData.append("reportName", filename);
+      const formData = new FormData();
+      formData.append("uploadedPDF", pdfBlob);
+      formData.append("reportName", filename);
 
-    this.stockReportService.addNewReport(formData).subscribe({
-      next: (response) => {
-        console.log("PDF report saved to server with ID:", response);
-      },
-      error: (error) => {
-        console.error("Error saving PDF report to server:", error);
-      }
-    });
+      this.stockReportService.addNewReport(formData).subscribe({
+        next: (response) => {
+          console.log("PDF report saved to server with ID:", response);
+        },
+        error: (error) => {
+          console.error("Error saving PDF report to server:", error);
+        }
+      });
+    } else {
+      // Save to client machine
+      doc.save(filename);
+    }
+  }
+
+  downloadPdfReport() {
+    this.generatePDF(false);
+  }
+
+  savePdfReport() {
+    this.generatePDF(true);
+  }
+
+  /**
+   * Downloads all PDFs from th
+   */
+  downloadPdfReports () {
+
   }
 }
