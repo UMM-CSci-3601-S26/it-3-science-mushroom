@@ -2,12 +2,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-// RxJS Imports
+// JS Imports
 import { catchError, of} from 'rxjs';
-
-// jsPDF Imports
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import JSZip from "jszip";
 
 // Inventory Imports
 import { Inventory } from '../../inventory/inventory';
@@ -229,9 +228,67 @@ export class PdfGeneratorComponent {
   }
 
   /**
-   * Downloads all PDFs from th
+   * Converts base64 into a Blob for downloading files off of the server. Currently only handles PDFs.
+   * @param base64String The base64 string to convert to a Blob
+   * @returns The converted Blob
+   */
+  covertBase64ToBlob(base64String: string): Blob {
+    const binaryString = atob(base64String); // Decode Base64
+    const bytes = new Uint8Array(binaryString.length);
+    // Fill byte array with the decoded b64
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    // Make and return Blob
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    return blob;
+  }
+
+  /**
+   * Downloads all PDFs from the server as a ZIP file.
    */
   downloadPdfReports () {
+    const zip = new JSZip();
+    const usedFilenames = new Set<string>();
 
+    this.stockReportService.getReports().subscribe({
+      next: (response) => {
+        for (const report of response) {
+          const pdfBlob = this.covertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
+          let finalFilename = report.reportName; // Temp var to check for duplicate file names
+
+          // If file name already exists
+          if (usedFilenames.has(finalFilename)) {
+            // Split filename and extension
+            const parts = finalFilename.split('.');
+            const extension = parts.pop(); // Get last part (extension)
+            const nameWithoutExt = parts.join('.'); // Everything else
+
+            // Keep incrementing counter until we find a unique name
+            let counter = 1;
+            while (usedFilenames.has(`${nameWithoutExt} (${counter}).${extension}`)) {
+              counter++;
+            }
+            finalFilename = `${nameWithoutExt} (${counter}).${extension}`; // Combine everything back together to make new name
+          }
+
+          usedFilenames.add(finalFilename); // Keep track of used file names
+          zip.file(finalFilename, pdfBlob); // Add blob to zip with the final file name
+        }
+
+        // Generate ZIP and trigger download
+        zip.generateAsync({ type: 'blob' }).then((content) => {
+          const url = URL.createObjectURL(content);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `StockReports_${this.formatDateTime(this.dateTime)}.zip`;
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      },
+      error: (error) => {
+        console.error("Error downloading PDF report to client:", error);
+      }
+    });
   }
 }
