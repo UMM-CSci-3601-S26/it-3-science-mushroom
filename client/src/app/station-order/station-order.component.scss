@@ -1,21 +1,32 @@
 .item-list {
-  width: auto;
+  width: 300px;
   border: solid 1px gray;
   min-height: 60px;
   border-radius: 8px;
   margin-right: 3rem;
   margin-bottom: 2rem;
+  margin-left: 3rem;
 }
 
-.drag-box {
+.drag-box { //box item itself
   padding: 20px 10px;
   display: flex;
   flex-direction: row;
   font-size: 18px;
+  margin-left: 1rem;
 }
 
 .list-container {
-  display: grid;
-  grid-template-columns: 1fr, 1fr;
-  margin-left: 3rem;
+  display: flex;
+  flex-direction: row;
+}
+
+.list-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+h2 {
+  text-align: center;
 }
