@@ -23,6 +23,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           name: 'John Jr.',
           grade: '1',
           school: "Morris Elementary",
+          teacher: "N/A",
           requestedSupplies: ['pencils', 'markers']
         },
       ]
@@ -39,12 +40,14 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           name: 'Jennifer',
           grade: '6',
           school: "Hancock Middle School",
+          teacher: "N/A",
           requestedSupplies: ['headphones']
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
+          teacher: "N/A",
           requestedSupplies: ['calculator']
         },
       ]
@@ -61,18 +64,21 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           name: 'Harold',
           grade: '11',
           school: "Morris High School",
+          teacher: "N/A",
           requestedSupplies: []
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
+          teacher: "N/A",
           requestedSupplies: ['headphones']
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
+          teacher: "N/A",
           requestedSupplies: ['backpack', 'markers']
         },
       ]
@@ -82,6 +88,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
   getDashboardStats() {
     const studentsPerSchool: { [school: string]: number } = {};
     const studentsPerGrade: { [grade: string]: number } = {};
+    let totalStudents = 0;
 
     MockFamilyService.testFamilies.forEach(family => {
       family.students.forEach(student => {
@@ -90,6 +97,8 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
 
         studentsPerGrade[student.grade] =
         (studentsPerGrade[student.grade] ?? 0) + 1;
+
+        totalStudents = totalStudents + 1
       });
     });
 
@@ -97,6 +106,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       studentsPerSchool,
       studentsPerGrade,
       totalFamilies: MockFamilyService.testFamilies.length,
+      totalStudents
     });
   }
 

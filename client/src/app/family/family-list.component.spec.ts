@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { throwError } from 'rxjs';
 
 // RxJS Imports
 import { Observable, of } from 'rxjs';
@@ -12,6 +13,7 @@ import { MockFamilyService } from 'src/testing/family.service.mock';
 import { Family } from './family';
 import { FamilyListComponent } from './family-list.component';
 import { FamilyService } from './family.service';
+import { DashboardStats } from '../family/family';
 
 describe('Family list', () => {
   let familyList: FamilyListComponent;
@@ -81,6 +83,7 @@ describe('Misbehaving Family List', () => {
 
   let familyServiceStub: {
     getFamilies: () => Observable<Family[]>;
+    getDashboardStats: () => Observable<DashboardStats>;
     exportFamilies: () => Observable<string>;
   };
 
@@ -90,6 +93,10 @@ describe('Misbehaving Family List', () => {
       getFamilies: () =>
         new Observable((observer) => {
           observer.error('getFamilies() Observer generates an error');
+        }),
+      getDashboardStats: () =>
+        new Observable((observer) => {
+          observer.error('getDashboardStats() Observer generates an error');
         }),
       exportFamilies: () => of('')
     };
@@ -118,5 +125,39 @@ describe('Misbehaving Family List', () => {
 
   it('it will return an empty array when the service experiences an error', () => {
     expect(familyList.families()).toEqual([]); // familyList should return an empty array
+  });
+});
+
+describe('FamilyDash', () => {
+  let component: FamilyListComponent;
+  let fixture: ComponentFixture<FamilyListComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FamilyListComponent],
+      providers: [
+        { provide: FamilyService, useClass: MockFamilyService },
+        provideRouter([])
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(FamilyListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should set dashboardStats to undefined when getDashboardStats fails', () => {
+    spyOn(MockFamilyService.prototype, 'getDashboardStats')
+      .and.returnValue(throwError(() => new Error('Dashboard request failed')));
+
+    const errorFixture = TestBed.createComponent(FamilyListComponent);
+    const errorComponent = errorFixture.componentInstance;
+    errorFixture.detectChanges();
+
+    expect(errorComponent.dashboardStats()).toBeUndefined();
   });
 });
