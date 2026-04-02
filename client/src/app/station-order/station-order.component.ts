@@ -71,7 +71,7 @@ export class StationOrderComponent {
 
   optionBuilder(data: SupplyList[], key: keyof SupplyList): string[] {
     return [...new Set(
-      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '')
+      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '' && v.trim() !== 'N/A' && !this.stationOrder.includes(v))
     )]
   }
 }
