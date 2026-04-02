@@ -137,13 +137,18 @@
             </button>
             <div class="scanner-wrapper" *ngIf="showScanner">
             <p>Scanner is open</p>
-            <app-scanner (scanned)="onScanned($event)"></app-scanner>
+            <app-scanner
+            (scanned)="onScanned($event)"
+            (manualEntryNeeded)="onManualEntryNeeded($event)"
+            (processingStarted)="scannerProcessing = true"
+            (done)="onScannerDone()"></app-scanner>
             </div>
 
             <button
             mat-stroked-button
             type="button"
-            (click)="showScanner = !showScanner"
+            [disabled]="scannerProcessing"
+            (click)="toggleScanner()"
             data-cy="scan-button"
             >
             {{ showScanner ? 'Close Scanner' : 'Scan Item' }}

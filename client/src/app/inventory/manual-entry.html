@@ -5,7 +5,7 @@
     <mat-form-field>
       <mat-label>Item</mat-label>
       <input matInput formControlName="item" placeholder = "item name" />
-      <mat-error *ngIf="form.get('item').hasError('required')">Item is required</mat-error>
+      <mat-error *ngIf="form.get('item')?.hasError('required')">Item is required</mat-error>
     </mat-form-field>
 
     <mat-form-field>
@@ -35,9 +35,9 @@
 
     <mat-form-field>
       <mat-label>Quantity</mat-label>
-      <input matInput formControlName="item" placeholder = "item name" />
-      <mat-error *ngIf="form.get('quantity').hasError('required')">Quantity is required</mat-error>
-      <mat-error *ngIf="form.get('quantity').hasError('min')">Quantity must be at least 1</mat-error>
+      <input matInput formControlName="quantity" type="number" placeholder = "Quantity" />
+      <mat-error *ngIf="form.get('quantity')?.hasError('required')">Quantity is required</mat-error>
+      <mat-error *ngIf="form.get('quantity')?.hasError('min')">Quantity must be at least 1</mat-error>
     </mat-form-field>
   </form>
 </mat-dialog-content>

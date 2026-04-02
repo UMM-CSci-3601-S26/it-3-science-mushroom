@@ -1,6 +1,7 @@
 import { ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from "@angular/forms";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from "@angular/material/dialog";
+import { MatInputModule } from '@angular/material/input';
 import { Inject, Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatError, MatFormField, MatLabel } from "@angular/material/form-field";
@@ -15,7 +16,8 @@ import { MatError, MatFormField, MatLabel } from "@angular/material/form-field";
     MatDialogModule,
     MatFormField,
     MatLabel,
-    MatError
+    MatError,
+    MatInputModule
   ]
 })
 export class ManualEntry {
@@ -37,7 +39,7 @@ export class ManualEntry {
       size: [''],
       type: [''],
       material: [''],
-      quantity: [0, Validators.required, Validators.min(1)],
+      quantity: [0, [Validators.required, Validators.min(1)]],
       notes: ['']
     });
   }
@@ -49,7 +51,7 @@ export class ManualEntry {
     if (this.form.valid) {
       const newItem = {
         ...this.form.value,
-        internalBarcode: this.data.barcode
+        externalBarcode: [this.data.barcode]
       };
       this.dialogRef.close(newItem);
     } else {
@@ -58,9 +60,6 @@ export class ManualEntry {
   }
   cancel() {
     this.dialogRef.close();
-  }
-  save() {
-    this.dialogRef.close(this.form.value)
   }
 }
 

@@ -3,13 +3,15 @@ package umm3601.Inventory;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Updates.inc;
 
+import static com.mongodb.client.model.ReturnDocument.AFTER;
 import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Sorts;
 
 import io.javalin.Javalin;
@@ -51,10 +53,10 @@ public class BarcodeController implements Controller {
   public void barcodeValidation(Context ctx) {
     String code = ctx.pathParam("code");
 
-    boolean isInternal = code.matches("^ITEM-d{5}%");
+    boolean isInternal = code.matches("^ITEM-\\d{5}%");
     String barcodeType = isInternal ? "internal" : "external";
 
-    Bson filter = isInternal ? eq("internalBarcode", code) : eq("externalBarcode", code);
+    Bson filter = isInternal ? eq("internalBarcode", code) : Filters.in("externalBarcode", code);
 
     boolean exists = inventoryCollection.find(filter).first() != null;
 
@@ -88,7 +90,7 @@ public class BarcodeController implements Controller {
     if (code.startsWith("ITEM-")) {
       filter = eq("internalBarcode", code);
     } else {
-      filter = eq("externalBarcode", code);
+      filter = Filters.in("externalBarcode", code);
     }
 
     Inventory inv = inventoryCollection.find(filter).first();
@@ -118,6 +120,7 @@ public class BarcodeController implements Controller {
 
   public void updateQuantity(Context ctx) {
     String id = ctx.pathParam("id");
+    System.out.println("Raw ID: " + id);
     Document body = ctx.bodyAsClass(Document.class);
     String action = body.getString("action");
 
@@ -129,12 +132,16 @@ public class BarcodeController implements Controller {
 
     Bson filter;
     try {
-      filter = eq("_id", new ObjectId(id));
+      if (id.startsWith("ITEM-")) {
+        filter = eq("internalBarcode", id);
+      } else {
+        filter = Filters.in("externalBarcode", id);
+      }
     } catch (IllegalArgumentException e) {
       throw new BadRequestResponse("Invalid inventory ID.");
     }
 
-    Inventory updated = inventoryCollection.findOneAndUpdate(filter, inc("quantity", delta));
+    Inventory updated = inventoryCollection.findOneAndUpdate(filter, inc("quantity", delta), new FindOneAndUpdateOptions().returnDocument(AFTER));
     if (updated == null) {
       throw new NotFoundResponse("Inventory item not found for ID: " + id);
     }

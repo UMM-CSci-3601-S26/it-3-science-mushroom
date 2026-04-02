@@ -1,17 +1,18 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter } from '@angular/core';
 import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { OnDestroy } from '@angular/core';
-// import { ManualEntry } from '../inventory/manual-entry';
 import { InventoryIndex } from '../inventory/inventory-index';
 import { InventoryService } from '../inventory/inventory.service'
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog} from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { Inventory } from '../inventory/inventory';
 import { ScanService } from './scan-service';
-import { ManualEntry } from '../inventory/manual-entry';
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
+  standalone: true,
+  imports: [CommonModule]
 })
 
 export class ScannerComponent implements AfterViewInit, OnDestroy {
@@ -27,15 +28,22 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * so the person wont have to input data for the same item more than once
    */
   sessionItems = new Map<string, Inventory>();
+
+  private manualEntryResolver: ((item: Inventory | null) => void) | null = null;
   @ViewChild('video', { static: false })
     video!: ElementRef<HTMLVideoElement>;
 
-  @Output()
-    scanned = new EventEmitter<string>();
+  @Output() scanned = new EventEmitter<string>();
+  @Output() manualEntryNeeded = new EventEmitter<string>();
+  @Output() processingStarted = new EventEmitter<void>();
+  @Output() done = new EventEmitter<void>();
 
   private codeReader = new BrowserMultiFormatReader();
   private controls: IScannerControls | null = null;
 
+  private lastScannedBarcode: string | null;
+  private lastScannedTime = 0;
+  private readonly SCAN_COOLDOWN_MS = 1500;
 
   constructor(
     // eslint-disable-next-line
@@ -104,10 +112,24 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * @param rawBarcode
    */
   handleScan(rawBarcode: string) {
+    if (!this.isScanning) {
+      return;
+    }
+
     const normalized = this.scanService.normalizeBarcode(rawBarcode);
-    console.log('normalized barcode: ', normalized);
+    const now = Date.now();
+
+    if ( normalized === this.lastScannedBarcode &&
+       now - this.lastScannedTime < this.SCAN_COOLDOWN_MS) {
+      return;
+    }
+
+    this.lastScannedBarcode = normalized;
+    this.lastScannedTime = now;
+
+    console.log('Normalized Barcode', normalized);
     this.scannedItems.push(normalized);
-    this.scanned.emit(normalized)
+    this.scanned.emit(normalized);
   }
   /**
    * Phase 3 of scanning
@@ -117,12 +139,14 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    *
    */
   async onDone() {
+    this.processingStarted.emit();
     this.isScanning = false;
     this.stopScanner();
 
     await this.processScannedItems();
 
     this.scannedItems = []
+    this.done.emit();
   }
   // stops camera and releases media stream
   stopScanner() {
@@ -153,6 +177,8 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   }
   clearScans() {
     this.scannedItems = []
+    this.lastScannedBarcode = null;
+    this.lastScannedTime = 0;
   }
   /**
    * Phase 4 of scanning
@@ -167,8 +193,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
 
     for (const barcode of this.scannedItems) {
       if (this.sessionItems.has(barcode)) {
-        console.log('already in inv, moving on')
-        continue;
+        console.log('already in inv, update')
       }
       // Check
       let item = this.inventoryIndex.getByBarcode(barcode);
@@ -181,10 +206,26 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
         try {
           item = await firstValueFrom(this.inventoryService.lookUpByBarcode(barcode));
           if (item) {
-            // if the item is in the inventory then register it to the system
+            let barcodeValue: string | null = null;
+            if(item.internalBarcode && item.internalBarcode.trim() !== '') {
+              barcodeValue = item.internalBarcode;
+            } else if (Array.isArray(item.externalBarcode) && item.externalBarcode.length > 0) {
+              barcodeValue = item.externalBarcode[0];
+            } else if (typeof item.externalBarcode === 'string' && item.externalBarcode !== '') {
+              barcodeValue = item.externalBarcode;
+            }
+
+            if (!barcodeValue) {
+              console.error("No valid barcode found on item", item);
+              continue;
+            }
+            // if the item is in the inventory then update it in the system
             //  and push it to session items and found item
-            this.inventoryIndex.registerItem(item);
-            this.sessionItems.set(barcode, item);
+            this.inventoryService.updateQuantity(barcodeValue, 'add').subscribe(updated => {
+              this.inventoryIndex.registerItem(updated);
+              this.sessionItems.set(barcode, updated);
+              this.inventoryService.loadInventory();
+            })
             foundItems.push(item);
           }
         }  catch {
@@ -195,7 +236,8 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     }
     console.log('Found:', foundItems.length, 'Missing', missingItems.length);
 
-    // helper goes here
+    await this.handleProcessingResults(missingItems);
+    this.processing = false;
   }
 
   /**
@@ -203,7 +245,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * information about each one
    */
 
-  async handleProcessingResults(missingItems: string) {
+  async handleProcessingResults(missingItems: string[]) {
     for (const barcode of missingItems) {
       if (this.sessionItems.has(barcode)) {
         continue;
@@ -220,20 +262,30 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * about each item
    */
   async openManualEntry(barcode: string) {
-    const dialogRef = this.dialog.open(ManualEntry, { data: { barcode } });
-    const result = await firstValueFrom(dialogRef.afterClosed());
+    const result = await new Promise<Inventory | null>(r => {
+      this.manualEntryResolver = r;
+      this.manualEntryNeeded.emit(barcode);
+    });
 
     if (result) {
-      result.internalBarcode = barcode;
-      try {
-        const saved = await firstValueFrom(this.inventoryService.addInventory(result));
-        if (saved) {
+      const itemToSave: Inventory = {
+        ...result,
+        externalBarcode: [barcode]
+      };
+      const saved = await firstValueFrom(this.inventoryService.addInventory(itemToSave));
+      this.inventoryService.loadInventory();
+      if (saved) {
+        try {
           this.inventoryIndex.registerItem(saved as Inventory);
           this.sessionItems.set(barcode, saved as Inventory);
+        } catch (err) {
+          console.error("Failed to Save manually", err);
         }
-      } catch (err) {
-        console.error('Failed to save manually entered item', err)
       }
     }
+  }
+  resolveManualEntry(result: Inventory | null) {
+    this.manualEntryResolver?.(result);
+    this.manualEntryResolver = null;
   }
 }

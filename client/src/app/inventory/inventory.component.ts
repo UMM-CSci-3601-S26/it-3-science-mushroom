@@ -20,16 +20,16 @@ import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 
 // RxJS Imports
-import { catchError, combineLatest, debounceTime, of, switchMap, firstValueFrom } from 'rxjs';
+import { catchError, combineLatest, debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 // Inventory Imports
 import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
-import { ManualEntry } from './manual-entry';
 
 import { MatDialog } from '@angular/material/dialog';
+import { ManualEntry } from './manual-entry';
 
 
 @Component({
@@ -63,13 +63,16 @@ export class InventoryComponent {
   readonly page = viewChild<MatPaginator>(MatPaginator)
   readonly sort = viewChild<MatSort>(MatSort);
 
+  readonly scannerRef = viewChild(ScannerComponent);
+
   private snackBar = inject(MatSnackBar);
   private inventoryService = inject(InventoryService);
   private inventoryIndex = inject(InventoryIndex);
   private dialog = inject(MatDialog);
 
+  reload = signal(0);
   showScanner = false;
-
+  scannerProcessing = false;
   constructor() {
     effect(() => {
       this.dataSource.data = this.serverFilteredInventory();
@@ -90,30 +93,37 @@ export class InventoryComponent {
   errMsg = signal<string | undefined>(undefined);
 
   async onScanned(code: string) {
-    try {
-      const item = await firstValueFrom(
-        this.inventoryService.lookUpByBarcode(code)
-      );
+    console.log('scanned item', code)
+  }
 
-      if (item) {
-        this.inventoryIndex.registerItem(item);
-        this.showScanner = false;
-        return;
-      }
-    } catch {
-      console.warn('Item not found, manual entry needed');
-      const dialogRef = this.dialog.open(ManualEntry, { data: {barcode: code}});
+  async onManualEntryNeeded(barcode: string) {
+    const dialogRef = this.dialog.open(ManualEntry, { data: { barcode }});
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    this.scannerRef()?.resolveManualEntry(result ?? null)
+  }
 
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.inventoryService.addInventory(result).subscribe(() => {
-            console.log('Item created')
-          })
-        }
-      })
+  toggleScanner() {
+    if (this.showScanner) {
+      this.showScanner = false;
+    } else {
+      this.showScanner = true;
+      this.scannerProcessing = false
     }
+  }
 
+  onScannerDone() {
+    this.scannerProcessing = false;
     this.showScanner = false;
+  }
+
+  addItem(item: Inventory) {
+    this.inventoryService.addInventory(item).subscribe(() => {
+      this.reload.update(v => v + 1);
+    })
+  }
+
+  matchItem(barcode: string): Inventory | null {
+    return this.inventoryIndex.getByBarcode(barcode);
   }
 
   private filterOptions(options: SelectOption[], input:string): SelectOption[] {
@@ -156,12 +166,12 @@ export class InventoryComponent {
   private size$ = toObservable(this.size);
   private type$ = toObservable(this.type);
   private material$ = toObservable(this.material);
-
   private description$ = toObservable(this.description);
   private quantity$ = toObservable(this.quantity);
+  private reload$ = toObservable(this.reload);
 
   serverFilteredInventory = toSignal(
-    combineLatest([this.item$, this.brand$, this.color$, this.size$, this.type$, this.material$, this.description$, this.quantity$]).pipe(
+    combineLatest([this.item$, this.brand$, this.color$, this.size$, this.type$, this.material$, this.description$, this.quantity$, this.reload$]).pipe(
       debounceTime(300),
       switchMap(([ item, brand, color, size, type, material]) =>
         this.inventoryService.getInventory({ item, brand, color, size, type, material})

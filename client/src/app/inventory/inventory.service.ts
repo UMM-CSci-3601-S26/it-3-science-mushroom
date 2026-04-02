@@ -61,7 +61,7 @@ export class InventoryService {
   )
 
   lookUpByBarcode(barcode:string): Observable<Inventory> {
-    return this.httpClient.get<Inventory>(`/api/barcode/lookup/${barcode}`);
+    return this.httpClient.get<Inventory>(`${environment.apiUrl}barcode/lookup/${barcode}`);
   }
   addManually(item: Inventory): Observable<Inventory> {
     return this.httpClient.post<Inventory>(this.inventoryUrl, item);
@@ -71,6 +71,9 @@ export class InventoryService {
   }
   addInventory(item: Inventory) {
     return this.httpClient.post('/api/inventory', item);
+  }
+  updateQuantity(barcode: string, action: 'add' | 'remove') {
+    return this.httpClient.post<Inventory>(`/api/inventory/${barcode}/quantity`, { action: action });
   }
 
   // addByScanAndUpdate(barcode: string) {

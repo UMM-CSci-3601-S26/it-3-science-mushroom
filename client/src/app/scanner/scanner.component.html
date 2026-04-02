@@ -1,3 +1,28 @@
-<video #video style="width: 100%; height: 300px; border: 3px solid red;"></video>
+<div class="scanner-container">
 
-<button (click)="onDone()">Done</button>
+  <!-- Camera feed: always in the DOM so @ViewChild resolves, hidden when not active -->
+  <video #video
+    style="width: 100%; height: 300px; border: 3px solid red;"
+    [style.display]="isScanning ? 'block' : 'none'">
+  </video>
+
+  <!-- Live list of barcodes accepted during this session -->
+  <div *ngIf="scannedItems.length > 0" class="scanned-list" style="margin-top: 8px;">
+    <strong>Scanned ({{ scannedItems.length }}):</strong>
+    <ul style="margin: 4px 0; padding-left: 20px;">
+      <li *ngFor="let code of scannedItems">{{ code }}</li>
+    </ul>
+  </div>
+
+  <!-- Processing indicator while batch lookup + manual entry runs -->
+  <div *ngIf="processing" style="margin-top: 8px;">
+    <em>Processing items, please wait…</em>
+  </div>
+
+  <!-- Controls -->
+  <div style="margin-top: 8px; display: flex; gap: 8px;">
+    <button (click)="onDone()" [disabled]="!isScanning || processing">Done</button>
+    <button (click)="clearScans()" [disabled]="!isScanning || processing">Clear</button>
+  </div>
+
+</div>
