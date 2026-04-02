@@ -1,0 +1,9 @@
+<h2>Manual Entry</h2>
+
+<form [formGroup]="form">
+  <input placeholder="Item" formControlName="item" />
+  <input placeholder="Quantity" type="number" formControlName="quantity" />
+
+  <button (click)="submit()">Save</button>
+  <button (click)="cancel()">Cancel</button>
+</form>
