@@ -1,7 +1,6 @@
 package umm3601.Inventory;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.or;
 import static com.mongodb.client.model.Updates.inc;
 
 import org.bson.Document;
@@ -57,10 +56,13 @@ public class BarcodeController implements Controller {
   public void lookupBarcode(Context ctx) {
     String code = ctx.pathParam("code");
 
-    Bson filter = or(
-      eq("internalBarcode", code),
-      eq("externalBarcode", code)
-    );
+    Bson filter;
+
+    if (code.startsWith("ITEM-")) {
+      filter = eq("internalBarcode", code);
+    } else {
+      filter = eq("externalBarcode", code);
+    }
 
     Inventory inv = inventoryCollection.find(filter).first();
 
@@ -75,12 +77,11 @@ public class BarcodeController implements Controller {
   public void addInventory(Context ctx) {
     Inventory newItem = ctx.bodyAsClass(Inventory.class);
 
-    if (newItem.item == null || newItem.item.isBlank()) {
-      throw new BadRequestResponse("Item name is required.");
-    }
+    boolean noInternal = newItem.internalBarcode == null || newItem.internalBarcode.isBlank();
+    boolean noExternal = newItem.externalBarcode == null || newItem.externalBarcode.isEmpty();
 
-    if (newItem.internalBarcode == null || newItem.internalBarcode.isBlank()) {
-      throw new BadRequestResponse("Internal barcode is required");
+    if (noInternal && noExternal) {
+    throw new BadRequestResponse("Either internalBarcode or externalBarcode is required");
     }
 
     inventoryCollection.insertOne(newItem);

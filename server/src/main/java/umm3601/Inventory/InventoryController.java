@@ -90,12 +90,14 @@ public class InventoryController implements Controller {
 
   public void addInventory(Context ctx) {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
-
-    if (newInv.item == null || newInv.item.isEmpty()) {
-      throw new BadRequestResponse("Item name is required.");
+    Bson filter;
+    if (newInv.internalBarcode != null && !newInv.internalBarcode.isBlank()) {
+      filter = eq("internalBarcode", newInv.internalBarcode);
+    } else {
+      filter = eq("externalBarcode", newInv.externalBarcode);
     }
 
-    Inventory exists = inventoryCollection.find(eq("internalBarcode", newInv.internalBarcode)).first();
+    Inventory exists = inventoryCollection.find(filter).first();
     if (exists != null) {
 
       int existingQuantity = (exists.quantity > 0) ? exists.quantity : 0; // Default to 0 if not provided or invalid
@@ -118,12 +120,14 @@ public class InventoryController implements Controller {
 
   public void removeInventory(Context ctx) {
     Inventory inv = ctx.bodyAsClass(Inventory.class);
-
-    if (inv.internalBarcode == null || inv.internalBarcode.isEmpty()) {
-      throw new BadRequestResponse("Internal barcode is required.");
+    Bson filter;
+    if (inv.internalBarcode != null && !inv.internalBarcode.isBlank()) {
+      filter = eq("internalBarcode", inv.internalBarcode);
+    } else {
+      filter = eq("externalBarcode", inv.externalBarcode);
     }
 
-    Inventory exists = inventoryCollection.find(eq("internalBarcode", inv.internalBarcode)).first();
+    Inventory exists = inventoryCollection.find(eq(filter)).first();
     if (exists == null) {
       throw new NotFoundResponse("No item found for internal barcode: " + inv.internalBarcode);
     }
