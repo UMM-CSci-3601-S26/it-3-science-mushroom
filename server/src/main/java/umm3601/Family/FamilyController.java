@@ -20,7 +20,6 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 
-import com.mongodb.client.FindIterable;
 // Com Imports
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;

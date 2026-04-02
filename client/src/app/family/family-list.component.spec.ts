@@ -1,16 +1,18 @@
 // Angular Imports
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { throwError } from 'rxjs';
+import { signal, Signal } from '@angular/core';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 // RxJS Imports
 import { Observable, of } from 'rxjs';
 
 // Family Imports
 import { MockFamilyService } from 'src/testing/family.service.mock';
-import { Family } from './family';
+import { Family, SelectOption } from './family';
 import { FamilyListComponent } from './family-list.component';
 import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
@@ -84,6 +86,7 @@ describe('Misbehaving Family List', () => {
   let familyServiceStub: {
     getFamilies: () => Observable<Family[]>;
     getDashboardStats: () => Observable<DashboardStats>;
+    familyOptions: Signal<SelectOption[]>;
     exportFamilies: () => Observable<string>;
   };
 
@@ -98,6 +101,7 @@ describe('Misbehaving Family List', () => {
         new Observable((observer) => {
           observer.error('getDashboardStats() Observer generates an error');
         }),
+      familyOptions: signal([]),
       exportFamilies: () => of('')
     };
   });
@@ -107,7 +111,8 @@ describe('Misbehaving Family List', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        FamilyListComponent
+        FamilyListComponent,
+        MatAutocompleteModule
       ],
       providers: [{
         provide: FamilyService,
@@ -123,8 +128,18 @@ describe('Misbehaving Family List', () => {
     fixture.detectChanges();
   });
 
-  it('it will return an empty array when the service experiences an error', () => {
-    expect(familyList.families()).toEqual([]); // familyList should return an empty array
+  it('generates an error if we dont set up a Family Service', () => {
+    // If the service fails, we expect the `serverFilteredFamilies` signal to
+    // be an empty array of families.
+    expect(familyList.serverFilteredFamilies())
+      .withContext("service can't give values to the list if it's not there")
+      .toEqual([]);
+    // We also expect the `errMsg` signal to contain the "Problem contacting…"
+    // error message. (It's arguably a bit fragile to expect something specific
+    // like this; maybe we just want to expect it to be non-empty?)
+    expect(familyList.errMsg())
+      .withContext('the error message will be')
+      .toContain('Problem contacting the server – Error Code:');
   });
 });
 

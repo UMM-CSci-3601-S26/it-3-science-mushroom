@@ -101,6 +101,9 @@ describe('FamilyService', () => {
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
     familyService = TestBed.inject(FamilyService);
+
+    const initReq = httpTestingController.expectOne(familyService.familyUrl);
+    initReq.flush(testFamilies);
   });
 
   afterEach(() => {
