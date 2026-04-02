@@ -20,13 +20,16 @@ import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 
 // RxJS Imports
-import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
+import { catchError, combineLatest, debounceTime, of, switchMap, firstValueFrom } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 // Inventory Imports
 import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
+import { ManualEntry } from './manual-entry';
+
+import { MatDialog } from '@angular/material/dialog';
 
 
 @Component({
@@ -63,6 +66,7 @@ export class InventoryComponent {
   private snackBar = inject(MatSnackBar);
   private inventoryService = inject(InventoryService);
   private inventoryIndex = inject(InventoryIndex);
+  private dialog = inject(MatDialog);
 
   showScanner = false;
 
@@ -85,9 +89,31 @@ export class InventoryComponent {
 
   errMsg = signal<string | undefined>(undefined);
 
-  onScanned(code: string) {
-    this.inventoryService.addByScanAndUpdate(code); // This needs to be fixed
-    this.showScanner = false; // optional: close scanner after scan
+  async onScanned(code: string) {
+    try {
+      const item = await firstValueFrom(
+        this.inventoryService.lookUpByBarcode(code)
+      );
+
+      if (item) {
+        this.inventoryIndex.registerItem(item);
+        this.showScanner = false;
+        return;
+      }
+    } catch {
+      console.warn('Item not found, manual entry needed');
+      const dialogRef = this.dialog.open(ManualEntry, { data: {barcode: code}});
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.inventoryService.addInventory(result).subscribe(() => {
+            console.log('Item created')
+          })
+        }
+      })
+    }
+
+    this.showScanner = false;
   }
 
   private filterOptions(options: SelectOption[], input:string): SelectOption[] {

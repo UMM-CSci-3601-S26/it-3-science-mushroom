@@ -60,14 +60,17 @@ export class InventoryService {
     this.optionBuilder(this.inventory(), 'material')
   )
 
-  addByScan(barcode:string): Observable<Inventory> {
-    return this.httpClient.post<Inventory>(`${this.inventoryUrl}/barcode/lookup/${barcode}`, { barcode });
+  lookUpByBarcode(barcode:string): Observable<Inventory> {
+    return this.httpClient.get<Inventory>(`/api/barcode/lookup/${barcode}`);
   }
   addManually(item: Inventory): Observable<Inventory> {
     return this.httpClient.post<Inventory>(this.inventoryUrl, item);
   }
   removeOne(identifier: string): Observable<Inventory> {
     return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/remove`, { params: { id: identifier } });
+  }
+  addInventory(item: Inventory) {
+    return this.httpClient.post('/api/inventory', item);
   }
 
   // addByScanAndUpdate(barcode: string) {
