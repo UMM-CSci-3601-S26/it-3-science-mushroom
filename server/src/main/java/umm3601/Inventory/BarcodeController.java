@@ -35,6 +35,33 @@ public class BarcodeController implements Controller {
           UuidRepresentation.STANDARD);
     }
 
+  /**
+   * Get /api/barcode/validate/{code}
+   * decides whether the barcode is internal by matching the contents to ITEM-XXXXX
+   * If the prefix doesn't match then its an external barcode
+   *
+   * Back end will respond with
+   * the barcode: { barcode : "ITEM-00001"}
+   * type of barcode : { type: "internal"}
+   * if it exists { exists : true }
+   *
+   *
+   *
+   */
+  public void barcodeValidation(Context ctx) {
+    String code = ctx.pathParam("code");
+
+    boolean isInternal = code.matches("^ITEM-d{5}%");
+    String barcodeType = isInternal ? "internal" : "external";
+
+    Bson filter = isInternal ? eq("internalBarcode", code) : eq("externalBarcode", code);
+
+    boolean exists = inventoryCollection.find(filter).first() != null;
+
+    ctx.json(new Document("barcode", code).append("type", barcodeType).append("exists", exists));
+    ctx.status(HttpStatus.OK);
+  }
+
   public void getNextBarcode(Context ctx) {
       Inventory last = inventoryCollection.find(new Document("internalBarcode", new Document("$exists", true)))
       .sort(Sorts.descending("internalBarcode"))
