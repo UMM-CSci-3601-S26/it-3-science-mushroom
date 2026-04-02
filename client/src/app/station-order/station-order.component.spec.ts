@@ -1,23 +1,143 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { StationOrderComponent } from './station-order.component';
+import { SupplyList } from '../supplylist/supplylist';
+import { SupplyListService } from '../supplylist/supplylist.service';
 
 describe('StationOrderComponent', () => {
   let component: StationOrderComponent;
   let fixture: ComponentFixture<StationOrderComponent>;
 
+  const testSupplyList: SupplyList[]= [
+    {
+      "school": "St. Mary's",
+      "grade": "2nd Grade",
+      "teacher": "N/A",
+      "item": "Pencil",
+      "description": "Unsharpend Yellow Ticonderoga #2 Pencil",
+      "brand": "Ticonderoga",
+      "color": "Yellow",
+      "size": "#2",
+      "type": "Unsharpened",
+      "material": "N/A",
+      "count": 1,
+      "quantity": 12,
+      "notes": "N/A"
+    },
+    {
+      "school": "St. Mary's",
+      "grade": "2nd Grade",
+      "teacher": "N/A",
+      "item": "Folder",
+      "description": "Green 2 Prong Plastic Pocket Folder",
+      "brand": "N/A",
+      "color": "Green",
+      "size": "N/A",
+      "type": "2 Prong",
+      "material": "Plastic",
+      "count": 1,
+      "quantity": 2,
+      "notes": "N/A"
+    },
+    {
+      "school": "St. Mary's",
+      "grade": "2nd Grade",
+      "teacher": "N/A",
+      "item": "Pencil Box",
+      "description": "8\" x 5\" Plastic Pencil Box",
+      "brand": "N/A",
+      "color": "N/A",
+      "size": "8\" x 5\"",
+      "type": "N/A",
+      "material": "Plastic",
+      "count": 1,
+      "quantity": 1,
+      "notes": "N/A"
+    },
+  ];
+
+
   beforeEach(async () => {
+    const supplyListServiceSpy = jasmine.createSpyObj('SupplyListService', ['getSupplyList']);
+    supplyListServiceSpy.getSupplyList.and.returnValue(of([]));
+
     await TestBed.configureTestingModule({
-      imports: [StationOrderComponent]
-    })
-      .compileComponents();
+      imports: [StationOrderComponent],
+      providers: [{ provide: SupplyListService, useValue: supplyListServiceSpy }]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(StationOrderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  afterEach(() => {
+    // no active HttpTestingController required when service is mocked
   });
+
+  describe('drag and drop', () => {
+    it('should have drag and drop elements in lists', () => {
+
+    });
+  });
+
+  describe('optionBuilder', () => {
+    it('should build unique options from supply list data', () => {
+      const mockSupplyList: SupplyList[] = [
+        {
+          "school": "St. Mary's",
+          "grade": "2nd Grade",
+          "teacher": "N/A",
+          "item": "Pencil",
+          "description": "Unsharpend Yellow Ticonderoga #2 Pencil",
+          "brand": "Ticonderoga",
+          "color": "Yellow",
+          "size": "#2",
+          "type": "Unsharpened",
+          "material": "N/A",
+          "count": 1,
+          "quantity": 12,
+          "notes": "N/A"
+        },
+        {
+          "school": "St. Mary's",
+          "grade": "2nd Grade",
+          "teacher": "N/A",
+          "item": "Folder",
+          "description": "Green 2 Prong Plastic Pocket Folder",
+          "brand": "N/A",
+          "color": "Green",
+          "size": "N/A",
+          "type": "2 Prong",
+          "material": "Plastic",
+          "count": 1,
+          "quantity": 2,
+          "notes": "N/A"
+        },
+        {
+          "school": "St. Mary's",
+          "grade": "2nd Grade",
+          "teacher": "N/A",
+          "item": "Pencil Box",
+          "description": "8\" x 5\" Plastic Pencil Box",
+          "brand": "N/A",
+          "color": "N/A",
+          "size": "8\" x 5\"",
+          "type": "N/A",
+          "material": "Plastic",
+          "count": 1,
+          "quantity": 1,
+          "notes": "N/A"
+        },
+      ];
+
+      const result = component.optionBuilder(mockSupplyList, 'item');
+
+      expect(result).toEqual([
+        'Pencil', 'Folder', 'Pencil Box'
+      ]);
+    });
+  });
+
 });
