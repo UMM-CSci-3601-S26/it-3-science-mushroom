@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { Inventory } from '../inventory/inventory';
 import { ScanService } from './scan-service';
+import { ManualEntry } from '../inventory/manual-entry';
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
@@ -197,4 +198,42 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     // helper goes here
   }
 
+  /**
+   * for each item in missingItems[] it will ask the user to enter
+   * information about each one
+   */
+
+  async handleProcessingResults(missingItems: string) {
+    for (const barcode of missingItems) {
+      if (this.sessionItems.has(barcode)) {
+        continue;
+      }
+      await this.openManualEntry(barcode);
+    }
+  }
+
+  /**
+   * after the user has clicked done and the items are being search for in the system
+   * by processScannedItem() all the items that dont have a place in the system
+   * are put into missingItems[] and handleProcessingResults() sends the missing items
+   * to openManualEntry() which will prompt the user to input information
+   * about each item
+   */
+  async openManualEntry(barcode: string) {
+    const dialogRef = this.dialog.open(ManualEntry, { data: { barcode } });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (result) {
+      result.internalBarcode = barcode;
+      try {
+        const saved = await firstValueFrom(this.inventoryService.addInventory(result));
+        if (saved) {
+          this.inventoryIndex.registerItem(saved as Inventory);
+          this.sessionItems.set(barcode, saved as Inventory);
+        }
+      } catch (err) {
+        console.error('Failed to save manually entered item', err)
+      }
+    }
+  }
 }
