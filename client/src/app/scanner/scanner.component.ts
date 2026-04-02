@@ -1,19 +1,24 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter } from '@angular/core';
 import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { OnDestroy } from '@angular/core';
-
+import { ManualEntry } from '../inventory/manual-entry';
+import { InventoryIndex } from '../inventory/inventory-index';
+import { InventoryService } from '../inventory/inventory.service'
+import { MatDialog } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
 })
-export class ScannerComponent implements AfterViewInit, OnDestroy {
 
+export class ScannerComponent implements AfterViewInit, OnDestroy {
+  scannedItems: string[] = [];
+  processedBarcodes = new Map<string, string>();
   @ViewChild('video', { static: false })
     video!: ElementRef<HTMLVideoElement>;
 
   @Output()
     scanned = new EventEmitter<string>();
-
   ngAfterViewInit() {
     console.log('ngAfterViewInit FIRED');
     setTimeout(() => {
@@ -25,11 +30,15 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     console.log('ngOnDestroy FIRED');
     this.stopScanner();
   }
-
-  constructor() {
+  // eslint-disable-next-line
+  constructor(private inventoryIndex: InventoryIndex,
+  // eslint-disable-next-line
+              private inventoryService: InventoryService,
+              // eslint-disable-next-line
+              private dialog: MatDialog) {
     console.log('ScannerComponent initialized');
-  }
 
+  }
   private codeReader = new BrowserMultiFormatReader();
   private controls: IScannerControls | null = null;
 
@@ -52,10 +61,10 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
         this.controls = controls;
 
         if (result) {
+          const code = result.getText();
           console.log('SCAN RESULT:', result.getText());
-          this.scanned.emit(result.getText());
-
-          controls.stop();
+          this.scanned.emit(code);
+          this.onScan(code);
           this.controls = null; // stop scanning after first successful scan
         }
 
@@ -89,5 +98,47 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     }).catch(err => {
       console.error('Error stopping media stream:', err);
     });
+  }
+  async openManualEntry(barcode: string) {
+    const dialogRef = this.dialog.open(ManualEntry, { data: { barcode }});
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (result) {
+      result.internalBarcode = barcode;
+      await firstValueFrom(this.inventoryService.addInventory(result))
+    }
+
+    return null;
+  }
+
+  onScan(barcode: string) {
+    console.log('Scanned barcode:', barcode);
+    this.scannedItems.push(barcode);
+  }
+
+  async processScannedItems() {
+    for (const barcode of this.scannedItems) {
+      if (this.processedBarcodes.has(barcode)) {
+        continue;
+      }
+      let item = this.inventoryIndex.getByBarcode(barcode);
+
+      if (!item) {
+        try {
+          item = await this.inventoryService.lookUpByBarcode(barcode).toPromise();
+          this.inventoryIndex.registerItem(item);
+        } catch {
+          item = await this.openManualEntry(barcode);
+          if (item) {
+            this.inventoryIndex.registerItem(item);
+          }
+        }
+      }
+    }
+  }
+  async onDone() {
+    await this.processScannedItems();
+    this.scannedItems = [];
   }
 }
