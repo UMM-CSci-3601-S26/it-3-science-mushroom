@@ -13,6 +13,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 //import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
 
 // RxJS Imports
 import { catchError, of} from 'rxjs';
@@ -29,6 +30,9 @@ import { StockReport } from './stock-report';
 
 // PDF Generator Imports
 import { ReportGeneratorComponent } from './report-generator/report-generator.component';
+
+// Dialog Imports
+import { DialogElements } from '../dialog/dialog.component';
 
 @Component({
   selector: 'app-stock-report',
@@ -55,6 +59,7 @@ import { ReportGeneratorComponent } from './report-generator/report-generator.co
 export class StockReportComponent {
   private inventoryService = inject(InventoryService);
   private reportService = inject(StockReportService);
+  private dialog = inject(MatDialog);
 
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
@@ -69,9 +74,28 @@ export class StockReportComponent {
   );
 
   @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
+
+  // Download single report as PDF. Uses the Report Generator's method, passing along the report to download
   downloadSingleReport(report: StockReport) {
     if (!this.reportGenerator || !report) return;
     this.reportGenerator.downloadSinglePdfReport(report);
+  }
+
+  // Delete a single PDF report. Uses the Report Generator's method, passing along the report to delete
+  deleteSingleReport(report: StockReport) {
+    const dialogRef = this.dialog.open(DialogElements, {
+      data: {
+        reportName: report.reportName,
+        message: `Are you sure you want to delete the report ${report.reportName}?`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (!this.reportGenerator || !report) return;
+        this.reportGenerator.deleteSinglePdfReport(report);
+      }
+    });
   }
 
   /**

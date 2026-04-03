@@ -1,6 +1,7 @@
 // Angular Imports
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
 
 // JS Imports
 import { catchError, of} from 'rxjs';
@@ -15,6 +16,11 @@ import { InventoryService } from '../../inventory/inventory.service';
 // Stock Report Imports
 import { StockReportService } from '../stock-report.service';
 import { StockReport } from '../stock-report';
+
+
+// Dialog Imports
+import { DialogElements } from '../../dialog/dialog.component';
+
 
 // Type for jsPDF with autoTable metadata
 interface jsPDFWithAutoTable extends jsPDFClass {
@@ -31,6 +37,7 @@ interface jsPDFWithAutoTable extends jsPDFClass {
 export class ReportGeneratorComponent {
   private inventoryService = inject(InventoryService);
   private stockReportService = inject(StockReportService);
+  private dialog = inject(MatDialog);
   private dateTime = new Date();
 
   // Helper function to format date and time for the PDF name and description
@@ -71,6 +78,23 @@ export class ReportGeneratorComponent {
       ?.filter(item => item.stockState === 'Under-Stocked')
       .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
   });
+
+  /**
+   * Converts base64 into a Blob for downloading files off of the server. Currently only handles PDFs.
+   * @param base64String The base64 string to convert to a Blob
+   * @returns The converted Blob
+   */
+  covertBase64ToBlob(base64String: string): Blob {
+    const binaryString = atob(base64String); // Decode Base64
+    const bytes = new Uint8Array(binaryString.length);
+    // Fill byte array with the decoded b64
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    // Make and return Blob
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    return blob;
+  }
 
   /**
    * Generates a PDF report of the inventory, grouped by Stock State. Each group has its own table with item description, quantity, max quantity, and min quantity.
@@ -224,29 +248,65 @@ export class ReportGeneratorComponent {
     }
   }
 
+  // Helper method for generating and downloading report as PDF to client
   downloadNewPdfReport() {
     this.generatePDF(false);
   }
 
+  // Helper method for generating and saving report as PDF to server
   savePdfReport() {
     this.generatePDF(true);
   }
 
   /**
-   * Converts base64 into a Blob for downloading files off of the server. Currently only handles PDFs.
-   * @param base64String The base64 string to convert to a Blob
-   * @returns The converted Blob
+   * Delete a single PDF report from the server.
+   * @param report Report to delete from the server
    */
-  covertBase64ToBlob(base64String: string): Blob {
-    const binaryString = atob(base64String); // Decode Base64
-    const bytes = new Uint8Array(binaryString.length);
-    // Fill byte array with the decoded b64
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    // Make and return Blob
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    return blob;
+  deleteSinglePdfReport (report: StockReport) {
+    this.stockReportService.deleteReport(report._id!).subscribe({
+      next: () => {
+        console.log("PDF report deleted from server with ID:", report._id);
+      },
+      error: (error) => {
+        console.error("Error deleting PDF report from server:", error);
+      }
+    });
+  }
+
+  /**
+   * Delete all PDF reports from the server.
+   */
+  deleteAllReports () {
+    this.stockReportService.getReports().subscribe({
+      next: (response) => {
+        const reportCount = response.length;
+
+        const dialogRef = this.dialog.open(DialogElements, {
+          data: {
+            numReports: reportCount,
+            message: `Are you sure you want to delete the ${reportCount} report(s)?`
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            for (const report of response) {
+              this.stockReportService.deleteReport(report._id!).subscribe({
+                next: () => {
+                  console.log("PDF report deleted from server with ID:", report._id);
+                },
+                error: (error) => {
+                  console.error("Error deleting PDF report from server:", error);
+                }
+              });
+            }
+          }
+        });
+      },
+      error: (error) => {
+        console.error("Error fetching PDF reports from server for deletion:", error);
+      }
+    });
   }
 
   /**

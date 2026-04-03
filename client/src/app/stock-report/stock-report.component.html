@@ -32,10 +32,15 @@
       <div class="reports-list">
         @for (report of reports(); track report._id) {
           <div class="report-item">
-            <span>{{ report.reportName }}</span>
-            <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download PDF">
-              <mat-icon>download</mat-icon>
-            </button>
+            <div class="flex-1">
+              <span>{{ report.reportName }}</span>
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report as PDF">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report">
+                <mat-icon>delete_forever</mat-icon>
+              </button>
+            </div>
           </div>
         }
       </div>
