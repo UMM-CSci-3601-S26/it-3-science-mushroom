@@ -11,10 +11,14 @@
           Welcome to the Stock Reports page! Here, you can view the current stock levels of all items in the inventory, as well as save and export reports.
         </p>
         <p class="page-description">
-          "Finalize Report" will prompt you for information for the current report (such as the name) and save it to the server.
+          Below, you can choose to Save or Finalize the current report by clicking the appropriate button in the "Generation Actions" section. Finalizing will create a PDF/CSV of the report and upload it to the server, while Saving will create a PDF/CSV and save it your computer.
         </p>
         <p class="page-description">
-          You may then download the report / past reports in CSV or PDF format by opening the "Saved Reports" dropdown and clicking the appropriate "Download" button next to the report you want.
+          Once you have generated a report, it will appear in the "Saved Reports" section, where you can then Save or Delete the report.
+          You may also download or delete all reports at once by using the appropriate button in the "Downloading Actions" or "Deletion Actions" sections.
+        </p>
+        <p class="page-description">
+          Please note! The Saved Reports list may take a moment to update after generating or deleting reports. If you don't see your report appear or disappear right away, please wait a few seconds and it should update. If it doesn't, refresh your page.
         </p>
         <hr style="margin: 1rem 0;" />
       </mat-card-content>
@@ -28,13 +32,14 @@
     <mat-card-title>Saved Reports</mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    @if (reports() && reports().length > 0) {
+  <mat-card-subtitle>PDF Reports</mat-card-subtitle>
+    @if (pdfReports() && pdfReports().length > 0) {
       <div class="reports-list">
-        @for (report of reports(); track report._id) {
-          <div class="report-item">
+        @for (report of pdfReports(); track report._id) {
+          <div class="report-item" style="display: flex; align-items: center; gap: 8px;">
             <div class="flex-1">
-              <span style="margin:0;">{{ report.reportName }}</span>
-              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report as PDF">
+              <span>{{ report.reportName }}</span>
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report">
                 <mat-icon>download</mat-icon>
               </button>
               <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report">
@@ -45,7 +50,30 @@
         }
       </div>
     } @else {
-      <p>No reports available</p>
+      <p>No PDF reports are available.</p>
+    }
+
+    <br>
+
+  <mat-card-subtitle>CSV Reports</mat-card-subtitle>
+    @if (csvReports() && csvReports().length > 0) {
+      <div class="reports-list">
+        @for (report of csvReports(); track report._id) {
+          <div class="report-item" style="display: flex; align-items: center; gap: 8px;">
+            <div class="flex-1">
+              <span>{{ report.reportName }}</span>
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report">
+                <mat-icon>delete_forever</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p>No CSV reports are available.</p>
     }
 
   <!--Actions-->
