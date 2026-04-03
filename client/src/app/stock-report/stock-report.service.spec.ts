@@ -57,8 +57,6 @@ describe('StockReportService', () => {
       // been made with the correct arguments.
       //
       // We have to `subscribe()` to the `Observable` returned by `getReports()`.
-      // The `families` argument in the function is the array of Reports returned by
-      // the call to `getReports()`.
       stockReportService.getReports().subscribe(() => {
         // The mocked method (`httpClient.get()`) should have been called
         // exactly one time.
@@ -66,7 +64,7 @@ describe('StockReportService', () => {
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
         // The mocked method should have been called with two arguments:
-        //   * the appropriate URL ('/api/families' defined in the `StockReportService`)
+        //   * the appropriate URL
         //   * An options object containing an empty `HttpParams`
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')

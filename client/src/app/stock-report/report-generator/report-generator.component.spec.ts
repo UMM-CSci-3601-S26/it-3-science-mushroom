@@ -8,6 +8,7 @@ import { StockReportService } from '../stock-report.service';
 import { InventoryService } from '../../inventory/inventory.service';
 import { of } from 'rxjs';
 import { Inventory } from '../../inventory/inventory';
+import { StockReport } from '../stock-report';
 
 describe('ReportGeneratorComponent', () => {
   let component: ReportGeneratorComponent;
@@ -100,13 +101,56 @@ describe('ReportGeneratorComponent', () => {
     });
   });
 
-  describe('Base64 Conversion', () => {
+  describe('Server Downloading', () => {
     it('should convert base64 to blob correctly', () => {
       const base64String = 'SGVsbG8h'; // Base64 for "Hello!"
-      const blob = component.covertBase64ToBlob(base64String);
+      const blob = component.convertBase64ToBlob(base64String);
 
       expect(blob).toBeInstanceOf(Blob);
       expect(blob.type).toBe('application/pdf');
     });
+
+    it('should properly convert blob to URL and trigger download', () => {
+      const base64String = 'SGVsbG8h'; // Base64 for "Hello!"
+      const blob = component.convertBase64ToBlob(base64String);
+      const url = URL.createObjectURL(blob);
+
+      spyOn(document, 'createElement').and.callThrough();
+      spyOn(document.body, 'appendChild').and.callThrough();
+      spyOn(document.body, 'removeChild').and.callThrough();
+
+      component.downloadSinglePdfReport({ reportName: 'Test Report' });
+
+      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect(document.body.appendChild).toHaveBeenCalled();
+      expect(document.body.removeChild).toHaveBeenCalled();
+    });
+
+    it('should call deleteReport when deleting a single PDF report', () => {
+      // Spy on deleteReport and mock its return value
+      const deleteReportSpy = spyOn(stockReportService, 'deleteReport').and.returnValue(of(void 0));
+      // Make a mock report to delete
+      const mockReport: StockReport = { _id: '1', reportName: 'Test Report' };
+      component.deleteSinglePdfReport(mockReport);
+
+      expect(deleteReportSpy).toHaveBeenCalledWith('1');
+    });
+
+    it('should call deleteReport for each report when deleting all PDF reports', () => {
+      // Spy on deleteReport and mock its return value
+      const deleteReportSpy = spyOn(stockReportService, 'deleteReport').and.returnValue(of(void 0));
+      // Make mock reports to delete
+      const mockReports: StockReport[] = [
+        { _id: '1', reportName: 'Test Report 1' },
+        { _id: '2', reportName: 'Test Report 2' }
+      ];
+
+      component.deleteAllReports();
+
+      expect(deleteReportSpy).toHaveBeenCalledTimes(2);
+      expect(deleteReportSpy).toHaveBeenCalledWith('1');
+      expect(deleteReportSpy).toHaveBeenCalledWith('2');
+    });
+
   });
 });
