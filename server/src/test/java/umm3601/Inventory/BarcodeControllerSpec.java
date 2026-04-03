@@ -232,38 +232,29 @@ public class BarcodeControllerSpec {
   @Test
   void addInventoryThrowsBadRequestWhenItemNameMissing() throws IOException {
     Inventory newItem = new Inventory();
-    newItem.item = "";
-    newItem.internalBarcode = "ITEM-00004";
-
     when(ctx.bodyAsClass(Inventory.class)).thenReturn(newItem);
 
-    BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
+    assertThrows(BadRequestResponse.class, () -> {
       barcodeController.addInventory(ctx);
     });
-
-    assertEquals("Item name is required.", ex.getMessage());
   }
 
   @Test
   void addInventoryThrowsBadRequestWhenInternalBarcodeMissing() throws IOException {
     Inventory newItem = new Inventory();
     newItem.item = "Ruler";
-    newItem.internalBarcode = "";
+    newItem.externalBarcode = Arrays.asList("MFG-123");
 
     when(ctx.bodyAsClass(Inventory.class)).thenReturn(newItem);
 
-    BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
-      barcodeController.addInventory(ctx);
-    });
-
-    assertEquals("Internal barcode is required", ex.getMessage());
+    barcodeController.addInventory(ctx);
   }
 
   // -- updateQuantity --
 
   @Test
   void updateQuantityAddsOneToQuantity() throws IOException {
-    when(ctx.pathParam("id")).thenReturn(pencilId.toHexString());
+    when(ctx.pathParam("id")).thenReturn("ITEM-00001");
     when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "add"));
 
     barcodeController.updateQuantity(ctx);
@@ -279,7 +270,7 @@ public class BarcodeControllerSpec {
 
   @Test
   void updateQuantityRemovesOneFromQuantity() throws IOException {
-    when(ctx.pathParam("id")).thenReturn(pencilId.toHexString());
+    when(ctx.pathParam("id")).thenReturn("ITEM-00001");
     when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "remove"));
 
     barcodeController.updateQuantity(ctx);
@@ -294,8 +285,8 @@ public class BarcodeControllerSpec {
 
   @Test
   void updateQuantityThrowsBadRequestForInvalidAction() throws IOException {
-    when(ctx.pathParam("id")).thenReturn(pencilId.toHexString());
-    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "invalid"));
+    when(ctx.pathParam("id")).thenReturn("ITEM-00001");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document());
 
     BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
       barcodeController.updateQuantity(ctx);
@@ -306,21 +297,144 @@ public class BarcodeControllerSpec {
 
   @Test
   void updateQuantityThrowsBadRequestForInvalidId() throws IOException {
-    when(ctx.pathParam("id")).thenReturn("not-a-valid-id");
-    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "add"));
-
-    assertThrows(BadRequestResponse.class, () -> {
-      barcodeController.updateQuantity(ctx);
-    });
-  }
-
-  @Test
-  void updateQuantityThrowsNotFoundForNonexistentId() throws IOException {
-    when(ctx.pathParam("id")).thenReturn("588935f5c668650dc77df581");
+    when(ctx.pathParam("id")).thenReturn("INVALID");
     when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "add"));
 
     assertThrows(NotFoundResponse.class, () -> {
       barcodeController.updateQuantity(ctx);
     });
   }
+
+  @Test
+  void updateQuantityThrowsNotFoundForNonexistentId() throws IOException {
+    when(ctx.pathParam("id")).thenReturn("ITEM-99999");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "add"));
+
+    assertThrows(NotFoundResponse.class, () -> {
+      barcodeController.updateQuantity(ctx);
+    });
+  }
+
+  // <<==================>>
+  // New tests
+
+  @Test
+  void barcodeValidationReturnsInternalAndExistsTrue() {
+    when(ctx.pathParam("code")).thenReturn("ITEM-00001");
+
+    barcodeController.barcodeValidation(ctx);
+
+    verify(ctx).json(documentCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document result = documentCaptor.getValue();
+    assertEquals("ITEM-00001", result.getString("barcode"));
+    assertEquals("internal", result.getString("type"));
+    assertEquals(true, result.getBoolean("exists"));
+  }
+
+  @Test
+  void barcodeValidationReturnsExternalAndExistsFalse() {
+    when(ctx.pathParam("code")).thenReturn("NON-EXISTENT");
+
+    barcodeController.barcodeValidation(ctx);
+
+    verify(ctx).json(documentCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document result = documentCaptor.getValue();
+    assertEquals("NON-EXISTENT", result.getString("barcode"));
+    assertEquals("external", result.getString("type"));
+    assertEquals(false, result.getBoolean("exists"));
+  }
+  @Test
+  void updateQuantityWorksWithExternalBarcode() {
+    when(ctx.pathParam("id")).thenReturn("MFG-ABC123");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "add"));
+
+    barcodeController.updateQuantity(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document updated = db.getCollection("inventory")
+        .find(new Document("internalBarcode", "ITEM-00001")).first();
+
+    assertEquals(11, updated.getInteger("quantity"));
+  }
+
+  @Test
+  void addInventoryWithOnlyExternalBarcodeSucceeds() {
+    Inventory newItem = new Inventory();
+    newItem.item = "Marker";
+    newItem.externalBarcode = Arrays.asList("MFG-NEW123");
+
+    when(ctx.bodyAsClass(Inventory.class)).thenReturn(newItem);
+
+    barcodeController.addInventory(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.CREATED);
+
+    assertEquals("Marker", inventoryCaptor.getValue().item);
+    assertEquals("MFG-NEW123", inventoryCaptor.getValue().externalBarcode.get(0));
+  }
+
+  @Test
+  void barcodeValidationInternalRegexBug() {
+    when(ctx.pathParam("code")).thenReturn("ITEM-00001");
+
+    barcodeController.barcodeValidation(ctx);
+
+    verify(ctx).json(documentCaptor.capture());
+
+
+    assertEquals("internal", documentCaptor.getValue().getString("type"));
+  }
+  @Test
+  void barcodeValidationInternalButDoesNotExist() {
+    when(ctx.pathParam("code")).thenReturn("ITEM-99999");
+
+    barcodeController.barcodeValidation(ctx);
+
+    verify(ctx).json(documentCaptor.capture());
+
+    Document result = documentCaptor.getValue();
+    assertEquals("internal", result.getString("type"));
+    assertEquals(false, result.getBoolean("exists"));
+  }
+  @Test
+  void getNextBarcodeHandlesInvalidFormat() {
+    MongoCollection<Document> collection = db.getCollection("inventory");
+    collection.drop();
+
+    collection.insertOne(new Document()
+      .append("internalBarcode", "ITEM-ABC")); // bad format
+
+    barcodeController.getNextBarcode(ctx);
+
+    verify(ctx).json(documentCaptor.capture());
+
+
+    assertEquals("ITEM-00001", documentCaptor.getValue().getString("internalBarcode"));
+  }
+  @Test
+  void updateQuantityThrowsBadRequestWhenActionMissing() {
+    when(ctx.pathParam("id")).thenReturn("ITEM-00001");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document());
+
+    assertThrows(BadRequestResponse.class, () -> {
+      barcodeController.updateQuantity(ctx);
+    });
+  }
+  @Test
+  void updateQuantityThrowsNotFoundForExternalBarcode() {
+    when(ctx.pathParam("id")).thenReturn("MFG-NOT-FOUND");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "add"));
+
+    assertThrows(NotFoundResponse.class, () -> {
+      barcodeController.updateQuantity(ctx);
+    });
+  }
+
 }

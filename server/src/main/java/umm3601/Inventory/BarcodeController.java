@@ -53,7 +53,7 @@ public class BarcodeController implements Controller {
   public void barcodeValidation(Context ctx) {
     String code = ctx.pathParam("code");
 
-    boolean isInternal = code.matches("^ITEM-\\d{5}%");
+    boolean isInternal = code.matches("^ITEM-\\d{5}$");
     String barcodeType = isInternal ? "internal" : "external";
 
     Bson filter = isInternal ? eq("internalBarcode", code) : Filters.in("externalBarcode", code);
@@ -141,7 +141,8 @@ public class BarcodeController implements Controller {
       throw new BadRequestResponse("Invalid inventory ID.");
     }
 
-    Inventory updated = inventoryCollection.findOneAndUpdate(filter, inc("quantity", delta), new FindOneAndUpdateOptions().returnDocument(AFTER));
+    Inventory updated = inventoryCollection.findOneAndUpdate(filter, inc("quantity", delta),
+     new FindOneAndUpdateOptions().returnDocument(AFTER));
     if (updated == null) {
       throw new NotFoundResponse("Inventory item not found for ID: " + id);
     }
