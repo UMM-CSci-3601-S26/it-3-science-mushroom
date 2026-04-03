@@ -10,7 +10,6 @@ import { MatIcon } from '@angular/material/icon';
 import { catchError, of} from 'rxjs';
 import jsPDF, { jsPDF as jsPDFClass } from "jspdf";
 import autoTable from "jspdf-autotable";
-import JSZip from "jszip";
 
 // Inventory Imports
 import { Inventory } from '../../inventory/inventory';
@@ -45,10 +44,21 @@ export class ReportGeneratorComponent {
 
   // Helper function to format date and time for the PDF name and description
   private formatDateTime(date: Date): string {
-    const day = date.getUTCDate();
-    const month = date.getUTCMonth() + 1; // Months are zero-indexed
-    const year = date.getUTCFullYear();
-    return `${month}-${day}-${year}`;
+    const minute = date.getMinutes();
+    const hour = date.getHours();
+    const day = date.getDate();
+    const month = date.getMonth() + 1; // Months are zero-indexed
+    const year = date.getFullYear();
+    // Format the date and time as MM-DD-YYYY_HH:MM(AM/PM)
+    if (hour > 12) { // PM hours
+      return `${month}-${day}-${year}_${hour-12}:${minute} PM`;
+    } else if (hour < 12 && hour > 0) { // AM hours
+      return `${month}-${day}-${year}_${hour}:${minute} AM`;
+    } else if (hour === 12) { // Noon
+      return `${month}-${day}-${year}_${hour}:${minute} PM`;
+    } else if (hour === 0) { // Midnight
+      return `${month}-${day}-${year}_12:${minute} AM`;
+    }
   }
 
   inventory = toSignal <Inventory[]>(
@@ -347,15 +357,11 @@ export class ReportGeneratorComponent {
    * Downloads all PDFs from the server as a ZIP file.
    * @note This needs to be updated to handle only downloading PDFs once CSV reports are added!
    */
-  downloadAllPdfReports () {
-    const zip = new JSZip();
-    const usedFilenames = new Set<string>();
-
-    // Get all reports
-    this.stockReportService.getReports().subscribe({
-      next: (response) => {
-        // No reports to download
-        if (response.length === 0) {
+  downloadAllPdfReports() {
+    this.stockReportService.downloadAllReportsAsZip().subscribe({
+      next: (zipBlob) => {
+        // Handle case of no reports
+        if (zipBlob.size === 0) {
           console.warn("No reports available for download.");
           this.snackBar.open(
             `No reports available for download.`,
@@ -364,48 +370,22 @@ export class ReportGeneratorComponent {
           );
           return;
         }
-        // Loop through all reports
-        for (const report of response) {
-          const pdfBlob = this.stockReportService.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
-          let finalFilename = report.reportName; // Temp var to check for duplicate file names
 
-          // If file name already exists
-          if (usedFilenames.has(finalFilename)) {
-            // Split filename and extension
-            const parts = finalFilename.split('.');
-            const extension = parts.pop(); // Get last part (extension)
-            const nameWithoutExt = parts.join('.'); // Everything else
-
-            // Keep incrementing counter until we find a unique name
-            let counter = 1;
-            while (usedFilenames.has(`${nameWithoutExt} (${counter}).${extension}`)) {
-              counter++;
-            }
-            finalFilename = `${nameWithoutExt} (${counter}).${extension}`; // Combine everything back together to make new name
-          }
-
-          usedFilenames.add(finalFilename); // Keep track of used file names
-          zip.file(finalFilename, pdfBlob); // Add blob to zip with the final file name
-        }
-
-        // Generate ZIP and trigger download
-        zip.generateAsync({ type: 'blob' }).then((content) => {
-          const url = URL.createObjectURL(content);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `StockReports_${this.formatDateTime(this.dateTime)}.zip`;
-          a.click();
-          URL.revokeObjectURL(url);
-        });
+        // Create object URL and trigger download
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `StockReports_${this.formatDateTime(this.dateTime)}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
 
         // Show success message
         this.snackBar.open(
-          `Downloaded ${response.length} PDF report(s) as ZIP file.`,
+          `Downloaded all report(s) as ZIP file.`,
           `Okay`,
           { duration: 2000 }
         );
       },
-      // If error
       error: (error) => {
         console.error("Error downloading ZIP of report(s). ", error);
         this.snackBar.open(
@@ -422,14 +402,24 @@ export class ReportGeneratorComponent {
    * @note This also needs to be updated to account for only downloading PDFs!
    */
   downloadSinglePdfReport(report: StockReport) {
-    const pdfBlob = this.stockReportService.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
-    const url = window.URL.createObjectURL(pdfBlob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = report.reportName;
-    a.click();
-
-    window.URL.revokeObjectURL(url);
+    this.stockReportService.downloadSingleReportBlob(report).subscribe({
+      next: (blob) => {
+        // Create object URL and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = report.reportName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error("Error downloading PDF report:", error);
+        this.snackBar.open(
+          `Error downloading report. Please try again.`,
+          `Okay`,
+          { duration: 2000 }
+        );
+      }
+    });
   }
 }

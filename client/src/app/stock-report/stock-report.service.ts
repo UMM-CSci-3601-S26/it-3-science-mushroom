@@ -7,6 +7,9 @@ import { Observable, of, forkJoin } from 'rxjs';
 import { catchError, map, tap, switchMap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
+// JS Imports
+import JSZip from 'jszip';
+
 // Family Imports
 import { environment } from '../../environments/environment';
 import { StockReport } from './stock-report';
@@ -123,6 +126,58 @@ export class StockReportService {
     return forkJoin(deleteObservables).pipe(
       switchMap(() => this.refreshReports()),
       switchMap(() => of(void 0))
+    );
+  }
+
+  /**
+   * Get blob for a single PDF report.
+   * @param report The report to download
+   * @returns Observable of the PDF blob
+   */
+  downloadSingleReportBlob(report: StockReport): Observable<Blob> {
+    const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF);
+    return of(pdfBlob);
+  }
+
+  /**
+   * Get ZIP blob containing all PDF reports.
+   * @returns Observable of the ZIP blob containing all reports
+   */
+  downloadAllReportsAsZip(): Observable<Blob> {
+    return this.getReports().pipe(
+      switchMap(reports => {
+        if (reports.length === 0) {
+          return of(new Blob()); // Return empty blob if no reports
+        }
+
+        const zip = new JSZip();
+        const usedFilenames = new Set<string>();
+
+        // Add each report to the ZIP
+        for (const report of reports) {
+          const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF);
+          let finalFilename = report.reportName;
+
+          // Handle duplicate filenames
+          if (usedFilenames.has(finalFilename)) {
+            const parts = finalFilename.split('.');
+            const extension = parts.pop();
+            const nameWithoutExt = parts.join('.');
+
+            let counter = 1;
+            while (usedFilenames.has(`${nameWithoutExt} (${counter}).${extension}`)) {
+              counter++;
+            }
+            finalFilename = `${nameWithoutExt} (${counter}).${extension}`;
+          }
+
+          usedFilenames.add(finalFilename);
+          zip.file(finalFilename, pdfBlob);
+        }
+
+        // Generate and return the ZIP as a blob
+        return zip.generateAsync({ type: 'blob' });
+      })
     );
   }
 
