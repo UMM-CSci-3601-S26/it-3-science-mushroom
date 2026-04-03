@@ -320,6 +320,10 @@ export class ReportGeneratorComponent {
 
     this.stockReportService.getReports().subscribe({
       next: (response) => {
+        if (response.length === 0) {
+          console.warn("No reports available for download.");
+          return;
+        }
         for (const report of response) {
           const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
           let finalFilename = report.reportName; // Temp var to check for duplicate file names
