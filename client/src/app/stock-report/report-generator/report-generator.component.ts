@@ -84,7 +84,7 @@ export class ReportGeneratorComponent {
    * @param base64String The base64 string to convert to a Blob
    * @returns The converted Blob
    */
-  covertBase64ToBlob(base64String: string): Blob {
+  convertBase64ToBlob(base64String: string): Blob {
     const binaryString = atob(base64String); // Decode Base64
     const bytes = new Uint8Array(binaryString.length);
     // Fill byte array with the decoded b64
@@ -319,7 +319,7 @@ export class ReportGeneratorComponent {
     this.stockReportService.getReports().subscribe({
       next: (response) => {
         for (const report of response) {
-          const pdfBlob = this.covertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
+          const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
           let finalFilename = report.reportName; // Temp var to check for duplicate file names
 
           // If file name already exists
@@ -361,7 +361,7 @@ export class ReportGeneratorComponent {
    * Download a single PDF report from the server.
    */
   downloadSinglePdfReport (report: StockReport) {
-    const pdfBlob = this.covertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
+    const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
     const url = window.URL.createObjectURL(pdfBlob);
 
     const a = document.createElement('a');
