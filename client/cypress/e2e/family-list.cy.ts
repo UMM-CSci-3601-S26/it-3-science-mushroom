@@ -54,6 +54,76 @@ describe('Family list', () => {
     });
   });
 
+  it('Should have specification filters', () => {
+    page.getSidenavButton().click();
+    page.getNavLink('Families').click();
+    cy.url().should('match', /\/family$/);
+
+    const errors: string[] = [];
+
+    const recordError = (message: string) => {
+      errors.push(message);
+      cy.log(message);
+      console.warn(message);
+    }
+
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-cy="filter-family"]').length === 0) {
+        recordError(`Empty filter input for family`);
+      }
+    });
+
+    cy.then(() => {
+      if (errors.length > 0) {
+        throw new Error(errors.join('\n'));
+      }
+    });
+  });
+
+  it("Should be able to take an input and display the correct filtered results", () => {
+    page.getSidenavButton().click();
+    page.getNavLink('Families').click();
+    cy.url().should('match', /\/family$/);
+
+    page.getFilterFamily().type("John Doe");
+
+    cy.wait(100);
+
+    page.getFamilyName().should('contain', 'John Doe');
+    page.getFamilyCards().should('have.length', 1)
+  });
+
+  describe("autocomplete dropdown filters", () => {
+    beforeEach(() => {
+      page.getFilterFamily().clear();
+    });
+
+    it("should show autocomplete options when typing in filter", () => {
+      page.getFilterFamily().type("John");
+      cy.get('mat-option').should('exist');
+      cy.get('mat-option').should('contain', 'John');
+    });
+
+    it('Should narrow autocomplete options as the user types more characters', () => {
+      page.getFilterFamily().type('Jan');
+      cy.get('mat-option').its('length').then((broadCount) => {
+        page.getFilterFamily().clear().type('Jane');
+        cy.get('mat-option').its('length').should('be.lte', broadCount);
+      });
+    });
+
+    it('Should show no autocomplete options when input matches nothing', () => {
+      page.getFilterFamily().type('imaginaryName');
+      cy.get('mat-option').should('not.exist');
+    });
+
+    it('Should filter results when selecting an autocomplete option for Family', () => {
+
+      page.selectAutoCompleteOption('[data-cy="filter-family"]', 'Jane Doe');
+      page.getFamilyName().first().should('have.text', 'Jane Doe');
+    });
+  });
+
   it('Should show 3 families in card view', () => {
     page.getFamilyCards().should('have.length', 3);
   });

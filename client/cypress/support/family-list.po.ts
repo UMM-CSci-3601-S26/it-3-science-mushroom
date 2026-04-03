@@ -6,6 +6,7 @@ export class FamilyListPage {
   private readonly familyCardSelector = '.family-cards-container app-family-card';
   private readonly familyListItemsSelector = '.family-nav-list .family-list-item';
   private readonly familyDashboard = '.dashboard-grid'
+  private readonly familyGuardainName = '.family-card-guardianName'
   private readonly totalFamiliesNum = '.stat-number-family'
   private readonly totalStudentsNum = '.stat-number-student'
   private readonly studentsPerSchool = '.stat-row-school'
@@ -16,9 +17,25 @@ export class FamilyListPage {
   //private readonly familyRoleDropdownSelector = '[data-test=familyRoleSelect]';
   private readonly dropdownOptionSelector = 'mat-option';
   private readonly addFamilyButtonSelector = '[data-test=addFamilyButton]';
+  private readonly familyFilterSelector = '[data-cy="filter-family"]'
+  private readonly sideNavButton = '.sidenav-button';
+  private readonly sideNav = '.sidenav';
+  private readonly sideNavOption = '[routerlink] > .mdc-list-item__content';
 
   navigateTo() {
     return cy.visit(this.baseUrl);
+  }
+
+  getSidenavButton() {
+    return cy.get(this.sideNavButton)
+  }
+
+  getSidenav() {
+    return cy.get(this.sideNav);
+  }
+
+  getNavLink(navOption: 'Home' | 'Families') {
+    return cy.contains(this.sideNavOption, `${navOption}`);
   }
 
   /**
@@ -28,6 +45,10 @@ export class FamilyListPage {
    */
   getFamilyTitle() {
     return cy.get(this.pageTitle);
+  }
+
+  getFamilyName() {
+    return cy.get(this.familyGuardainName)
   }
 
   /**
@@ -94,6 +115,31 @@ export class FamilyListPage {
    */
   getStudentCards() {
     return cy.get(this.studentCardSelector)
+  }
+
+  getFilterFamily() {
+    return cy.get(this.familyFilterSelector)
+  }
+
+  selectAutoCompleteOption(filterSelector: string, text: string) {
+    cy.get(filterSelector).clear().type(text);
+
+    cy.get('.cdk-overlay-pane span.mdc-list-item__primary-text')
+      .should('have.length.greaterThan', 0)
+      .then(($spans) => {
+        const normalize = (str: string) =>
+          str.replace(/\s+/g, ' ').trim();
+
+        const match = [...$spans].find(
+          (el) => normalize(el.innerText) === normalize(text)
+        );
+
+        if (!match) {
+          throw new Error(`Exact match for "${text}" not found`);
+        }
+
+        cy.wrap(match).click();
+      });
   }
 
   /**
