@@ -1,5 +1,4 @@
 import { InventoryPage } from "../support/inv.po";
-
 const page = new InventoryPage();
 const Filters_Test = {
   Item: 'Markers',
@@ -219,7 +218,7 @@ describe('Inventory', () => {
     });
 
     it('Should show no autocomplete options when input matches nothing', () => {
-      page.getFilterItem().type('someItem');
+      page.getFilterItem().should('be.enabled').type('someItem')
       cy.get('mat-option').should('not.exist');
     });
 
@@ -251,6 +250,78 @@ describe('Inventory', () => {
       cy.get('[data-cy="inventory-type"]').first().should('have.text', 'Washable');
     });
   });
+
+  it('Should handle empty inventory response', () => {
+    cy.intercept('GET', '/api/inventory*', {
+      body: []
+    }).as('emptyInventory');
+
+    cy.visit('/inventory');
+    cy.wait('@emptyInventory');
+
+    cy.get('[data-cy="inventory-row"]').should('have.length', 0);
+  });
+
+  it('Should handle API error gracefully', () => {
+    cy.intercept('GET', '/api/inventory*', {
+      statusCode: 500,
+      body: {}
+    }).as('apiFail');
+
+    cy.visit('/inventory');
+    cy.wait('@apiFail');
+
+    cy.contains(/error|failed/i).should('exist');
+  });
+
+  it('Should render all inventory fields', () => {
+    cy.get('[data-cy="inventory-row"]').first().within(() => {
+      cy.get('[data-cy="inventory-item"]').should('exist');
+      cy.get('[data-cy="inventory-description"]').should('exist');
+      cy.get('[data-cy="inventory-brand"]').should('exist');
+      cy.get('[data-cy="inventory-color"]').should('exist');
+      cy.get('[data-cy="inventory-size"]').should('exist');
+      cy.get('[data-cy="inventory-type"]').should('exist');
+      cy.get('[data-cy="inventory-material"]').should('exist');
+      cy.get('[data-cy="inventory-count"]').should('exist');
+      cy.get('[data-cy="inventory-quantity"]').should('exist');
+      cy.get('[data-cy="inventory-notes"]').should('exist');
+    });
+  });
+
+  it('Should navigate through pages', () => {
+    cy.get('[data-cy="inventory-paginator"]').should('exist');
+
+    cy.get('button[aria-label="Next page"]').click();
+    cy.wait(500);
+
+    cy.get('[data-cy="inventory-row"]').should('exist');
+  });
+
+  it('Should handle clearing filters when already empty', () => {
+    cy.get('[data-cy="filter-clear"]').click();
+    cy.get('[data-cy="inventory-row"]').should('exist');
+  });
+
+  it('Should filter using only item field', () => {
+    cy.intercept('GET', '/api/inventory*').as('filter');
+
+    cy.get('[data-cy="filter-item"]').type('Markers');
+    cy.wait('@filter');
+
+    cy.get('[data-cy="inventory-item"]').each(($el) => {
+      cy.wrap($el).should('contain', 'Markers');
+    });
+  });
+  it('Should capture error when no autocomplete options exist', () => {
+    cy.on('fail', (err) => {
+      expect(err.message).to.include('No autocomplete options found');
+    });
+
+    page.selectAutoCompleteOption('[data-cy="filter-item"]', 'someItem');
+  });
+
+
 
   // Note: The below test should remain empty until a finalized inventory list JSON is used to seed the database.
 

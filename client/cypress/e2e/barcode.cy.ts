@@ -115,4 +115,41 @@ describe('Barcode / Scanner Feature', () => {
     barcode.getScannerWrapper().should('exist');
   });
 
+  it('Should handle empty inventory response', () => {
+    cy.intercept('GET', '/api/inventory*', {
+      body: []
+    }).as('emptyInventory');
+
+    cy.visit('/inventory');
+    cy.wait('@emptyInventory');
+
+    cy.get('[data-cy="inventory-row"]').should('have.length', 0);
+  });
+
+  it('Should handle API error gracefully', () => {
+    cy.intercept('GET', '/api/inventory*', {
+      statusCode: 500,
+      body: {}
+    }).as('apiFail');
+
+    cy.visit('/inventory');
+    cy.wait('@apiFail');
+
+    cy.contains(/error|failed/i).should('exist');
+  });
+  it('Should render all inventory fields', () => {
+    cy.get('[data-cy="inventory-row"]').first().within(() => {
+      cy.get('[data-cy="inventory-item"]').should('exist');
+      cy.get('[data-cy="inventory-description"]').should('exist');
+      cy.get('[data-cy="inventory-brand"]').should('exist');
+      cy.get('[data-cy="inventory-color"]').should('exist');
+      cy.get('[data-cy="inventory-size"]').should('exist');
+      cy.get('[data-cy="inventory-type"]').should('exist');
+      cy.get('[data-cy="inventory-material"]').should('exist');
+      cy.get('[data-cy="inventory-count"]').should('exist');
+      cy.get('[data-cy="inventory-quantity"]').should('exist');
+      cy.get('[data-cy="inventory-notes"]').should('exist');
+    });
+  });
+
 });
