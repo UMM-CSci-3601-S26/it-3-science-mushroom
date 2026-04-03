@@ -119,6 +119,7 @@ public class StockReportController implements Controller {
           + id
           + "; perhaps illegal Report ID or an ID for a Report not in the system?");
     }
+
     ctx.status(HttpStatus.OK);
   }
 
@@ -132,6 +133,6 @@ public class StockReportController implements Controller {
     server.post(API_STOCK_REPORT, this::addNewReport); // Add report
 
     // DELETE routes
-    server.delete(API_STOCK_REPORT, this::deleteReport); // Delete report
+    server.delete(API_REPORT_BY_ID, this::deleteReport); // Delete report
   }
 }
