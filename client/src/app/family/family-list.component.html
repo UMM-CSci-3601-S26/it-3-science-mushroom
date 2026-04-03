@@ -1,6 +1,64 @@
 <div class="flex-row">
   <div class="flex-1">
 
+    @if (dashboardStats(); as stats) {
+      <div class="dashboard-grid">
+
+        <!-- Total Families and Students Card -->
+        <mat-card class="stat-card">
+          <mat-card-title>Total Families</mat-card-title>
+          <mat-card-content>
+            <div class="stat-number-family">
+            {{ stats.totalFamilies }}
+            </div>
+          </mat-card-content>
+
+          <mat-card-title>Total Students</mat-card-title>
+          <mat-card-content>
+            <div class="stat-number-student">
+            {{ stats.totalStudents }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Students Per School -->
+        <mat-card class="stat-card">
+          <mat-card-title>Students Per School</mat-card-title>
+          <mat-card-content>
+
+            <div class="stat-list-school">
+            @for (school of stats.studentsPerSchool | keyvalue; track school.key) {
+              <div class="stat-row-school">
+                <span class="stat-label">{{ school.key }}</span>
+                <span class="stat-value">{{ school.value }}</span>
+              </div>
+            }
+            </div>
+
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Students Per Grade -->
+        <mat-card class="stat-card">
+          <mat-card-title>Students Per Grade</mat-card-title>
+          <mat-card-content>
+
+            <div class="stat-list-grade">
+              @for (grade of stats.studentsPerGrade | keyvalue; track grade.key) {
+                <div class="stat-row-grade">
+                  <span class="stat-label">Grade: {{ grade.key }}</span>
+                  <span class="stat-value">{{ grade.value }}</span>
+                </div>
+              }
+            </div>
+
+          </mat-card-content>
+        </mat-card>
+      </div>
+    } @else {
+      <p class="loading-test">Loading Dashboard..</p>
+    }
+
     <!-- Search Field -->
     <mat-card class="search-card">
       <mat-card-header>
@@ -9,32 +67,33 @@
       <mat-card-content>
 
       </mat-card-content>
-    </mat-card>
-  </div>
-</div>
 
-<div class="flex-row">
-  @if (families()) {
-  <div class="flex-1">
-      <div class="family-cards-container flex-row gap-8 flex-wrap">
-        @for (family of families(); track family._id) {
-        <app-family-card class="family-card" [family]="family"></app-family-card>
+
+      <div class="flex-row">
+        @if (families()) {
+        <div class="flex-1">
+            <div class="family-cards-container flex-row gap-8 flex-wrap">
+              @for (family of families(); track family._id) {
+              <app-family-card class="family-card" [family]="family"></app-family-card>
+              }
+            </div>
+          </div>
+      }  @else {
+        <div class="flex-1 family-error">
+          <mat-error>
+            There was a problem loading the families. Possibly the server is down or perhaps there are network
+            issues.
+          </mat-error>
+          <mat-error>
+            Please wait a bit and try again or start the server.
+          </mat-error>
+        </div>
         }
       </div>
-    </div>
-}  @else {
-  <div class="flex-1 family-error">
-    <mat-error>
-      There was a problem loading the families. Possibly the server is down or perhaps there are network
-      issues.
-    </mat-error>
-    <mat-error>
-      Please wait a bit and try again or start the server.
-    </mat-error>
-  </div>
-  }
-</div>
+    </mat-card>
 
+  </div>
+</div>
 
 <button mat-raised-button (click)="downloadCSV()">
   Export CSV

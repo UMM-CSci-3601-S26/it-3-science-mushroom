@@ -20,3 +20,15 @@
   margin: 0; /* Reset margin */
   cursor: pointer; /* Change cursor to pointer on hover */
 }
+
+// Rules for how the cards should be displayed and the space in-between
+.student-card-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.student-cards {
+  display: flex;
+  padding: 10px;
+}

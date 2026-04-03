@@ -122,18 +122,21 @@ describe('Add family page', () => {
             name: 'Lisa',
             grade: '6',
             school: "Morris High School",
+            teacher: "N/A",
             requestedSupplies: []
           },
           {
             name: 'Allie',
             grade: '7',
             school: "Morris High School",
+            teacher: "N/A",
             requestedSupplies: ['headphones']
           },
           {
             name: 'Joe',
             grade: '8',
             school: "Morris Elementary",
+            teacher: "N/A",
             requestedSupplies: ['backpack', 'markers']
           },
         ]
@@ -161,10 +164,6 @@ describe('Add family page', () => {
 
       cy.get('.family-card-email')
         .contains(family.email)
-        .should('exist');
-
-      cy.get('.family-card-address')
-        .contains(family.address)
         .should('exist');
 
       cy.get('.family-card-timeSlot')

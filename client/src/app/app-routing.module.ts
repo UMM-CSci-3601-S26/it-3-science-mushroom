@@ -8,7 +8,6 @@ import { InventoryComponent } from './inventory/inventory.component';
 import { SupplyListComponent } from './supplylist/supplylist.component';
 
 // Family Imports
-import { FamilyDashComponent } from './family-dash/family-dash.component';
 import { FamilyListComponent } from './family/family-list.component';
 import { AddFamilyComponent } from './family/add-family.component';
 
@@ -22,7 +21,6 @@ import { ReportGeneratorComponent } from './stock-report/report-generator/report
 // Ie: 'user/new' comes before 'users/:id'
 const routes: Routes = [
   {path: '', component: HomeComponent, title: 'Home'},
-  {path: 'dashboard', component: FamilyDashComponent, title: 'Family Dashboard'},
   {path: 'family', component: FamilyListComponent, title: 'Family'},
   {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'},
   {path: 'inventory', component: InventoryComponent, title: 'Inventory'},

@@ -2,6 +2,7 @@ export interface StudentInfo {
   name: string;
   grade: string;
   school: string;
+  teacher: string;
   requestedSupplies: string[];
 }
 
@@ -18,4 +19,5 @@ export interface DashboardStats {
   studentsPerSchool: { [school: string]: number};
   studentsPerGrade: { [grade: string]: number};
   totalFamilies: number;
+  totalStudents: number;
 }
