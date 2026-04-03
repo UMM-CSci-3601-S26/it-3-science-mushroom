@@ -237,6 +237,7 @@ export class ReportGeneratorComponent {
       this.stockReportService.addNewReport(formData).subscribe({
         next: (response) => {
           console.log("PDF report saved to server with ID:", response);
+          this.stockReportService.refreshReports();
         },
         error: (error) => {
           console.error("Error saving PDF report to server:", error);
@@ -294,6 +295,7 @@ export class ReportGeneratorComponent {
               this.stockReportService.deleteReport(report._id!).subscribe({
                 next: () => {
                   console.log("PDF report deleted from server with ID:", report._id);
+                  this.stockReportService.refreshReports(); // Notify that reports have changed
                 },
                 error: (error) => {
                   console.error("Error deleting PDF report from server:", error);

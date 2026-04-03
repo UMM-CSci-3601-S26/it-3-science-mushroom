@@ -61,6 +61,8 @@ export class StockReportComponent {
   private reportService = inject(StockReportService);
   private dialog = inject(MatDialog);
 
+  @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
+
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
       catchError(() => of([]))
@@ -68,12 +70,14 @@ export class StockReportComponent {
   );
 
   reports = toSignal<StockReport[]>(
-    this.reportService.getReports().pipe(
+    this.reportService.reports$.pipe(
       catchError(() => of([]))
     )
   );
 
-  @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
+  constructor() {
+    this.reportService.refreshReports();
+  }
 
   // Download single report as PDF. Uses the Report Generator's method, passing along the report to download
   downloadSingleReport(report: StockReport) {
@@ -94,6 +98,7 @@ export class StockReportComponent {
       if (result) {
         if (!this.reportGenerator || !report) return;
         this.reportGenerator.deleteSinglePdfReport(report);
+        this.reportService.refreshReports();
       }
     });
   }
