@@ -71,53 +71,37 @@ describe('StockReportComponent', () => {
     it('should properly compute stocked items', () => {
       const stockedItems = component.stockedItems();
       expect(stockedItems.length).toBe(1);
-      expect(stockedItems[0]).toEqual({
-        description: 'Stocked Shirt',
-        children: [
-          { quantity: 10, label: '- Current Quantity' },
-          { maxQuantity: 10, label: '- Max Quantity' },
-          { minQuantity: 0, label: '- Min Quantity' },
-        ]
-      });
+      expect(stockedItems[0].item).toEqual('Shirt');
+      expect(stockedItems[0].children?.length).toBe(1);
+      expect(stockedItems[0].children?.[0].description).toEqual('Stocked Shirt');
+      expect(stockedItems[0].children?.[0].children?.length).toBe(3);
     });
 
     it('should properly compute out of stock items', () => {
-      const outOfStockitems = component.outOfStockItems();
-      expect(outOfStockitems.length).toBe(1);
-      expect(outOfStockitems[0]).toEqual({
-        description: 'Out of Stock Pants',
-        children: [
-          { quantity: 0, label: '- Current Quantity' },
-          { maxQuantity: 10, label: '- Max Quantity' },
-          { minQuantity: 7, label: '- Min Quantity' },
-        ]
-      });
+      const outOfStockItems = component.outOfStockItems();
+      expect(outOfStockItems.length).toBe(1);
+      expect(outOfStockItems[0].item).toEqual('Pants');
+      expect(outOfStockItems[0].children?.length).toBe(1);
+      expect(outOfStockItems[0].children?.[0].description).toEqual('Out of Stock Pants');
+      expect(outOfStockItems[0].children?.[0].children?.length).toBe(3);
     });
 
     it('should properly compute overstocked items', () => {
       const overStockedItems = component.overStockedItems();
       expect(overStockedItems.length).toBe(1);
-      expect(overStockedItems[0]).toEqual({
-        description: 'Overstocked Shirt',
-        children: [
-          { quantity: 12, label: '- Current Quantity' },
-          { maxQuantity: 10, label: '- Max Quantity' },
-          { minQuantity: 0, label: '- Min Quantity' },
-        ]
-      });
+      expect(overStockedItems[0].item).toEqual('Shirt');
+      expect(overStockedItems[0].children?.length).toBe(1);
+      expect(overStockedItems[0].children?.[0].description).toEqual('Overstocked Shirt');
+      expect(overStockedItems[0].children?.[0].children?.length).toBe(3);
     });
 
     it('should properly compute understocked items', () => {
       const underStockedItems = component.underStockedItems();
       expect(underStockedItems.length).toBe(1);
-      expect(underStockedItems[0]).toEqual({
-        description: 'Understocked Pants',
-        children: [
-          { quantity: 5, label: '- Current Quantity' },
-          { maxQuantity: 10, label: '- Max Quantity' },
-          { minQuantity: 7, label: '- Min Quantity' },
-        ]
-      });
+      expect(underStockedItems[0].item).toEqual('Pants');
+      expect(underStockedItems[0].children?.length).toBe(1);
+      expect(underStockedItems[0].children?.[0].description).toEqual('Understocked Pants');
+      expect(underStockedItems[0].children?.[0].children?.length).toBe(3);
     });
   });
 

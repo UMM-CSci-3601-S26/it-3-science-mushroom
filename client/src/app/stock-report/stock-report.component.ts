@@ -74,42 +74,63 @@ export class StockReportComponent {
     this.reportGenerator.downloadSinglePdfReport(report);
   }
 
-  // Convert inventory to StockNode for tree display
-  private inventoryToStockNode(item: Inventory): StockNode {
-    return {
-      description: item.description,
-      children: [
-        { quantity: item.quantity, label: '- Current Quantity' },
-        { maxQuantity: item.maxQuantity, label: '- Max Quantity' },
-        { minQuantity: item.minQuantity, label: '- Min Quantity' },
-      ]
-    };
+  /**
+   * Group inventory items by their "Item" field.
+   * Each group becomes a StockNode with the item name as the "item" field, and its children are the inventory items with that name.
+   * Each inventory item is represented as a StockNode with the description as the "description" field.
+   * Its children are the quantity, max quantity, and min quantity as StockNodes with their respective labels.
+   * @param items A list of inventory items to group
+   * @returns An array of StockNodes grouped by item name
+   */
+  private groupInventoryByItem(items: Inventory[]): StockNode[] {
+    // Group items by item name
+    const groupedByItem = new Map<string, Inventory[]>();
+    items.forEach(item => {
+      const itemKey = item.item;
+      if (!groupedByItem.has(itemKey)) {
+        groupedByItem.set(itemKey, []);
+      }
+      groupedByItem.get(itemKey)!.push(item);
+    });
+
+    // Convert grouped items to StockNodes
+    return Array.from(groupedByItem.entries()).map(([itemName, itemGroup]) => ({
+      item: itemName,
+      children: itemGroup.map(inventoryItem => ({
+        description: inventoryItem.description,
+        children: [
+          { quantity: inventoryItem.quantity, label: '- Current Quantity' },
+          { maxQuantity: inventoryItem.maxQuantity, label: '- Max Quantity' },
+          { minQuantity: inventoryItem.minQuantity, label: '- Min Quantity' },
+        ]
+      }))
+    }));
   }
 
   // Compute tree nodes from inventory data
-  // Each stock state gets its own
+  // Each stock state gets its own, grouped by item name
   stockedItems = computed(() => {
-    return this.inventory()
-      ?.filter(item => item.stockState === 'Stocked')
-      .map(item => this.inventoryToStockNode(item)) ?? [];
+    const filtered = this.inventory()
+      ?.filter(item => item.stockState === 'Stocked') ?? [];
+    return this.groupInventoryByItem(filtered);
   });
 
   outOfStockItems = computed(() => {
-    return this.inventory()
-      ?.filter(item => item.stockState === 'Out of Stock')
-      .map(item => this.inventoryToStockNode(item)) ?? [];
+    const filtered = this.inventory()
+      ?.filter(item => item.stockState === 'Out of Stock') ?? [];
+    return this.groupInventoryByItem(filtered);
   });
 
   underStockedItems = computed(() => {
-    return this.inventory()
-      ?.filter(item => item.stockState === 'Under-Stocked')
-      .map(item => this.inventoryToStockNode(item)) ?? [];
+    const filtered = this.inventory()
+      ?.filter(item => item.stockState === 'Under-Stocked') ?? [];
+    return this.groupInventoryByItem(filtered);
   });
 
   overStockedItems = computed(() => {
-    return this.inventory()
-      ?.filter(item => item.stockState === 'Over-Stocked')
-      .map(item => this.inventoryToStockNode(item)) ?? [];
+    const filtered = this.inventory()
+      ?.filter(item => item.stockState === 'Over-Stocked') ?? [];
+    return this.groupInventoryByItem(filtered);
   });
 
   // downloadCSV() {

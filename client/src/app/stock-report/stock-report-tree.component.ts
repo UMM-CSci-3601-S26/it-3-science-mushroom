@@ -11,6 +11,7 @@ import { Input } from '@angular/core';
  * In the event some data is missing, the tree will still display what it can.
  */
 export interface StockNode {
+  item?: string;
   description?: string;
   label?: string;
   quantity?: number;

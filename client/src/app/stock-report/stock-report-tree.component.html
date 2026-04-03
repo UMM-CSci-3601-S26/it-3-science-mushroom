@@ -6,14 +6,14 @@
     {{getChildDisplay(node)}}
   </mat-tree-node>
   <!-- If its got children, handle expansion -->
-  <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding matTreeNodeToggle [cdkTreeNodeTypeaheadLabel]="node.description">
+  <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding matTreeNodeToggle [cdkTreeNodeTypeaheadLabel]="node.item || node.description">
     <!-- Expansion Button -->
-    <button matIconButton matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.description">
+    <button matIconButton matTreeNodeToggle [attr.aria-label]="'Toggle ' + (node.item || node.description)">
       <mat-icon class="mat-icon-rtl-mirror">
         {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
       </mat-icon>
     </button>
-    <!-- Put the item's description in -->
-    {{node.description}}
+    <!-- Put the item's name or description in -->
+    {{node.item || node.description}}
   </mat-tree-node>
 </mat-tree>
