@@ -31,7 +31,7 @@ export class DialogComponent {
   readonly dialog = inject(MatDialog);
 
   openDialog(numReports?: number, reportName?: string) {
-    // Construct message based on passed parameters
+    // Construct message based on passed parameters (in the event message isn't properly constructed prior)
     const message = numReports !== undefined
       ? `Are you sure you want to delete ${numReports} report(s)?`
       : `Are you sure you want to delete the report ${reportName}?`;

@@ -284,7 +284,7 @@ export class ReportGeneratorComponent {
         const dialogRef = this.dialog.open(DialogElements, {
           data: {
             numReports: reportCount,
-            message: `Are you sure you want to delete the ${reportCount} report(s)?`
+            message: `Are you sure you want to delete ${reportCount} report(s)?`
           }
         });
 
