@@ -2,6 +2,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // JS Imports
 import { catchError, of} from 'rxjs';
@@ -39,6 +40,7 @@ export class ReportGeneratorComponent {
   private stockReportService = inject(StockReportService);
   private dialog = inject(MatDialog);
   private dateTime = new Date();
+  private snackBar = inject(MatSnackBar);
 
   // Helper function to format date and time for the PDF name and description
   private formatDateTime(date: Date): string {
@@ -237,7 +239,7 @@ export class ReportGeneratorComponent {
       this.stockReportService.addNewReport(formData).subscribe({
         next: (response) => {
           console.log("PDF report saved to server with ID:", response);
-          this.stockReportService.refreshReports();
+          this.stockReportService.refreshReports().subscribe();
         },
         error: (error) => {
           console.error("Error saving PDF report to server:", error);
@@ -252,11 +254,21 @@ export class ReportGeneratorComponent {
   // Helper method for generating and downloading report as PDF to client
   downloadNewPdfReport() {
     this.generatePDF(false);
+    this.snackBar.open(
+      `Generating and downloading report as PDF file...`,
+      `Okay`,
+      { duration: 2000 }
+    );
   }
 
   // Helper method for generating and saving report as PDF to server
   savePdfReport() {
     this.generatePDF(true);
+    this.snackBar.open(
+      `Generating and saving report as PDF file to server...`,
+      `Okay`,
+      { duration: 2000 }
+    );
   }
 
   /**
@@ -295,7 +307,7 @@ export class ReportGeneratorComponent {
               this.stockReportService.deleteReport(report._id!).subscribe({
                 next: () => {
                   console.log("PDF report deleted from server with ID:", report._id);
-                  this.stockReportService.refreshReports(); // Notify that reports have changed
+                  this.stockReportService.refreshReports().subscribe(); // Notify that reports have changed
                 },
                 error: (error) => {
                   console.error("Error deleting PDF report from server:", error);
@@ -322,6 +334,11 @@ export class ReportGeneratorComponent {
       next: (response) => {
         if (response.length === 0) {
           console.warn("No reports available for download.");
+          this.snackBar.open(
+            `No reports available for download.`,
+            `Okay`,
+            { duration: 2000 }
+          );
           return;
         }
         for (const report of response) {
@@ -356,6 +373,12 @@ export class ReportGeneratorComponent {
           a.click();
           URL.revokeObjectURL(url);
         });
+
+        this.snackBar.open(
+          `Downloaded ${response.length} report(s) as ZIP file.`,
+          null,
+          { duration: 2000 }
+        );
       },
       error: (error) => {
         console.error("Error downloading PDF report to client:", error);

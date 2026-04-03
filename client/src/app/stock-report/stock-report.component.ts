@@ -14,6 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 //import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // RxJS Imports
 import { catchError, of} from 'rxjs';
@@ -60,6 +61,7 @@ export class StockReportComponent {
   private inventoryService = inject(InventoryService);
   private reportService = inject(StockReportService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
 
@@ -76,13 +78,18 @@ export class StockReportComponent {
   );
 
   constructor() {
-    this.reportService.refreshReports();
+    this.reportService.refreshReports().subscribe();
   }
 
   // Download single report as PDF. Uses the Report Generator's method, passing along the report to download
   downloadSingleReport(report: StockReport) {
     if (!this.reportGenerator || !report) return;
     this.reportGenerator.downloadSinglePdfReport(report);
+    this.snackBar.open(
+      `Downloading report ${report.reportName} as PDF file...`,
+      `Okay`,
+      { duration: 2000 }
+    );
   }
 
   // Delete a single PDF report. Uses the Report Generator's method, passing along the report to delete
@@ -98,7 +105,12 @@ export class StockReportComponent {
       if (result) {
         if (!this.reportGenerator || !report) return;
         this.reportGenerator.deleteSinglePdfReport(report);
-        this.reportService.refreshReports();
+        this.reportService.refreshReports().subscribe();
+        this.snackBar.open(
+          `Deleted report ${report.reportName}.`,
+          `Okay`,
+          { duration: 2000 }
+        );
       }
     });
   }

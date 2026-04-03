@@ -3,8 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 // RxJS Imports
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
 // Family Imports
@@ -27,17 +27,14 @@ export class StockReportService {
    * @returns Observable of the updated list of Stock Reports
    */
   refreshReports(): Observable<StockReport[]> {
-    // Get reports from server
-    this.getReports().subscribe({
-      next: (reports) => {
-        this.reportSubject.next(reports); // Update the subject with new reports
-      },
-      error: (error) => {
+    return this.getReports().pipe(
+      tap(reports => this.reportSubject.next(reports)), // Update the BehaviorSubject with new reports
+      catchError(error => {
         console.error('Error fetching reports:', error);
-        this.reportSubject.next([]); // On error, emit an empty array
-      }
-    });
-    return this.reports$; // Return the observable for components to subscribe to
+        this.reportSubject.next([]);
+        return of([]); // Return an empty array if there's an error
+      })
+    );
   }
 
   getReports(): Observable<StockReport[]> {
