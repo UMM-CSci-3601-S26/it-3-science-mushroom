@@ -45,6 +45,7 @@
 .list-container {
   display: flex;
   flex-direction: row;
+  margin: auto;
 }
 
 .list-group {
@@ -56,4 +57,11 @@
 
 h2 {
   text-align: center;
+  font-size: 24px;
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 0.5rem;
 }
