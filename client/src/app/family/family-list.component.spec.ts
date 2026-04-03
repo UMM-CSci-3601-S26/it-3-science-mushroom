@@ -176,3 +176,42 @@ describe('FamilyDash', () => {
     expect(errorComponent.dashboardStats()).toBeUndefined();
   });
 });
+
+describe('Filter Dropdown options', () => {
+  let component: FamilyListComponent;
+  let fixture: ComponentFixture<FamilyListComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [FamilyListComponent],
+      providers: [
+        { provide: FamilyService, useClass: MockFamilyService },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(FamilyListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should return all guardian name options when guardian name signal is empty', () => {
+    component.guardianName.set(undefined);
+    fixture.detectChanges();
+    const options = component.filteredFamilyOptions();
+    expect(options.length).toBeGreaterThan(0);
+    expect(options.map(option => option.value)).toContain('John Johnson');
+    expect(options.map(option => option.value)).toContain('Jane Doe');
+    expect(options.map(option => option.value)).toContain('George Peterson');
+  });
+
+  it('should return empty options when guardian name signal matches nothing',() => {
+    component.guardianName.set('imaginaryName');
+    fixture.detectChanges();
+    expect(component.filteredFamilyOptions().length).toBe(0);
+  });
+});
