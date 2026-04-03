@@ -3,6 +3,8 @@ import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 // JS Imports
 import { catchError, of} from 'rxjs';
@@ -18,10 +20,8 @@ import { InventoryService } from '../../inventory/inventory.service';
 import { StockReportService } from '../stock-report.service';
 import { StockReport } from '../stock-report';
 
-
 // Dialog Imports
 import { DialogElements } from '../../dialog/dialog.component';
-
 
 // Type for jsPDF with autoTable metadata
 interface jsPDFWithAutoTable extends jsPDFClass {
@@ -34,6 +34,7 @@ interface jsPDFWithAutoTable extends jsPDFClass {
   selector: "app-report-generator",
   templateUrl: "./report-generator.component.html",
   styleUrls: ["./report-generator.component.scss"],
+  imports: [MatButton, MatIcon],
 })
 export class ReportGeneratorComponent {
   private inventoryService = inject(InventoryService);

@@ -33,7 +33,7 @@
         @for (report of reports(); track report._id) {
           <div class="report-item">
             <div class="flex-1">
-              <span>{{ report.reportName }}</span>
+              <span style="margin:0;">{{ report.reportName }}</span>
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report as PDF">
                 <mat-icon>download</mat-icon>
               </button>
@@ -47,12 +47,16 @@
     } @else {
       <p>No reports available</p>
     }
+
+  <!--Actions-->
+  <hr>
+  <app-report-generator #reportGenerator></app-report-generator>
   </mat-card-content>
 </mat-card>
 
-<!-- Report Sections -->
-<app-report-generator #reportGenerator></app-report-generator>
+<br>
 
+<!-- Report Sections -->
 <mat-card class="report-sections-card">
   <mat-card-header>
     <mat-card-title class="stock-report-title">Report Sections</mat-card-title>

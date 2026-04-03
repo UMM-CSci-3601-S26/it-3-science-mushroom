@@ -1,14 +1,55 @@
-<div class="flex-1">
-  <button mat-raised-button color="primary" (click)="downloadNewPdfReport()">
-    Save Report as PDF
-  </button>
-  <button mat-raised-button color="primary" (click)="savePdfReport()">
-    Finalize Report as PDF
-  </button>
-  <button mat-raised-button color="primary" (click)="downloadAllPdfReports()">
-    Download all PDFs as ZIP
-  </button>
-  <button mat-raised-button color="primary" (click)="deleteAllReports()">
-    Delete all reports
-  </button>
+<div style="display: flex; flex-direction: row; gap: 16px; justify-content: center;">
+  <!--Generating Actions-->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; text-decoration: underline;">
+      <h4 style="margin: 0;">Generation Actions</h4>
+      <mat-icon>build</mat-icon>
+    </div>
+    <button mat-raised-button (click)="savePdfReport()">
+      Finalize Report as PDF
+    </button>
+    <button mat-raised-button disabled>
+      Finalize Report as CSV
+    </button>
+    <button mat-raised-button (click)="downloadNewPdfReport()">
+      Save Report as PDF
+    </button>
+    <button mat-raised-button disabled>
+      Save Report as CSV
+    </button>
+  </div>
+
+  <!--Already Generated Saving Actions-->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; text-decoration: underline;">
+      <h4 style="margin: 0;">Downloading Actions</h4>
+      <mat-icon>cloud_download</mat-icon>
+    </div>
+    <button mat-raised-button disabled>
+      Download all Reports as ZIP
+    </button>
+    <button mat-raised-button (click)="downloadAllPdfReports()">
+      Download all PDFs as ZIP
+    </button>
+    <button mat-raised-button disabled>
+      Download all CSVs as ZIP
+    </button>
+  </div>
+
+  <!--Deleting Actions-->
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; text-decoration: underline;">
+      <h4 style="margin: 0;">Deletion Actions</h4>
+      <mat-icon>delete_forver</mat-icon>
+    </div>
+    <button mat-raised-button (click)="deleteAllReports()">
+      Delete all Reports
+    </button>
+    <button mat-raised-button disabled>
+      Delete all PDF Reports
+    </button>
+    <button mat-raised-button disabled>
+      Download all CSV Reports
+    </button>
+  </div>
 </div>
