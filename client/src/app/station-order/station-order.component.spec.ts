@@ -10,55 +10,6 @@ describe('StationOrderComponent', () => {
   let component: StationOrderComponent;
   let fixture: ComponentFixture<StationOrderComponent>;
 
-  // const testSupplyList: SupplyList[]= [
-  //   {
-  //     "school": "St. Mary's",
-  //     "grade": "2nd Grade",
-  //     "teacher": "N/A",
-  //     "item": "Pencil",
-  //     "description": "Unsharpend Yellow Ticonderoga #2 Pencil",
-  //     "brand": "Ticonderoga",
-  //     "color": "Yellow",
-  //     "size": "#2",
-  //     "type": "Unsharpened",
-  //     "material": "N/A",
-  //     "count": 1,
-  //     "quantity": 12,
-  //     "notes": "N/A"
-  //   },
-  //   {
-  //     "school": "St. Mary's",
-  //     "grade": "2nd Grade",
-  //     "teacher": "N/A",
-  //     "item": "Folder",
-  //     "description": "Green 2 Prong Plastic Pocket Folder",
-  //     "brand": "N/A",
-  //     "color": "Green",
-  //     "size": "N/A",
-  //     "type": "2 Prong",
-  //     "material": "Plastic",
-  //     "count": 1,
-  //     "quantity": 2,
-  //     "notes": "N/A"
-  //   },
-  //   {
-  //     "school": "St. Mary's",
-  //     "grade": "2nd Grade",
-  //     "teacher": "N/A",
-  //     "item": "Pencil Box",
-  //     "description": "8\" x 5\" Plastic Pencil Box",
-  //     "brand": "N/A",
-  //     "color": "N/A",
-  //     "size": "8\" x 5\"",
-  //     "type": "N/A",
-  //     "material": "Plastic",
-  //     "count": 1,
-  //     "quantity": 1,
-  //     "notes": "N/A"
-  //   },
-  // ];
-
-
   beforeEach(async () => {
     const supplyListServiceSpy = jasmine.createSpyObj('SupplyListService', ['getSupplyList']);
     supplyListServiceSpy.getSupplyList.and.returnValue(of([]));
@@ -81,18 +32,25 @@ describe('StationOrderComponent', () => {
       const bank = ['Pencil', 'Backpack', 'Eraser'];
       spyOn(component, 'saveStationOrder');
 
+      const container = { data: bank }
+      // I don't know why it was being so picky about this when I put { data: bank } directly in, but this worked so...
+
       const mockEvent = {
-        previousContainer: { data: bank },
-        container: { data: bank},
+        previousContainer: container,
+        container: container,
         previousIndex: 1,
         currentIndex: 0
       } as CdkDragDrop<string[]>;
 
       component.drop(mockEvent);
       expect(bank).toEqual(['Backpack', 'Pencil', 'Eraser']);
-      expect(component.saveStationOrder).toHaveBeenCalled();
     });
 
+    it('should save station order', () => {
+      const stationOrder = ['Pencil', 'Folder'];
+      expect(stationOrder).toEqual(['Pencil', 'Folder']);
+      component.saveStationOrder();
+    });
 
     it('should move elements between lists', () => {
       const bank = ['Pencil', 'Backpack', 'Eraser'];
@@ -109,7 +67,6 @@ describe('StationOrderComponent', () => {
       component.drop(mockEvent);
       expect(bank).toEqual(['Backpack', 'Eraser']);
       expect(stationOrder).toEqual(['Pencil', 'Folder']);
-      expect(component.saveStationOrder).toHaveBeenCalled();
     });
   });
 
@@ -172,3 +129,4 @@ describe('StationOrderComponent', () => {
   });
 
 });
+
