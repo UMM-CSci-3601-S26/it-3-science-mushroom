@@ -3,8 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 // RxJS Imports
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable, of, forkJoin } from 'rxjs';
+import { catchError, map, tap, switchMap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
 // Family Imports
@@ -37,6 +37,27 @@ export class StockReportService {
     );
   }
 
+  /**
+   * Converts base64 into a Blob for downloading files off of the server. Currently only handles PDFs.
+   * @param base64String The base64 string to convert to a Blob
+   * @returns The converted Blob
+   */
+  public convertBase64ToBlob(base64String: string): Blob {
+    const binaryString = atob(base64String); // Decode Base64
+    const bytes = new Uint8Array(binaryString.length);
+    // Fill byte array with the decoded b64
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    // Make and return Blob
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    return blob;
+  }
+
+  /**
+   * Call the endpoint to get all Stock Reports
+   * @returns httpParams of the server's response
+   */
   getReports(): Observable<StockReport[]> {
     const httpParams: HttpParams = new HttpParams();
     return this.httpClient.get<StockReport[]>(this.stockReportUrl, {
@@ -44,19 +65,68 @@ export class StockReportService {
     });
   }
 
+  /**
+   * Call the endpoint to get a single Stock Report by ID
+   * @param id ID of report to get
+   * @returns StockReport with the given ID, as returned by the server
+   */
   getReportById(id: string): Observable<StockReport> {
     return this.httpClient.get<StockReport>(`${this.stockReportUrl}/${id}`);
   }
 
+  /**
+   * Call endpoint to add a new Stock Report
+   * @param formData Data of the new report to add, containing the report name and data for the report file (PDF or CSV)
+   * @returns Response from the server, which should be the ID of the newly created report
+   */
   addNewReport(formData: FormData): Observable<string> {
     return this.httpClient.post<{id: string}>(this.stockReportUrl, formData).pipe(map(response => response.id));
   }
 
+  /**
+   * Calls the delete endpoint for a given report ID
+   * @param id ID of report to delete
+   * @returns A void Observable when deletion is complete
+   */
   deleteReport(id: string): Observable<void> {
     return this.httpClient.delete<void>(`${this.stockReportUrl}/${id}`);
   }
 
-  // Keeping for now since I might add CSV exporting for Stock Reports
+  /**
+   * Delete a single report and refresh the reports list.
+   * @param report The report to delete
+   * @returns Observable that completes when delete and refresh are done
+   */
+  deleteSingleReport(report: StockReport): Observable<void> {
+    return this.deleteReport(report._id!).pipe(
+      switchMap(() => this.refreshReports()),
+      switchMap(() => of(void 0)) // Convert to void observable
+    );
+  }
+
+  /**
+   * Delete multiple reports and refresh the reports list.
+   * @param reports The reports to delete
+   * @returns Observable that completes when all deletes and refresh are done
+   */
+  deleteAllReports(reports: StockReport[]): Observable<void> {
+    if (reports.length === 0) {
+      return of(void 0);
+    }
+
+    // Create an observable for each delete
+    const deleteObservables = reports.map(report =>
+      this.deleteReport(report._id!)
+    );
+
+    // Execute all deletes in parallel, then refresh once, return void
+    return forkJoin(deleteObservables).pipe(
+      switchMap(() => this.refreshReports()),
+      switchMap(() => of(void 0))
+    );
+  }
+
+  // Keeping for now since I (thatcher) will add CSV exporting for Stock Reports
   // exportFamilies(): Observable<string> {
   //   return this.httpClient.get(`${this.stockReportUrl}/export`, {
   //     responseType: 'text'

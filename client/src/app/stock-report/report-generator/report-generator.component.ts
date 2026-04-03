@@ -83,23 +83,6 @@ export class ReportGeneratorComponent {
   });
 
   /**
-   * Converts base64 into a Blob for downloading files off of the server. Currently only handles PDFs.
-   * @param base64String The base64 string to convert to a Blob
-   * @returns The converted Blob
-   */
-  convertBase64ToBlob(base64String: string): Blob {
-    const binaryString = atob(base64String); // Decode Base64
-    const bytes = new Uint8Array(binaryString.length);
-    // Fill byte array with the decoded b64
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    // Make and return Blob
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    return blob;
-  }
-
-  /**
    * Generates a PDF report of the inventory, grouped by Stock State. Each group has its own table with item description, quantity, max quantity, and min quantity.
    * The PDF is saved with the name "StockReport_MM-DD-YYYY.pdf" where MM-DD-YYYY is the current date. The PDF also includes a title and description with the date.
    * @param savePdf boolean indicating whether to save PDF to server (true) or download to client machine (false)
@@ -241,60 +224,80 @@ export class ReportGeneratorComponent {
         next: (response) => {
           console.log("PDF report saved to server with ID:", response);
           this.stockReportService.refreshReports().subscribe();
+          this.snackBar.open(
+            `Generating and downloading report as PDF file...`,
+            `Okay`,
+            { duration: 2000 }
+          );
         },
         error: (error) => {
           console.error("Error saving PDF report to server:", error);
+          this.snackBar.open(
+            `Error generating / saving report as PDF file. Please try again.`,
+            `Okay`,
+            { duration: 2000 }
+          );
         }
       });
     } else {
       // Save to client machine
       doc.save(filename);
+      this.snackBar.open(
+        `Generating and saving report as PDF file to server...`,
+        `Okay`,
+        { duration: 2000 }
+      );
     }
   }
 
   // Helper method for generating and downloading report as PDF to client
   downloadNewPdfReport() {
     this.generatePDF(false);
-    this.snackBar.open(
-      `Generating and downloading report as PDF file...`,
-      `Okay`,
-      { duration: 2000 }
-    );
   }
 
   // Helper method for generating and saving report as PDF to server
   savePdfReport() {
     this.generatePDF(true);
-    this.snackBar.open(
-      `Generating and saving report as PDF file to server...`,
-      `Okay`,
-      { duration: 2000 }
-    );
   }
 
   /**
-   * Delete a single PDF report from the server.
+   * Delete a single PDF report from the server
    * @param report Report to delete from the server
    */
-  deleteSinglePdfReport (report: StockReport) {
-    this.stockReportService.deleteReport(report._id!).subscribe({
+  deleteSinglePdfReport(report: StockReport) {
+    // Call deleteReport and handle response
+    this.stockReportService.deleteSingleReport(report).subscribe({
+      // If successful, show success message with report name
       next: () => {
         console.log("PDF report deleted from server with ID:", report._id);
+        this.snackBar.open(
+          `Report "${report.reportName}" deleted successfully.`,
+          `Okay`,
+          { duration: 2000 }
+        );
       },
+      // If error, show error message
       error: (error) => {
         console.error("Error deleting PDF report from server:", error);
+        this.snackBar.open(
+          `Error deleting report. Please try again.`,
+          `Okay`,
+          { duration: 2000 }
+        );
       }
     });
   }
 
   /**
-   * Delete all PDF reports from the server.
+   * Delete all reports from the server
    */
-  deleteAllReports () {
+  deleteAllReports() {
+    // Get all reports
     this.stockReportService.getReports().subscribe({
       next: (response) => {
         const reportCount = response.length;
 
+        // Confirm with user that they want to delete all reports
         const dialogRef = this.dialog.open(DialogElements, {
           data: {
             numReports: reportCount,
@@ -302,37 +305,56 @@ export class ReportGeneratorComponent {
           }
         });
 
+        // If confirmed, handle deleting
         dialogRef.afterClosed().subscribe(result => {
           if (result) {
-            for (const report of response) {
-              this.stockReportService.deleteReport(report._id!).subscribe({
-                next: () => {
-                  console.log("PDF report deleted from server with ID:", report._id);
-                  this.stockReportService.refreshReports().subscribe(); // Notify that reports have changed
-                },
-                error: (error) => {
-                  console.error("Error deleting PDF report from server:", error);
-                }
-              });
-            }
+            this.stockReportService.deleteAllReports(response).subscribe({
+              // If successful, show success message with number of reports deleted
+              next: () => {
+                console.log("All reports deleted from server");
+                this.snackBar.open(
+                  `${reportCount} report(s) deleted successfully.`,
+                  `Okay`,
+                  { duration: 2000 }
+                );
+              },
+              // If error, show error message
+              error: (error) => {
+                console.error("Error deleting reports from server:", error);
+                this.snackBar.open(
+                  `Error deleting reports. Please try again.`,
+                  `Okay`,
+                  { duration: 2000 }
+                );
+              }
+            });
           }
         });
       },
+      // If error fetching reports, show error message and do not proceed with delete
       error: (error) => {
-        console.error("Error fetching PDF reports from server for deletion:", error);
+        console.error("Error fetching reports from server for deletion:", error);
+        this.snackBar.open(
+          `Error fetching reports from the server. Please try again.`,
+          `Okay`,
+          { duration: 2000 }
+        );
       }
     });
   }
 
   /**
    * Downloads all PDFs from the server as a ZIP file.
+   * @note This needs to be updated to handle only downloading PDFs once CSV reports are added!
    */
   downloadAllPdfReports () {
     const zip = new JSZip();
     const usedFilenames = new Set<string>();
 
+    // Get all reports
     this.stockReportService.getReports().subscribe({
       next: (response) => {
+        // No reports to download
         if (response.length === 0) {
           console.warn("No reports available for download.");
           this.snackBar.open(
@@ -342,8 +364,9 @@ export class ReportGeneratorComponent {
           );
           return;
         }
+        // Loop through all reports
         for (const report of response) {
-          const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
+          const pdfBlob = this.stockReportService.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
           let finalFilename = report.reportName; // Temp var to check for duplicate file names
 
           // If file name already exists
@@ -375,23 +398,31 @@ export class ReportGeneratorComponent {
           URL.revokeObjectURL(url);
         });
 
+        // Show success message
         this.snackBar.open(
-          `Downloaded ${response.length} report(s) as ZIP file.`,
-          null,
+          `Downloaded ${response.length} PDF report(s) as ZIP file.`,
+          `Okay`,
           { duration: 2000 }
         );
       },
+      // If error
       error: (error) => {
-        console.error("Error downloading PDF report to client:", error);
+        console.error("Error downloading ZIP of report(s). ", error);
+        this.snackBar.open(
+          `Failed to download PDF report(s) as ZIP. Please try again.`,
+          `Okay`,
+          { duration: 2000 }
+        );
       }
     });
   }
 
   /**
    * Download a single PDF report from the server.
+   * @note This also needs to be updated to account for only downloading PDFs!
    */
-  downloadSinglePdfReport (report: StockReport) {
-    const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
+  downloadSinglePdfReport(report: StockReport) {
+    const pdfBlob = this.stockReportService.convertBase64ToBlob(report.stockReportPDF); // Convert base64 to Blob
     const url = window.URL.createObjectURL(pdfBlob);
 
     const a = document.createElement('a');

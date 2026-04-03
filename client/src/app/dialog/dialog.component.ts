@@ -10,13 +10,10 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 
-
 export interface DialogData {
   numReports?: number;
   reportName?: string;
 }
-
-
 
 /**
  * @title Dialog elements
