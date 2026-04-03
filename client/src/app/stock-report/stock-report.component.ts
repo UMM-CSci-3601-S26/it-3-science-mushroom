@@ -77,6 +77,15 @@ export class StockReportComponent {
     )
   );
 
+  // Compute PDF and CSV reports separately for easier display
+  pdfReports = computed(() =>
+    this.reports().filter(report => report.stockReportPDF !== null && report.stockReportPDF !== undefined)
+  );
+
+  csvReports = computed(() =>
+    this.reports().filter(report => report.stockReportCSV !== null && report.stockReportCSV !== undefined)
+  );
+
   constructor() {
     this.reportService.refreshReports().subscribe();
   }
