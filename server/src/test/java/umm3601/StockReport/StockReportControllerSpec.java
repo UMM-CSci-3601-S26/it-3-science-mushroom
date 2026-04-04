@@ -1,7 +1,6 @@
 // Packages
 package umm3601.StockReport;
 
-
 // Static Imports
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,8 +19,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-//import io.javalin.json.JavalinJackson;
-//import io.javalin.validation.BodyValidator;
 
 // Org Imports
 import org.bson.Document;
@@ -61,8 +58,6 @@ public class StockReportControllerSpec {
 
   private static MongoClient mongoClient;
   private static MongoDatabase db;
-
-  //private static JavalinJackson javalinJackson = new JavalinJackson();
 
   @Mock
   private Context ctx;
