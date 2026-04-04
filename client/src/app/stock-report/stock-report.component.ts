@@ -12,7 +12,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-//import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -182,18 +181,4 @@ export class StockReportComponent {
       ?.filter(item => item.stockState === 'Over-Stocked') ?? [];
     return this.groupInventoryByItem(filtered);
   });
-
-  // downloadCSV() {
-  //   this.familyService.exportFamilies().subscribe(csvData => {
-  //     const blob = new Blob([csvData], { type: 'text/csv' });
-  //     const url = window.URL.createObjectURL(blob);
-
-  //     const a = document.createElement('a');
-  //     a.href = url;
-  //     a.download = 'families.csv';
-  //     a.click();
-
-  //     window.URL.revokeObjectURL(url);
-  //   });
-  // }
 }

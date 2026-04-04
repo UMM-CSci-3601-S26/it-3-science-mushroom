@@ -17,6 +17,7 @@ export interface StockNode {
   quantity?: number;
   maxQuantity?: number;
   minQuantity?: number;
+  notes?: string;
   children?: StockNode[];
 }
 
@@ -38,7 +39,7 @@ export class StockReportTreeComponent {
 
   // Add the labels to the node for displaying
   getChildDisplay(node: StockNode): string {
-    const value = node.quantity ?? node.maxQuantity ?? node.minQuantity;
+    const value = node.quantity ?? node.maxQuantity ?? node.minQuantity ?? node.notes;
     return value !== undefined ? `${node.label}: ${value}` : (node.description ?? '');
   }
 }

@@ -44,11 +44,16 @@ export class ReportGeneratorComponent {
 
   // Helper function to format date and time for the PDF name and description
   private formatDateTime(date: Date): string {
-    const minute = date.getMinutes();
+    let minute = date.getMinutes().toString();
     const hour = date.getHours();
     const day = date.getDate();
     const month = date.getMonth() + 1; // Months are zero-indexed
     const year = date.getFullYear();
+
+    if (minute.length < 2) {
+      // Add leading zero to minutes if less than 10 for better formatting
+      minute = `0${minute}`;
+    }
     // Format the date and time as MM-DD-YYYY_HH:MM(AM/PM)
     if (hour > 12) { // PM hours
       return `${month}-${day}-${year}_${hour-12}:${minute} PM`;
@@ -58,6 +63,8 @@ export class ReportGeneratorComponent {
       return `${month}-${day}-${year}_${hour}:${minute} PM`;
     } else if (hour === 0) { // Midnight
       return `${month}-${day}-${year}_12:${minute} AM`;
+    } else { // This should literally never happen, and if it does something horrible has gone wrong
+      return `Time calculation failed. Something has gone VERY wrong, please contact a site administrator. Or just refresh the page. Your choice.`;
     }
   }
 
@@ -71,25 +78,25 @@ export class ReportGeneratorComponent {
   stockedItems = computed(() => {
     return this.inventory()
       ?.filter(item => item.stockState === 'Stocked')
-      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   outOfStockItems = computed(() => {
     return this.inventory()
       ?.filter(item => item.stockState === 'Out of Stock')
-      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   overstockedItems = computed(() => {
     return this.inventory()
       ?.filter(item => item.stockState === 'Over-Stocked')
-      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   understockedItems = computed(() => {
     return this.inventory()
       ?.filter(item => item.stockState === 'Under-Stocked')
-      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity]) ?? [];
+      .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   /**
@@ -107,11 +114,25 @@ export class ReportGeneratorComponent {
     doc.text("This is a Stock Report of the inventory on ${formattedDate}".replace("${formattedDate}", this.formatDateTime(this.dateTime)), 10, 20);
 
     // Table Constants
-    const headers = [["Item Description", "Quantity", "Max Quantity", "Min Quantity"]];
+    const headers = [["Item Description", "Quantity", "Max Quantity", "Min Quantity", "Notes"]];
     const tableSpace = 10; // 10mm of space
     const titleSpace = 1; // 5mm of space
     const itemSpace = 80; // Item column width
     const quantitySpace = 20; // Quantity/Max/Min column width
+    const columnStyling = {
+      0: { // Item
+        cellWidth: itemSpace
+      },
+      1: { // Quantity
+        cellWidth: quantitySpace
+      },
+      2: { // Max Quantity
+        cellWidth: quantitySpace
+      },
+      3: { // Min Quantity
+        cellWidth: quantitySpace
+      }
+    }
 
     // Stocked Table
     const startY1 = 30; // Starting Y position for the first table
@@ -123,20 +144,7 @@ export class ReportGeneratorComponent {
       body: this.stockedItems(),
       startY: startY1+titleSpace,
       theme: 'striped',
-      columnStyles: {
-        0: { // Item
-          cellWidth: itemSpace
-        },
-        1: { // Quantity
-          cellWidth: quantitySpace
-        },
-        2: { // Max Quantity
-          cellWidth: quantitySpace
-        },
-        3: { // Min Quantity
-          cellWidth: quantitySpace
-        }
-      },
+      columnStyles: columnStyling
     });
 
     // Calculate the startY for the second table
@@ -151,20 +159,7 @@ export class ReportGeneratorComponent {
       body: this.outOfStockItems(),
       startY: startY2+titleSpace,
       theme: 'striped',
-      columnStyles: {
-        0: { // Item
-          cellWidth: itemSpace
-        },
-        1: { // Quantity
-          cellWidth: quantitySpace
-        },
-        2: { // Max Quantity
-          cellWidth: quantitySpace
-        },
-        3: { // Min Quantity
-          cellWidth: quantitySpace
-        }
-      },
+      columnStyles: columnStyling
     });
 
     const startY3 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
@@ -177,20 +172,7 @@ export class ReportGeneratorComponent {
       body: this.overstockedItems(),
       startY: startY3+titleSpace,
       theme: 'striped',
-      columnStyles: {
-        0: { // Item
-          cellWidth: itemSpace
-        },
-        1: { // Quantity
-          cellWidth: quantitySpace
-        },
-        2: { // Max Quantity
-          cellWidth: quantitySpace
-        },
-        3: { // Min Quantity
-          cellWidth: quantitySpace
-        }
-      },
+      columnStyles: columnStyling
     });
 
     const startY4 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
@@ -203,20 +185,7 @@ export class ReportGeneratorComponent {
       body: this.understockedItems(),
       startY: startY4+titleSpace,
       theme: 'striped',
-      columnStyles: {
-        0: { // Item
-          cellWidth: itemSpace
-        },
-        1: { // Quantity
-          cellWidth: quantitySpace
-        },
-        2: { // Max Quantity
-          cellWidth: quantitySpace
-        },
-        3: { // Min Quantity
-          cellWidth: quantitySpace
-        }
-      },
+      columnStyles: columnStyling
     });
 
     // Save PDF with name to client
@@ -306,6 +275,16 @@ export class ReportGeneratorComponent {
     this.stockReportService.getReports().subscribe({
       next: (response) => {
         const reportCount = response.length;
+
+        if (reportCount === 0) {
+          console.log("No reports available to be deleted.");
+          this.snackBar.open(
+            `There are no reports available for deletion.`,
+            `Okay`,
+            { duration: 2000 }
+          );
+          return;
+        }
 
         // Confirm with user that they want to delete all reports
         const dialogRef = this.dialog.open(DialogElements, {

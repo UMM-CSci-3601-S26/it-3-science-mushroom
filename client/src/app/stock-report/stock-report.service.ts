@@ -180,11 +180,4 @@ export class StockReportService {
       })
     );
   }
-
-  // Keeping for now since I (thatcher) will add CSV exporting for Stock Reports
-  // exportFamilies(): Observable<string> {
-  //   return this.httpClient.get(`${this.stockReportUrl}/export`, {
-  //     responseType: 'text'
-  //   });
-  // }
 }

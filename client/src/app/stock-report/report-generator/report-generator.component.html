@@ -6,16 +6,16 @@
       <mat-icon>create</mat-icon>
     </div>
     <button mat-raised-button (click)="savePdfReport()">
-      Finalize Report as PDF
-    </button>
-    <button mat-raised-button disabled>
-      Finalize Report as CSV
+      Generate Report as PDF
     </button>
     <button mat-raised-button (click)="downloadNewPdfReport()">
-      Save Report as PDF
+      Generate & Download Report as PDF
     </button>
     <button mat-raised-button disabled>
-      Save Report as CSV
+      Generate Report as CSV
+    </button>
+    <button mat-raised-button disabled>
+      Generate & Download Report as CSV
     </button>
   </div>
 
@@ -42,10 +42,10 @@
       <h4 style="margin: 0;">Deletion Actions</h4>
       <mat-icon>delete_sweep</mat-icon>
     </div>
-    <button mat-raised-button disabled>
+    <button mat-raised-button (click)="deleteAllReports()">
       Delete all Reports
     </button>
-    <button mat-raised-button (click)="deleteAllReports()">
+    <button mat-raised-button disabled>
       Delete all PDF Reports
     </button>
     <button mat-raised-button disabled>
