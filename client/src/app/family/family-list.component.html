@@ -64,16 +64,31 @@
       <mat-card-header>
         <mat-card-title class="family-list-title">Families</mat-card-title>
       </mat-card-header>
-      <mat-card-content>
-
-      </mat-card-content>
+      <div class="filter-container">
+          <mat-form-field appearance="outline">
+            <mat-label class="filter">Family</mat-label>
+            <input
+              matInput
+              [ngModel]="guardianName() ?? ''"
+              [matAutocomplete]="guardianNameAuto"
+              (ngModelChange)="guardianName.set($event?.trim() || undefined)"
+              placeholder="contains..."
+              data-cy="filter-family"
+            />
+            <mat-autocomplete #guardianNameAuto="matAutocomplete">
+              @for (option of filteredFamilyOptions() ; track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+      </div>
 
 
       <div class="flex-row">
         @if (families()) {
         <div class="flex-1">
             <div class="family-cards-container flex-row gap-8 flex-wrap">
-              @for (family of families(); track family._id) {
+              @for (family of serverFilteredFamilies(); track family._id) {
               <app-family-card class="family-card" [family]="family"></app-family-card>
               }
             </div>

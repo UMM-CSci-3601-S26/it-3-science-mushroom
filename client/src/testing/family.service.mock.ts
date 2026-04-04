@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { AppComponent } from 'src/app/app.component';
-import { Family } from '../app/family/family';
+import { Family, SelectOption } from '../app/family/family';
 import { FamilyService } from 'src/app/family/family.service';
 
 @Injectable({
   providedIn: AppComponent
 })
-export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 'getDashboardStats' | 'getFamilies' | 'exportFamilies' | 'addFamily' | 'deleteFamily'> {
+export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 'familyOptions' | 'getDashboardStats' | 'getFamilies' | 'exportFamilies' | 'addFamily' | 'deleteFamily'> {
   //'getFamily' |
   // getFamilies: FamilyService;
   static testFamilies: Family[] = [
@@ -85,6 +85,13 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
     },
   ];
 
+  private readonly family = signal<Family[]>(MockFamilyService.testFamilies);
+
+  familyOptions = computed<SelectOption[]>(() =>
+    [...new Set(this.family().map(i => i.guardianName).filter(v => v !== ''))]
+      .map(value => ({ label: value, value}))
+  );
+
   getDashboardStats() {
     const studentsPerSchool: { [school: string]: number } = {};
     const studentsPerGrade: { [grade: string]: number } = {};
@@ -110,7 +117,8 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
     });
   }
 
-  getFamilies(): Observable<Family[]> {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  getFamilies(_filters: {guardianName?: string }): Observable<Family[]> {
     return of(MockFamilyService.testFamilies);
   }
 

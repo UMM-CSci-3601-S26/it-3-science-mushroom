@@ -101,6 +101,9 @@ describe('FamilyService', () => {
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
     familyService = TestBed.inject(FamilyService);
+
+    const initReq = httpTestingController.expectOne(familyService.familyUrl);
+    initReq.flush(testFamilies);
   });
 
   afterEach(() => {
@@ -203,6 +206,19 @@ describe('FamilyService', () => {
         expect(calledHttpParams.keys().length)
           .withContext('should have 0 params')
           .toEqual(0);
+      });
+    });
+
+    it('correctly calls api/family with filter parameter \'guardianName\'', () => {
+      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testFamilies));
+
+      familyService.getFamilies({ guardianName: 'John' }).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(familyService.familyUrl, { params: new HttpParams().set('guardianName', 'John') });
       });
     });
   });
@@ -325,5 +341,70 @@ describe('FamilyService', () => {
     expect(req.request.responseType).toBe('text');
 
     req.flush(mockCsv);
+  });
+
+  describe('optionBuilder', () => {
+    it('should build unique options from Family data', () => {
+      const mockFamily: Family[] = [
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []}
+      ];
+
+      const result = familyService.optionBuilder(mockFamily, 'guardianName');
+
+      expect(result).toEqual([
+        { label: 'Jack Jack', value: 'Jack Jack' },
+        { label: 'Jane Dawn', value: 'Jane Dawn' }
+      ]);
+    });
+
+    it('should filter out empty and null values', () => {
+      const mockFamily: Family[] = [
+        { guardianName: '', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Connor Night', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+      ];
+
+      const result = familyService.optionBuilder(mockFamily, 'guardianName');
+
+      expect(result).toEqual([
+        { label: 'Jane Dawn', value: 'Jane Dawn' },
+        { label: 'Connor Night', value: 'Connor Night' }
+      ]);
+    });
+
+    it('should return an empty array when given empty data', () => {
+      const result = familyService.optionBuilder([], 'guardianName');
+      expect(result).toEqual([]);
+    });
+
+    it('should filter out whitespace-only values', () => {
+      const mockFamily: Family[] = [
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: '            ', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Connor Night', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+      ];
+
+      const result = familyService.optionBuilder(mockFamily, 'guardianName');
+
+      expect(result).toEqual([
+        { label: 'Jack Jack', value: 'Jack Jack' },
+        { label: 'Connor Night', value: 'Connor Night' }
+      ]);
+    });
+
+    it('should return a single option when all values are the same', () => {
+      const mockFamily: Family[] = [
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: 'Jack Jack', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Jack Jack', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+      ];
+
+      const result = familyService.optionBuilder(mockFamily, 'guardianName');
+
+      expect(result.length).toBe(1);
+      expect(result[0]).toEqual({ label: 'Jack Jack', value: 'Jack Jack' });
+    });
   });
 });
