@@ -89,6 +89,17 @@ describe('Stock Report', () => {
     cy.get('.mdc-snackbar').should('contain', 'Downloading report');
   });
 
+  it('Should be able to download all reports as a ZIP from the server', () => {
+    // Ensure reports exist
+    cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
+
+    // Click download all button
+    page.getDownloadAllPDFsButton().click();
+
+    // Verify snackbar shows download message
+    cy.get('.mdc-snackbar').should('contain', 'Downloaded all report');
+  });
+
   it('Should be able to delete a single report from the server', () => {
     // Ensure we have at least one report
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
@@ -103,17 +114,6 @@ describe('Stock Report', () => {
 
     // Verify snackbar shows deletion confirmation
     cy.get('.mdc-snackbar').should('contain', 'deleted successfully');
-  });
-
-  it('Should be able to download all reports as a ZIP from the server', () => {
-    // Ensure reports exist
-    cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
-
-    // Click download all button
-    page.getDownloadAllPDFsButton().click();
-
-    // Verify snackbar shows download message
-    cy.get('.mdc-snackbar').should('contain', 'Downloaded all report');
   });
 
   it('Should be able to delete all reports from the server', () => {
