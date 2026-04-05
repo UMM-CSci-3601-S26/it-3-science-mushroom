@@ -9,6 +9,21 @@ describe('Stock Report', () => {
 
   beforeEach(() => {
     page.navigateTo();
+
+    // Create test reports for download/delete tests
+    cy.intercept('POST', '/api/stockreport*').as('saveReport');
+
+    // Create first report
+    page.getReportCard().first().within(() => {
+      cy.get('button').contains('Generate Report as PDF').click();
+    });
+    cy.wait('@saveReport');
+
+    // Create second report for delete all tests
+    page.getReportCard().first().within(() => {
+      cy.get('button').contains('Generate Report as PDF').click();
+    });
+    cy.wait('@saveReport');
   });
 
   it('Should have the correct title', () => {
@@ -77,10 +92,8 @@ describe('Stock Report', () => {
   });
 
   it('Should be able to download a single report from the server', () => {
-    // Ensure we have at least one report
+    // Reports created in beforeEach
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
-
-    // Find the first report item and click its download button
     cy.get('[data-cy="pdf-report-item"]').first().within(() => {
       cy.get('[data-cy="download-pdf-button"]').click();
     });
@@ -90,10 +103,8 @@ describe('Stock Report', () => {
   });
 
   it('Should be able to download all reports as a ZIP from the server', () => {
-    // Ensure reports exist
+    // Reports created in beforeEach
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
-
-    // Click download all button
     page.getDownloadAllPDFsButton().click();
 
     // Verify snackbar shows download message
@@ -101,10 +112,8 @@ describe('Stock Report', () => {
   });
 
   it('Should be able to delete a single report from the server', () => {
-    // Ensure we have at least one report
+    // Reports created in beforeEach
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
-
-    // Find the first report item and click its delete button
     cy.get('[data-cy="pdf-report-item"]').first().within(() => {
       cy.get('[data-cy="delete-pdf-button"]').click();
     });
@@ -117,10 +126,8 @@ describe('Stock Report', () => {
   });
 
   it('Should be able to delete all reports from the server', () => {
-    // Ensure reports exist
+    // Reports created in beforeEach (2 reports ready)
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
-
-    // Click delete all button
     page.getDeleteAllReportsButton().click();
 
     // Confirm deletion in dialog
@@ -131,12 +138,17 @@ describe('Stock Report', () => {
   });
 
   it('Should show message when no reports available for download', () => {
-    // After deleting all reports, the list should be empty
+    // Delete all reports first to test empty state
+    page.getDeleteAllReportsButton().click();
+    cy.contains('button', 'Confirm').click();
+
+    // Wait for deletion to complete
+    cy.get('.mdc-snackbar').should('contain', 'deleted successfully');
+
     // Try to download when empty
     page.getDownloadAllPDFsButton().click();
 
     // Should show no reports message
     cy.get('.mdc-snackbar').should('contain', 'No reports available');
   });
-
 });
