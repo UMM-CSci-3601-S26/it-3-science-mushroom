@@ -53,7 +53,7 @@
       <p>No PDF reports are available.</p>
     }
 
-    <br>
+  <br>
 
   <mat-card-subtitle>CSV Reports</mat-card-subtitle>
     @if (csvReports() && csvReports().length > 0) {
@@ -140,7 +140,6 @@
           </mat-card>
         </div>
     </div>
-
   }  @else {
     <div class="flex-1 stock-report-error">
       <mat-error>
@@ -154,14 +153,3 @@
     }
   </div>
 </mat-card>
-
-<!--
-<button mat-raised-button (click)="downloadCSV()">
-  Export CSV
-</button>
-
-<button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
-  data-test="addFamilyButton">
-  <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
-</button>
--->

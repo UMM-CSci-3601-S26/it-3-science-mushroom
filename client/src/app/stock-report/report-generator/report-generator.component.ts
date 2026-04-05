@@ -132,7 +132,7 @@ export class ReportGeneratorComponent {
       3: { // Min Quantity
         cellWidth: quantitySpace
       }
-    }
+    };
 
     // Stocked Table
     const startY1 = 30; // Starting Y position for the first table
