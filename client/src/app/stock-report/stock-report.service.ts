@@ -135,7 +135,7 @@ export class StockReportService {
    * @returns Observable of the PDF blob
    */
   downloadSingleReportBlob(report: StockReport): Observable<Blob> {
-    const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF);
+    const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF || '');
     return of(pdfBlob);
   }
 
@@ -155,7 +155,7 @@ export class StockReportService {
 
         // Add each report to the ZIP
         for (const report of reports) {
-          const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF);
+          const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF || '');
           let finalFilename = report.reportName;
 
           // Handle duplicate filenames

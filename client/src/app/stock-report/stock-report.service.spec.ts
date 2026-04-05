@@ -55,7 +55,6 @@ describe('StockReportService', () => {
 
       // Call `stockReportService.getReports()` and confirm that the correct call has
       // been made with the correct arguments.
-      //
       // We have to `subscribe()` to the `Observable` returned by `getReports()`.
       stockReportService.getReports().subscribe(() => {
         // The mocked method (`httpClient.get()`) should have been called
@@ -79,7 +78,7 @@ describe('StockReportService', () => {
 
       stockReportService.getReports().subscribe(() => {
         const [url, options] = mockedMethod.calls.argsFor(0);
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
+        const calledHttpParams: HttpParams = (options ? options.params : new HttpParams()) as HttpParams;
         expect(mockedMethod)
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
@@ -98,7 +97,7 @@ describe('StockReportService', () => {
       // We're just picking a StockReport "at random" from our little
       // set of Reports up at the top.
       const targetStockReport: StockReport = testReports[1];
-      const targetId: string = targetStockReport._id;
+      const targetId: string = targetStockReport._id || 'default_id';
 
       // Mock the `httpClient.get()` method so that instead of making an HTTP request
       // it just returns one stockReport from our test data
@@ -106,7 +105,6 @@ describe('StockReportService', () => {
 
       // Call `stockReportService.getStockReport()` and confirm that the correct call has
       // been made with the correct arguments.
-      //
       // We have to `subscribe()` to the `Observable` returned by `getStockReportById()`.
       // The `stockReport` argument in the function below is the thing of type StockReport returned by
       // the call to `getStockReportById()`.
@@ -160,5 +158,33 @@ describe('StockReportService', () => {
           .toHaveBeenCalledWith(`${stockReportService.stockReportUrl}/john_id`);
       });
     }));
+  });
+
+  describe('Downloading reports from the server', () => {
+    it('should convert base64 to blob correctly', () => {
+      const base64String = 'SGVsbG8h'; // Base64 for "Hello!"
+      const blob = stockReportService.convertBase64ToBlob(base64String);
+
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.type).toBe('application/pdf');
+    });
+
+    it('should return a Observable of Blob when downloading a single report', () => {
+      const mockBlob = new Blob(['Test PDF content'], { type: 'application/pdf' });
+      spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
+
+      stockReportService.downloadSingleReportBlob({ _id: '1', reportName: 'Test Report' }).subscribe((blob) => {
+        expect(blob).toBe(mockBlob);
+      });
+    });
+
+    it('should return an Observable of Blob when downloading all reports as a zip', () => {
+      const mockBlob = new Blob(['Test ZIP content'], { type: 'application/zip' });
+      spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
+      stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+        expect(blob).toBe(mockBlob);
+      });
+    });
+
   });
 });
