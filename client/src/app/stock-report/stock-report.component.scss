@@ -28,11 +28,12 @@ mat-radio-button {
   gap: 8px;
 }
 
-.report-item {
+.reports-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  justify-content: space-between;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  gap: 8px;
 }

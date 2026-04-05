@@ -27,16 +27,16 @@
 </div>
 
 <!-- Saved Reports List -->
-<mat-card class="reports-card">
+<mat-card class="reports-card" data-cy="reports-card">
   <mat-card-header>
     <mat-card-title>Saved Reports</mat-card-title>
   </mat-card-header>
   <mat-card-content>
   <mat-card-subtitle>PDF Reports</mat-card-subtitle>
     @if (pdfReports() && pdfReports().length > 0) {
-      <div class="reports-list">
+      <div class="reports-list" data-cy="pdf-reports-list">
         @for (report of pdfReports(); track report._id) {
-          <div class="report-item" style="display: flex; align-items: center; gap: 8px;">
+          <div class="report-item" class="reports-container">
             <div class="flex-1">
               <span>{{ report.reportName }}</span>
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report">
@@ -57,9 +57,9 @@
 
   <mat-card-subtitle>CSV Reports</mat-card-subtitle>
     @if (csvReports() && csvReports().length > 0) {
-      <div class="reports-list">
+      <div class="reports-list" data-cy="csv-reports-list">
         @for (report of csvReports(); track report._id) {
-          <div class="report-item" style="display: flex; align-items: center; gap: 8px;">
+          <div class="report-item" class="reports-container">
             <div class="flex-1">
               <span>{{ report.reportName }}</span>
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report">
