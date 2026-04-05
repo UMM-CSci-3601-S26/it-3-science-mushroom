@@ -21,3 +21,8 @@ export interface DashboardStats {
   totalFamilies: number;
   totalStudents: number;
 }
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}

@@ -1,6 +1,5 @@
 // Angular Imports
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule, MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
@@ -14,12 +13,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 // RxJS Imports
-import { catchError, of} from 'rxjs';
+import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 // Family Imports
-import { Family } from './family';
+import { Family, SelectOption } from './family';
 import { FamilyCardComponent } from './family-card.component';
 import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
@@ -46,12 +48,17 @@ import { DashboardStats } from '../family/family';
     CommonModule,
     MatCard,
     MatCardTitle,
-    MatCardContent
+    MatCardContent,
+    MatAutocompleteModule
   ],
 })
 
 export class FamilyListComponent {
   private familyService = inject(FamilyService);
+  private snackBar = inject(MatSnackBar);
+
+  guardianName = signal<string | undefined>(undefined);
+  errMsg = signal<string | undefined>(undefined);
 
   families = toSignal <Family[]>(
     this.familyService.getFamilies().pipe(
@@ -64,6 +71,48 @@ export class FamilyListComponent {
       catchError(() => of(undefined))
     )
   );
+
+  private filterOptions(options: SelectOption[], input:string): SelectOption[] {
+    if (!input) return options;
+    const lower = input.toLowerCase();
+    return options.filter(option =>
+      option.label.toLowerCase().includes(lower)||
+        option.value.toLowerCase().includes(lower)
+    )
+  }
+
+  filteredFamilyOptions = computed(() =>
+    this.filterOptions(this.familyService.familyOptions(), (this.guardianName() || '').toLowerCase())
+  );
+
+  private guardianName$ = toObservable(this.guardianName);
+
+  serverFilteredFamilies =
+    toSignal(
+      combineLatest([
+        this.guardianName$,
+      ]).pipe(
+        switchMap(([ guardianName ]) =>
+          this.familyService.getFamilies({
+            guardianName
+          })
+        ),
+
+        catchError((err) => {
+          if (!(err.error instanceof ErrorEvent)) {
+            this.errMsg.set(
+              `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`
+            );
+          }
+          this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
+          return of<Family[]>([]);
+        }),
+        tap(() => {
+          // empty
+        })
+      )
+    );
+
 
   downloadCSV() {
     this.familyService.exportFamilies().subscribe(csvData => {

@@ -70,6 +70,20 @@
   font-style: italic;
 }
 
+.filter-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  row-gap: 0.01rem;
+  column-gap: 1rem;
+  margin-top: 1rem;
+  margin-left: 1rem;
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+}
+
 //Rules for how the family cards should be displayed and spaced
 .family-cards-container {
   display: grid;

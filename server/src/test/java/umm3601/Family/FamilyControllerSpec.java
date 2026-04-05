@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -203,6 +204,24 @@ class FamilyControllerSpec {
     assertEquals(
       db.getCollection("family").countDocuments(),
       familyArrayListCaptor.getValue().size());
+  }
+
+  @Test
+  void canGetFamilyWithString() throws IOException {
+    Integer bodyNumber = 2;
+
+    Map<String, List<String>> queryParams = new HashMap<>();
+    queryParams.put(FamilyController.FAMILY_KEY, Arrays.asList(new String[] {"John"}));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParam(FamilyController.FAMILY_KEY)).thenReturn("John");
+
+    familyController.getFamilies(ctx);
+
+    verify(ctx).json(familyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    // Confirm that we have two families with the pattern John in the family name.
+    assertEquals(bodyNumber, familyArrayListCaptor.getValue().size());
   }
 
   @Test
