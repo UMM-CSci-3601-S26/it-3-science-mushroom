@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed, waitForAsync } from '@angular/core/testing';
 
 // RxJS Imports
-import { of } from 'rxjs';
+import { map, of } from 'rxjs';
 
 // StockReport Imports
 import { StockReport } from './stock-report';
@@ -15,12 +15,12 @@ describe('StockReportService', () => {
   const testReports: StockReport[] = [
     {
       _id: 'john_id',
-      stockReportPDF: 'john_report.pdf',
+      stockReportPDF: 'SGVsbG8h', // Base64 for "Hello!"
       reportName: "John's Report"
     },
     {
       _id: 'jane_id',
-      stockReportPDF: 'jane_report.pdf',
+      stockReportPDF: 'V29ybGQh', // Base64 for "World!"
       reportName: "Jane's Report"
     },
   ];
@@ -160,6 +160,52 @@ describe('StockReportService', () => {
     }));
   });
 
+  describe('Deleting multiple stockReports using `deleteAllReports()`', () => {
+    it('returns void immediately when given an empty array', waitForAsync(() => {
+      stockReportService.deleteAllReports([]).subscribe((res) => {
+        expect(res).toBeUndefined();
+      });
+    }));
+
+    it('deletes all reports and refreshes the list', waitForAsync(() => {
+      const mockedDelete = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
+      const mockedGet = spyOn(httpClient, 'get').and.returnValue(of([]));
+
+      stockReportService.deleteAllReports(testReports).subscribe((res) => {
+        expect(res).toBeUndefined();
+
+        // Should call delete for each report
+        expect(mockedDelete)
+          .withContext('deletes both reports')
+          .toHaveBeenCalledTimes(2);
+        expect(mockedDelete)
+          .withContext('deletes first report')
+          .toHaveBeenCalledWith(`${stockReportService.stockReportUrl}/john_id`);
+        expect(mockedDelete)
+          .withContext('deletes second report')
+          .toHaveBeenCalledWith(`${stockReportService.stockReportUrl}/jane_id`);
+
+        // Should call get to refresh reports
+        expect(mockedGet)
+          .withContext('refreshes reports list')
+          .toHaveBeenCalledWith(stockReportService.stockReportUrl, { params: new HttpParams() });
+      });
+    }));
+  });
+
+  describe('refreshReports() handles errors properly', () => {
+    it('returns an empty array when getReports fails', waitForAsync(() => {
+      spyOn(httpClient, 'get').and.returnValue(of(testReports).pipe(
+        map(() => {
+          throw new Error('Network error');
+        })));
+
+      stockReportService.refreshReports().subscribe((reports) => {
+        expect(reports).toEqual([]);
+      });
+    }));
+  });
+
   describe('Downloading reports from the server', () => {
     it('should convert base64 to blob correctly', () => {
       const base64String = 'SGVsbG8h'; // Base64 for "Hello!"
@@ -169,22 +215,61 @@ describe('StockReportService', () => {
       expect(blob.type).toBe('application/pdf');
     });
 
-    it('should return a Observable of Blob when downloading a single report', () => {
-      const mockBlob = new Blob(['Test PDF content'], { type: 'application/pdf' });
-      spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
+    describe('downloadSingleReportBlob()', () => {
+      it('should return a Observable of Blob when downloading a single report', () => {
+        // Mock blob to be used
+        const mockBlob = new Blob(['Test PDF content'], { type: 'application/pdf' });
+        spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
 
-      stockReportService.downloadSingleReportBlob({ _id: '1', reportName: 'Test Report' }).subscribe((blob) => {
-        expect(blob).toBe(mockBlob);
+        // Call the method and confirm it returns the expected blob
+        stockReportService.downloadSingleReportBlob({ _id: '1', reportName: 'Test Report' }).subscribe((blob) => {
+          expect(blob).toEqual(mockBlob);
+        });
       });
     });
 
-    it('should return an Observable of Blob when downloading all reports as a zip', () => {
-      const mockBlob = new Blob(['Test ZIP content'], { type: 'application/zip' });
-      spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
-      stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
-        expect(blob).toBe(mockBlob);
-      });
-    });
+    describe('downloadAllReportsAsZip()', () => {
+      it('should return an Observable of Blob when downloading all reports as a zip', waitForAsync(() => {
+        // Mock blob to be used
+        const mockBlob = new Blob(['Test ZIP content'], { type: 'application/zip' });
+        spyOn(httpClient, 'get').and.returnValue(of(testReports));
 
+        // Mock the convertBase64ToBlob method to return our mockBlob when called
+        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+          expect(blob)
+            .withContext('returns a Blob')
+            .toBeInstanceOf(Blob);
+          expect(blob.type)
+            .withContext('keeps the expected blob type')
+            .toBe(mockBlob.type);
+        });
+      }));
+
+      it('should return an empty Blob when no reports are available', waitForAsync(() => {
+        spyOn(httpClient, 'get').and.returnValue(of([]));
+        spyOn(stockReportService, 'convertBase64ToBlob').and.returnValue(new Blob());
+
+        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+          expect(blob).toBeInstanceOf(Blob);
+          expect(blob.size).toBe(0);
+        });
+      }));
+
+      it('should append numbers to duplicate report names when downloading all reports as a zip', waitForAsync(() => {
+        const duplicateNameReports: StockReport[] = [
+          { _id: '1', stockReportPDF: 'SGVsbG8h', reportName: 'Report' },
+          { _id: '2', stockReportPDF: 'V29ybGQh', reportName: 'Report' },
+          { _id: '3', stockReportPDF: 'V29ybGQh', reportName: 'Report' },
+        ];
+        spyOn(httpClient, 'get').and.returnValue(of(duplicateNameReports));
+        const convertBase64Spy = spyOn(stockReportService, 'convertBase64ToBlob').and.returnValue(new Blob());
+
+        stockReportService.downloadAllReportsAsZip().subscribe(() => {
+          expect(convertBase64Spy).toHaveBeenCalledWith('SGVsbG8h');
+          expect(convertBase64Spy).toHaveBeenCalledWith('V29ybGQh');
+          expect(convertBase64Spy).toHaveBeenCalledTimes(3);
+        });
+      }));
+    });
   });
 });
