@@ -36,13 +36,13 @@
     @if (pdfReports() && pdfReports().length > 0) {
       <div class="reports-list" data-cy="pdf-reports-list">
         @for (report of pdfReports(); track report._id) {
-          <div class="report-item" class="reports-container">
+          <div class="report-item" data-cy="pdf-report-item" class="reports-container">
             <div class="flex-1">
               <span>{{ report.reportName }}</span>
-              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report">
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-pdf-button">
                 <mat-icon>download</mat-icon>
               </button>
-              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report">
+              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-pdf-button">
                 <mat-icon>delete_forever</mat-icon>
               </button>
             </div>
@@ -59,13 +59,13 @@
     @if (csvReports() && csvReports().length > 0) {
       <div class="reports-list" data-cy="csv-reports-list">
         @for (report of csvReports(); track report._id) {
-          <div class="report-item" class="reports-container">
+          <div class="report-item" data-cy="csv-report-item" class="reports-container">
             <div class="flex-1">
               <span>{{ report.reportName }}</span>
-              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report">
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-csv-button">
                 <mat-icon>download</mat-icon>
               </button>
-              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report">
+              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-csv-button">
                 <mat-icon>delete_forever</mat-icon>
               </button>
             </div>
@@ -98,11 +98,11 @@
 
   <!--Stock Report Cards-->
   <div class="flex-row">
-    @if (inventory()) {
+    @if (inventory() !== undefined) {
     <div class="flex-1">
       <!--Stocked/Out-->
         <div class="stock-cards-container flex-row gap-8 flex-wrap">
-          <mat-card class="stock-card">
+          <mat-card class="stock-card" data-cy="stocked-items-card">
             <mat-card-header>
               <mat-card-title>Stocked Items</mat-card-title>
             </mat-card-header>
@@ -110,7 +110,7 @@
               <app-stock-report-tree [stockNodes]="stockedItems()"></app-stock-report-tree>
             </mat-card-content>
           </mat-card>
-          <mat-card class="stock-card">
+          <mat-card class="stock-card" data-cy="out-of-stock-items-card">
             <mat-card-header>
               <mat-card-title>Out of Stock Items</mat-card-title>
             </mat-card-header>
@@ -122,7 +122,7 @@
 
       <!--Over/Under-->
       <div class="stock-cards-container flex-row gap-8 flex-wrap">
-          <mat-card class="stock-card">
+          <mat-card class="stock-card" data-cy="overstocked-items-card">
             <mat-card-header>
               <mat-card-title>Overstocked Items</mat-card-title>
             </mat-card-header>
@@ -130,7 +130,7 @@
               <app-stock-report-tree [stockNodes]="overStockedItems()"></app-stock-report-tree>
             </mat-card-content>
           </mat-card>
-          <mat-card class="stock-card">
+          <mat-card class="stock-card" data-cy="understocked-items-card">
             <mat-card-header>
               <mat-card-title>Understocked Items</mat-card-title>
             </mat-card-header>
