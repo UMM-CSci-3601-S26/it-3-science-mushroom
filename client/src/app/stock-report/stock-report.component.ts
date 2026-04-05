@@ -34,6 +34,11 @@ import { ReportGeneratorComponent } from './report-generator/report-generator.co
 // Dialog Imports
 import { DialogElements } from '../dialog/dialog.component';
 
+/**
+ * StockReportComponent is responsible for displaying the Stock Reports and inventory data in a tree structure.
+ * It uses StockReportService to get reports, InventoryService to get inventory data, ReportGeneratorComponent to handle report generation,
+ * and converts inventory data into StockNodes for display and management in StockReportTreeComponent.
+ */
 @Component({
   selector: 'app-stock-report',
   templateUrl: './stock-report.component.html',
@@ -55,7 +60,6 @@ import { DialogElements } from '../dialog/dialog.component';
     ReportGeneratorComponent
   ],
 })
-
 export class StockReportComponent {
   private inventoryService = inject(InventoryService);
   private reportService = inject(StockReportService);

@@ -29,6 +29,11 @@ interface jsPDFWithAutoTable extends jsPDFClass {
   };
 }
 
+/**
+ * ReportGeneratorComponent is responsible for generating reports and handling all interactions related to report generation, downloading, and deletion.
+ * It interacts with the StockReportService to perform these actions and uses jsPDF to generate PDF reports on the client side.
+ * @note Currently only handles PDF generation.
+ */
 @Component({
   selector: "app-report-generator",
   templateUrl: "./report-generator.component.html",
@@ -42,8 +47,12 @@ export class ReportGeneratorComponent {
   private dateTime = new Date();
   private snackBar = inject(MatSnackBar);
 
-  // Helper function to format date and time for the PDF name and description
-  private formatDateTime(date: Date): string {
+  /**
+   * Helper function that formats a Date object into a string format of MM-DD-YYYY_HH:MM(AM/PM)
+   * @param date A Date object to format into a string
+   * @returns The formatted date string in the format MM-DD-YYYY_HH:MM(AM/PM)
+   */
+  formatDateTime(date: Date): string {
     let minute = date.getMinutes().toString();
     const hour = date.getHours();
     const day = date.getDate();
@@ -99,7 +108,7 @@ export class ReportGeneratorComponent {
 
   /**
    * Generates a PDF report of the inventory, grouped by Stock State. Each group has its own table with item description, quantity, max quantity, and min quantity.
-   * The PDF is saved with the name "StockReport_MM-DD-YYYY.pdf" where MM-DD-YYYY is the current date. The PDF also includes a title and description with the date.
+   * The PDF is saved with the name "StockReport_MM-DD-YYYY.pdf", using formatDateTime to get the formatted date. The PDF also includes a title and description with the date.
    * @param savePdf boolean indicating whether to save PDF to server (true) or download to client machine (false)
   */
   generatePDF(savePdf: boolean) {
@@ -238,7 +247,7 @@ export class ReportGeneratorComponent {
   }
 
   /**
-   * Delete a single PDF report from the server
+   * Delete a single PDF report from the server. The actual logic is handled in the service.
    * @param report Report to delete from the server
    */
   deleteSinglePdfReport(report: StockReport) {
@@ -266,7 +275,7 @@ export class ReportGeneratorComponent {
   }
 
   /**
-   * Delete all reports from the server
+   * Delete all reports from the server. The actual logic is handled in the service.
    */
   deleteAllReports() {
     // Get all reports
@@ -274,6 +283,7 @@ export class ReportGeneratorComponent {
       next: (response) => {
         const reportCount = response.length;
 
+        // No reports available
         if (reportCount === 0) {
           console.log("No reports available to be deleted.");
           this.snackBar.open(
@@ -331,7 +341,7 @@ export class ReportGeneratorComponent {
   }
 
   /**
-   * Downloads all PDFs from the server as a ZIP file.
+   * Downloads all PDFs from the server as a ZIP file. The actual logic is handled in the service.
    * @note This needs to be updated to handle only downloading PDFs once CSV reports are added!
    */
   downloadAllPdfReports() {
@@ -375,7 +385,7 @@ export class ReportGeneratorComponent {
   }
 
   /**
-   * Download a single PDF report from the server.
+   * Download a single PDF report from the server. The actual logic is handled in the service.
    * @note This also needs to be updated to account for only downloading PDFs!
    */
   downloadSinglePdfReport(report: StockReport) {

@@ -1,3 +1,4 @@
+// Angular Imports
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {
@@ -10,13 +11,14 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 
+// Interface for passing data to the dialog component
 export interface DialogData {
   numReports?: number;
   reportName?: string;
 }
 
 /**
- * @title Dialog elements
+ * DialogComponent handles opening a confirmation dialog
  */
 @Component({
   selector: 'app-dialog-component',
@@ -41,6 +43,9 @@ export class DialogComponent {
   }
 }
 
+/**
+ * DialogElements is the content of the dialog opened by DialogComponent
+ */
 @Component({
   selector: 'app-dialog-elements',
   templateUrl: 'dialog-elements.component.html',

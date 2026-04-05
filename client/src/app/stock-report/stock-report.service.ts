@@ -14,10 +14,14 @@ import JSZip from 'jszip';
 import { environment } from '../../environments/environment';
 import { StockReport } from './stock-report';
 
+/**
+ * StockReportService is responsible for handling logic related to Stock Reports, including fetching reports from the server, deleting reports, and downloading reports as PDFs or ZIPs.
+ * It provides methods for components to use for interacting with Stock Reports (API calls, data transformations, etc.) and manages a BehaviorSubject to keep track of the current list of reports for components to subscribe to.
+ * @note Currently only handles PDF reports, but can be extended to handle CSVs or other report types in the future.
+ */
 @Injectable({
   providedIn: 'root'
 })
-
 export class StockReportService {
   private httpClient = inject(HttpClient);
   private reportSubject = new BehaviorSubject<StockReport[]>([]);

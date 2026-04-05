@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// Angular Imports
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+
+// Dialog Imports
 import { DialogComponent, DialogElements } from './dialog.component';
 
 describe('DialogComponent', () => {
@@ -27,7 +29,7 @@ describe('DialogComponent', () => {
     it('should open dialog with single report name', () => {
       const dialogSpy = spyOn(dialog, 'open').and.returnValue({
         afterClosed: () => ({ subscribe: () => {} })
-      } as any);
+      } as MatDialogRef<unknown>);
 
       component.openDialog(undefined, 'Test Report');
 
@@ -42,7 +44,7 @@ describe('DialogComponent', () => {
     it('should open dialog with report count', () => {
       const dialogSpy = spyOn(dialog, 'open').and.returnValue({
         afterClosed: () => ({ subscribe: () => {} })
-      } as any);
+      } as MatDialogRef<unknown>);
 
       component.openDialog(5);
 

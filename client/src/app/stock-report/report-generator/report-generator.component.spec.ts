@@ -1,16 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// Angular Imports
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
+// RxJS Imports
+import { of, throwError } from 'rxjs';
+
+// Stock Report Imports
 import { ReportGeneratorComponent } from './report-generator.component';
 import { StockReportService } from '../stock-report.service';
-import { InventoryService } from '../../inventory/inventory.service';
-import { of, throwError } from 'rxjs';
-import { Inventory } from '../../inventory/inventory';
 import { StockReport } from '../stock-report';
+
+// Invntory Imports
+import { InventoryService } from '../../inventory/inventory.service';
+import { Inventory } from '../../inventory/inventory';
 
 describe('ReportGeneratorComponent', () => {
   let component: ReportGeneratorComponent;
@@ -20,6 +25,7 @@ describe('ReportGeneratorComponent', () => {
   let matSnackBar: MatSnackBar;
   let matDialog: MatDialog;
 
+  // Mock inventory data for testing
   const mockInventory: Inventory[] = [
     { item: 'Shirt', description: 'Stocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, maxQuantity: 10, minQuantity: 0, stockState: "Stocked", notes: '' },
     { item: 'Pants', description: 'Understocked Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, maxQuantity: 10, minQuantity: 7, stockState: "Under-Stocked", notes: '' },
@@ -40,6 +46,7 @@ describe('ReportGeneratorComponent', () => {
       ]
     }).compileComponents();
 
+    // Inject services and dependencies
     stockReportService = TestBed.inject(StockReportService);
     inventoryService = TestBed.inject(InventoryService);
     matSnackBar = TestBed.inject(MatSnackBar);
@@ -90,52 +97,52 @@ describe('ReportGeneratorComponent', () => {
   describe('Date and Time Formatting', () => {
     it('should format AM times correctly', () => {
       const testDate = new Date(2026, 3, 5, 9, 30); // April 5, 2026 at 9:30 AM
-      const result = (component as any).formatDateTime(testDate);
+      const result = component.formatDateTime(testDate);
       expect(result).toBe('4-5-2026_9:30 AM');
     });
 
     it('should format PM times correctly (not noon or midnight)', () => {
       const testDate = new Date(2026, 3, 5, 14, 45); // April 5, 2026 at 2:45 PM
-      const result = (component as any).formatDateTime(testDate);
+      const result = component.formatDateTime(testDate);
       expect(result).toBe('4-5-2026_2:45 PM');
     });
 
     it('should format noon correctly', () => {
       const testDate = new Date(2026, 3, 5, 12, 0); // April 5, 2026 at 12:00 PM (noon)
-      const result = (component as any).formatDateTime(testDate);
+      const result = component.formatDateTime(testDate);
       expect(result).toBe('4-5-2026_12:00 PM');
     });
 
     it('should format midnight correctly', () => {
       const testDate = new Date(2026, 3, 5, 0, 15); // April 5, 2026 at 12:15 AM (midnight)
-      const result = (component as any).formatDateTime(testDate);
+      const result = component.formatDateTime(testDate);
       expect(result).toBe('4-5-2026_12:15 AM');
     });
 
     it('should add leading zero to minutes less than 10', () => {
       const testDate = new Date(2026, 3, 5, 3, 5); // April 5, 2026 at 3:05 AM
-      const result = (component as any).formatDateTime(testDate);
+      const result = component.formatDateTime(testDate);
       expect(result).toBe('4-5-2026_3:05 AM');
     });
 
     it('should handle month correctly (accounting for zero-indexing)', () => {
       const testDate = new Date(2026, 0, 15, 10, 30); // January 15, 2026
-      const result = (component as any).formatDateTime(testDate);
+      const result = component.formatDateTime(testDate);
       expect(result).toContain('1-15-2026');
     });
   });
 
   describe('PDF Generation', () => {
     it('should download PDF when savePdf is false', () => {
-      spyOn(component as any, 'generatePDF').and.callThrough();
+      spyOn(component, 'generatePDF').and.callThrough();
       component.downloadNewPdfReport();
-      expect((component as any).generatePDF).toHaveBeenCalledWith(false);
+      expect(component.generatePDF).toHaveBeenCalledWith(false);
     });
 
     it('should save PDF when savePdf is true', () => {
-      spyOn(component as any, 'generatePDF').and.callThrough();
+      spyOn(component, 'generatePDF').and.callThrough();
       component.savePdfReport();
-      expect((component as any).generatePDF).toHaveBeenCalledWith(true);
+      expect(component.generatePDF).toHaveBeenCalledWith(true);
     });
 
     it('should call addNewReport when saving PDF to server', () => {
@@ -307,7 +314,7 @@ describe('ReportGeneratorComponent', () => {
       const deleteAllSpy = spyOn(stockReportService, 'deleteAllReports').and.returnValue(of(void 0));
       const dialogSpy = spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(true)
-      } as any);
+      } as MatDialogRef<unknown>);
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
       component.deleteAllReports();
@@ -330,7 +337,7 @@ describe('ReportGeneratorComponent', () => {
       const deleteAllSpy = spyOn(stockReportService, 'deleteAllReports').and.returnValue(of(void 0));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(false)
-      } as any);
+      } as MatDialogRef<unknown>);
 
       component.deleteAllReports();
 
@@ -361,7 +368,7 @@ describe('ReportGeneratorComponent', () => {
       );
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(true)
-      } as any);
+      } as MatDialogRef<unknown>);
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
       component.deleteAllReports();

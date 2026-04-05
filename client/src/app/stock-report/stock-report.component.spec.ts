@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Angular Imports
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // RxJS Imports
@@ -26,6 +25,7 @@ describe('StockReportComponent', () => {
   let matDialog: MatDialog;
   let matSnackBar: MatSnackBar;
 
+  // Mock Inventory
   const mockInventory: Inventory[] = [
     { item: 'Shirt', description: 'Stocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, maxQuantity: 10, minQuantity: 0, stockState: "Stocked", notes: '' },
     { item: 'Pants', description: 'Understocked Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, maxQuantity: 10, minQuantity: 7, stockState: "Under-Stocked", notes: '' },
@@ -33,6 +33,7 @@ describe('StockReportComponent', () => {
     { item: 'Pants', description: 'Out of Stock Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 0, maxQuantity: 10, minQuantity: 7, stockState: "Out of Stock", notes: '' },
   ];
 
+  // Mock Reports
   const mockReports: StockReport[] = [
     { _id: '1', stockReportPDF: 'pdfdata1', reportName: 'Report 1' },
     { _id: '2', stockReportPDF: 'pdfdata2', reportName: 'Report 2' },
@@ -51,6 +52,7 @@ describe('StockReportComponent', () => {
       ]
     }).compileComponents();
 
+    // Service and dependency injection
     inventoryService = TestBed.inject(InventoryService);
     stockReportService = TestBed.inject(StockReportService);
     matDialog = TestBed.inject(MatDialog);
@@ -131,7 +133,7 @@ describe('StockReportComponent', () => {
       const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(false)
-      } as any);
+      } as MatDialogRef<unknown>);
 
       component.deleteSingleReport(mockReport);
 
@@ -152,7 +154,7 @@ describe('StockReportComponent', () => {
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(true)
-      } as any);
+      } as MatDialogRef<unknown>);
       spyOn(matSnackBar, 'open');
 
       component.deleteSingleReport(mockReport);
@@ -172,7 +174,7 @@ describe('StockReportComponent', () => {
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(false)
-      } as any);
+      } as MatDialogRef<unknown>);
       spyOn(matSnackBar, 'open');
 
       component.deleteSingleReport(mockReport);
@@ -184,11 +186,11 @@ describe('StockReportComponent', () => {
 
     it('should return early if reportGenerator is not defined', () => {
       const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
-      component.reportGenerator = undefined as any;
+      component.reportGenerator = undefined;
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(true)
-      } as any);
+      } as MatDialogRef<unknown>);
       spyOn(matSnackBar, 'open');
 
       component.deleteSingleReport(mockReport);
