@@ -61,10 +61,8 @@ export class ReportGeneratorComponent {
       return `${month}-${day}-${year}_${hour}:${minute} AM`;
     } else if (hour === 12) { // Noon
       return `${month}-${day}-${year}_${hour}:${minute} PM`;
-    } else if (hour === 0) { // Midnight
+    } else { // Just assume midnight if its not anything else
       return `${month}-${day}-${year}_12:${minute} AM`;
-    } else { // This should literally never happen, and if it does something horrible has gone wrong
-      return `Time calculation failed. Something has gone VERY wrong, please contact a site administrator. Or just refresh the page. Your choice.`;
     }
   }
 

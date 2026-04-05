@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Angular Imports
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // RxJS Imports
 import { of } from 'rxjs';
@@ -20,6 +23,8 @@ describe('StockReportComponent', () => {
   let fixture: ComponentFixture<StockReportComponent>;
   let inventoryService: InventoryService;
   let stockReportService: StockReportService;
+  let matDialog: MatDialog;
+  let matSnackBar: MatSnackBar;
 
   const mockInventory: Inventory[] = [
     { item: 'Shirt', description: 'Stocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, maxQuantity: 10, minQuantity: 0, stockState: "Stocked", notes: '' },
@@ -40,12 +45,16 @@ describe('StockReportComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         StockReportService,
-        InventoryService
+        InventoryService,
+        MatDialog,
+        MatSnackBar
       ]
     }).compileComponents();
 
     inventoryService = TestBed.inject(InventoryService);
     stockReportService = TestBed.inject(StockReportService);
+    matDialog = TestBed.inject(MatDialog);
+    matSnackBar = TestBed.inject(MatSnackBar);
 
     // Mock the inventory service
     spyOn(inventoryService, 'getInventory').and.returnValue(of(mockInventory));
@@ -114,6 +123,78 @@ describe('StockReportComponent', () => {
       spyOn(component.reportGenerator, 'downloadSinglePdfReport');
       component.downloadSingleReport(mockReport);
       expect(component.reportGenerator.downloadSinglePdfReport).toHaveBeenCalledWith(mockReport);
+    });
+  });
+
+  describe('Delete Single Report', () => {
+    it('should open dialog with correct data when deleting a report', () => {
+      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(false)
+      } as any);
+
+      component.deleteSingleReport(mockReport);
+
+      expect(matDialog.open).toHaveBeenCalledWith(
+        jasmine.anything(),
+        jasmine.objectContaining({
+          data: jasmine.objectContaining({
+            reportName: 'Test Report',
+            message: jasmine.stringContaining('Test Report')
+          })
+        })
+      );
+    });
+
+    it('should delete report when user confirms in dialog', () => {
+      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
+      spyOn(component.reportGenerator, 'deleteSinglePdfReport');
+      spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(true)
+      } as any);
+      spyOn(matSnackBar, 'open');
+
+      component.deleteSingleReport(mockReport);
+
+      expect(component.reportGenerator.deleteSinglePdfReport).toHaveBeenCalledWith(mockReport);
+      expect(stockReportService.refreshReports).toHaveBeenCalled();
+      expect(matSnackBar.open).toHaveBeenCalledWith(
+        jasmine.stringContaining('Deleted report Test Report'),
+        'Okay',
+        { duration: 2000 }
+      );
+    });
+
+    it('should not delete report when user cancels dialog', () => {
+      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
+      spyOn(component.reportGenerator, 'deleteSinglePdfReport');
+      spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(false)
+      } as any);
+      spyOn(matSnackBar, 'open');
+
+      component.deleteSingleReport(mockReport);
+
+      expect(component.reportGenerator.deleteSinglePdfReport).not.toHaveBeenCalled();
+      expect(stockReportService.refreshReports).not.toHaveBeenCalled();
+      expect(matSnackBar.open).not.toHaveBeenCalled();
+    });
+
+    it('should return early if reportGenerator is not defined', () => {
+      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
+      component.reportGenerator = undefined as any;
+      spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(true)
+      } as any);
+      spyOn(matSnackBar, 'open');
+
+      component.deleteSingleReport(mockReport);
+
+      expect(stockReportService.refreshReports).not.toHaveBeenCalled();
+      expect(matSnackBar.open).not.toHaveBeenCalled();
     });
   });
 });
