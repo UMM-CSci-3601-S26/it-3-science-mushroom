@@ -24,4 +24,16 @@ export class stationOrderPage {
   getNavLink(navOption: 'Home' | 'Event Station Order') {
     return cy.contains(this.sideNavOption, `${navOption}`);
   }
+
+  drop(sourceSelector: string, targetSelector: string) {
+    const dataTransfer = new DataTransfer();
+
+    cy.contains(sourceSelector)
+      .trigger('dragstart', { dataTransfer, force: true });
+    cy.get(targetSelector)
+      .trigger('dragover', { dataTransfer, force: true })
+      .trigger('drop', { dataTransfer, force: true });
+    cy.contains(sourceSelector)
+      .trigger('dragend', { dataTransfer, force: true });
+  }
 }
