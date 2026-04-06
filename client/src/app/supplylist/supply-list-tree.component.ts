@@ -36,9 +36,13 @@ export class SupplyListTreeComponent {
 
   hasChild = (_: number, node: SupplyListNode) => !!node.children && node.children.length > 0;
 
-  // Add the labels to the node for displaying
-  getChildDisplay(node: SupplyListNode): string {
-    const value = node.school ?? node.grade ?? node.teacher ?? node.description;
-    return value !== undefined ? `${node.label}: ${value}` : '';
+  // Get the display text for a node based on which property it has
+  getNodeDisplay(node: SupplyListNode): string {
+    if (node.school) return node.school;
+    if (node.grade) return node.grade;
+    if (node.teacher) return node.teacher;
+    if (node.description) return `- ${node.description}`;
+    if (node.label) return node.label;
+    return '';
   }
 }

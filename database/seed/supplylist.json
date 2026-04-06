@@ -2,6 +2,21 @@
     {
         "school": "Herman",
         "grade": "PreK",
+        "teacher": "Herman Test Item",
+        "item": "Test Item",
+        "description": "Test Item",
+        "brand": "Test Brand",
+        "color": "Test Color",
+        "size": "Test Size",
+        "type": "Test Type",
+        "material": "Test Material",
+        "count": 1,
+        "quantity": 1,
+        "notes": "Test Notes"
+    },
+    {
+        "school": "Herman",
+        "grade": "PreK",
         "teacher": "N/A",
         "item": "Backpack",
         "description": "Backpack",
