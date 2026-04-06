@@ -1,0 +1,141 @@
+<div class="flex-row">
+  <div class="flex-1">
+    <form [formGroup]="editFamilyForm" (ngSubmit)="submitForm();">
+      <mat-card class="edit-family-card">
+        <mat-card-header>
+          <mat-card-title class="edit-family-title">Edit Family</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="flex-col">
+            <mat-form-field>
+              <mat-label>Guardian Name</mat-label>
+              <input matInput formControlName="guardianName"
+                required [ngModel]="family().guardianName">
+              @if (formControlHasError('guardianName')) {
+                <mat-error data-test="guardianNameError">
+                  {{getFamilyErrorMessage('guardianName')}}
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Email</mat-label>
+              <input matInput type="email"
+                formControlName="email" required [ngModel]="family().email">
+              @if (formControlHasError('email')) {
+                <mat-error data-test="emailError">
+                  {{getFamilyErrorMessage('email')}}
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Address</mat-label>
+              <input matInput type="text"
+                formControlName="address" required [ngModel]="family().address">
+              @if (formControlHasError('address')) {
+                <mat-error data-test="addressError">
+                  {{getFamilyErrorMessage('address')}}
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Time Slot</mat-label>
+              <input matInput type="timeSlot"
+                formControlName="timeSlot" required [ngModel]="family().timeSlot">
+              @if (formControlHasError('timeSlot')) {
+                <mat-error data-test="timeSlotError">
+                  {{getFamilyErrorMessage('timeSlot')}}
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <h3>Students</h3>
+
+            <div formArrayName="students">
+              @for (student of students.controls; track $index; let i = $index) {
+                <div [formGroupName]="i">
+
+                  <mat-form-field>
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" required [ngModel]="family().students[i].name">
+                    @if (studentControlHasError(i, 'name')) {
+                      <mat-error data-test="nameError">
+                        {{getStudentErrorMessage(i, 'name')}}
+                      </mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Grade</mat-label>
+                    <input matInput formControlName="grade" required [ngModel]="family().students[i].grade">
+                    @if (studentControlHasError(i, 'grade')) {
+                      <mat-error data-test="gradeError">
+                        {{getStudentErrorMessage(i, 'grade')}}
+                      </mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>School</mat-label>
+                    <input matInput formControlName="school" required [ngModel]="family().students[i].school">
+                    @if (studentControlHasError(i, 'school')) {
+                      <mat-error data-test="schoolError">
+                        {{getStudentErrorMessage(i, 'school')}}
+                      </mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Teacher</mat-label>
+                    <input matInput formControlName="teacher" [ngModel]="family().students[i].teacher">
+                  </mat-form-field>
+
+                  <mat-form-field>
+                    <mat-label>Requested Supplies</mat-label>
+                    <input matInput formControlName="requestedSupplies" [ngModel]="family().students[i].requestedSupplies">
+                  <!-- @if (formControlHasError('requestedSupplies')) {
+                    <mat-error data-test="requestedSupplies">
+                      {{getErrorMessage('students')}}
+                    </mat-error>
+                  } -->
+                  </mat-form-field>
+
+                  <button type="button" (click)="removeStudent(i)">
+                    Remove Student
+                  </button>
+
+                </div>
+              }
+            </div>
+
+    <button type="button" (click)="addStudent()">Add Student</button>
+          </div>
+
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button
+            mat-button
+            type="button"
+            color="primary"
+            data-test="BackFamilyButton"
+            routerLink="/family"
+            >
+            BACK
+          </button>
+          <button
+            mat-button
+            type="button"
+            color="primary"
+            [disabled]="!editFamilyForm.valid"
+            type="submit"
+            data-test="confirmAddFamilyButton"
+            >
+            SAVE
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+  </div>
+</div>
