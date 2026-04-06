@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDivider, MatListModule } from '@angular/material/list';
-//import { RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 // Family Imports
 import { Family } from './family';
@@ -21,8 +21,8 @@ import { Family } from './family';
     CommonModule,
     MatIconModule,
     MatDivider,
+    RouterLink
   ]
-  //, RouterLink
 })
 
 export class FamilyCardComponent {

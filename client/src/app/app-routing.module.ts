@@ -10,6 +10,7 @@ import { SupplyListComponent } from './supplylist/supplylist.component';
 // Family Imports
 import { FamilyListComponent } from './family/family-list.component';
 import { AddFamilyComponent } from './family/add-family.component';
+import { EditFamilyComponent } from './family/edit-family.component';
 
 // Note: Any routes for adding new items need to come before the routes for getting an item by an individual ID
 // Ie: 'user/new' comes before 'users/:id'
@@ -17,6 +18,7 @@ const routes: Routes = [
   {path: '', component: HomeComponent, title: 'Home'},
   {path: 'family', component: FamilyListComponent, title: 'Family'},
   {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'},
+  {path: 'family/:id', component: EditFamilyComponent, title: 'Edit Family'},
   {path: 'inventory', component: InventoryComponent, title: 'Inventory'},
   {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'}
 ];

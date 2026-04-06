@@ -5,6 +5,12 @@
       <mat-card-title class="family-card-guardianName">{{ family().guardianName }}</mat-card-title>
     </mat-card-header>
 
+    <mat-card-content>
+      <button mat-fab class="edit-family-fab" matTooltip="Edit Family" matTooltipPosition="left" [routerLink]="['/family', family()._id]" data-test="editFamilyButton">
+        <mat-icon class="md-24" aria-label="Edit Family">edit</mat-icon>
+      </button>
+    </mat-card-content>
+
       <mat-card-content>
         <mat-list>
           <mat-list-item>
