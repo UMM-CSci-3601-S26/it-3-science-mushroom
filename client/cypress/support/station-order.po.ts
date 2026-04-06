@@ -29,11 +29,11 @@ export class stationOrderPage {
     const dataTransfer = new DataTransfer();
 
     cy.contains(sourceSelector)
-      .trigger('dragstart', { dataTransfer, force: true });
+      .trigger('dragstart', dataTransfer);
     cy.get(targetSelector)
-      .trigger('dragover', { dataTransfer, force: true })
-      .trigger('drop', { dataTransfer, force: true });
+      .trigger('dragover', dataTransfer)
+      .trigger('drop', dataTransfer);
     cy.contains(sourceSelector)
-      .trigger('dragend', { dataTransfer, force: true });
+      .trigger('dragend', dataTransfer);
   }
 }
