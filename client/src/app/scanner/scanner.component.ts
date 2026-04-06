@@ -192,54 +192,115 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     const missingItems: string[] = [];
 
     for (const barcode of this.scannedItems) {
-      if (this.sessionItems.has(barcode)) {
-        console.log('already in inv, update')
-      }
-      // Check
-      let item = this.inventoryIndex.getByBarcode(barcode);
-      //if the item is in the session items push it to the foundItems
-      if (item) {
-        foundItems.push(item)
-        this.sessionItems.set(barcode, item);
-      } else {
-        // look in backend for barcode
-        try {
-          item = await firstValueFrom(this.inventoryService.lookUpByBarcode(barcode));
-          if (item) {
-            let barcodeValue: string | null = null;
-            if(item.internalBarcode && item.internalBarcode.trim() !== '') {
-              barcodeValue = item.internalBarcode;
-            } else if (Array.isArray(item.externalBarcode) && item.externalBarcode.length > 0) {
-              barcodeValue = item.externalBarcode[0];
-            } else if (typeof item.externalBarcode === 'string' && item.externalBarcode !== '') {
-              barcodeValue = item.externalBarcode;
-            }
 
-            if (!barcodeValue) {
-              console.error("No valid barcode found on item", item);
-              continue;
-            }
-            // if the item is in the inventory then update it in the system
-            //  and push it to session items and found item
-            this.inventoryService.updateQuantity(barcodeValue, 'add').subscribe(updated => {
-              this.inventoryIndex.registerItem(updated);
-              this.sessionItems.set(barcode, updated);
-              this.inventoryService.loadInventory();
-            })
-            foundItems.push(item);
+      if (this.sessionItems.has(barcode)) {
+        const existingSessionItem = this.sessionItems.get(barcode);
+
+        if (existingSessionItem) {
+          let barcodeValue: string | null = null;
+
+          if (
+            existingSessionItem.internalBarcode &&
+          existingSessionItem.internalBarcode.trim() !== ''
+          ) {
+            barcodeValue = existingSessionItem.internalBarcode;
+          } else if (
+            Array.isArray(existingSessionItem.externalBarcode) &&
+          existingSessionItem.externalBarcode.length > 0
+          ) {
+            barcodeValue = existingSessionItem.externalBarcode[0];
           }
-        }  catch {
-          // if nothing was found then push items to missingItems so it can be updated with manual entry
-          missingItems.push(barcode);
+
+          if (barcodeValue) {
+            const updated = await firstValueFrom(
+              this.inventoryService.updateQuantity(barcodeValue, 'add')
+            );
+
+            this.inventoryIndex.registerItem(updated);
+            this.sessionItems.set(barcode, updated);
+            foundItems.push(updated);
+            this.inventoryService.loadInventory();
+            continue;
+          }
         }
       }
+
+      let item = this.inventoryIndex.getByBarcode(barcode);
+
+      if (item) {
+        let barcodeValue: string | null = null;
+
+        if (item.internalBarcode && item.internalBarcode.trim() !== '') {
+          barcodeValue = item.internalBarcode;
+        } else if (
+          Array.isArray(item.externalBarcode) &&
+          item.externalBarcode.length > 0
+        ) {
+          barcodeValue = item.externalBarcode[0];
+        }
+
+        if (!barcodeValue) {
+          console.error('No valid barcode found on locally indexed item', item);
+          continue;
+        }
+
+        const updated = await firstValueFrom(
+          this.inventoryService.updateQuantity(barcodeValue, 'add')
+        );
+
+        this.inventoryIndex.registerItem(updated);
+        this.sessionItems.set(barcode, updated);
+        foundItems.push(updated);
+        this.inventoryService.loadInventory();
+        continue;
+      }
+
+      try {
+        item = await firstValueFrom(
+          this.inventoryService.lookUpByBarcode(barcode)
+        );
+
+        if (item) {
+          let barcodeValue: string | null = null;
+
+          if (item.internalBarcode && item.internalBarcode.trim() !== '') {
+            barcodeValue = item.internalBarcode;
+          } else if (
+            Array.isArray(item.externalBarcode) &&
+          item.externalBarcode.length > 0
+          ) {
+            barcodeValue = item.externalBarcode[0];
+          } else if (
+            typeof item.externalBarcode === 'string' &&
+          item.externalBarcode !== ''
+          ) {
+            barcodeValue = item.externalBarcode;
+          }
+
+          if (!barcodeValue) {
+            console.error('No valid barcode found on item', item);
+            continue;
+          }
+
+          const updated = await firstValueFrom(
+            this.inventoryService.updateQuantity(barcodeValue, 'add')
+          );
+
+          this.inventoryIndex.registerItem(updated);
+          this.sessionItems.set(barcode, updated);
+          foundItems.push(updated);
+          this.inventoryService.loadInventory();
+        }
+      } catch {
+        missingItems.push(barcode);
+      }
     }
-    console.log('Found:', foundItems.length, 'Missing', missingItems.length);
+
+    console.log('Found:', foundItems.length, 'missing', missingItems.length);
 
     await this.handleProcessingResults(missingItems);
     this.processing = false;
   }
-
   /**
    * for each item in missingItems[] it will ask the user to enter
    * information about each one
