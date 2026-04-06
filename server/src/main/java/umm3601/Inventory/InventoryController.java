@@ -22,6 +22,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 
 // IO Imports
 import io.javalin.Javalin;
@@ -96,6 +97,7 @@ public class InventoryController implements Controller {
     if (inv == null) {
       throw new NotFoundResponse("The requested inventory item was not found");
     } else {
+      updateStockState(inv);
       ctx.json(inv);
       ctx.status(HttpStatus.OK);
     }
@@ -124,6 +126,9 @@ public class InventoryController implements Controller {
       });
     }
 
+    for (Inventory inv : matching) {
+      updateStockState(inv);
+    }
     ctx.json(matching);
     ctx.status(HttpStatus.OK);
   }
@@ -169,16 +174,58 @@ public class InventoryController implements Controller {
       Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(NOTES_KEY)), Pattern.CASE_INSENSITIVE);
       filters.add(regex(NOTES_KEY, pattern));
     }
+
     if (ctx.queryParamMap().containsKey(MATERIAL_KEY)) {
       Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(MATERIAL_KEY)), Pattern.CASE_INSENSITIVE);
       filters.add(regex(MATERIAL_KEY, pattern));
     }
+
     if (ctx.queryParamMap().containsKey(TYPE_KEY)) {
       Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(TYPE_KEY)), Pattern.CASE_INSENSITIVE);
       filters.add(regex(TYPE_KEY, pattern));
     }
 
     return filters.isEmpty() ? new Document() : and(filters);
+  }
+
+  /**
+   * Updates the stockState of the given inventory item based on quantity, minQuantity, and maxQuantity.
+   * Use this method to update the stockState of an inventory item whenever its
+   * quantity, minQuantity, or maxQuantity changes.
+   * Also use this method when adding new items to ensure the stockState is correctly initialized.
+   *
+   * @param inv The inventory item to update the stockState for
+   * @throws NotFoundResponse if the item was not found
+   * @throws IllegalArgumentException if quantity/minQuantity/maxQuantity are negative
+   * @throws IllegalStateException if minQuantity is greater than maxQuantity
+  */
+  private void updateStockState(Inventory inv) {
+    // Make sure item exists
+    if (inv == null) {
+      throw new NotFoundResponse("The requested inventory item was not found");
+    } else {
+      // Validate quantity, minQuantity, and maxQuantity
+      if (inv.quantity < 0 || inv.minQuantity < 0 || inv.maxQuantity < 0) {
+        throw new IllegalArgumentException("Quantity, minQuantity, and maxQuantity must be non-negative integers.");
+      }
+
+      // Validate that minQuantity is not greater than maxQuantity
+      if (inv.minQuantity > inv.maxQuantity) {
+        throw new IllegalStateException("minQuantity cannot be greater than maxQuantity.");
+      }
+
+      // Update stockState based on quantity, minQuantity, and maxQuantity
+      if (inv.quantity == 0) {
+        inv.stockState = "Out of Stock";
+      } else if (inv.quantity < inv.minQuantity) {
+        inv.stockState = "Under-Stocked";
+      } else if (inv.quantity > inv.maxQuantity) {
+        inv.stockState = "Over-Stocked";
+      } else {
+        inv.stockState = "Stocked";
+      }
+      inventoryCollection.updateOne(eq("_id", new ObjectId(inv._id)), Updates.set("stockState", inv.stockState));
+    }
   }
 
   @Override
