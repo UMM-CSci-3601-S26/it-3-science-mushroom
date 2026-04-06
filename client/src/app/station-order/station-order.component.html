@@ -1,0 +1,70 @@
+<div class="flex-row">
+  <div class="flex-1">
+
+    <mat-card class="station-order-card">
+
+      <mat-card-header>
+        <mat-card-title class="title">
+          Event Station Order
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        Order the items that will be supplied at the event --
+        This order will also affect the checklist format
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="station-order-card">
+        <div class="list-container">
+          <div class="list-group">
+            <h2>Requested Items</h2>
+            <div
+              cdkDropList
+              #bankList="cdkDropList"
+              [cdkDropListData]="bank()"
+              [cdkDropListConnectedTo]="[orderList]"
+              class="item-list-bank"
+              (cdkDropListDropped)="drop($event)"
+            >
+
+            @for (item of bank(); track item) {
+              <div class="drag-box" cdkDrag>
+                <div class="drag-box-placeholder" *cdkDragPlaceholder></div>
+                {{ item }}
+                <div class="handle">
+                  <mat-icon>drag_indicator</mat-icon>
+                </div>
+              </div>
+            }
+            </div>
+          </div>
+
+          <div class="list-group">
+            <h2>Station Order</h2>
+            <div
+              cdkDropList
+              #orderList="cdkDropList"
+              [cdkDropListData]="stationOrder"
+              [cdkDropListConnectedTo]="[bankList]"
+              class="item-list-station-order"
+              (cdkDropListDropped)="drop($event)"
+            >
+              @for (item of stationOrder; track item) {
+                <div class="drag-box" cdkDrag>
+                  <div class="drag-box-placeholder" *cdkDragPlaceholder></div>
+                  {{ item }}
+                  <div class="handle">
+                    <mat-icon>drag_indicator</mat-icon>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+    </mat-card>
+
+  </div>
+</div>
+
