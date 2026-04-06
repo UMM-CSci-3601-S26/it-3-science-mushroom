@@ -167,7 +167,7 @@ export class ReportGeneratorComponent {
 
     // Calculate the startY for the second table
     // doc.lastAutoTable.finalY holds the Y-coordinate of the last drawn point of the table
-    const startY2 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
+    const startY2 = (doc.lastAutoTable?.finalY) + tableSpace;
 
     // Out of Stock Table
     doc.setFontSize(12);
@@ -180,7 +180,7 @@ export class ReportGeneratorComponent {
       columnStyles: columnStyling
     });
 
-    const startY3 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
+    const startY3 = (doc.lastAutoTable?.finalY) + tableSpace;
 
     // Overstocked Table
     doc.setFontSize(12);
@@ -193,7 +193,7 @@ export class ReportGeneratorComponent {
       columnStyles: columnStyling
     });
 
-    const startY4 = (doc.lastAutoTable?.finalY ?? 0) + tableSpace;
+    const startY4 = (doc.lastAutoTable?.finalY) + tableSpace;
 
     // Understocked Table
     doc.setFontSize(12);
