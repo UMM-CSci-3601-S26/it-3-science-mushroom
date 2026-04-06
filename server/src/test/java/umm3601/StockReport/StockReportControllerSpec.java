@@ -299,7 +299,7 @@ public class StockReportControllerSpec {
   @Test
   void deleteFoundReport() {
     when(ctx.pathParam("id"))
-      .thenReturn(testReportId.toString());
+      .thenReturn(testReportId.toHexString());
 
     stockReportController.deleteReport(ctx);
 
@@ -313,7 +313,7 @@ public class StockReportControllerSpec {
   @Test
   void deleteReportNotFound() {
     // Valid ObjectId format, but not in database
-    String nonExistentId = new ObjectId().toString();
+    String nonExistentId = new ObjectId().toHexString();
     when(ctx.pathParam("id")).thenReturn(nonExistentId);
 
     NotFoundResponse exception =

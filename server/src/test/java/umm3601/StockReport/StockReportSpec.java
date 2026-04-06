@@ -33,7 +33,7 @@ public class StockReportSpec {
   // -- StockReport ID Tests -- \\
 
   @Test
-  void inventoriesWithEqualIdAreEqual() {
+  void reportsWithEqualIdAreEqual() {
     report1._id = FAKE_ID_STRING_1;
     report2._id = FAKE_ID_STRING_1;
 
@@ -41,7 +41,7 @@ public class StockReportSpec {
   }
 
   @Test
-  void inventoriesWithDifferentIdAreNotEqual() {
+  void reportsWithDifferentIdAreNotEqual() {
     report1._id = FAKE_ID_STRING_1;
     report2._id = FAKE_ID_STRING_2;
 
@@ -58,7 +58,7 @@ public class StockReportSpec {
 
   @SuppressWarnings("unlikely-arg-type")
   @Test
-  void inventoriesAreNotEqualToOtherKindsOfThings() {
+  void reportsAreNotEqualToOtherKindsOfThings() {
     report1._id = FAKE_ID_STRING_1;
     // an StockReport is not equal to its id even though id is used for checking equality
     assertFalse(report1.equals(FAKE_ID_STRING_1));

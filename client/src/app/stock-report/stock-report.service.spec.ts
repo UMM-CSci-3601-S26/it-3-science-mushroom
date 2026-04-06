@@ -158,6 +158,16 @@ describe('StockReportService', () => {
           .toHaveBeenCalledWith(`${stockReportService.stockReportUrl}/john_id`);
       });
     }));
+
+    it('returns void and completes successfully', waitForAsync(() => {
+      const mockReport: StockReport = { _id: 'report_id', reportName: 'Report' };
+      spyOn(stockReportService, 'deleteReport').and.returnValue(of(void 0));
+      spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
+
+      stockReportService.deleteSingleReport(mockReport).subscribe((res) => {
+        expect(res).toBeUndefined();
+      });
+    }));
   });
 
   describe('Deleting multiple stockReports using `deleteAllReports()`', () => {

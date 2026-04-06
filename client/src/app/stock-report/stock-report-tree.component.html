@@ -8,7 +8,7 @@
   <!-- If its got children, handle expansion -->
   <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding matTreeNodeToggle [cdkTreeNodeTypeaheadLabel]="node.item || node.description">
     <!-- Expansion Button -->
-    <button matIconButton matTreeNodeToggle [attr.aria-label]="'Toggle ' + (node.item || node.description)">
+    <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + (node.item || node.description)">
       <mat-icon class="mat-icon-rtl-mirror">
         {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
       </mat-icon>

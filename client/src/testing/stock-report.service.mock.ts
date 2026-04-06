@@ -1,5 +1,6 @@
+// Angular Imports
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { AppComponent } from 'src/app/app.component';
 import { StockReport } from '../app/stock-report/stock-report';
 import { StockReportService } from 'src/app/stock-report/stock-report.service';
@@ -7,13 +8,17 @@ import { StockReportService } from 'src/app/stock-report/stock-report.service';
 @Injectable({
   providedIn: AppComponent
 })
-export class MockStockReportService implements Pick<StockReportService, 'getReportById' | 'getReports' | 'addNewReport' | 'deleteReport'> {
+export class MockStockReportService implements Pick<StockReportService, 'getReportById' | 'getReports' | 'addNewReport' | 'deleteReport' | 'getReportBytesById'> {
   static testReports: StockReport[] = [
     {
-      //stockReport with one kid
       _id: 'john_id',
       stockReportPDF: 'john_report.pdf',
       reportName: "John's Report"
+    },
+    {
+      _id: 'jane_id',
+      stockReportPDF: 'jane_report.pdf',
+      reportName: "Jane's Report"
     },
   ];
 
@@ -21,13 +26,22 @@ export class MockStockReportService implements Pick<StockReportService, 'getRepo
     return of(MockStockReportService.testReports);
   }
 
-  getReportById(id: string): Observable<StockReport> | null {
-    if (id === MockStockReportService.testReports[0]._id) {
-      return of(MockStockReportService.testReports[0]);
-    } else if (id === MockStockReportService.testReports[1]._id) {
-      return of(MockStockReportService.testReports[1]);
+  getReportById(id: string): Observable<StockReport> {
+    const report = MockStockReportService.testReports.find(r => r._id === id);
+    if (report) {
+      return of(report);
     } else {
-      return of(null);
+      return throwError(() => new Error(`Report with id ${id} not found`));
+    }
+  }
+
+  getReportBytesById(id: string): Observable<Blob> {
+    const report = MockStockReportService.testReports.find(r => r._id === id);
+    if (report) {
+      // Return a mock blob for testing
+      return of(new Blob(['mock pdf content'], { type: 'application/pdf' }));
+    } else {
+      return throwError(() => new Error(`Report with id ${id} not found`));
     }
   }
 

@@ -160,7 +160,6 @@ describe('StockReportComponent', () => {
       component.deleteSingleReport(mockReport);
 
       expect(component.reportGenerator.deleteSinglePdfReport).toHaveBeenCalledWith(mockReport);
-      expect(stockReportService.refreshReports).toHaveBeenCalled();
       expect(matSnackBar.open).toHaveBeenCalledWith(
         jasmine.stringContaining('Deleted report Test Report'),
         'Okay',

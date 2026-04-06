@@ -117,7 +117,6 @@ export class StockReportComponent {
       if (result) {
         if (!this.reportGenerator || !report) return;
         this.reportGenerator.deleteSinglePdfReport(report);
-        this.reportService.refreshReports().subscribe();
         this.snackBar.open(
           `Deleted report ${report.reportName}.`,
           `Okay`,
