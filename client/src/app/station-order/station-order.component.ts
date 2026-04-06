@@ -41,8 +41,7 @@ export class StationOrderComponent {
     this.optionBuilder(this.supplyList(), 'item')
   );
 
-  stationOrder = [
-  ];
+  stationOrder: string[] = [];
 
   loadStationOrder(): void {
     const saved = localStorage.getItem('stationOrder');
