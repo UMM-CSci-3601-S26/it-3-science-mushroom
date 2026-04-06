@@ -7,6 +7,7 @@ import com.mongodb.client.MongoDatabase;
 
 import umm3601.Family.FamilyController;
 import umm3601.Inventory.InventoryController;
+import umm3601.StockReport.StockReportController;
 import umm3601.supplylist.SupplyListController;
 
 // Main
@@ -66,7 +67,8 @@ public class Main {
       // You can also remove this UserController once you don't need it.
       new InventoryController(database),
       new SupplyListController(database),
-      new FamilyController(database)
+      new FamilyController(database),
+      new StockReportController(database)
     };
     return controllers;
   }

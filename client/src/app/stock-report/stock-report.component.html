@@ -1,0 +1,155 @@
+<div class="flex-row">
+  <div class="flex-1">
+    <!-- Search Field -->
+    <mat-card class="search-card">
+      <mat-card-header>
+        <mat-card-title class="stock-report-title">Stock Report</mat-card-title>
+      </mat-card-header>
+      <!-- Page Description -->
+      <mat-card-content>
+        <p class="page-description">
+          Welcome to the Stock Reports page! Here, you can view the current stock levels of all items in the inventory, as well as save and export reports.
+        </p>
+        <p class="page-description">
+          Below, you can choose to Save or Finalize the current report by clicking the appropriate button in the "Generation Actions" section. Finalizing will create a PDF/CSV of the report and upload it to the server, while Saving will create a PDF/CSV and save it your computer.
+        </p>
+        <p class="page-description">
+          Once you have generated a report, it will appear in the "Saved Reports" section, where you can then Save or Delete the report.
+          You may also download or delete all reports at once by using the appropriate button in the "Downloading Actions" or "Deletion Actions" sections.
+        </p>
+        <p class="page-description">
+          Please note! The Saved Reports list may take a moment to update after generating or deleting reports. If you don't see your report appear or disappear right away, please wait a few seconds and it should update. If it doesn't, refresh your page.
+        </p>
+        <hr style="margin: 1rem 0;" />
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Saved Reports List -->
+<mat-card class="reports-card" data-cy="reports-card">
+  <mat-card-header>
+    <mat-card-title>Saved Reports</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+  <mat-card-subtitle>PDF Reports</mat-card-subtitle>
+    @if (pdfReports() && pdfReports().length > 0) {
+      <div class="reports-list" data-cy="pdf-reports-list">
+        @for (report of pdfReports(); track report._id) {
+          <div class="reports-container" data-cy="pdf-report-item">
+            <div class="flex-1">
+              <span>{{ report.reportName }}</span>
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-pdf-button">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-pdf-button">
+                <mat-icon>delete_forever</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p>No PDF reports are available.</p>
+    }
+
+  <br>
+
+  <mat-card-subtitle>CSV Reports</mat-card-subtitle>
+    @if (csvReports() && csvReports().length > 0) {
+      <div class="reports-list" data-cy="csv-reports-list">
+        @for (report of csvReports(); track report._id) {
+          <div class="reports-container" data-cy="csv-report-item">
+            <div class="flex-1">
+              <span>{{ report.reportName }}</span>
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-csv-button">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-csv-button">
+                <mat-icon>delete_forever</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p>No CSV reports are available.</p>
+    }
+
+  <!--Actions-->
+  <hr>
+  <app-report-generator #reportGenerator></app-report-generator>
+  </mat-card-content>
+</mat-card>
+
+<br>
+
+<!-- Report Sections -->
+<mat-card class="report-sections-card">
+  <mat-card-header>
+    <mat-card-title class="stock-report-title">Report Sections</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p class="page-description">
+      Here you can see the sections for the report. Each section contains a tree view of relevant items.
+    </p>
+    <hr style="margin: 1rem 0;" />
+  </mat-card-content>
+
+  <!--Stock Report Cards-->
+  <div class="flex-row">
+    @if (inventory() !== undefined) {
+    <div class="flex-1">
+      <!--Stocked/Out-->
+        <div class="stock-cards-container flex-row gap-8 flex-wrap">
+          <mat-card class="stock-card" data-cy="stocked-items-card">
+            <mat-card-header>
+              <mat-card-title>Stocked Items</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-stock-report-tree [stockNodes]="stockedItems()"></app-stock-report-tree>
+            </mat-card-content>
+          </mat-card>
+          <mat-card class="stock-card" data-cy="out-of-stock-items-card">
+            <mat-card-header>
+              <mat-card-title>Out of Stock Items</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-stock-report-tree [stockNodes]="outOfStockItems()"></app-stock-report-tree>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+      <!--Over/Under-->
+      <div class="stock-cards-container flex-row gap-8 flex-wrap">
+          <mat-card class="stock-card" data-cy="overstocked-items-card">
+            <mat-card-header>
+              <mat-card-title>Overstocked Items</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-stock-report-tree [stockNodes]="overStockedItems()"></app-stock-report-tree>
+            </mat-card-content>
+          </mat-card>
+          <mat-card class="stock-card" data-cy="understocked-items-card">
+            <mat-card-header>
+              <mat-card-title>Understocked Items</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-stock-report-tree [stockNodes]="underStockedItems()"></app-stock-report-tree>
+            </mat-card-content>
+          </mat-card>
+        </div>
+    </div>
+  }  @else {
+    <div class="flex-1 stock-report-error">
+      <mat-error>
+        There was a problem loading the Stock Report. Possibly the server is down or perhaps there are network
+        issues.
+      </mat-error>
+      <mat-error>
+        Please wait a bit and try again or start the server.
+      </mat-error>
+    </div>
+    }
+  </div>
+</mat-card>

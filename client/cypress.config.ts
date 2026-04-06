@@ -18,5 +18,6 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       setupPlugins(on, config);
     },
+    trashAssetsBeforeRuns: true,
   },
 });
