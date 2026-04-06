@@ -2,16 +2,21 @@
 package umm3601.Family;
 
 // Static Imports
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.regex;
 
 // Java Imports
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 // Org Imports
+import org.bson.Document;
 import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 
@@ -49,6 +54,9 @@ public class FamilyController implements Controller {
   // Regex
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
+  // Filter key
+  static final String FAMILY_KEY = "guardianName";
+
   // Database Collection
   private final JacksonMongoCollection<Family> familyCollection;
 
@@ -63,9 +71,9 @@ public class FamilyController implements Controller {
 
   // GET all families
   public void getFamilies(Context ctx) {
-    ArrayList<Family> matchingFamilies = familyCollection
-      .find()
-      .into(new ArrayList<>());
+    Bson filter = constructFilter(ctx);
+
+    ArrayList<Family> matchingFamilies = familyCollection.find(filter).into(new ArrayList<>());
 
     ctx.json(matchingFamilies);
     ctx.status(HttpStatus.OK);
@@ -87,6 +95,18 @@ public class FamilyController implements Controller {
       ctx.json(family);
       ctx.status(HttpStatus.OK);
     }
+  }
+
+  // Filter for families
+  private Bson constructFilter(Context ctx) {
+    List<Bson> filters = new ArrayList<>();
+
+    if (ctx.queryParamMap().containsKey(FAMILY_KEY)) {
+      Pattern pattern = Pattern.compile(Pattern.quote(ctx.queryParam(FAMILY_KEY)), Pattern.CASE_INSENSITIVE);
+      filters.add(regex(FAMILY_KEY, pattern));
+    }
+
+    return filters.isEmpty() ? new Document() : and(filters);
   }
 
   // POST new family
@@ -140,6 +160,8 @@ public class FamilyController implements Controller {
     Map<String, Integer> studentsPerSchool = new HashMap<>();
     Map<String, Integer> studentsPerGrade = new HashMap<>();
 
+    int totalStudents = 0;
+
     // Loop through all families and their students to count students per school and grade
     for (Family family : families) {
       if (family.students == null) {
@@ -151,6 +173,9 @@ public class FamilyController implements Controller {
 
         // Count per grade
         studentsPerGrade.merge(student.grade, 1, Integer::sum);
+
+        // Count of total students
+        totalStudents = totalStudents + 1;
       }
     }
 
@@ -159,6 +184,7 @@ public class FamilyController implements Controller {
     result.put("studentsPerSchool", studentsPerSchool);
     result.put("studentsPerGrade", studentsPerGrade);
     result.put("totalFamilies", families.size());
+    result.put("totalStudents", totalStudents);
 
     ctx.json(result);
     ctx.status(HttpStatus.OK);

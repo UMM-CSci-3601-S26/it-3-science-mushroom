@@ -8,6 +8,7 @@ import com.mongodb.client.MongoDatabase;
 import umm3601.Family.FamilyController;
 import umm3601.Inventory.BarcodeController;
 import umm3601.Inventory.InventoryController;
+import umm3601.StockReport.StockReportController;
 import umm3601.supplylist.SupplyListController;
 
 // Main
@@ -68,7 +69,8 @@ public class Main {
       new InventoryController(database),
       new BarcodeController(database),
       new SupplyListController(database),
-      new FamilyController(database)
+      new FamilyController(database),
+      new StockReportController(database)
     };
     return controllers;
   }

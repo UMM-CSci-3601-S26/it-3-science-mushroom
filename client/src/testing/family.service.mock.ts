@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { AppComponent } from 'src/app/app.component';
-import { Family } from '../app/family/family';
+import { Family, SelectOption } from '../app/family/family';
 import { FamilyService } from 'src/app/family/family.service';
 
 @Injectable({
   providedIn: AppComponent
 })
-export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 'getDashboardStats' | 'getFamilies' | 'exportFamilies' | 'addFamily' | 'deleteFamily'> {
+export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 'familyOptions' | 'getDashboardStats' | 'getFamilies' | 'exportFamilies' | 'addFamily' | 'deleteFamily'> {
   //'getFamily' |
   // getFamilies: FamilyService;
   static testFamilies: Family[] = [
@@ -23,6 +23,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           name: 'John Jr.',
           grade: '1',
           school: "Morris Elementary",
+          teacher: "N/A",
           requestedSupplies: ['pencils', 'markers']
         },
       ]
@@ -39,12 +40,14 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           name: 'Jennifer',
           grade: '6',
           school: "Hancock Middle School",
+          teacher: "N/A",
           requestedSupplies: ['headphones']
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
+          teacher: "N/A",
           requestedSupplies: ['calculator']
         },
       ]
@@ -61,27 +64,38 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           name: 'Harold',
           grade: '11',
           school: "Morris High School",
+          teacher: "N/A",
           requestedSupplies: []
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
+          teacher: "N/A",
           requestedSupplies: ['headphones']
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
+          teacher: "N/A",
           requestedSupplies: ['backpack', 'markers']
         },
       ]
     },
   ];
 
+  private readonly family = signal<Family[]>(MockFamilyService.testFamilies);
+
+  familyOptions = computed<SelectOption[]>(() =>
+    [...new Set(this.family().map(i => i.guardianName).filter(v => v !== ''))]
+      .map(value => ({ label: value, value}))
+  );
+
   getDashboardStats() {
     const studentsPerSchool: { [school: string]: number } = {};
     const studentsPerGrade: { [grade: string]: number } = {};
+    let totalStudents = 0;
 
     MockFamilyService.testFamilies.forEach(family => {
       family.students.forEach(student => {
@@ -90,6 +104,8 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
 
         studentsPerGrade[student.grade] =
         (studentsPerGrade[student.grade] ?? 0) + 1;
+
+        totalStudents = totalStudents + 1
       });
     });
 
@@ -97,10 +113,12 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       studentsPerSchool,
       studentsPerGrade,
       totalFamilies: MockFamilyService.testFamilies.length,
+      totalStudents
     });
   }
 
-  getFamilies(): Observable<Family[]> {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  getFamilies(_filters: {guardianName?: string }): Observable<Family[]> {
     return of(MockFamilyService.testFamilies);
   }
 

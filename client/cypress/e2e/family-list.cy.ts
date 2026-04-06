@@ -16,8 +16,135 @@ describe('Family list', () => {
     page.getFamilyTitle().should('have.text', 'Families');
   });
 
+  it('Should have the dashboard displayed', () => {
+    page.getDashboard().should('exist')
+  });
+
+  it('Should have the dashboard display the correct number of families', () => {
+    page.getTotalFamilies().should('contain.text', '3')
+  });
+
+  it('Should have the dashboard display the correct number of students', () => {
+    page.getTotalStudents().should('contain.text', '7')
+  });
+
+  it('Should have the dashboard display the correct number of students per school', () => {
+    const expectedValuesSchool = [
+      { label: 'HHS', value: '3'},
+      { label: 'MAHS', value: '4'}
+    ];
+
+    page.getStudentsPerSchool().each((e, i) => {
+      cy.wrap(e).find('.stat-label').should('have.text', expectedValuesSchool[i].label);
+      cy.wrap(e).find('.stat-value').should('have.text', expectedValuesSchool[i].value);
+    });
+  });
+
+  it('Should have the dashboard display the correct number of students per grade', () => {
+    const expectedValuesGrade = [
+      { label: 'Grade: 10', value: '1'},
+      { label: 'Grade: 11', value: '3'},
+      { label: 'Grade: 12', value: '1'},
+      { label: 'Grade: 9', value: '2'}
+    ];
+
+    page.getStudentsPerGrade().each((e, i) => {
+      cy.wrap(e).find('.stat-label').should('have.text', expectedValuesGrade[i].label);
+      cy.wrap(e).find('.stat-value').should('have.text', expectedValuesGrade[i].value);
+    });
+  });
+
+  it('Should have specification filters', () => {
+    page.getSidenavButton().click();
+    page.getNavLink('Families').click();
+    cy.url().should('match', /\/family$/);
+
+    const errors: string[] = [];
+
+    const recordError = (message: string) => {
+      errors.push(message);
+      cy.log(message);
+      console.warn(message);
+    }
+
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-cy="filter-family"]').length === 0) {
+        recordError(`Empty filter input for family`);
+      }
+    });
+
+    cy.then(() => {
+      if (errors.length > 0) {
+        throw new Error(errors.join('\n'));
+      }
+    });
+  });
+
+  it("Should be able to take an input and display the correct filtered results", () => {
+    page.getSidenavButton().click();
+    page.getNavLink('Families').click();
+    cy.url().should('match', /\/family$/);
+
+    page.getFilterFamily().type("John Doe");
+
+    cy.wait(100);
+
+    page.getFamilyName().should('contain', 'John Doe');
+    page.getFamilyCards().should('have.length', 1)
+  });
+
+  describe("autocomplete dropdown filters", () => {
+    beforeEach(() => {
+      page.getFilterFamily().clear();
+    });
+
+    it("should show autocomplete options when typing in filter", () => {
+      page.getFilterFamily().type("John");
+      cy.get('mat-option').should('exist');
+      cy.get('mat-option').should('contain', 'John');
+    });
+
+    it('Should narrow autocomplete options as the user types more characters', () => {
+      page.getFilterFamily().type('Jan');
+      cy.get('mat-option').its('length').then((broadCount) => {
+        page.getFilterFamily().clear().type('Jane');
+        cy.get('mat-option').its('length').should('be.lte', broadCount);
+      });
+    });
+
+    it('Should show no autocomplete options when input matches nothing', () => {
+      page.getFilterFamily().type('imaginaryName');
+      cy.get('mat-option').should('not.exist');
+    });
+
+    it('Should filter results when selecting an autocomplete option for Family', () => {
+
+      page.selectAutoCompleteOption('[data-cy="filter-family"]', 'Jane Doe');
+      page.getFamilyName().first().should('have.text', 'Jane Doe');
+    });
+  });
+
   it('Should show 3 families in card view', () => {
     page.getFamilyCards().should('have.length', 3);
+  });
+
+  it('Should show students cards with the right information', () => {
+    const expectedValuesStudent = [
+      { name: 'Name: Tim', school: 'School: MAHS', grade: 'Grade: 12', teacher: 'Teacher: N/A'},
+      { name: 'Name: Sara', school: 'School: MAHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
+      { name: 'Name: Johnny Jr.', school: 'School: HHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'},
+      { name: 'Name: Burtrum', school: 'School: HHS', grade: 'Grade: 10', teacher: 'Teacher: N/A'},
+      { name: 'Name: Harold', school: 'School: HHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
+      { name: 'Name: Timothy', school: 'School: MAHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
+      { name: 'Name: Sarah', school: 'School: MAHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'}
+    ];
+
+    page.getStudentCards().each((e, i) => {
+      cy.wrap(e).find('.student-name').should('have.text', expectedValuesStudent[i].name);
+      cy.wrap(e).find('.student-school').should('have.text', expectedValuesStudent[i].school);
+      cy.wrap(e).find('.student-grade').should('have.text', expectedValuesStudent[i].grade);
+      cy.wrap(e).find('.student-teacher').should('have.text', expectedValuesStudent[i].teacher);
+    });
   });
 
   it('Should click add family and go to the right URL', () => {

@@ -25,6 +25,7 @@ public class Family {
     public String name;
     public String grade;
     public String school;
+    public String teacher;
     public List<String> requestedSupplies;
   }
 }
