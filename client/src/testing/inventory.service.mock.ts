@@ -24,11 +24,10 @@ export class MockInventoryService implements Pick<InventoryService,
       description: "8 Pack of Washable Wide Markers",
       quantity: 0,
       notes: "N/A",
-      externalBarcode: ["MFG-XYZ123"] // Example of an external barcode referencing this item
+      externalBarcode: ["MFG-XYZ123"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: '',
-      notes: "N/A"
+      stockState: ''
     },
     {
       internalID: "987654321",
@@ -43,11 +42,10 @@ export class MockInventoryService implements Pick<InventoryService,
       description: "Red 2 Prong Plastic Pocket Folder",
       quantity: 0,
       notes: "N/A",
-      externalBarcode: ["MFG-ABC456"] // Example of an external barcode referencing this item
+      externalBarcode: ["MFG-ABC456"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: '',
-      notes: "N/A"
+      stockState: ''
     },
     {
       internalID: "456789123",
@@ -62,11 +60,10 @@ export class MockInventoryService implements Pick<InventoryService,
       description: "Yellow Wide Ruled Spiral Notebook",
       quantity: 0,
       notes: "N/A",
-      externalBarcode: ["MFG-DEF789"] // Example of an external barcode referencing this item
+      externalBarcode: ["MFG-DEF789"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: '',
-      notes: "N/A"
+      stockState: ''
     }
   ];
 
