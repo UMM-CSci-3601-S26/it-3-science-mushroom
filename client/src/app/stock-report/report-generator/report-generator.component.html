@@ -1,0 +1,55 @@
+<div class="button-container-row" data-cy="stock-report-page">
+  <!--Generating Actions-->
+  <div class="button-container-column">
+    <div class="actions-container">
+      <h4 style="margin: 0;">Generation Actions</h4>
+      <mat-icon>create</mat-icon>
+    </div>
+    <button mat-raised-button (click)="savePdfReport()" data-cy="generate-pdf">
+      Generate Report as PDF
+    </button>
+    <button mat-raised-button (click)="downloadNewPdfReport()" data-cy="generate-and-download-pdf">
+      Generate & Download Report as PDF
+    </button>
+    <button mat-raised-button disabled data-cy="generate-csv">
+      Generate Report as CSV
+    </button>
+    <button mat-raised-button disabled data-cy="generate-and-download-csv">
+      Generate & Download Report as CSV
+    </button>
+  </div>
+
+  <!--Already Generated Saving Actions-->
+  <div class="button-container-column">
+    <div class="actions-container">
+      <h4 style="margin: 0;">Downloading Actions</h4>
+      <mat-icon>folder</mat-icon>
+    </div>
+    <button mat-raised-button disabled data-cy="download-all-reports">
+      Download all Reports as ZIP
+    </button>
+    <button mat-raised-button (click)="downloadAllPdfReports()" data-cy="download-all-pdfs">
+      Download all PDFs as ZIP
+    </button>
+    <button mat-raised-button disabled data-cy="download-all-csvs">
+      Download all CSVs as ZIP
+    </button>
+  </div>
+
+  <!--Deleting Actions-->
+  <div class="button-container-column">
+    <div class="actions-container">
+      <h4 style="margin: 0;">Deletion Actions</h4>
+      <mat-icon>delete_sweep</mat-icon>
+    </div>
+    <button mat-raised-button (click)="deleteAllReports()" data-cy="delete-all-reports">
+      Delete all Reports
+    </button>
+    <button mat-raised-button disabled data-cy="delete-all-pdfs">
+      Delete all PDF Reports
+    </button>
+    <button mat-raised-button disabled data-cy="delete-all-csvs">
+      Delete all CSV Reports
+    </button>
+  </div>
+</div>

@@ -20,9 +20,21 @@
         <mat-icon matListItemIcon>inventory</mat-icon>
         Inventory
       </a>
+
       <a mat-list-item routerLink="/supplylist" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
         <mat-icon matListItemIcon>list</mat-icon>
         Supply List
+      </a>
+
+      <a mat-list-item routerLink="/stationOrder" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+        <mat-icon matListItemIcon>view_cozy</mat-icon>
+        Event Station Order
+      </a>
+
+
+      <a mat-list-item routerLink="/stock-report" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+        <mat-icon matListItemIcon>assessment</mat-icon>
+        Stock Report
       </a>
     </mat-nav-list>
 

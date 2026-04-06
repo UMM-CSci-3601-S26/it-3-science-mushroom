@@ -1,0 +1,19 @@
+<!--Template for all Stock Report trees to use-->
+<mat-tree #tree [dataSource]="stockNodes" [childrenAccessor]="childrenAccessor">
+  <!-- This is the tree node template for leaf nodes -->
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+    <!-- Get the node's children info -->
+    {{getChildDisplay(node)}}
+  </mat-tree-node>
+  <!-- If its got children, handle expansion -->
+  <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding matTreeNodeToggle [cdkTreeNodeTypeaheadLabel]="node.item || node.description">
+    <!-- Expansion Button -->
+    <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + (node.item || node.description)">
+      <mat-icon class="mat-icon-rtl-mirror">
+        {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+      </mat-icon>
+    </button>
+    <!-- Put the item's name or description in -->
+    {{node.item || node.description}}
+  </mat-tree-node>
+</mat-tree>

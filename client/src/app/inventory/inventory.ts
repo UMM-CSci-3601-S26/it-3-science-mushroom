@@ -1,13 +1,16 @@
 export interface Inventory {
   item: string,
-  description: string,
   brand: string,
-  color:string,
+  count: number,
   size: string,
+  color:string,
   type: string,
   material:string,
-  count: number,
+  description: string,
   quantity: number,
+  maxQuantity: number,
+  minQuantity: number,
+  stockState: string,
   notes: string
 }
 

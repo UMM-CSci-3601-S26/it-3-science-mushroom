@@ -1,0 +1,39 @@
+.stock-cards-container {
+  width: 100%;
+  position: relative;
+}
+
+.stock-card {
+  margin-bottom: 10px;
+  flex: 1 1 280px;
+}
+
+.search-card {
+  margin-bottom: 10px;
+}
+
+mat-radio-button {
+  margin: 0 12px;
+}
+
+.add-family-fab {
+  position: fixed;
+  bottom: 15px;
+  right: 30px;
+}
+
+.reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reports-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  gap: 8px;
+}
