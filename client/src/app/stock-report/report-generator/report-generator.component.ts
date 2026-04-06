@@ -50,14 +50,17 @@ export class ReportGeneratorComponent {
   /**
    * Helper function that formats a Date object into a string format of MM-DD-YYYY_HH:MM(AM/PM)
    * @param date A Date object to format into a string
-   * @returns The formatted date string in the format MM-DD-YYYY_HH:MM(AM/PM)
+   * @returns An array of two strings.
+   * The first (0): The formatted date string in format MM-DD-YYYY HH:MM (AM/PM) for use in the file descriptions.
+   * The second (1): The formatted date string in format MM-DD-YYYY_HH_MM(AM/PM) for use in the file names
    */
-  formatDateTime(date: Date): string {
+  formatDateTime(date: Date): string[] {
     let minute = date.getMinutes().toString();
     const hour = date.getHours();
     const day = date.getDate();
     const month = date.getMonth() + 1; // Months are zero-indexed
     const year = date.getFullYear();
+    const formattedStrings: string[] = [];
 
     if (minute.length < 2) {
       // Add leading zero to minutes if less than 10 for better formatting
@@ -65,13 +68,21 @@ export class ReportGeneratorComponent {
     }
     // Format the date and time as MM-DD-YYYY_HH:MM(AM/PM)
     if (hour > 12) { // PM hours
-      return `${month}-${day}-${year}_${hour-12}:${minute} PM`;
+      formattedStrings.push(`${month}-${day}-${year} ${hour-12}:${minute} PM`); // Format for inside file
+      formattedStrings.push(`${month}-${day}-${year}_${hour-12}-${minute} PM`); // Format for file name
+      return formattedStrings;
     } else if (hour < 12 && hour > 0) { // AM hours
-      return `${month}-${day}-${year}_${hour}:${minute} AM`;
+      formattedStrings.push(`${month}-${day}-${year} ${hour}:${minute} AM`); // Format for inside file
+      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute} AM`); // Format for file name
+      return formattedStrings;
     } else if (hour === 12) { // Noon
-      return `${month}-${day}-${year}_${hour}:${minute} PM`;
+      formattedStrings.push(`${month}-${day}-${year} ${hour}:${minute} PM`); // Format for inside file
+      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute} PM`); // Format for file name
+      return formattedStrings;
     } else { // Just assume midnight if its not anything else
-      return `${month}-${day}-${year}_12:${minute} AM`;
+      formattedStrings.push(`${month}-${day}-${year} 12:${minute} AM`); // Format for inside file
+      formattedStrings.push(`${month}-${day}-${year}_12-${minute} AM`); // Format for file name
+      return formattedStrings;
     }
   }
 
@@ -118,7 +129,7 @@ export class ReportGeneratorComponent {
     doc.text("Stock Report", 10, 10);
     // Description
     doc.setFontSize(12);
-    doc.text("This is a Stock Report of the inventory on ${formattedDate}".replace("${formattedDate}", this.formatDateTime(this.dateTime)), 10, 20);
+    doc.text("This is a Stock Report of the inventory on ${formattedDate}".replace("${formattedDate}", this.formatDateTime(this.dateTime)[0]), 10, 20);
 
     // Table Constants
     const headers = [["Item Description", "Quantity", "Max Quantity", "Min Quantity", "Notes"]];
@@ -196,7 +207,7 @@ export class ReportGeneratorComponent {
     });
 
     // Save PDF with name to client
-    const filename = `StockReport_${this.formatDateTime(this.dateTime)}.pdf`;
+    const filename = `StockReport_${this.formatDateTime(this.dateTime)[1]}.pdf`;
 
     if(savePdf) {
       // Save PDF to server
@@ -211,7 +222,7 @@ export class ReportGeneratorComponent {
           console.log("PDF report saved to server with ID:", response);
           this.stockReportService.refreshReports().subscribe();
           this.snackBar.open(
-            `Generating and downloading report as PDF file...`,
+            `Generating and saving report as PDF file to server...`,
             `Okay`,
             { duration: 2000 }
           );
@@ -229,7 +240,7 @@ export class ReportGeneratorComponent {
       // Save to client machine
       doc.save(filename);
       this.snackBar.open(
-        `Generating and saving report as PDF file to server...`,
+        `Generating and downloading report as PDF file...`,
         `Okay`,
         { duration: 2000 }
       );

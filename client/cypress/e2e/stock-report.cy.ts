@@ -79,7 +79,7 @@ describe('Stock Report', () => {
   it('Should be able to generate and download a PDF report', () => {
     page.getGenerateAndDownloadPDFButton().click();
     // Verify snackbar message appears
-    cy.get('.mdc-snackbar').should('contain', 'Generating and saving report');
+    cy.get('.mdc-snackbar').should('contain', 'Generating and downloading report');
   });
 
   it('Should be able to generate and save a PDF report to server', () => {
@@ -88,7 +88,7 @@ describe('Stock Report', () => {
       cy.get('button').contains('Generate Report as PDF').click();
     });
     cy.wait('@saveReport');
-    cy.get('.mdc-snackbar').should('contain', 'Generating and downloading report');
+    cy.get('.mdc-snackbar').should('contain', 'Generating and saving report');
   });
 
   it('Should be able to download a single report from the server', () => {

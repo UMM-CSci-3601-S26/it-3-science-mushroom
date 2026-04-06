@@ -148,6 +148,11 @@ public class StockReportControllerSpec {
     assertEquals(
         db.getCollection("stockReport").countDocuments(),
         stockReportArrayListCaptor.getValue().size());
+
+    // Make sure PDF bytes aren't in the response
+    for (StockReport report : stockReportArrayListCaptor.getValue()) {
+      assertEquals(null, report.stockReportPDF, "PDF bytes should not be included in list response");
+    }
   }
 
   @Test
@@ -178,6 +183,37 @@ public class StockReportControllerSpec {
 
     assertThrows(NotFoundResponse.class, () -> {
       stockReportController.getReportById(ctx);
+    });
+  }
+
+  @Test
+  void getReportBytesWithExistentId() throws IOException {
+    String id = testReportId.toHexString();
+    when(ctx.pathParam("id")).thenReturn(id);
+
+    stockReportController.getReportBytesById(ctx);
+
+    verify(ctx).contentType("application/pdf");
+    verify(ctx).result(new byte[]{0x25, 0x50, 0x44, 0x46});
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void getReportBytesWithBadId() throws IOException {
+    when(ctx.pathParam("id")).thenReturn("bad");
+
+    assertThrows(BadRequestResponse.class, () -> {
+      stockReportController.getReportBytesById(ctx);
+    });
+  }
+
+  @Test
+  void getReportBytesWithNonexistentId() throws IOException {
+    String id = "588935f5c668650dc77df581";
+    when(ctx.pathParam("id")).thenReturn(id);
+
+    assertThrows(NotFoundResponse.class, () -> {
+      stockReportController.getReportBytesById(ctx);
     });
   }
 

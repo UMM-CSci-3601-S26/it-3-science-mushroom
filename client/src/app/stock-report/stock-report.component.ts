@@ -82,13 +82,11 @@ export class StockReportComponent {
 
   // Compute PDF and CSV reports separately for easier display
   pdfReports = computed(() => {
-    const reports = this.reports();
-    return reports ? reports.filter(report => report.stockReportPDF !== null && report.stockReportPDF !== undefined) : [];
+    return this.reports();
   });
 
   csvReports = computed(() => {
-    const reports = this.reports();
-    return reports ? reports.filter(report => report.stockReportCSV !== null && report.stockReportCSV !== undefined) : [];
+    return []; // CSV reports aren't implemented, so we'll just always return an empty array :)
   });
 
   constructor() {

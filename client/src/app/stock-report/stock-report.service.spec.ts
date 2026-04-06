@@ -207,12 +207,22 @@ describe('StockReportService', () => {
   });
 
   describe('Downloading reports from the server', () => {
-    it('should convert base64 to blob correctly', () => {
-      const base64String = 'SGVsbG8h'; // Base64 for "Hello!"
-      const blob = stockReportService.convertBase64ToBlob(base64String);
+    describe('getReportBytesById()', () => {
+      it('should call the correct endpoint with the report ID', waitForAsync(() => {
+        const mockBlob = new Blob(['PDF bytes'], { type: 'application/pdf' });
+        const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
 
-      expect(blob).toBeInstanceOf(Blob);
-      expect(blob.type).toBe('application/pdf');
+        stockReportService.getReportBytesById('test_id').subscribe((blob) => {
+          expect(mockedMethod)
+            .withContext('one call')
+            .toHaveBeenCalledTimes(1);
+          expect(mockedMethod)
+            .withContext('calls the correct endpoint')
+            .toHaveBeenCalledWith(`${stockReportService.stockReportUrl}/test_id/bytes`,
+              jasmine.objectContaining({ responseType: 'blob' }));
+          expect(blob).toEqual(mockBlob);
+        });
+      }));
     });
 
     describe('downloadSingleReportBlob()', () => {
@@ -247,7 +257,6 @@ describe('StockReportService', () => {
 
       it('should return an empty Blob when no reports are available', waitForAsync(() => {
         spyOn(httpClient, 'get').and.returnValue(of([]));
-        spyOn(stockReportService, 'convertBase64ToBlob').and.returnValue(new Blob());
 
         stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
           expect(blob).toBeInstanceOf(Blob);
@@ -257,17 +266,29 @@ describe('StockReportService', () => {
 
       it('should append numbers to duplicate report names when downloading all reports as a zip', waitForAsync(() => {
         const duplicateNameReports: StockReport[] = [
-          { _id: '1', stockReportPDF: 'SGVsbG8h', reportName: 'Report' },
-          { _id: '2', stockReportPDF: 'V29ybGQh', reportName: 'Report' },
-          { _id: '3', stockReportPDF: 'V29ybGQh', reportName: 'Report' },
+          { _id: '1', reportName: 'Report' },
+          { _id: '2', reportName: 'Report' },
+          { _id: '3', reportName: 'Report' },
         ];
-        spyOn(httpClient, 'get').and.returnValue(of(duplicateNameReports));
-        const convertBase64Spy = spyOn(stockReportService, 'convertBase64ToBlob').and.returnValue(new Blob());
 
-        stockReportService.downloadAllReportsAsZip().subscribe(() => {
-          expect(convertBase64Spy).toHaveBeenCalledWith('SGVsbG8h');
-          expect(convertBase64Spy).toHaveBeenCalledWith('V29ybGQh');
-          expect(convertBase64Spy).toHaveBeenCalledTimes(3);
+        const mockBlob = new Blob(['PDF content'], { type: 'application/pdf' });
+
+        // Mock getReports to return duplicate-named reports
+        const getReportsSpy = spyOn(stockReportService, 'getReports').and.returnValue(of(duplicateNameReports));
+
+        // Mock getReportBytesById to always return a blob
+        const getBytesSpy = spyOn(stockReportService, 'getReportBytesById').and.returnValue(of(mockBlob));
+
+        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+          // Verify that the zip was created successfully
+          expect(blob).toBeInstanceOf(Blob);
+          expect(blob.size).toBeGreaterThan(0);
+
+          // Verify getReports was called once
+          expect(getReportsSpy).toHaveBeenCalledTimes(1);
+
+          // Verify getReportBytesById was called 3 times (once per report)
+          expect(getBytesSpy).toHaveBeenCalledTimes(3);
         });
       }));
     });

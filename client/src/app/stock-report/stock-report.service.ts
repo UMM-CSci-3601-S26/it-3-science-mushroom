@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
 // RxJS Imports
-import { Observable, of, forkJoin } from 'rxjs';
+import { Observable, of, forkJoin, from } from 'rxjs';
 import { catchError, map, tap, switchMap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
@@ -44,22 +44,22 @@ export class StockReportService {
     );
   }
 
-  /**
-   * Converts base64 into a Blob for downloading files off of the server. Currently only handles PDFs.
-   * @param base64String The base64 string to convert to a Blob
-   * @returns The converted Blob
-   */
-  public convertBase64ToBlob(base64String: string): Blob {
-    const binaryString = atob(base64String); // Decode Base64
-    const bytes = new Uint8Array(binaryString.length);
-    // Fill byte array with the decoded b64
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    // Make and return Blob
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    return blob;
-  }
+  // /**
+  //  * Converts base64 into a Blob for downloading files off of the server. Currently only handles PDFs.
+  //  * @param base64String The base64 string to convert to a Blob
+  //  * @returns The converted Blob
+  //  */
+  // public convertBase64ToBlob(base64String: string): Blob {
+  //   const binaryString = atob(base64String); // Decode Base64
+  //   const bytes = new Uint8Array(binaryString.length);
+  //   // Fill byte array with the decoded b64
+  //   for (let i = 0; i < binaryString.length; i++) {
+  //     bytes[i] = binaryString.charCodeAt(i);
+  //   }
+  //   // Make and return Blob
+  //   const blob = new Blob([bytes], { type: 'application/pdf' });
+  //   return blob;
+  // }
 
   /**
    * Call the endpoint to get all Stock Reports
@@ -79,6 +79,10 @@ export class StockReportService {
    */
   getReportById(id: string): Observable<StockReport> {
     return this.httpClient.get<StockReport>(`${this.stockReportUrl}/${id}`);
+  }
+
+  getReportBytesById(id: string): Observable<Blob> {
+    return this.httpClient.get(`${this.stockReportUrl}/${id}/bytes`, { responseType: 'blob' });
   }
 
   /**
@@ -139,8 +143,7 @@ export class StockReportService {
    * @returns Observable of the PDF blob
    */
   downloadSingleReportBlob(report: StockReport): Observable<Blob> {
-    const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF || '');
-    return of(pdfBlob);
+    return this.getReportBytesById(report._id!);
   }
 
   /**
@@ -154,33 +157,43 @@ export class StockReportService {
           return of(new Blob()); // Return empty blob if no reports
         }
 
-        const zip = new JSZip();
-        const usedFilenames = new Set<string>();
+        // Observable for each report's byte data
+        const byteObservables = reports.map(report =>
+          this.getReportBytesById(report._id!).pipe(
+            map(blob => ({ name: report.reportName, blob }))
+          )
+        );
 
-        // Add each report to the ZIP
-        for (const report of reports) {
-          const pdfBlob = this.convertBase64ToBlob(report.stockReportPDF || '');
-          let finalFilename = report.reportName;
+        return forkJoin(byteObservables).pipe(
+          switchMap(results => {
+            const zip = new JSZip();
+            const usedFilenames = new Set<string>();
 
-          // Handle duplicate filenames
-          if (usedFilenames.has(finalFilename)) {
-            const parts = finalFilename.split('.');
-            const extension = parts.pop();
-            const nameWithoutExt = parts.join('.');
+            // Add each report to the ZIP
+            for (const { name, blob } of results) {
+              let finalFilename = name;
 
-            let counter = 1;
-            while (usedFilenames.has(`${nameWithoutExt} (${counter}).${extension}`)) {
-              counter++;
+              // Handle duplicate filenames
+              if (usedFilenames.has(finalFilename)) {
+                const parts = finalFilename.split('.');
+                const extension = parts.pop();
+                const nameWithoutExt = parts.join('.');
+
+                let counter = 1;
+                while (usedFilenames.has(`${nameWithoutExt} (${counter}).${extension}`)) {
+                  counter++;
+                }
+                finalFilename = `${nameWithoutExt} (${counter}).${extension}`;
+              }
+
+              usedFilenames.add(finalFilename);
+              zip.file(finalFilename, blob);
             }
-            finalFilename = `${nameWithoutExt} (${counter}).${extension}`;
-          }
 
-          usedFilenames.add(finalFilename);
-          zip.file(finalFilename, pdfBlob);
-        }
-
-        // Generate and return the ZIP as a blob
-        return zip.generateAsync({ type: 'blob' });
+            // Generate and return the ZIP as a blob
+            return from(zip.generateAsync({ type: 'blob' }));
+          })
+        );
       })
     );
   }
