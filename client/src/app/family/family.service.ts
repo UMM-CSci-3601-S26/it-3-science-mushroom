@@ -1,6 +1,6 @@
 // Angular Imports
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, computed, signal  } from '@angular/core';
 
 // RxJS Imports
 import { Observable } from 'rxjs';
@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 
 // Family Imports
 import { environment } from '../../environments/environment';
-import { Family, DashboardStats } from './family';
+import { Family, DashboardStats, SelectOption } from './family';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +20,33 @@ export class FamilyService {
   readonly familyUrl: string = `${environment.apiUrl}family`;
   readonly dashboardUrl: string = `${environment.apiUrl}dashboard`;
 
-  getFamilies(): Observable<Family[]> {
-    const httpParams: HttpParams = new HttpParams();
+  private readonly familyKey = 'guardianName';
+
+  constructor() {
+    this.loadFamilies();
+  }
+
+  family = signal<Family[]>([]);
+
+  loadFamilies(filters?: Family): void {
+    this.getFamilies(filters).subscribe(data => {
+      this.family.set(data);
+    })
+  }
+
+  familyOptions = computed(() =>
+    this.optionBuilder(this.family(), 'guardianName')
+  );
+
+  getFamilies(filters?: { guardianName?: string }): Observable<Family[]> {
+    let httpParams: HttpParams = new HttpParams();
+
+    if (filters) {
+      if (filters.guardianName) {
+        httpParams = httpParams.set(this.familyKey, filters.guardianName);
+      }
+    }
+
     return this.httpClient.get<Family[]>(this.familyUrl, {
       params: httpParams,
     });
@@ -50,5 +75,14 @@ export class FamilyService {
     return this.httpClient.get(`${this.familyUrl}/export`, {
       responseType: 'text'
     });
+  }
+
+  optionBuilder(data: Family[], key: keyof Family): SelectOption[] {
+    return [...new Set(
+      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '')
+    )].map(value => ({
+      label: value,
+      value: value
+    }));
   }
 }

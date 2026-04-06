@@ -1,6 +1,94 @@
+// Rules for how the dashboard should be displayed and spacing in-between
+.dashboard-title {
+  margin-bottom: 20px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding-bottom: 10px;
+}
+
+.stat-card {
+  padding: 10px;
+}
+
+// Rules for the differing stats that are displayed
+.stat-number-family {
+  font-size: 42px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+  padding-bottom: 40px;
+}
+
+.stat-number-student {
+  font-size: 42px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.stat-list-school {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.stat-list-grade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.stat-row-school {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 4px;
+}
+
+.stat-row-grade {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 4px;
+}
+
+.stat-label {
+  font-weight: 500;
+}
+
+.stat-value {
+  font-weight: bold;
+}
+
+.loading-text {
+  font-style: italic;
+}
+
+.filter-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  row-gap: 0.01rem;
+  column-gap: 1rem;
+  margin-top: 1rem;
+  margin-left: 1rem;
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+}
+
+//Rules for how the family cards should be displayed and spaced
 .family-cards-container {
-  width: 100%;
-  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 .family-card {
