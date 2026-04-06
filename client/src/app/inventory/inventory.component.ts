@@ -99,7 +99,8 @@ export class InventoryComponent {
   async onManualEntryNeeded(barcode: string) {
     const dialogRef = this.dialog.open(ManualEntry, { data: { barcode }});
     const result = await firstValueFrom(dialogRef.afterClosed());
-    this.scannerRef()?.resolveManualEntry(result ?? null)
+    this.scannerRef()?.resolveManualEntry(result ?? null);
+    this.reload.update(v => v + 1);
   }
 
   toggleScanner() {
@@ -114,6 +115,7 @@ export class InventoryComponent {
   onScannerDone() {
     this.scannerProcessing = false;
     this.showScanner = false;
+    this.reload.update(v => v + 1);
   }
 
   addItem(item: Inventory) {
@@ -173,8 +175,8 @@ export class InventoryComponent {
   serverFilteredInventory = toSignal(
     combineLatest([this.item$, this.brand$, this.color$, this.size$, this.type$, this.material$, this.description$, this.quantity$, this.reload$]).pipe(
       debounceTime(300),
-      switchMap(([ item, brand, color, size, type, material]) =>
-        this.inventoryService.getInventory({ item, brand, color, size, type, material})
+      switchMap(([ item, brand, color, size, type, material, description, quantity]) =>
+        this.inventoryService.getInventory({ item, brand, color, size, type, material, description, quantity})
       ),
       catchError((err) => {
         if (!(err.error instanceof ErrorEvent)) {

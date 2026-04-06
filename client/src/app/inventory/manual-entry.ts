@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Inject, Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatError, MatFormField, MatLabel } from "@angular/material/form-field";
+import { Inventory } from "./inventory";
 
 @Component({
   selector: 'app-manual-entry',
@@ -43,6 +44,10 @@ export class ManualEntry {
       notes: ['']
     });
   }
+
+  filteredItems: Inventory[] = [];
+  selectedItems: Inventory[] | null = null;
+  allInventory: Inventory[] = [];
 
   validateInput(control: AbstractControl): ValidationErrors | null {
     return control.errors;
