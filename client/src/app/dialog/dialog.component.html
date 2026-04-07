@@ -1,1 +1,20 @@
-<button matButton (click)="openDialog()">Launch dialog</button>
+<h2 mat-dialog-title>
+  {{dialogData?.title}}
+  <!--
+  <button mat-icon-button mat-dialog-close class="close-button">
+    <mat-icon>close</mat-icon>
+  </button>-->
+</h2>
+
+<mat-dialog-content>
+  <p>{{dialogData?.message}}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button mat-dialog-close>
+    {{dialogData?.buttonOne}}
+  </button>
+  <button mat-raised-button color="warn" (click)="confirmDialog()">
+    {{dialogData?.buttonTwo}}
+  </button>
+</mat-dialog-actions>

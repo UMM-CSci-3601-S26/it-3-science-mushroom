@@ -1,62 +1,40 @@
 // Angular Imports
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {MatButtonModule} from '@angular/material/button';
+import { Component, inject } from '@angular/core';
 import {
-  MatDialog,
   MAT_DIALOG_DATA,
   MatDialogRef,
+  MatDialogTitle,
+  MatDialogContent,
   MatDialogActions,
   MatDialogClose,
-  MatDialogContent,
-  MatDialogTitle,
 } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+//import { MatIcon } from '@angular/material/icon'; // Keeping this (just commented out) in case we want to add icons to dialog in the future
 
-// Interface for passing data to the dialog component
-export interface DialogData {
-  numReports?: number;
-  reportName?: string;
-}
+// Dialog Imports
+import { DialogData } from './dialog-data';
 
-/**
- * DialogComponent handles opening a confirmation dialog
- */
 @Component({
-  selector: 'app-dialog-component',
-  templateUrl: 'dialog.component.html',
-  imports: [MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-dialog',
+  templateUrl: './dialog.component.html',
+  styleUrls: ['./dialog.component.scss'],
+  imports: [
+    //MatIcon,
+    MatButtonModule,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+  ],
 })
 export class DialogComponent {
-  readonly dialog = inject(MatDialog);
-
-  openDialog(numReports?: number, reportName?: string) {
-    // Construct message based on passed parameters (in the event message isn't properly constructed prior)
-    const message = numReports !== undefined
-      ? `Are you sure you want to delete ${numReports} report(s)?`
-      : `Are you sure you want to delete the report ${reportName}?`;
-
-    this.dialog.open(DialogElements, {
-      data: {
-        message: message
-      }
-    });
-  }
-}
-
-/**
- * DialogElements is the content of the dialog opened by DialogComponent
- */
-@Component({
-  selector: 'app-dialog-elements',
-  templateUrl: 'dialog-elements.component.html',
-  imports: [MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class DialogElements {
-  data = inject(MAT_DIALOG_DATA);
+  dialogData = inject(MAT_DIALOG_DATA) as DialogData;
   dialogRef = inject(MatDialogRef);
 
-  confirmDelete () {
+  /**
+   * Closes dialog and returns true to the caller. Used for confirmation actions in dialog.
+   */
+  confirmDialog() {
     this.dialogRef.close(true);
   }
 }

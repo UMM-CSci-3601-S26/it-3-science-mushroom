@@ -20,7 +20,7 @@ import { StockReportService } from '../stock-report.service';
 import { StockReport } from '../stock-report';
 
 // Dialog Imports
-import { DialogElements } from '../../dialog/dialog.component';
+import { DialogComponent } from '../../dialog/dialog.component';
 
 // Type for jsPDF with autoTable metadata
 interface jsPDFWithAutoTable extends jsPDFClass {
@@ -306,10 +306,13 @@ export class ReportGeneratorComponent {
         }
 
         // Confirm with user that they want to delete all reports
-        const dialogRef = this.dialog.open(DialogElements, {
+        const dialogRef = this.dialog.open(DialogComponent, {
           data: {
+            title: 'Confirm Delete All',
             numReports: reportCount,
-            message: `Are you sure you want to delete ${reportCount} report(s)?`
+            message: `Are you sure you want to delete ${reportCount} report(s)?`,
+            buttonOne: 'Cancel',
+            buttonTwo: 'Confirm',
           }
         });
 
