@@ -152,12 +152,25 @@ public class FamilyController implements Controller {
         "Family must have a valid email; email was " + updatedFamily.email + "; family was " + ctx.body());
     }
 
+    List<Document> updatedStudentInfo = new ArrayList<>();
+
+    for (Family.StudentInfo student : updatedFamily.students) {
+      Document updatedStudent = new Document()
+        .append("name", student.name)
+        .append("grade", student.grade)
+        .append("school", student.school)
+        .append("teacher", student.teacher)
+        .append("requestedSupplies", student.requestedSupplies);
+
+      updatedStudentInfo.add(updatedStudent);
+    }
+
     Bson update = new Document("$set", new Document()
       .append("guardianName", updatedFamily.guardianName)
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
       .append("timeSlot", updatedFamily.timeSlot)
-      .append("students", updatedFamily.students)
+      .append("students", updatedStudentInfo)
     );
 
     familyCollection.updateOne(eq("_id", familyId), update);
