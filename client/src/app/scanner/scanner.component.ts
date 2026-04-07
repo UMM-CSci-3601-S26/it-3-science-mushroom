@@ -9,16 +9,18 @@ import { Inventory } from '../inventory/inventory';
 import { ScanService } from './scan-service';
 import { CommonModule } from '@angular/common';
 import { ManualEntryResult } from '../inventory/manual-entry';
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, FormsModule]
 })
 
 export class ScannerComponent implements AfterViewInit, OnDestroy {
   // holds the raw barcodes during the scan phase
   scannedItems: string[] = [];
+  scanQuantities = new Map<string, number>();
   // becomes true when scanner/camera is on and is ready to accept input
   isScanning = false;
   // becomes true when user is done scanning and ready to process items
@@ -35,7 +37,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     video!: ElementRef<HTMLVideoElement>;
 
   @Output() scanned = new EventEmitter<string>();
-  @Output() manualEntryNeeded = new EventEmitter<string>();
+  @Output() manualEntryNeeded = new EventEmitter<{ barcode: string, quantity: number }>();
   @Output() processingStarted = new EventEmitter<void>();
   @Output() done = new EventEmitter<void>();
 
@@ -130,7 +132,14 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
 
     console.log('Normalized Barcode', normalized);
     this.scannedItems.push(normalized);
+    this.scanQuantities.set(normalized, (this.scanQuantities.get(normalized) || 0) + 1);
     this.scanned.emit(normalized);
+  }
+  // allows the user to input the desired amount of that scanned item into the system and if they dont
+  // the method will resort to a default of 1 since a scanned item innately is one item
+  updateScanQuantity(barcode: string, value: number) {
+    const safeValue = Number(value);
+    this.scanQuantities.set(barcode, safeValue > 0 ? safeValue : 1);
   }
   /**
    * Phase 3 of scanning
@@ -146,7 +155,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
 
     await this.processScannedItems();
 
-    this.scannedItems = []
+    this.clearScans();
     this.done.emit();
   }
   // stops camera and releases media stream
@@ -178,6 +187,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   }
   clearScans() {
     this.scannedItems = []
+    this.scanQuantities.clear();
     this.lastScannedBarcode = null;
     this.lastScannedTime = 0;
   }
@@ -190,9 +200,9 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   async processScannedItems() {
     this.processing = true;
     const foundItems: Inventory[] = [];
-    const missingItems: string[] = [];
+    const missingItems: { barcode: string; quantity: number }[] = [];
 
-    for (const barcode of this.scannedItems) {
+    for (const [barcode, chosenQuantity] of this.scanQuantities.entries()) {
 
       if (this.sessionItems.has(barcode)) {
         const existingSessionItem = this.sessionItems.get(barcode);
@@ -214,7 +224,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
 
           if (barcodeValue) {
             const updated = await firstValueFrom(
-              this.inventoryService.updateQuantity(barcodeValue, 'add')
+              this.inventoryService.updateQuantity(barcodeValue, 'add', chosenQuantity)
             );
 
             this.inventoryIndex.registerItem(updated);
@@ -246,7 +256,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
         }
 
         const updated = await firstValueFrom(
-          this.inventoryService.updateQuantity(barcodeValue, 'add')
+          this.inventoryService.updateQuantity(barcodeValue, 'add', chosenQuantity)
         );
 
         this.inventoryIndex.registerItem(updated);
@@ -284,7 +294,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
           }
 
           const updated = await firstValueFrom(
-            this.inventoryService.updateQuantity(barcodeValue, 'add')
+            this.inventoryService.updateQuantity(barcodeValue, 'add', chosenQuantity)
           );
 
           this.inventoryIndex.registerItem(updated);
@@ -293,7 +303,8 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
           this.inventoryService.loadInventory();
         }
       } catch {
-        missingItems.push(barcode);
+        missingItems.push({
+          barcode, quantity: chosenQuantity});
       }
     }
 
@@ -307,12 +318,12 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * information about each one
    */
 
-  async handleProcessingResults(missingItems: string[]) {
-    for (const barcode of missingItems) {
-      if (this.sessionItems.has(barcode)) {
+  async handleProcessingResults(missingItems: { barcode: string; quantity: number }[]) {
+    for (const missing of missingItems) {
+      if (this.sessionItems.has(missing.barcode)) {
         continue;
       }
-      await this.openManualEntry(barcode);
+      await this.openManualEntry(missing.barcode, missing.quantity);
     }
   }
 
@@ -323,10 +334,10 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * to openManualEntry() which will prompt the user to input information
    * about each item
    */
-  async openManualEntry(barcode: string) {
+  async openManualEntry(barcode: string, quantity: number = 1) {
     const result = await new Promise<ManualEntryResult | null>(r => {
       this.manualEntryResolver = r;
-      this.manualEntryNeeded.emit(barcode);
+      this.manualEntryNeeded.emit({ barcode, quantity });
     });
 
     if (!result) {
@@ -338,7 +349,8 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
         const updated = await firstValueFrom(
           this.inventoryService.linkExternalBarcode(
             result.selectedItem.internalID,
-            barcode));
+            barcode,
+            result.quantity));
 
         this.inventoryService.loadInventory();
         this.inventoryIndex.registerItem(updated);
@@ -357,8 +369,11 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
         );
 
         this.inventoryService.loadInventory();
-        this.inventoryIndex.registerItem(saved);
-        this.sessionItems.set(barcode, saved);
+
+        if (saved) {
+          this.inventoryIndex.registerItem(saved);
+          this.sessionItems.set(barcode, saved);
+        }
       } catch (err) {
         console.error("failed to save manually entered item", err);
       }
@@ -366,5 +381,14 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   }
   resolveManualEntry(result: ManualEntryResult | null) {
     this.manualEntryResolver?.(result);
+  }
+
+  trackByBarcode(index: number, entry: { key: string; value: number}) {
+    return entry.key;
+  }
+  getScanEntries() {
+    return Array.from(this.scanQuantities.entries()).map(([key, value]) => ({
+      key, value
+    }));
   }
 }

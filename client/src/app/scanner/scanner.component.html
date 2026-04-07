@@ -6,12 +6,25 @@
     [style.display]="isScanning ? 'block' : 'none'">
   </video>
 
-  <!-- Live list of barcodes accepted during this session -->
-  <div *ngIf="scannedItems.length > 0" class="scanned-list" style="margin-top: 8px;">
-    <strong>Scanned ({{ scannedItems.length }}):</strong>
-    <ul style="margin: 4px 0; padding-left: 20px;">
-      <li *ngFor="let code of scannedItems">{{ code }}</li>
-    </ul>
+    <!-- Live list of barcodes accepted during this session -->
+  <div *ngIf="scanQuantities.size > 0" class="scanned-list" style="margin-top: 8px;">
+    <strong>Scanned ({{ scanQuantities.size }} unique):</strong>
+
+    <div *ngFor="let entry of scanQuantities | keyvalue; trackBy: trackByBarcode"
+         style="display: flex; align-items: center; gap: 12px; margin: 6px 0;">
+
+      <span style="min-width: 180px;">{{ entry.key }}</span>
+
+      <label for="qty-{{ entry.key }}">Quantity:</label>
+      <input
+        id="qty-{{ entry.key }}"
+        type="number"
+        min="1"
+        [ngModel]="entry.value"
+        (ngModelChange)="updateScanQuantity(entry.key, $event)"
+        style="width: 80px;"
+      />
+    </div>
   </div>
 
   <!-- Processing indicator while batch lookup + manual entry runs -->

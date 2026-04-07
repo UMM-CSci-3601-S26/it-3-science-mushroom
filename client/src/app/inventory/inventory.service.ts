@@ -75,11 +75,11 @@ export class InventoryService {
   addInventory(item: Inventory): Observable<Inventory> {
     return this.httpClient.post<Inventory>(this.inventoryUrl, item);
   }
-  updateQuantity(barcode: string, action: 'add' | 'remove'): Observable<Inventory> {
-    return this.httpClient.post<Inventory>(`${this.inventoryUrl}/${barcode}/quantity`, { action: action });
+  updateQuantity(barcode: string, action: 'add' | 'remove', amount: number = 1): Observable<Inventory> {
+    return this.httpClient.post<Inventory>(`${this.inventoryUrl}/${barcode}/quantity`, { action, amount });
   }
-  linkExternalBarcode(internalID: string, barcode: string): Observable<Inventory> {
-    return this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode });
+  linkExternalBarcode(internalID: string, barcode: string, quantity: number = 1): Observable<Inventory> {
+    return this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode, quantity });
   }
 
   // addByScanAndUpdate(barcode: string) {

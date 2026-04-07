@@ -126,12 +126,17 @@ public class BarcodeController implements Controller {
     System.out.println("Raw ID: " + id);
     Document body = ctx.bodyAsClass(Document.class);
     String action = body.getString("action");
+    Integer amount = body.getInteger("amount");
 
     if (!"add".equals(action) && !"remove".equals(action)) {
       throw new BadRequestResponse("action must be 'add' or 'remove'");
     }
 
-    int delta = "add".equals(action) ? 1 : -1;
+    if (amount == null || amount < 1) {
+      amount = 1;
+    }
+
+    int delta = "add".equals(action) ? amount : -amount;
 
     Bson filter;
     try {
@@ -157,14 +162,19 @@ public class BarcodeController implements Controller {
     String internalID = ctx.pathParam("internalID");
     Document body = ctx.bodyAsClass(Document.class);
     String barcode = body.getString("barcode");
+    Integer quantity = body.getInteger("quantity");
 
     if (barcode == null || barcode.isBlank()) {
       throw new BadRequestResponse("barcode is required");
     }
 
+    if (quantity == null || quantity < 1) {
+      quantity = 1;
+    }
+
     Inventory updated = inventoryCollection.findOneAndUpdate(eq("internalID", internalID),
     combine(addToSet("externalBarcode", barcode),
-     inc("quantity", 1)),
+     inc("quantity", quantity)),
       new FindOneAndUpdateOptions().returnDocument(AFTER));
 
     if (updated == null) {

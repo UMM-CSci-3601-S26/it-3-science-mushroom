@@ -29,7 +29,7 @@ import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
 
 import { MatDialog } from '@angular/material/dialog';
-import { ManualEntry } from './manual-entry';
+import { ManualEntry, ManualEntryResult } from './manual-entry';
 
 
 @Component({
@@ -101,9 +101,9 @@ export class InventoryComponent {
     console.log('scanned item', code)
   }
 
-  async onManualEntryNeeded(barcode: string) {
-    const dialogRef = this.dialog.open(ManualEntry, { data: { barcode }});
-    const result = await firstValueFrom(dialogRef.afterClosed());
+  async onManualEntryNeeded(event: { barcode: string; quantity: number}) {
+    const dialogRef = this.dialog.open(ManualEntry, { data: { barcode: event.barcode, quantity: event.quantity}});
+    const result: ManualEntryResult | null = await firstValueFrom(dialogRef.afterClosed());
     this.scannerRef()?.resolveManualEntry(result ?? null);
     this.reload.update(v => v + 1);
   }

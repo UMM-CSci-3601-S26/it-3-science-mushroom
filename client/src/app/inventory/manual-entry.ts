@@ -12,10 +12,12 @@ export type ManualEntryResult =
 {
   mode: 'match';
   selectedItem: Inventory;
+  quantity: number;
 } |
 {
   mode: 'new';
   newItem: Inventory;
+  quantity: number;
 }
 
 @Component({
@@ -43,7 +45,7 @@ export class ManualEntry {
     // eslint-disable-next-line
     private dialogRef: MatDialogRef<ManualEntry, ManualEntryResult>,
     // eslint-disable-next-line
-    @Inject(MAT_DIALOG_DATA) public data: { barcode: string }) {
+    @Inject(MAT_DIALOG_DATA) public data: { barcode: string; quantity: number }) {
     this.form = this.fb.group({
       item: ['', Validators.required],
       description: [''],
@@ -55,6 +57,9 @@ export class ManualEntry {
       material: [''],
       quantity: [0, [Validators.required, Validators.min(1)]],
       notes: [''],
+      maxQuantity: [0],
+      minQuantity: [0],
+      stockState: ['']
     });
   }
 
@@ -69,10 +74,13 @@ export class ManualEntry {
     this.selectedItem = item
   }
   submit() {
+    const chosenQuantity = Number(this.form.get('quantity')?.value ?? 1);
+    const safeQuantity = chosenQuantity > 0 ? chosenQuantity : 1;
     if (this.selectedItem) {
       this.dialogRef.close({
         mode: 'match',
-        selectedItem: this.selectedItem
+        selectedItem: this.selectedItem,
+        quantity: safeQuantity
       });
       return;
     }
@@ -80,25 +88,27 @@ export class ManualEntry {
     if (this.form.valid) {
       const newItem: Inventory = {
         internalID: '',
-        item: this.form.value.item,
-        description: this.form.value.description || '',
-        brand: this.form.value.brand || '',
-        color: this.form.value.color || '',
-        size: this.form.value.size || '',
-        type: this.form.value.type || '',
-        material: this.form.value.material || '',
-        count: this.form.value.count || 0,
-        quantity: this.form.value.quantity || 1,
-        notes: this.form.value.notes || '',
+        internalBarcode: '',
         externalBarcode: [this.data.barcode],
-        maxQuantity: this.form.value.maxQuantity || 0,
-        minQuantity: this.form.value.minQuantity || 0,
-        stockState: this.form.value.stockState || ''
+        item: this.form.get('item')?.value || '',
+        description: this.form.get('description')?.value || '',
+        brand: this.form.get('brand')?.value || '',
+        color: this.form.get('color')?.value || '',
+        count: this.form.get('count')?.value || 0,
+        size: this.form.get('size')?.value || '',
+        type: this.form.get('type')?.value || '',
+        material: this.form.get('material')?.value || '',
+        quantity: safeQuantity,
+        notes: this.form.get('notes')?.value || '',
+        maxQuantity: this.form.get('maxQuantity')?.value || 0,
+        minQuantity: this.form.get('minQuantity')?.value || 0,
+        stockState: this.form.get('stockState')?.value || ''
       };
 
       this.dialogRef.close({
         mode: 'new',
-        newItem: newItem
+        newItem: newItem,
+        quantity: safeQuantity
       });
     } else {
       this.form.markAllAsTouched();
