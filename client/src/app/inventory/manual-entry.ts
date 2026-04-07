@@ -2,7 +2,7 @@ import { ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } fr
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from "@angular/material/dialog";
 import { MatInputModule } from '@angular/material/input';
-import { Inject, Component } from "@angular/core";
+import { Inject, Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatError, MatFormField, MatLabel } from "@angular/material/form-field";
 import { Inventory } from "./inventory";
@@ -34,8 +34,12 @@ export type ManualEntryResult =
     MatInputModule
   ]
 })
-export class ManualEntry {
+export class ManualEntry implements OnInit {
   form: FormGroup;
+
+  filteredItems: Inventory[] = [];
+  selectedItem: Inventory | null = null;
+  allInventory: Inventory[] = [];
 
   constructor(
     // eslint-disable-next-line
@@ -47,6 +51,9 @@ export class ManualEntry {
     // eslint-disable-next-line
     @Inject(MAT_DIALOG_DATA) public data: { barcode: string; quantity: number }) {
     this.form = this.fb.group({
+      internalID: [''],
+      internalBarcode: [''],
+      externalBarcode: [''],
       item: ['', Validators.required],
       description: [''],
       brand: [''],
@@ -55,7 +62,7 @@ export class ManualEntry {
       size: [''],
       type: [''],
       material: [''],
-      quantity: [0, [Validators.required, Validators.min(1)]],
+      quantity: [data.quantity ?? 1, [Validators.required, Validators.min(1)]],
       notes: [''],
       maxQuantity: [0],
       minQuantity: [0],
@@ -63,17 +70,76 @@ export class ManualEntry {
     });
   }
 
-  filteredItems: Inventory[] = [];
-  selectedItem: Inventory | null = null;
-  allInventory: Inventory[] = [];
+  ngOnInit(): void {
+    this.loadInventory();
+    this.form.valueChanges.subscribe(() => {
+      this.filteredItems = this.getFilteredItems();
+    })
+  }
 
   validateInput(control: AbstractControl): ValidationErrors | null {
     return control.errors;
   }
   selectExistingItem(item: Inventory) {
-    this.selectedItem = item
+    this.selectedItem = item;
+
+    this.form.patchValue({
+      internalID: item.internalID ?? '',
+      internalBarcode: item.internalBarcode ?? '',
+      externalBarcode: this.data.barcode ?? '',
+      item: item.item ?? '',
+      description: item.description ?? '',
+      brand: item.brand ?? '',
+      color: item.color ?? '',
+      count: item.count ?? 0,
+      size: item.size ?? '',
+      type: item.type ?? '',
+      material: item.material ?? '',
+      quantity: this.form.get('quantity')?.value ?? this.data.quantity ?? 1,
+      notes: item.notes ?? '',
+      maxQuantity: item.maxQuantity ?? 0,
+      minQuantity: item.minQuantity ?? 0,
+      stockState: item.stockState ?? ''
+    });
   }
-  submit() {
+
+  clearSelectedItem(): void {
+    this.selectedItem = null;
+
+    this.form.patchValue({
+      internalID: '',
+      internalBarcode: '',
+      externalBarcode: '',
+      item: '',
+      description: '',
+      brand: '',
+      color: '',
+      count: 0,
+      size: '',
+      type: '',
+      material: '',
+      notes: '',
+      maxQuantity: 0,
+      minQuantity: 0,
+      stockState: ''
+    });
+  }
+
+  loadInventory(): void {
+    this.inventoryService.getInventory({}).subscribe({
+      next: inventory => {
+        this.allInventory = inventory;
+        this.filteredItems = this.getFilteredItems();
+      },
+      error: err => {
+        console.error('Failed to load inventory for manual entry', err);
+        this.allInventory = [];
+        this.filteredItems = [];
+      }
+    })
+  }
+
+  submit(): void {
     const chosenQuantity = Number(this.form.get('quantity')?.value ?? 1);
     const safeQuantity = chosenQuantity > 0 ? chosenQuantity : 1;
     if (this.selectedItem) {
@@ -87,9 +153,11 @@ export class ManualEntry {
 
     if (this.form.valid) {
       const newItem: Inventory = {
-        internalID: '',
-        internalBarcode: '',
-        externalBarcode: [this.data.barcode],
+        internalID: this.form.get("internalID")?.value || '',
+        internalBarcode: this.form.get("internalBarcode")?.value || '',
+        externalBarcode: this.form.get("externalBarcode")?.value
+          ? [this.form.get('externalBarcode')?.value]
+          : ([this.data.barcode]),
         item: this.form.get('item')?.value || '',
         description: this.form.get('description')?.value || '',
         brand: this.form.get('brand')?.value || '',
@@ -116,6 +184,52 @@ export class ManualEntry {
   }
   cancel() {
     this.dialogRef.close(null);
+  }
+
+  getFilteredItems(): Inventory[] {
+    const item = this.form.get('item')?.value ?? '';
+    const brand = this.form.get('brand')?.value ?? '';
+    const color = this.form.get('color')?.value ?? '';
+    const size = this.form.get('size')?.value ?? '';
+    const type = this.form.get('type')?.value ?? '';
+    const material = this.form.get('material')?.value ?? '';
+
+    return this.allInventory.filter(invItem => {
+      return this.matches(invItem.item, item)
+        && this.matches(invItem.brand, brand)
+        && this.matches(invItem.color, color)
+        && this.matches(invItem.size, size)
+        && this.matches(invItem.type, type)
+        && this.matches(invItem.material, material);
+    });
+  }
+
+  private matches(value: string | undefined, filter: string): boolean {
+    if (!filter?.trim()) return true;
+    return (value ?? '').toLowerCase().includes(filter.trim().toLowerCase());
+  }
+
+  private matchesArray(values: string[] | string | undefined, filter: string): boolean {
+    if (!filter?.trim()) return true;
+
+    const normalizedFilter = filter.trim().toLowerCase();
+
+    if (Array.isArray(values)) {
+      return values.some(v => v.toLowerCase().includes(normalizedFilter));
+    }
+
+    return (values ?? '').toLowerCase().includes(normalizedFilter);
+  }
+
+  stringifyExternalBarcode(values: string[] | string | undefined): string {
+    if (Array.isArray(values)) {
+      return values.join(', ');
+    }
+    return values ?? ''
+  }
+
+  trackByInternalID(index: number, item: Inventory): string {
+    return item.internalID || `${item.item}-${index}`;
   }
 }
 
