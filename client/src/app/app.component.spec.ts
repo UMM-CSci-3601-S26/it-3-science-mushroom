@@ -18,9 +18,9 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it("should have as title 'CSCI 3601 - HGBT Iteration 1'", () => {
+  it("should have as title 'Ready 4 Learning Interface'", () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('CSCI 3601 - HGBT Iteration 1');
+    expect(app.title).toEqual('Ready 4 Learning Interface');
   });
 });
