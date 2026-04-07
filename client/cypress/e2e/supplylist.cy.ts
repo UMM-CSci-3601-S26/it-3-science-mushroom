@@ -46,7 +46,7 @@ describe('Supply List', () => {
     page.getSidenav()
       .should('be.hidden');
     nextTick(300)
-    cy.contains('mat-card', 'Herman').should('exist');
+    cy.contains('mat-card', 'St. Mary\'s').should('exist');
   });
 
   // Cypress tests to ensure the filter boxes are there
