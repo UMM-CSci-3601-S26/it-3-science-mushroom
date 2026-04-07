@@ -8,6 +8,7 @@ import { firstValueFrom } from 'rxjs';
 import { Inventory } from '../inventory/inventory';
 import { ScanService } from './scan-service';
 import { CommonModule } from '@angular/common';
+import { ManualEntryResult } from '../inventory/manual-entry';
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
@@ -29,7 +30,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    */
   sessionItems = new Map<string, Inventory>();
 
-  private manualEntryResolver: ((item: Inventory | null) => void) | null = null;
+  private manualEntryResolver!: (value: ManualEntryResult | null) => void;
   @ViewChild('video', { static: false })
     video!: ElementRef<HTMLVideoElement>;
 
@@ -323,30 +324,47 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * about each item
    */
   async openManualEntry(barcode: string) {
-    const result = await new Promise<Inventory | null>(r => {
+    const result = await new Promise<ManualEntryResult | null>(r => {
       this.manualEntryResolver = r;
       this.manualEntryNeeded.emit(barcode);
     });
 
-    if (result) {
-      const itemToSave: Inventory = {
-        ...result,
-        externalBarcode: [barcode]
-      };
-      const saved = await firstValueFrom(this.inventoryService.addInventory(itemToSave));
-      this.inventoryService.loadInventory();
-      if (saved) {
-        try {
-          this.inventoryIndex.registerItem(saved as Inventory);
-          this.sessionItems.set(barcode, saved as Inventory);
-        } catch (err) {
-          console.error("Failed to Save manually", err);
-        }
+    if (!result) {
+      return;
+    }
+
+    if (result.mode === 'match' && result.selectedItem) {
+      try {
+        const updated = await firstValueFrom(
+          this.inventoryService.linkExternalBarcode(
+            result.selectedItem.internalID,
+            barcode));
+
+        this.inventoryService.loadInventory();
+        this.inventoryIndex.registerItem(updated);
+        this.sessionItems.set(barcode, updated);
+      } catch (err) {
+        console.error("Failed to link barcode to existing item", err);
+      }
+
+      return;
+    }
+
+    if (result.mode === 'new' && result.newItem) {
+      try {
+        const saved = await firstValueFrom(
+          this.inventoryService.addInventory(result.newItem)
+        );
+
+        this.inventoryService.loadInventory();
+        this.inventoryIndex.registerItem(saved);
+        this.sessionItems.set(barcode, saved);
+      } catch (err) {
+        console.error("failed to save manually entered item", err);
       }
     }
   }
-  resolveManualEntry(result: Inventory | null) {
+  resolveManualEntry(result: ManualEntryResult | null) {
     this.manualEntryResolver?.(result);
-    this.manualEntryResolver = null;
   }
 }

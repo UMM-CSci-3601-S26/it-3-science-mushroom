@@ -75,9 +75,14 @@ export class InventoryComponent {
   scannerProcessing = false;
   constructor() {
     effect(() => {
+      const items = this.serverFilteredInventory();
       this.dataSource.data = this.serverFilteredInventory();
       this.dataSource.sort = this.sort();
       this.dataSource.paginator = this.page();
+
+      for (const item of items) {
+        this.inventoryIndex.registerItem(item);
+      }
     });
   }
 

@@ -13,6 +13,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.Sorts;
+import static com.mongodb.client.model.Updates.addToSet;
+import static com.mongodb.client.model.Updates.combine;
 
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
@@ -26,6 +28,7 @@ public class BarcodeController implements Controller {
     // private static final String API_BARCODE_SCAN = "/api/barcode/scan"; // decide behavior
     private static final String API_BARCODE_NEXT = "/api/barcode/next";
     private static final String API_BARCODE_QTY = "/api/inventory/{id}/quantity";
+    private static final String API_LINK_EXTERNAL_BARCODE = "/api/inventory/{internalID}/link-barcode";
 
     private final JacksonMongoCollection<Inventory> inventoryCollection;
 
@@ -150,11 +153,33 @@ public class BarcodeController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  public void linkExternalBarcode(Context ctx) {
+    String internalID = ctx.pathParam("internalID");
+    Document body = ctx.bodyAsClass(Document.class);
+    String barcode = body.getString("barcode");
+
+    if (barcode == null || barcode.isBlank()) {
+      throw new BadRequestResponse("barcode is required");
+    }
+
+    Inventory updated = inventoryCollection.findOneAndUpdate(eq("internalID", internalID),
+    combine(addToSet("externalBarcode", barcode),
+     inc("quantity", 1)),
+      new FindOneAndUpdateOptions().returnDocument(AFTER));
+
+    if (updated == null) {
+      throw new NotFoundResponse("Inventory itme not found for internalID" + internalID);
+    }
+
+    ctx.json(updated);
+    ctx.status(HttpStatus.OK);
+  }
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_BARCODE_LOOKUP, this::lookupBarcode);
     server.get(API_BARCODE_NEXT, this::getNextBarcode);
     // server.post(API_BARCODE_SCAN, this::scanBarcode);
     server.post(API_BARCODE_QTY, this::updateQuantity);
+    server.patch(API_LINK_EXTERNAL_BARCODE, this::linkExternalBarcode);
   }
 }

@@ -72,11 +72,14 @@ export class InventoryService {
   removeOne(identifier: string): Observable<Inventory> {
     return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/remove`, { params: { id: identifier } });
   }
-  addInventory(item: Inventory) {
-    return this.httpClient.post('/api/inventory', item);
+  addInventory(item: Inventory): Observable<Inventory> {
+    return this.httpClient.post<Inventory>(this.inventoryUrl, item);
   }
-  updateQuantity(barcode: string, action: 'add' | 'remove') {
-    return this.httpClient.post<Inventory>(`/api/inventory/${barcode}/quantity`, { action: action });
+  updateQuantity(barcode: string, action: 'add' | 'remove'): Observable<Inventory> {
+    return this.httpClient.post<Inventory>(`${this.inventoryUrl}/${barcode}/quantity`, { action: action });
+  }
+  linkExternalBarcode(internalID: string, barcode: string): Observable<Inventory> {
+    return this,this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode });
   }
 
   // addByScanAndUpdate(barcode: string) {
