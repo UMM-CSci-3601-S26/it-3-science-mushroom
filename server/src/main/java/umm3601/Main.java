@@ -8,7 +8,7 @@ import com.mongodb.client.MongoDatabase;
 import umm3601.Family.FamilyController;
 import umm3601.Inventory.InventoryController;
 import umm3601.StockReport.StockReportController;
-import umm3601.supplylist.SupplyListController;
+import umm3601.SupplyList.SupplyListController;
 
 // Main
 public class Main {
