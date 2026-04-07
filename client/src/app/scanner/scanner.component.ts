@@ -3,20 +3,20 @@ import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { OnDestroy } from '@angular/core';
 import { InventoryIndex } from '../inventory/inventory-index';
 import { InventoryService } from '../inventory/inventory.service'
-import { MatDialog} from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { Inventory } from '../inventory/inventory';
 import { ScanService } from './scan-service';
 import { CommonModule } from '@angular/common';
 import { ManualEntryResult } from '../inventory/manual-entry';
 import { FormsModule } from '@angular/forms';
+
+type ScanMode = "camera" | "handheld";
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
   standalone: true,
   imports: [CommonModule, FormsModule]
 })
-
 export class ScannerComponent implements AfterViewInit, OnDestroy {
   // holds the raw barcodes during the scan phase
   scannedItems: string[] = [];
@@ -25,6 +25,13 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   isScanning = false;
   // becomes true when user is done scanning and ready to process items
   processing = false;
+  readonly scanModes: { key: ScanMode; label: string; description: string}[] = [
+    {key: "camera", label: "Camera Scan", description: "Use on devices with a camera, phones, tablets, laptops"},
+    {key: "handheld", label: "Hand Held Scan", description: "Use this with a USB or Bluetooth barcode scanner"}
+  ];
+
+  activeMode: ScanMode | null = null;
+  handheldInputValue = '';
 
   /**
    * Held items for session, this will be populated by the items found/manually inputted
@@ -35,6 +42,8 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   private manualEntryResolver!: (value: ManualEntryResult | null) => void;
   @ViewChild('video', { static: false })
     video!: ElementRef<HTMLVideoElement>;
+
+  @ViewChild('handheldInput', { static: false}) handheldInput?: ElementRef<HTMLInputElement>;
 
   @Output() scanned = new EventEmitter<string>();
   @Output() manualEntryNeeded = new EventEmitter<{ barcode: string, quantity: number }>();
@@ -54,60 +63,117 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     // eslint-disable-next-line
     private inventoryService: InventoryService,
     // eslint-disable-next-line
-    private scanService: ScanService,
-    // eslint-disable-next-line
-    private dialog: MatDialog) {
+    private scanService: ScanService) {
     console.log('ScannerComponent initialized');
 
   }
 
   ngAfterViewInit() {
     console.log('ngAfterViewInit FIRED');
-    setTimeout(() => {
-      this.startScanner();
-    });
   }
 
   ngOnDestroy() {
     console.log('ngOnDestroy FIRED');
     this.stopScanner();
   }
+  async setMode(mode: ScanMode) {
+    if (this.processing) {
+      return;
+    }
+    if (this.activeMode === mode && this.isScanning) {
+      if (mode === 'handheld') {
+        this.focusHandheldInput();
+      }
+      return;
+    }
+
+    this.stopScanner();
+    this.activeMode = mode;
+    this.isScanning = true;
+
+    if (mode === 'camera') {
+      await new Promise(resolve => setTimeout(resolve));
+      await this.startCameraScanner();
+      return;
+    }
+    this.focusHandheldInput();
+  }
+
+  deactivateMode() {
+    this.stopScanner();
+    this.activeMode = null;
+    this.isScanning = false;
+    this.handheldInputValue = '';
+  }
+
   /**
    * Phase 1 of scanning
    * Opens a scan UI, resets any previous data and activates camera for now
    * sets isScanning true for ui control
    *
    */
-  async startScanner() {
-    console.log('START SCANNER CALLED');
-    // reset state
-    this.clearScans();
-    this.isScanning = true;
+  async startCameraScanner() {
 
-    const videoEl = this.video.nativeElement;
-    const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-    const deviceId = devices?.[0]?.deviceId;
-
-    if (!deviceId) {
-      console.error('No video input devices found');
-      this.isScanning = false;
+    if (!this.video?.nativeElement) {
       return;
     }
 
-    this.codeReader.decodeFromVideoDevice(
-      deviceId,
-      videoEl,
-      (result, error, controls) => {
-        this.controls = controls;
+    console.log('START SCANNER CALLED');
 
-        if (result) {
-          const code = result.getText();
-          console.log('SCAN RESULT:', code);
-          this.handleScan(code);
-          this.controls = null; // stop scanning after first successful scan
-        }
+    const videoEl = this.video.nativeElement;
+
+    try {
+      const permissionStream = await navigator.mediaDevices.getUserMedia( { video : { facingMode: 'environment'}});
+
+      permissionStream.getTracks().forEach(t => t.stop());
+
+      const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+      console.log('video devices:', devices)
+
+      const deviceId = devices?.[0].deviceId;
+
+
+      if (!deviceId) {
+        console.error('No video input devices found');
+        this.isScanning = false;
+        this.activeMode = null;
+        return;
       }
-    );
+
+      this.codeReader.decodeFromVideoDevice(
+        deviceId,
+        videoEl,
+        (result, error, controls) => {
+          this.controls = controls;
+
+          if (result) {
+            const code = result.getText();
+            console.log('SCAN RESULT:', code);
+            this.handleScan(code);
+          }
+        }
+      );
+    } catch (err) {
+      console.error('Camera permission/device error: ', err);
+      this.isScanning = false;
+      this.activeMode = null;
+    }
+  }
+
+  submitHandheldScan(rawValue: string) {
+    console.log('submitHandheldScan called with:', rawValue);
+    if (!this.isScanning || this.activeMode !== 'handheld') {
+      console.log('submit blocked:', { isScanning: this.isScanning, activeMode: this.activeMode });
+      return;
+    }
+    const trimmed = rawValue?.trim();
+    if (!trimmed) {
+      console.log('submit blocked: empty trimmed value');
+      return;
+    }
+    this.handleScan(trimmed);
+    this.handheldInputValue = '';
+    this.focusHandheldInput();
   }
   /**
    * Phase 2 of scanning
@@ -122,6 +188,10 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     const normalized = this.scanService.normalizeBarcode(rawBarcode);
     const now = Date.now();
 
+    if (!normalized) {
+      return;
+    }
+
     if ( normalized === this.lastScannedBarcode &&
        now - this.lastScannedTime < this.SCAN_COOLDOWN_MS) {
       return;
@@ -130,9 +200,15 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     this.lastScannedBarcode = normalized;
     this.lastScannedTime = now;
 
-    console.log('Normalized Barcode', normalized);
+    const currentQuantity = this.scanQuantities.get(normalized) ?? 0;
+    this.scanQuantities.set(normalized, currentQuantity + 1)
+
+    if (!this.scannedItems.includes(normalized)) {
+      this.scannedItems.push(normalized);
+    }
+
+    console.log('Normalized Barcode', normalized, 'qty:', this.scanQuantities.get(normalized));
     this.scannedItems.push(normalized);
-    this.scanQuantities.set(normalized, (this.scanQuantities.get(normalized) || 0) + 1);
     this.scanned.emit(normalized);
   }
   // allows the user to input the desired amount of that scanned item into the system and if they dont
@@ -149,13 +225,18 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    *
    */
   async onDone() {
+    if (!this.isScanning || this.processing) {
+      return;
+    }
     this.processingStarted.emit();
     this.isScanning = false;
     this.stopScanner();
 
     await this.processScannedItems();
 
-    this.clearScans();
+    this.scannedItems = [];
+    this.handheldInputValue = '';
+    this.activeMode = null;
     this.done.emit();
   }
   // stops camera and releases media stream
@@ -164,6 +245,10 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
 
     this.controls?.stop();
     this.controls = null;
+
+    if (!this.video?.nativeElement) {
+      return;
+    }
 
     const video = this.video.nativeElement;
     const stream = video.srcObject as MediaStream | null;
@@ -179,17 +264,29 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     video.pause();
     video.srcObject = null;
 
-    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-      stream.getTracks().forEach(t => t.stop());
-    }).catch(err => {
-      console.error('Error stopping media stream:', err);
-    });
+    // navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    //   stream.getTracks().forEach(t => t.stop());
+    // }).catch(err => {
+    //   console.error('Error stopping media stream:', err);
+    // });
   }
   clearScans() {
-    this.scannedItems = []
+    this.scannedItems = [];
     this.scanQuantities.clear();
+    this.handheldInputValue = '';
     this.lastScannedBarcode = null;
     this.lastScannedTime = 0;
+
+    if (this.activeMode === "handheld") {
+      this.focusHandheldInput();
+    }
+  }
+
+  private focusHandheldInput() {
+    setTimeout(() => {
+      this.handheldInput?.nativeElement.focus();
+      this.handheldInput?.nativeElement.select();
+    });
   }
   /**
    * Phase 4 of scanning
@@ -390,5 +487,8 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     return Array.from(this.scanQuantities.entries()).map(([key, value]) => ({
       key, value
     }));
+  }
+  debugEntry(value: string) {
+    console.log('ENTER FIRED', value);
   }
 }

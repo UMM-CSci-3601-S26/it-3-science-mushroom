@@ -1,41 +1,107 @@
 <div class="scanner-container">
+  <h2>Scan Item</h2>
 
-  <!-- Camera feed: always in the DOM so @ViewChild resolves, hidden when not active -->
-  <video #video
-    style="width: 100%; height: 300px; border: 3px solid red;"
-    [style.display]="isScanning ? 'block' : 'none'">
-  </video>
+  <div class="scan-mode-toolbar">
+    <button
+      *ngFor="let mode of scanModes"
+      type="button"
+      (click)="setMode(mode.key)"
+      [disabled]="processing"
+      [class.active]="activeMode === mode.key"
+    >
+      {{ mode.label }}
+    </button>
 
-    <!-- Live list of barcodes accepted during this session -->
-  <div *ngIf="scanQuantities.size > 0" class="scanned-list" style="margin-top: 8px;">
-    <strong>Scanned ({{ scanQuantities.size }} unique):</strong>
+    <button
+      *ngIf="activeMode"
+      type="button"
+      (click)="deactivateMode()"
+      [disabled]="processing"
+    >
+      Stop Scan Mode
+    </button>
+  </div>
 
-    <div *ngFor="let entry of scanQuantities | keyvalue; trackBy: trackByBarcode"
-         style="display: flex; align-items: center; gap: 12px; margin: 6px 0;">
+  <div *ngIf="!activeMode" class="scan-mode-placeholder">
+    <p>Select a scan mode to begin.</p>
+  </div>
 
-      <span style="min-width: 180px;">{{ entry.key }}</span>
+  <div *ngIf="activeMode === 'camera'" class="camera-panel">
+    <h3>Camera Scan</h3>
+    <p>Use your device camera to scan item barcodes.</p>
 
-      <label for="qty-{{ entry.key }}">Quantity:</label>
-      <input
-        id="qty-{{ entry.key }}"
-        type="number"
-        min="1"
-        [ngModel]="entry.value"
-        (ngModelChange)="updateScanQuantity(entry.key, $event)"
-        style="width: 80px;"
-      />
+    <video
+      #video
+      autoplay
+      muted
+      playsinline
+      [style.display]="isScanning ? 'block' : 'none'"
+      style="width: 100%; max-width: 700px; height: 320px; border: 2px solid #ccc;"
+    ></video>
+  </div>
+
+  <div *ngIf="activeMode === 'handheld'" class="handheld-panel">
+    <h3>Hand Held Scan</h3>
+    <p>Click the box if needed, then scan with the handheld barcode reader.</p>
+
+    <input
+      #handheldInput
+      type="text"
+      [(ngModel)]="handheldInputValue"
+      (keydown.enter)="debugEntry(handheldInputValue); submitHandheldScan(handheldInputValue)"
+      [disabled]="processing"
+      placeholder="Scan barcode here"
+      autocomplete="off"
+    />
+
+    <button type="button" (click)="submitHandheldScan(handheldInputValue)">
+    Test Submit
+  </button>
+  </div>
+
+  <div *ngIf="getScanEntries().length > 0" class="scanned-items-panel">
+    <h3>Scanned Items</h3>
+
+    <div
+      *ngFor="let entry of getScanEntries(); trackBy: trackByBarcode"
+      class="scanned-item-row"
+    >
+      <div class="barcode-label">
+        {{ entry.key }}
+      </div>
+
+      <div class="quantity-input">
+        <label [attr.for] = "'qty-' + entry.key">Quantity</label>
+        <input
+          [id] = "'qty-' + entry.key"
+          type="number"
+          min="1"
+          [ngModel]="entry.value"
+          (ngModelChange)="updateScanQuantity(entry.key, $event)"
+        />
+      </div>
     </div>
   </div>
 
-  <!-- Processing indicator while batch lookup + manual entry runs -->
-  <div *ngIf="processing" style="margin-top: 8px;">
-    <em>Processing items, please wait…</em>
+  <div *ngIf="processing" class="processing-panel">
+    <p>Processing scanned items...</p>
   </div>
 
-  <!-- Controls -->
-  <div style="margin-top: 8px; display: flex; gap: 8px;">
-    <button (click)="onDone()" [disabled]="!isScanning || processing">Done</button>
-    <button (click)="clearScans()" [disabled]="!isScanning || processing">Clear</button>
-  </div>
+  <div class="scanner-actions">
+    <button
+      type="button"
+      (click)="onDone()"
+      [disabled]="!isScanning || processing"
+    >
+      Done
+    </button>
 
+    <button
+      type="button"
+      (click)="clearScans()"
+      [disabled]="processing"
+    >
+      Clear
+    </button>
+  </div>
 </div>
