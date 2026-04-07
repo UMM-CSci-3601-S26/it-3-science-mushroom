@@ -60,6 +60,10 @@ export class FamilyService {
     return this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(map(response => response.id));
   }
 
+  updateFamily(id: string, updatedFamily: Partial<Family>): Observable<string> {
+    return this.httpClient.put<{id: string}>(`${this.familyUrl}/${id}`, updatedFamily).pipe(map(response => response.id));
+  }
+
   deleteFamily(id: string): Observable<void> {
     return this.httpClient.delete<void>(`${this.familyUrl}/${id}`);
   }

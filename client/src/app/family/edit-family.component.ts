@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, inject, Signal, signal } from '@angular/core';
+import { Component, effect, inject, Signal, signal } from '@angular/core';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -16,7 +16,6 @@ import { of } from 'rxjs';
 // Family Imports
 import { Family } from './family';
 import { FamilyService } from './family.service';
-
 
 @Component({
   selector: 'app-edit-family',
@@ -51,6 +50,14 @@ export class EditFamilyComponent {
       })
     )
   );
+
+  makeStudentsVisible = effect(() => {
+    const family = this.family();
+
+    family.students.forEach(() => {
+      this.addStudent();
+    });
+  });
 
   editFamilyForm = new FormGroup({
     guardianName: new FormControl('', Validators.compose([
@@ -97,6 +104,7 @@ export class EditFamilyComponent {
         Validators.required,
         Validators.minLength(2),
       ])),
+      teacher: new FormControl<string>(''),
       requestedSupplies: new FormControl<string>('')
     }));
   }
@@ -184,54 +192,55 @@ export class EditFamilyComponent {
   }
 
   submitForm() {
-    // const rawForm = this.editFamilyForm.value;
+    const familyId = this.route.snapshot.paramMap.get('id');
+    const rawForm = this.editFamilyForm.value;
 
-    // const payload = {
-    //   ...rawForm,
-    //   students: rawForm.students?.map(student => ({
-    //     ...student,
-    //     requestedSupplies:
-    //     typeof student.requestedSupplies === 'string'
-    //       ? student.requestedSupplies
-    //         .split(',')
-    //         .map(s => s.trim())
-    //         .filter(s => s.length > 0)
-    //       : student.requestedSupplies ?? []
-    //   })) ?? []
-    // };
+    const payload = {
+      ...rawForm,
+      students: rawForm.students?.map(student => ({
+        ...student,
+        requestedSupplies:
+        typeof student.requestedSupplies === 'string'
+          ? student.requestedSupplies
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s.length > 0)
+          : student.requestedSupplies ?? []
+      })) ?? []
+    };
 
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-    // this.familyService.addFamily(payload).subscribe({
-    //   next: () => {
-    //     this.snackBar.open(
-    //       `Added family ${rawForm.guardianName}`,
-    //       null,
-    //       { duration: 2000 }
-    //     );
-    //     this.router.navigate(['/family']);
-    //   },
-    //   error: err => {
-    //     if (err.status === 400) {
-    //       this.snackBar.open(
-    //         `Tried to add an illegal new family – Error Code: ${err.status}\nMessage: ${err.message}`,
-    //         'OK',
-    //         { duration: 5000 }
-    //       );
-    //     } else if (err.status === 500) {
-    //       this.snackBar.open(
-    //         `The server failed to process your request to add a new family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
-    //         'OK',
-    //         { duration: 5000 }
-    //       );
-    //     } else {
-    //       this.snackBar.open(
-    //         `An unexpected error occurred – Error Code: ${err.status}\nMessage: ${err.message}`,
-    //         'OK',
-    //         { duration: 5000 }
-    //       );
-    //     }
-    //   },
-    // });
+    this.familyService.updateFamily(familyId, payload).subscribe({
+      next: () => {
+        this.snackBar.open(
+          `Updated family ${rawForm.guardianName}`,
+          null,
+          { duration: 5000 }
+        );
+        this.router.navigate(['/family']);
+      },
+      error: err => {
+        if (err.status === 400) {
+          this.snackBar.open(
+            `Tried to update an illegal family – Error Code: ${err.status}\nMessage: ${err.message}`,
+            'OK',
+            { duration: 5000 }
+          );
+        } else if (err.status === 500) {
+          this.snackBar.open(
+            `The server failed to process your request to update a family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
+            'OK',
+            { duration: 5000 }
+          );
+        } else {
+          this.snackBar.open(
+            `An unexpected error occurred – Error Code: ${err.status}\nMessage: ${err.message}`,
+            'OK',
+            { duration: 5000 }
+          );
+        }
+      },
+    });
   }
 }
