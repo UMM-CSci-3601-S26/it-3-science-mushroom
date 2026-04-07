@@ -1,19 +1,34 @@
 // Angular Imports
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
 
 // Family Imports
 import { FamilyCardComponent } from './family-card.component';
 import { Family } from './family';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { FamilyService } from './family.service';
+import { MockFamilyService } from 'src/testing/family.service.mock';
+import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
 
 describe('FamilyCardComponent', () => {
   let component: FamilyCardComponent;
   let fixture: ComponentFixture<FamilyCardComponent>;
   let expectedFamily: Family;
+  const activatedRoute: ActivatedRouteStub = new ActivatedRouteStub({
+    id: 'chris_id',
+  });
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         FamilyCardComponent
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: FamilyService, useClass: MockFamilyService },
+        { provide: ActivatedRoute, useValue: activatedRoute }
       ]
     })
       .compileComponents();
