@@ -1,8 +1,7 @@
-package umm3601.supplylist;
+package umm3601.SupplyList;
 
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
-
 
 @SuppressWarnings({"VisibilityModifier"})
 public class SupplyList {
