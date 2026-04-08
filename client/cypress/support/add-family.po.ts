@@ -55,9 +55,9 @@ export class AddFamilyPage {
 
   addFamily(newFamily: Family) {
     this.getFormField(this.guardianNameFieldName).type(newFamily.guardianName);
-    this.getFormField(this.addressFieldName).type(newFamily.address.toString());
-    this.getFormField(this.timeSlotFieldName).type(newFamily.timeSlot);
     this.getFormField(this.emailFieldName).type(newFamily.email);
+    this.getFormField(this.timeSlotFieldName).type(newFamily.timeSlot);
+
 
     newFamily.students.forEach((student, i) => {
       this.addStudentButton().click();
@@ -66,10 +66,7 @@ export class AddFamilyPage {
       this.getStudentField(i, 'name').type(student.name);
       this.getStudentField(i, 'grade').type(student.grade);
       this.getStudentField(i, 'school').type(student.school);
-      if (student.requestedSupplies.length) {
-        this.getStudentField(i, 'requestedSupplies').type(student.requestedSupplies.join(', '), { force: true });
-        // Have to use force otherwise Cypress refuses to enter text in the field
-      }
+      this.getStudentField(i, 'teacher').type(student.teacher, {force: true});
     });
     return this.addFamilyButton().click();
   }

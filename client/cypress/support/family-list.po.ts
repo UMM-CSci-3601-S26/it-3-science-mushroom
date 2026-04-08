@@ -6,7 +6,7 @@ export class FamilyListPage {
   private readonly familyCardSelector = '.family-cards-container app-family-card';
   private readonly familyListItemsSelector = '.family-nav-list .family-list-item';
   private readonly familyDashboard = '.dashboard-grid'
-  private readonly familyGuardainName = '.family-card-guardianName'
+  private readonly familyGuardianName = '.family-card-guardianName'
   private readonly totalFamiliesNum = '.stat-number-family'
   private readonly totalStudentsNum = '.stat-number-student'
   private readonly studentsPerSchool = '.stat-row-school'
@@ -48,7 +48,7 @@ export class FamilyListPage {
   }
 
   getFamilyName() {
-    return cy.get(this.familyGuardainName)
+    return cy.get(this.familyGuardianName)
   }
 
   /**

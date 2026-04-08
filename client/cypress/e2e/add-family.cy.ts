@@ -12,11 +12,9 @@ describe('Add family page', () => {
     page.getTitle().should('have.text', 'New Family');
   });
 
-  it('Should be disable the add family button when family does not have a student added', () => {
+  it('Should disable the add family button when family does not have a student added', () => {
     page.addFamilyButton().should('be.disabled');
     page.getFormField('guardianName').type('test');
-    page.addFamilyButton().should('be.disabled');
-    page.getFormField('address').type('123 Street');
     page.addFamilyButton().should('be.disabled');
     page.getFormField('timeSlot').type('9:00-10:00');
     page.addFamilyButton().should('be.disabled');
@@ -46,14 +44,6 @@ describe('Add family page', () => {
     // Entering a valid guardian name should remove the error.
     page.getFormField('guardianName').clear().type('John Smith').blur();
     cy.get('[data-test=guardianNameError]').should('not.exist');
-
-    // Before doing anything there shouldn't be an error
-    cy.get('[data-test=addressError]').should('not.exist');
-    // Just clicking the address field without entering anything should cause an error message
-    page.getFormField('address').click().blur();
-    // Entering a valid address should remove the error.
-    page.getFormField('address').clear().type('123 Street').blur();
-    cy.get('[data-test=addressError]').should('not.exist');
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=emailError]').should('not.exist');
@@ -93,6 +83,14 @@ describe('Add family page', () => {
     // Entering a valid school should remove the error
     page.getStudentField(0, 'school').clear().type('Morris Schools').blur();
     cy.get('[data-test=schoolError]').should('not.exist');
+
+    //Test invalid teacher
+    page.getStudentField(0, 'teacher').type('a', {force: true}).blur();
+    cy.get('[data-test=teacherError]').should('exist').and('be.visible');
+    // Entering a valid teacher should remove the error
+    page.getStudentField(0, 'teacher').clear().type('Kurtis', {force: true}).blur();
+    cy.get('[data-test=teacherError]').should('not.exist');
+
   });
 
   it('Should be able to remove a student', () => {
@@ -100,6 +98,7 @@ describe('Add family page', () => {
     page.getStudentField(0, 'name').type('Lisa');
     page.getStudentField(0, 'grade').type('6');
     page.getStudentField(0, 'school').type('Morris High School');
+    page.getStudentField(0, 'teacher').type('Kurtis', {force: true})
 
     cy.contains('button', 'Remove').click();
     cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 0);
@@ -114,30 +113,26 @@ describe('Add family page', () => {
       const family: Family = {
         _id: null,
         guardianName: 'Test Family',
-        address: '123 Street',
-        timeSlot: '7:00-8:00',
         email: 'test@email.com',
+        timeSlot: '7:00-8:00',
         students: [
           {
             name: 'Lisa',
             grade: '6',
-            school: "Morris High School",
+            school: "Morris Area High School",
             teacher: "N/A",
-            requestedSupplies: []
           },
           {
             name: 'Allie',
             grade: '7',
-            school: "Morris High School",
+            school: "Morris Area High School",
             teacher: "N/A",
-            requestedSupplies: ['headphones']
           },
           {
             name: 'Joe',
             grade: '8',
-            school: "Morris Elementary",
+            school: "Morris Area Elementary School",
             teacher: "N/A",
-            requestedSupplies: ['backpack', 'markers']
           },
         ]
       };

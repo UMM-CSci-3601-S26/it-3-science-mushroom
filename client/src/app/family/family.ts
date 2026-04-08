@@ -3,14 +3,12 @@ export interface StudentInfo {
   grade: string;
   school: string;
   teacher: string;
-  requestedSupplies: string[];
 }
 
 export interface Family {
   _id?: string;
   guardianName: string;
   email: string;
-  address: string;
   timeSlot: string;
   students: StudentInfo[];
 }
