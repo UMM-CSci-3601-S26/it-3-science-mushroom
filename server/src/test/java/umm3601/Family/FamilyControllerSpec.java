@@ -116,14 +116,14 @@ class FamilyControllerSpec {
             .append("name", "Alice")
             .append("grade", "3")
             .append("school", "MAHS")
-            .append("requestedSupplies", List.of("headphones")),
+            .append("teacher", "N/A"),
           new Document()
             .append("name", "Timmy")
             .append("grade", "5")
             .append("school", "MAHS")
-            .append("requestedSupplies", List.of("headphones"))
-        ))
-    );
+            .append("teacher", "N/A")
+        )
+    ));
     testFamilies.add(
       new Document()
       .append("guardianName", "John Christensen")
@@ -135,12 +135,12 @@ class FamilyControllerSpec {
           .append("name", "Sara")
           .append("grade", "7")
           .append("school", "MAHS")
-          .append("requestedSupplies", List.of("backpack", "headphones")),
+          .append("teacher", "N/A"),
         new Document()
           .append("name", "Ronan")
           .append("grade", "4")
           .append("school", "HHS")
-          .append("requestedSupplies", List.of())
+          .append("teacher", "N/A")
       ))
     );
     testFamilies.add(
@@ -154,7 +154,7 @@ class FamilyControllerSpec {
             .append("name", "Lilian")
             .append("grade", "1")
             .append("school", "HHS")
-            .append("requestedSupplies", List.of("backpack"))
+            .append("teacher", "N/A")
         ))
     );
 
@@ -171,7 +171,7 @@ class FamilyControllerSpec {
           .append("name", "Sara")
           .append("grade", "5")
           .append("school", "Roosevelt")
-          .append("requestedSupplies", List.of())
+          .append("teacher", "N/A")
       ));
 
     familyDocuments.insertMany(testFamilies);

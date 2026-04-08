@@ -159,8 +159,7 @@ public class FamilyController implements Controller {
         .append("name", student.name)
         .append("grade", student.grade)
         .append("school", student.school)
-        .append("teacher", student.teacher)
-        .append("requestedSupplies", student.requestedSupplies);
+        .append("teacher", student.teacher);
 
       updatedStudentInfo.add(updatedStudent);
     }

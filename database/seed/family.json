@@ -9,15 +9,13 @@
         "name": "Tim",
         "grade": "12",
         "school": "MAHS",
-        "teacher": "N/A",
-        "requestedSupplies": ["Headphones"]
+        "teacher": "N/A"
       },
       {
         "name": "Sara",
         "grade": "11",
         "school": "MAHS",
-        "teacher": "N/A",
-        "requestedSupplies": ["Backpack"]
+        "teacher": "N/A"
       }
     ]
   },
@@ -31,22 +29,19 @@
         "name": "Johnny Jr.",
         "grade": "9",
         "school": "HHS",
-        "teacher": "N/A",
-        "requestedSupplies": ["Headphones", "Backpack"]
+        "teacher": "N/A"
       },
       {
         "name": "Burtrum",
         "grade": "10",
         "school": "HHS",
-        "teacher": "N/A",
-        "requestedSupplies": ["Backpack"]
+        "teacher": "N/A"
       },
       {
         "name": "Harold",
         "grade": "11",
         "school": "HHS",
-        "teacher": "N/A",
-        "requestedSupplies": ["Backpack"]
+        "teacher": "N/A"
       }
     ]
   },
@@ -60,15 +55,13 @@
         "name": "Timothy",
         "grade": "11",
         "school": "MAHS",
-        "teacher": "N/A",
-        "requestedSupplies": ["Headphones"]
+        "teacher": "N/A"
       },
       {
         "name": "Sarah",
         "grade": "9",
         "school": "MAHS",
-        "teacher": "N/A",
-        "requestedSupplies": []
+        "teacher": "N/A"
       }
     ]
   },
@@ -82,8 +75,7 @@
       "name": "Alyssa",
       "grade": "8",
       "school": "MMS",
-      "teacher": "N/A",
-      "requestedSupplies": ["Headphones"]
+      "teacher": "N/A"
     }
   ]
 },
@@ -97,15 +89,13 @@
       "name": "Kevin",
       "grade": "10",
       "school": "HHS",
-      "teacher": "N/A",
-      "requestedSupplies": ["Backpack"]
+      "teacher": "N/A"
     },
     {
       "name": "Lily",
       "grade": "7",
       "school": "MMS",
-      "teacher": "N/A",
-      "requestedSupplies": []
+      "teacher": "N/A"
     }
   ]
 },
@@ -119,8 +109,7 @@
       "name": "Chris",
       "grade": "12",
       "school": "MAHS",
-      "teacher": "N/A",
-      "requestedSupplies": ["Backpack"]
+      "teacher": "N/A"
     }
   ]
 },
@@ -134,15 +123,13 @@
       "name": "Derek",
       "grade": "9",
       "school": "HHS",
-      "teacher": "N/A",
-      "requestedSupplies": ["Headphones"]
+      "teacher": "N/A"
     },
     {
       "name": "Maya",
       "grade": "6",
       "school": "MMS",
-      "teacher": "N/A",
-      "requestedSupplies": []
+      "teacher": "N/A"
     }
   ]
 },
@@ -156,15 +143,13 @@
       "name": "Elena",
       "grade": "11",
       "school": "MAHS",
-      "teacher": "N/A",
-      "requestedSupplies": []
+      "teacher": "N/A"
     },
     {
       "name": "Lucas",
       "grade": "5",
       "school": "MES",
-      "teacher": "N/A",
-      "requestedSupplies": ["Backpack"]
+      "teacher": "N/A"
     }
   ]
 },
@@ -178,8 +163,7 @@
       "name": "Ethan",
       "grade": "10",
       "school": "HHS",
-      "teacher": "N/A",
-      "requestedSupplies": []
+      "teacher": "N/A"
     }
   ]
 },
@@ -193,22 +177,19 @@
       "name": "Isabella",
       "grade": "8",
       "school": "MMS",
-      "teacher": "N/A",
-      "requestedSupplies": ["Backpack"]
+      "teacher": "N/A"
     },
     {
       "name": "Mateo",
       "grade": "6",
       "school": "MMS",
-      "teacher": "N/A",
-      "requestedSupplies": []
+      "teacher": "N/A"
     },
     {
       "name": "Sofia",
       "grade": "3",
       "school": "MES",
-      "teacher": "N/A",
-      "requestedSupplies": []
+      "teacher": "N/A"
     }
   ]
 }

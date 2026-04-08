@@ -125,18 +125,12 @@ describe('Edit family page', () => {
             grade: '12',
             school: 'MAHS',
             teacher: '',
-            requestedSupplies: [
-              'Headphones'
-            ]
           },
           {
             name: 'Sara',
             grade: '11',
             school: 'MAHS',
             teacher: 'Mr. Test',
-            requestedSupplies: [
-              'Backpack'
-            ]
           }
         ]
       };
@@ -152,16 +146,12 @@ describe('Edit family page', () => {
             grade: '',
             school: '',
             teacher: '',
-            requestedSupplies: [
-            ]
           },
           {
             name: '',
             grade: '',
             school: '',
             teacher: 'Mr. Test',
-            requestedSupplies: [
-            ]
           }
         ]
       };

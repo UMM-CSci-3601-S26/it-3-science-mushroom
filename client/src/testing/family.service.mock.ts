@@ -24,7 +24,6 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           grade: '1',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['pencils', 'markers']
         },
       ]
     },
@@ -41,14 +40,12 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           grade: '6',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['calculator']
         },
       ]
     },
@@ -65,21 +62,18 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           grade: '11',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: []
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['backpack', 'markers']
         },
       ]
     },
