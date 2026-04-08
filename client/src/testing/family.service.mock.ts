@@ -137,6 +137,11 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
     return of('1');
   }
 
+  updateFamily(id: string, updatedFamily: Partial<Family>): Observable<string> {
+    console.log('updateFamily called with', id, updatedFamily);
+    return of('1');
+  }
+
   deleteFamily(id: string): Observable<void> {
     console.log('deleteFamily called with', id);
     //added above line so that "id" was being used

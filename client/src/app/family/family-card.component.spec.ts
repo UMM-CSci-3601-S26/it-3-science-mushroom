@@ -1,14 +1,14 @@
 // Angular Imports
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 // Family Imports
 import { FamilyCardComponent } from './family-card.component';
 import { Family } from './family';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { FamilyService } from './family.service';
 import { MockFamilyService } from 'src/testing/family.service.mock';
+
 import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
 
 describe('FamilyCardComponent', () => {
