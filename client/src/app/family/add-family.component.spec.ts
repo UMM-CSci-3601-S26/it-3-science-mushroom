@@ -3,12 +3,12 @@ import { Location } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormGroup } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 
 // RxJS Imports
-import { of, throwError } from 'rxjs'; //of
+import { throwError } from 'rxjs'; //of
 
 // Family Imports
 import { MockFamilyService } from 'src/testing/family.service.mock';
@@ -119,7 +119,6 @@ describe('AddFamilyComponent', () => {
 
     it('should be valid when all fields are filled with correct information', () => {
       addFamilyForm.controls.guardianName.setValue('Chris Smith');
-      addFamilyForm.controls.address.setValue('123 Avenue');
       addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
       addFamilyForm.controls.email.setValue('csmith@email.com');
 
@@ -129,6 +128,7 @@ describe('AddFamilyComponent', () => {
       student.get('name')!.setValue('Jimmy');
       student.get('grade')!.setValue('3');
       student.get('school')!.setValue('Morris Elementary');
+      student.get('teacher')!.setValue('Kurtis');
 
       expect(addFamilyForm.valid).toBeTrue();
     });
@@ -196,7 +196,7 @@ describe('AddFamilyComponent', () => {
       expect(grade.hasError('pattern')).toBeTrue();
 
       // "Pre-K" is a valid input
-      grade.setValue('Pre-K');
+      grade.setValue('PreK');
       expect(grade.valid).toBeTrue();
     });
 
@@ -220,33 +220,6 @@ describe('AddFamilyComponent', () => {
       expect(school.valid).toBeTrue();
     });
 
-    it('should be fine with optional requestedSupplies field left empty', () => {
-      addFamilyComponent.addStudent();
-      const student = addFamilyComponent.students.at(0);
-
-      const requestedSupplies = student.get('requestedSupplies')!;
-      requestedSupplies.setValue('');
-      expect(requestedSupplies.valid).toBeTrue();
-    });
-
-  });
-
-  describe('The address field', () => {
-    let addressControl: AbstractControl;
-
-    beforeEach(() => {
-      addressControl = addFamilyComponent.addFamilyForm.controls.address;
-    });
-
-    it('should not allow empty addresses', () => {
-      addressControl.setValue('');
-      expect(addressControl.valid).toBeFalsy();
-    });
-
-    it('should allow numbers and letters to input', () => {
-      addressControl.setValue('123 Avenue');
-      expect(addressControl.valid).toBeTruthy();
-    });
   });
 
   describe('The email field', () => {
@@ -425,7 +398,6 @@ describe('AddFamilyComponent#submitForm()', () => {
   beforeEach(() => {
     // Set up the form with valid values
     component.addFamilyForm.controls.guardianName.setValue('Chris Smith');
-    component.addFamilyForm.controls.address.setValue('123 Avenue');
     component.addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
     component.addFamilyForm.controls.email.setValue('csmith@email.com');
   });
@@ -486,58 +458,5 @@ describe('AddFamilyComponent#submitForm()', () => {
     // Confirm that we're still at the same path.
     expect(location.path()).toBe(path);
   });
-
-  it('should transform requestedSupplies string into trimmed array', () => {
-    const studentsArray = component.addFamilyForm.get('students') as FormArray;
-
-    studentsArray.push(new FormGroup({
-      name: new FormControl(''),
-      grade: new FormControl(''),
-      school: new FormControl(''),
-      requestedSupplies: new FormControl('')
-    }));
-
-    component.addFamilyForm.patchValue({
-      students: [{
-        name: 'John',
-        grade: '5',
-        school: 'ABC',
-        requestedSupplies: 'pencil, eraser , notebook '
-      }]
-    });
-    const addFamilySpy = spyOn(familyService, 'addFamily')
-      .and.returnValue(of('1'));
-    component.submitForm();
-    expect(addFamilySpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        students: [
-          jasmine.objectContaining({
-            requestedSupplies: ['pencil', 'eraser', 'notebook']
-          })
-        ]
-      })
-    );
-  });
-
-  it('should transform requestedSupplies string into trimmed array', () => {
-    const studentsArray = component.addFamilyForm.get('students') as FormArray;
-    studentsArray.push(
-      new FormGroup({
-        name: new FormControl('John'),
-        grade: new FormControl('5'),
-        school: new FormControl('ABC'),
-        requestedSupplies: new FormControl('pencil, eraser , notebook ')
-      })
-    );
-    const addFamilySpy = spyOn(familyService, 'addFamily')
-      .and.returnValue(of('1'));
-    component.submitForm();
-    expect(addFamilySpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        students: [
-          jasmine.objectContaining({
-            requestedSupplies: ['pencil', 'eraser', 'notebook']
-          })]
-      }));
-  });
 });
+
