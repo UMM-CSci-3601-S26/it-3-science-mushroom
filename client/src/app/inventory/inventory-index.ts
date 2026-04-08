@@ -17,6 +17,22 @@ export class InventoryIndex {
   }
 
   registerItem(item: Inventory) {
+    const existing = this.itemMap.get(item.internalID);
+
+    if (
+      existing &&
+    (
+      existing.internalBarcode !== item.internalBarcode ||
+      existing.item !== item.item
+    )
+    ) {
+      console.warn('Duplicate internalID detected in InventoryIndex', {
+        internalID: item.internalID,
+        existingItem: existing,
+        incomingItem: item
+      });
+    }
+
     this.itemMap.set(item.internalID, item);
 
     if (item.internalBarcode) {
@@ -25,7 +41,7 @@ export class InventoryIndex {
 
     for (const ext of item.externalBarcode ?? []) {
       if (ext) {
-        this.externalBarcodeMap.set(ext, item.internalID)
+        this.externalBarcodeMap.set(ext, item.internalID);
       }
     }
   }

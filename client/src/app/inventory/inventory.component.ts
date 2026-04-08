@@ -31,6 +31,15 @@ import { InventoryIndex } from './inventory-index';
 import { MatDialog } from '@angular/material/dialog';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
 
+type ScanCard = {
+  id: string;
+  barcode: string;
+  item: Inventory | null;
+  removeAmount: number;
+  foundInInventory: boolean;
+  mode: 'add' | 'remove';
+};
+
 
 @Component({
   selector: 'app-inventory-component',
@@ -80,6 +89,8 @@ export class InventoryComponent {
       this.dataSource.sort = this.sort();
       this.dataSource.paginator = this.page();
 
+      this.inventoryIndex.clear();
+
       for (const item of items) {
         this.inventoryIndex.registerItem(item);
       }
@@ -98,8 +109,8 @@ export class InventoryComponent {
   errMsg = signal<string | undefined>(undefined);
 
   scannerAction = signal<'add' | 'remove'>('add');
-  selectedRemoveItem = signal<Inventory | null>(null);
-  removeAmount = signal<number>(1);
+  scanCards = signal<ScanCard[]>([]);
+  removeAmount: number;
   showRemovePanel = signal(false);
 
   async onScanned(code: string) {
@@ -107,23 +118,106 @@ export class InventoryComponent {
 
     if (this.scannerAction() === 'remove') {
       const matched = this.matchItem(code);
+      const mode = this.scannerAction();
 
-      if (!matched) {
-        this.selectedRemoveItem.set(null);
-        this.showRemovePanel.set(false);
-        this.removeAmount.set(1);
+      console.log('REMOVE LOOKUP DEBUG', {
+        scannedCode: code,
+        matchedInternalID: matched?.internalID,
+        matchedInternalBarcode: matched?.internalBarcode,
+        matchedItem: matched?.item,
+        matchedBrand: matched?.brand,
+        matchedExternalBarcode: matched?.externalBarcode
+      });
+
+      if (mode === 'remove' && !matched) {
         this.scannerRef()?.clearHandheldInput?.();
         this.scannerRef()?.removeScannedItem?.(code);
         this.snackBar.open("Item not found for scanned barcode", "OK", { duration: 3000});
         return;
       }
+      const newCard: ScanCard = {
+        id: `${code}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        barcode: code,
+        item: matched ?? null,
+        removeAmount: 1,
+        foundInInventory: !!matched,
+        mode
+      };
 
-      this.selectedRemoveItem.set(matched);
-      this.showRemovePanel.set(true);
-      this.removeAmount.set(1);
+      this.scanCards.update(cards => [...cards, newCard]);
+
+      if (mode === 'remove') {
+        this.showRemovePanel.set(true);
+      }
+    }
+  }
+  updateCardRemoveAmount(cardId: string, value: number) {
+    const safeValue = Number(value);
+
+    this.scanCards.update(cards =>
+      cards.map(card =>
+        card.id === cardId
+          ? { ...card, removeAmount: safeValue > 0 ? safeValue : 1 }
+          : card
+      )
+    );
+  }
+  confirmSingleRemove(cardId: string) {
+    const card = this.scanCards().find(c => c.id === cardId);
+
+    if (!card || card.mode !== 'remove' || !card.item) {
+      this.snackBar.open("This card cannot be removed from inventory", 'OK', { duration : 3000});
       return;
     }
-    console.log('scanned item', code);
+    if (!card.removeAmount || card.removeAmount < 1) {
+      this.snackBar.open('Enter a valid remove amount.', 'OK', { duration: 3000 });
+      return;
+    }
+
+    if (card.removeAmount > card.item.quantity) {
+      this.snackBar.open(
+        `Cannot remove more than current quantity for ${card.item.item}.`,
+        'OK',
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    this.inventoryService.removeInventoryById(card.item.internalID, card.removeAmount).subscribe({
+      next: () => {
+        this.snackBar.open(`Removed ${card.removeAmount} from ${card.item?.item}.`, 'OK', {
+          duration: 3000
+        });
+
+        this.scanCards.update(cards => cards.filter(c => c.id !== cardId));
+
+        if (this.scanCards().length === 0) {
+          this.showRemovePanel.set(false);
+        }
+
+        this.reload.update(v => v + 1);
+      },
+      error: (err) => {
+        console.error('single remove failed', err);
+        this.snackBar.open('Failed to remove inventory item.', 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  removeCard(cardId: string) {
+    this.scanCards.update(cards => {
+      const updated = cards.filter(card => card.id !== cardId);
+
+      if (updated.length === 0) {
+        this.showRemovePanel.set(false);
+      }
+      return updated;
+    })
+  }
+
+  clearAllCards() {
+    this.scanCards.set([]);
+    this.showRemovePanel.set(false);
   }
 
   openRemoveScanner() {
@@ -131,70 +225,82 @@ export class InventoryComponent {
     this.showScanner = true;
     this.scannerProcessing = false;
     this.showRemovePanel.set(false);
-    this.selectedRemoveItem.set(null);
-    this.removeAmount.set(1)
+    this.scanCards.set([]);
+    this.scannerRef()?.clearScans?.();
   }
 
   confirmRemove() {
-    const item = this.selectedRemoveItem();
-    const amount = this.removeAmount();
+    const validRemoveCards = this.scanCards().filter(
+      card => card.mode === 'remove' && card.foundInInventory && card.item
+    );
 
-    console.log('confirmRemove clicked');
-    console.log('selected item:', item);
-    console.log('amount:', amount);
-
-    if (!item) {
-      this.snackBar.open("No item selected", 'OK', { duration: 3000});
-      return;
-    }
-    if (!amount || amount < 1) {
-      this.snackBar.open('Enter a valid amount to remove.', 'OK', { duration: 3000});
-    }
-
-    if (amount > item.quantity) {
-      this.snackBar.open('Cannot remove more than current quantity.', 'OK', { duration : 3000});
+    if (!validRemoveCards.length) {
+      this.snackBar.open('No valid items selected for removal.', 'OK', { duration: 3000 });
       return;
     }
 
-    this.inventoryService.removeInventoryById(item.internalID, amount).subscribe({
-      next: (res) => {
-        console.log('remove success response:', res);
-        this.snackBar.open('Inventory updated.', 'OK', { duration: 3000} )
+    for (const card of validRemoveCards) {
+      if (!card.item) continue;
+
+      if (!card.removeAmount || card.removeAmount < 1) {
+        this.snackBar.open(`Invalid amount for barcode ${card.barcode}.`, 'OK', { duration: 3000 });
+        return;
+      }
+
+      if (card.removeAmount > card.item.quantity) {
+        this.snackBar.open(
+          `Cannot remove more than current quantity for ${card.item.item}.`,
+          'OK',
+          { duration: 3000 }
+        );
+        return;
+      }
+    }
+
+    const requests = validRemoveCards.map(card =>
+      firstValueFrom(
+        this.inventoryService.removeInventoryById(card.item!.internalID, card.removeAmount)
+      )
+    );
+
+    Promise.all(requests)
+      .then(() => {
+        this.snackBar.open('Inventory updated.', 'OK', { duration: 3000 });
+        this.scanCards.set([]);
         this.showRemovePanel.set(false);
-        this.selectedRemoveItem.set(null);
-        this.removeAmount.set(1);
         this.showScanner = false;
         this.scannerProcessing = false;
+        this.scannerRef()?.clearScans?.();
         this.reload.update(v => v + 1);
-        console.log('reload is now:', this.reload());
-      },
-      error: (err) => {
-        console.error('remove failed', err)
-        this.snackBar.open('Failed to remove inventory', 'OK', {duration: 4000});
-      }
-    })
+      })
+      .catch((err) => {
+        console.error('remove failed', err);
+        this.snackBar.open('Failed to remove inventory.', 'OK', { duration: 4000 });
+      });
   }
 
   cancelRemove() {
+    this.scanCards.set([]);
     this.showRemovePanel.set(false);
-    this.selectedRemoveItem.set(null);
-    this.removeAmount.set(1);
   }
 
   async onManualEntryNeeded(event: { barcode: string; quantity: number}) {
     const dialogRef = this.dialog.open(ManualEntry, { data: { barcode: event.barcode, quantity: event.quantity}});
     const result: ManualEntryResult | null = await firstValueFrom(dialogRef.afterClosed());
-    this.scannerRef()?.resolveManualEntry(result ?? null);
+    this.scannerRef()?.resolveManualEntry(result ?? undefined);
     this.reload.update(v => v + 1);
   }
 
   toggleScanner() {
     if (this.showScanner) {
       this.showScanner = false;
-    } else {
-      this.showScanner = true;
-      this.scannerProcessing = false
+      return;
     }
+    this.scannerAction.set('add');
+    this.showScanner = true;
+    this.scannerProcessing = false;
+    this.showRemovePanel.set(false);
+    this.scanCards.set([]);
   }
 
   onScannerDone() {
@@ -211,6 +317,9 @@ export class InventoryComponent {
 
   matchItem(barcode: string): Inventory | null {
     return this.inventoryIndex.getByBarcode(barcode);
+  }
+  trackByScanCard(index: number, card: ScanCard): string {
+    return card.id;
   }
 
   private filterOptions(options: SelectOption[], input:string): SelectOption[] {

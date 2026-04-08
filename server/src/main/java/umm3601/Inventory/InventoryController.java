@@ -10,6 +10,7 @@ import static com.mongodb.client.model.Filters.regex;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 // Org Imports
 import org.bson.Document;
@@ -34,7 +35,6 @@ import io.javalin.http.NotFoundResponse;
 
 // Misc Imports
 import umm3601.Controller;
-
 
 
 // Controller
@@ -70,6 +70,38 @@ public class InventoryController implements Controller {
     );
   }
 
+  private int extractNumber(String value) {
+    if (value == null) return 0;
+
+    String digits = value.replaceAll("\\D", "");
+    if (digits.isBlank()) return 0;
+
+    return Integer.parseInt(digits);
+  }
+
+  private String formatInternalID(int n) {
+    return String.format("ID-%05d", n);
+  }
+  private String formatInternalBarcode(int n) {
+    return String.format("ITEM-%05d", n);
+  }
+
+
+  private int getNextSequence() {
+    Inventory maxIdItem = inventoryCollection
+    .find()
+    .sort(Sorts.descending("internalID"))
+    .first();
+
+    Inventory maxBarcodeItem = inventoryCollection
+    .find()
+    .sort(Sorts.descending("internalBarcode"))
+    .first();
+
+    int idNum = extractNumber(maxIdItem != null ? maxIdItem.internalID: null);
+    int barcodeNum = extractNumber(maxBarcodeItem != null ? maxBarcodeItem.internalBarcode: null);
+    return Math.max(idNum, barcodeNum) + 1;
+  }
   private String generateNextID() { // generates the next available internal ID
       Inventory last = inventoryCollection.find(new Document("internalID", new Document("$exists", true)))
       .sort(Sorts.descending("internalID"))
@@ -93,48 +125,63 @@ public class InventoryController implements Controller {
 
   public void addInventory(Context ctx) {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
+
     Bson filter;
     if (newInv.internalBarcode != null && !newInv.internalBarcode.isBlank()) {
-        filter = eq("internalBarcode", newInv.internalBarcode);
+      filter = eq("internalBarcode", newInv.internalBarcode);
     } else if (newInv.externalBarcode != null && !newInv.externalBarcode.isEmpty()) {
-        filter = Filters.in("externalBarcode", newInv.externalBarcode);
+      filter = Filters.in("externalBarcode", newInv.externalBarcode);
     } else {
-        filter = eq("_id", new ObjectId());
+      filter = eq("_id", new ObjectId());
     }
 
     Inventory exists = inventoryCollection.find(filter).first();
-    if (exists != null) {
 
-      int existingQuantity = (exists.quantity > 0) ? exists.quantity : 0; // Default to 0 if not provided or invalid
-      int newInvQuantity = (newInv.quantity > 0) ? newInv.quantity : 1; // Default to 1 if not provided or invalid
+    if (exists != null) {
+      int existingQuantity = (exists.quantity > 0) ? exists.quantity : 0;
+      int newInvQuantity = (newInv.quantity > 0) ? newInv.quantity : 1;
       int newQuantity = existingQuantity + newInvQuantity;
-      inventoryCollection.updateOne(eq("_id", exists._id),
-        new Document("$set", new Document(QUANTITY_KEY, newQuantity)));
+
+      inventoryCollection.updateOne(
+        eq("_id", exists._id),
+        new Document("$set", new Document(QUANTITY_KEY, newQuantity))
+      );
+
       exists.quantity = newQuantity;
       ctx.json(exists);
-    } else {
-      if (newInv.internalID == null || newInv.internalID.isBlank()) {
-        newInv.internalID = generateNextID();
-      }
-
-      if (newInv.internalBarcode == null || newInv.internalBarcode.isBlank()) {
-        long count = inventoryCollection.countDocuments();
-        newInv.internalBarcode = String.format("ITEM-%05d", count + 1);
-      }
-
-      if (newInv.externalBarcode != null) {
-        newInv.externalBarcode = newInv.externalBarcode.stream()
-        .filter(code -> code != null && !code.matches("^ITEM-\\d+$"))
-        .toList();
-      }
-
-      if (newInv.quantity <= 0) {
-        newInv.quantity = 1;
-      }
-
-      inventoryCollection.insertOne(newInv);
-      ctx.json(newInv);
+      ctx.status(HttpStatus.CREATED);
+      return;
     }
+
+    int next = getNextSequence();
+
+    newInv.internalID = formatInternalID(next);
+    newInv.internalBarcode = formatInternalBarcode(next);
+    if (newInv.externalBarcode == null) {
+      newInv.externalBarcode = new ArrayList<>();
+    }
+    if (newInv.externalBarcode != null) {
+      newInv.externalBarcode = newInv.externalBarcode.stream()
+        .filter(code -> code != null && !code.isBlank() && !code.matches("^ITEM-\\d+$"))
+        .distinct()
+        .collect(Collectors.toList());
+    }
+
+    if (newInv.quantity <= 0) {
+    newInv.quantity = 1;
+    }
+
+    boolean idExists = inventoryCollection.find(eq("internalID", newInv.internalID)).first() != null;
+    boolean barcodeExists = inventoryCollection.find(eq("internalBarcode", newInv.internalBarcode)).first() != null;
+
+    if (idExists || barcodeExists) {
+      ctx.status(HttpStatus.CONFLICT);
+      ctx.result("Duplicate internalID or internalBarcode detected");
+    return;
+    }
+
+    inventoryCollection.insertOne(newInv);
+    ctx.json(newInv);
     ctx.status(HttpStatus.CREATED);
   }
 

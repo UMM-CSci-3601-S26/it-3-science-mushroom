@@ -166,14 +166,18 @@
             (processingStarted)="scannerProcessing = true"
             (done)="onScannerDone()"></app-scanner>
             </div>
-            <div *ngIf="showRemovePanel()" class="remove-panel">
-              <ng-container *ngIf="selectedRemoveItem() as item">
+            <div *ngIf="showRemovePanel() && scanCards().length > 0" class="remove-panel">
                 <h3>Remove Inventory</h3>
+                <p class="remove-summary">
+                  Total items to remove: {{ scanCards().length }}
+                </p>
+                <div *ngFor="let card of scanCards(); trackBy: trackByScanCard" class="remove-entry-card">
                 <div class="remove-details">
-                  <p><strong>Item:</strong> {{ item.item }}</p>
-                  <p><strong>Brand:</strong> {{ item.brand }}</p>
-                  <p><strong>Package Size:</strong> {{ item.packageSize }}</p>
-                  <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+                  <p><strong>Item:</strong> {{ card.item?.item || 'No item in inventory yet'}}</p>
+                  <p><strong>Brand:</strong> {{ card.item?.brand || 'N/A'}}</p>
+                  <p><strong>Package Size:</strong> {{ card.item?.packageSize ?? 'N/A'}}</p>
+                  <p><strong>Quantity:</strong> {{ card.item?.quantity ?? "N/A" }}</p>
+                  <p><strong>Barcode:</strong> {{ card.barcode }}</p>
                 </div>
 
                 <mat-form-field appearance="outline">
@@ -182,20 +186,34 @@
                     matInput
                     type="number"
                     min="1"
-                    [ngModel]="removeAmount()"
-                    (ngModelChange)="removeAmount.set(+$event || 1)"
+                    [ngModel]="card.removeAmount"
+                    (ngModelChange)="updateCardRemoveAmount(card.id, $event)"
                     />
                 </mat-form-field>
 
                 <div class="remove-actions">
-                  <button mat-raised-button color="warn" type="button" (click)="confirmRemove()">
-                    Confirm Remove
+                  <button
+                    mat-raised-button
+                    color="warn"
+                    type="button"
+                    *ngIf="card.mode === 'remove' && card.item"
+                    (click)="confirmSingleRemove(card.id)">
+                    Remove From Inventory
                   </button>
-                  <button mat-raised-button type="button" (click)="cancelRemove()">
-                    Cancel
+                  <button mat-stroked-button type="button" (click)="removeCard(card.id)">
+                    Remove Card
                   </button>
                 </div>
-              </ng-container>
+              </div>
+              <div class="remove-actions global-remove-actions">
+              <button mat-raised-button color="warn" type="button" (click)="confirmRemove()">
+                Remove All Valid Inventory Items
+              </button>
+
+              <button mat-stroked-button type="button" (click)="clearAllCards()">
+                Clear All Cards
+              </button>
+              </div>
             </div>
           </div>
 
