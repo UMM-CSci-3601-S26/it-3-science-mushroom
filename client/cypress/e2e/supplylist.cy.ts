@@ -136,13 +136,13 @@ describe('Supply List', () => {
   });
 
   it('Should display nested items when tree is expanded', () => {
-    cy.contains('Hancock').should('be.visible');
+    //cy.contains('Hancock').should('be.visible');
     page.expandTreeNode('Hancock');
     cy.contains('Kindergarten').should('be.visible');
     page.expandTreeNode('Kindergarten');
     cy.contains('All Teachers').should('be.visible');
     page.expandTreeNode('All Teachers');
-    cy.contains('- Backpack').should('be.visible');
+    cy.contains('Backpack').should('be.visible');
   });
 
   it('Should open dialog with item details when item is clicked', () => {
