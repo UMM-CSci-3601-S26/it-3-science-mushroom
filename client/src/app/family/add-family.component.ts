@@ -69,10 +69,7 @@ export class AddFamilyComponent {
         Validators.required,
         Validators.minLength(2),
       ])),
-      teacher: new FormControl('', Validators.compose([
-        Validators.required,
-        Validators.minLength(2),
-      ]))
+      teacher: new FormControl('')
     }));
   }
 
@@ -112,10 +109,6 @@ export class AddFamilyComponent {
       school: [
         { type: 'required', message: 'School is required' },
         { type: 'minlength', message: 'School must be at least 2 characters long' }
-      ],
-      teacher: [
-        { type: 'required', message: 'Teacher is required. If teacher is unknown, type N/A'},
-        { type: 'minlength', message: 'Teacher must be at least 2 characters long'}
       ]
     }
   };
