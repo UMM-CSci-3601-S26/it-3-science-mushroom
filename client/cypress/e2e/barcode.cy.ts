@@ -33,10 +33,12 @@ describe('Barcode / Scanner Feature', () => {
     barcode.getScanButton().should('contain', 'Scan Item');
   });
 
-  it('Should display scanner debug text when open', () => {
+  it('Should show scan mode options when open', () => {
     barcode.getScanButton().click();
 
-    cy.contains('DEBUG: SCANNER MOUNTED').should('exist');
+    cy.contains('Select a scan mode to begin.').should('exist');
+    cy.contains('button', 'Camera Scan').should('exist');
+    cy.contains('button', 'Hand Held Scan').should('exist');
   });
 
   it('Should keep scan button disabled state consistent', () => {
@@ -146,7 +148,7 @@ describe('Barcode / Scanner Feature', () => {
       cy.get('[data-cy="inventory-size"]').should('exist');
       cy.get('[data-cy="inventory-type"]').should('exist');
       cy.get('[data-cy="inventory-material"]').should('exist');
-      cy.get('[data-cy="inventory-count"]').should('exist');
+      cy.get('[data-cy="inventory-packageSize"]').should('exist');
       cy.get('[data-cy="inventory-quantity"]').should('exist');
       cy.get('[data-cy="inventory-notes"]').should('exist');
     });
