@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, effect, inject, Signal, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, inject, Signal, signal } from '@angular/core';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -51,11 +51,15 @@ export class EditFamilyComponent {
     )
   );
 
+  // eslint-disable-next-line @angular-eslint/prefer-inject
+  constructor(private cd: ChangeDetectorRef) {}
+
   makeStudentsVisible = effect(() => {
     const family = this.family();
 
     family.students.forEach(() => {
       this.addStudent();
+      this.cd.detectChanges(); // Force change detection to avoid (NG0100 error) when adding students during the effect
     });
   });
 
@@ -177,7 +181,7 @@ export class EditFamilyComponent {
 
   // Student error message helper method
   // Necessary because the student form is a FormArray nested in FormGroup,
-  // so we need to specify which student and which control we're checking for erros
+  // so we need to specify which student and which control we're checking for errors
   getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school'): string {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
     const messages = this.editFamilyValidationMessages.students[controlName];
