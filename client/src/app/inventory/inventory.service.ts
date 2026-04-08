@@ -81,6 +81,9 @@ export class InventoryService {
   linkExternalBarcode(internalID: string, barcode: string, quantity: number = 1): Observable<Inventory> {
     return this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode, quantity });
   }
+  removeInventoryById(internalID: string, amount: number) {
+    return this.httpClient.post(`${this.inventoryUrl}/remove`, { internalID, amount });
+  }
 
   // addByScanAndUpdate(barcode: string) {
   //   this.addByScan(barcode).subscribe(updatedItem => {

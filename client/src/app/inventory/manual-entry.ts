@@ -174,7 +174,7 @@ export class ManualEntry implements OnInit {
     }
   }
   cancel() {
-    this.dialogRef.close(null);
+    this.dialogRef.close(undefined);
   }
 
   getFilteredItems(): Inventory[] {

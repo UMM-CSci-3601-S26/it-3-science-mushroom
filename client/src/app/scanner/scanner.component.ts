@@ -208,7 +208,6 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     }
 
     console.log('Normalized Barcode', normalized, 'qty:', this.scanQuantities.get(normalized));
-    this.scannedItems.push(normalized);
     this.scanned.emit(normalized);
   }
   // allows the user to input the desired amount of that scanned item into the system and if they dont
@@ -490,5 +489,13 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   }
   debugEntry(value: string) {
     console.log('ENTER FIRED', value);
+  }
+  clearHandheldInput() {
+    this.handheldInputValue = '';
+  }
+  removeScannedItem(barcode: string) {
+    this.scannedItems = this.scannedItems.filter(item => item !== barcode);
+
+    this.scanQuantities.delete(barcode);
   }
 }

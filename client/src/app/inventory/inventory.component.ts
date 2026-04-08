@@ -76,7 +76,7 @@ export class InventoryComponent {
   constructor() {
     effect(() => {
       const items = this.serverFilteredInventory();
-      this.dataSource.data = this.serverFilteredInventory();
+      this.dataSource.data = items;
       this.dataSource.sort = this.sort();
       this.dataSource.paginator = this.page();
 
@@ -97,8 +97,88 @@ export class InventoryComponent {
 
   errMsg = signal<string | undefined>(undefined);
 
+  scannerAction = signal<'add' | 'remove'>('add');
+  selectedRemoveItem = signal<Inventory | null>(null);
+  removeAmount = signal<number>(1);
+  showRemovePanel = signal(false);
+
   async onScanned(code: string) {
     console.log('scanned item', code)
+
+    if (this.scannerAction() === 'remove') {
+      const matched = this.matchItem(code);
+
+      if (!matched) {
+        this.selectedRemoveItem.set(null);
+        this.showRemovePanel.set(false);
+        this.removeAmount.set(1);
+        this.scannerRef()?.clearHandheldInput?.();
+        this.scannerRef()?.removeScannedItem?.(code);
+        this.snackBar.open("Item not found for scanned barcode", "OK", { duration: 3000});
+        return;
+      }
+
+      this.selectedRemoveItem.set(matched);
+      this.showRemovePanel.set(true);
+      this.removeAmount.set(1);
+      return;
+    }
+    console.log('scanned item', code);
+  }
+
+  openRemoveScanner() {
+    this.scannerAction.set('remove');
+    this.showScanner = true;
+    this.scannerProcessing = false;
+    this.showRemovePanel.set(false);
+    this.selectedRemoveItem.set(null);
+    this.removeAmount.set(1)
+  }
+
+  confirmRemove() {
+    const item = this.selectedRemoveItem();
+    const amount = this.removeAmount();
+
+    console.log('confirmRemove clicked');
+    console.log('selected item:', item);
+    console.log('amount:', amount);
+
+    if (!item) {
+      this.snackBar.open("No item selected", 'OK', { duration: 3000});
+      return;
+    }
+    if (!amount || amount < 1) {
+      this.snackBar.open('Enter a valid amount to remove.', 'OK', { duration: 3000});
+    }
+
+    if (amount > item.quantity) {
+      this.snackBar.open('Cannot remove more than current quantity.', 'OK', { duration : 3000});
+      return;
+    }
+
+    this.inventoryService.removeInventoryById(item.internalID, amount).subscribe({
+      next: (res) => {
+        console.log('remove success response:', res);
+        this.snackBar.open('Inventory updated.', 'OK', { duration: 3000} )
+        this.showRemovePanel.set(false);
+        this.selectedRemoveItem.set(null);
+        this.removeAmount.set(1);
+        this.showScanner = false;
+        this.scannerProcessing = false;
+        this.reload.update(v => v + 1);
+        console.log('reload is now:', this.reload());
+      },
+      error: (err) => {
+        console.error('remove failed', err)
+        this.snackBar.open('Failed to remove inventory', 'OK', {duration: 4000});
+      }
+    })
+  }
+
+  cancelRemove() {
+    this.showRemovePanel.set(false);
+    this.selectedRemoveItem.set(null);
+    this.removeAmount.set(1);
   }
 
   async onManualEntryNeeded(event: { barcode: string; quantity: number}) {

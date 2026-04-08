@@ -18,10 +18,15 @@ export class InventoryIndex {
 
   registerItem(item: Inventory) {
     this.itemMap.set(item.internalID, item);
-    this.internalBarcodeMap.set(item.internalBarcode, item.internalID);
+
+    if (item.internalBarcode) {
+      this.internalBarcodeMap.set(item.internalBarcode, item.internalID);
+    }
 
     for (const ext of item.externalBarcode ?? []) {
-      this.externalBarcodeMap.set(ext, item.internalID);
+      if (ext) {
+        this.externalBarcodeMap.set(ext, item.internalID)
+      }
     }
   }
   unregisterItem(internalID: string) {
@@ -30,9 +35,20 @@ export class InventoryIndex {
       return;
     }
     this.itemMap.delete(internalID);
-    this.internalBarcodeMap.delete(item.internalBarcode);
-    for (const ext of item.externalBarcode ?? []) {
-      this.externalBarcodeMap.delete(ext);
+
+    if (item.internalBarcode) {
+      this.internalBarcodeMap.delete(item.internalBarcode);
     }
+
+    for (const ext of item.externalBarcode ?? []) {
+      if (ext) {
+        this.externalBarcodeMap.delete(ext);
+      }
+    }
+  }
+  clear() {
+    this.internalBarcodeMap.clear();
+    this.externalBarcodeMap.clear();
+    this.itemMap.clear();
   }
 }

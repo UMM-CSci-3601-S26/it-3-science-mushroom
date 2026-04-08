@@ -35,6 +35,8 @@ import io.javalin.http.NotFoundResponse;
 // Misc Imports
 import umm3601.Controller;
 
+
+
 // Controller
 public class InventoryController implements Controller {
 
@@ -137,35 +139,41 @@ public class InventoryController implements Controller {
   }
 
   public void removeInventory(Context ctx) {
-    Inventory inv = ctx.bodyAsClass(Inventory.class);
-    Bson filter;
-    if (inv.internalBarcode != null && !inv.internalBarcode.isBlank()) {
-      filter = eq("internalBarcode", inv.internalBarcode);
-    } else if (inv.externalBarcode != null && !inv.externalBarcode.isEmpty()) {
-      filter = Filters.in("externalBarcode", inv.externalBarcode);
-    } else {
-      throw new BadRequestResponse("A barcode is required to remove inventory");
+    RemoveInventoryRequest req = ctx.bodyAsClass(RemoveInventoryRequest.class);
+
+    if (req.internalID == null || req.internalID.isBlank()) {
+      throw new BadRequestResponse("internalID is required to remove inventory");
     }
 
-    Inventory exists = inventoryCollection.find(filter).first();
+    if (req.amount <= 0) {
+      throw new BadRequestResponse("amount must be greater than 0");
+    }
+
+    Inventory exists = inventoryCollection.find(eq("internalID", req.internalID)).first();
+
     if (exists == null) {
-      throw new NotFoundResponse("No item found for internal barcode: " + inv.internalBarcode);
+      throw new NotFoundResponse("No item found for internalID: " + req.internalID);
     }
 
-    int newQuantity = exists.quantity - 1;
+    int newQuantity = exists.quantity - req.amount;
+
     if (newQuantity < 0) {
-      newQuantity = 0;
+      throw new BadRequestResponse("Cannot remove more than current quantity");
     }
 
     if (newQuantity == 0) {
       inventoryCollection.deleteOne(eq("_id", exists._id));
-      ctx.status(HttpStatus.NO_CONTENT);
+      ctx.json(new Document("deleted", true).append("quantity", 0));
+      ctx.status(HttpStatus.OK);
       return;
-    } else {
-      inventoryCollection.updateOne(eq("_id", exists._id),
-      new Document("$set", new Document(QUANTITY_KEY, newQuantity)));
     }
-    exists.quantity = newQuantity; // Update the quantity in the returned object
+
+    inventoryCollection.updateOne(
+      eq("_id", exists._id),
+      new Document("$set", new Document(QUANTITY_KEY, newQuantity))
+    );
+
+    exists.quantity = newQuantity;
     ctx.json(exists);
     ctx.status(HttpStatus.OK);
   }

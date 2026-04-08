@@ -120,21 +120,44 @@
           </mat-form-field>
         </div>
         <div class="filter-extra">
+          <div class="filter-actions">
           <!-- Clear Filters Button -->
             <button
-            mat-stroked-button
-            type="button"
-            (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined);
-            type.set(undefined); material.set(undefined)"
-            data-cy="filter-clear"
-            class="clear-button"
-            >
-            Clear
+              mat-stroked-button
+              type="button"
+              (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined);
+              type.set(undefined); material.set(undefined)"
+              data-cy="filter-clear"
+              class="clear-button"
+              >
+              Clear
             </button>
 
-            <button mat-stroked-button class="packageSize-display">
-            packageSize: {{ serverFilteredInventory().length }}
+            <button mat-stroked-button class="count-display">
+            Items: {{ serverFilteredInventory().length }}
             </button>
+            <div class="scanner-actions">
+              <button
+                mat-stroked-button
+                type="button"
+                [disabled]="scannerProcessing"
+                (click)="toggleScanner()"
+                data-cy="scan-button"
+                >
+                {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
+              </button>
+
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="openRemoveScanner()"
+                data-cy="remove-scan-button"
+                >
+                  Remove Item
+                </button>
+              </div>
+            </div>
+
             <div class="scanner-wrapper" *ngIf="showScanner">
             <p>Scanner is open</p>
             <app-scanner
@@ -143,25 +166,38 @@
             (processingStarted)="scannerProcessing = true"
             (done)="onScannerDone()"></app-scanner>
             </div>
+            <div *ngIf="showRemovePanel()" class="remove-panel">
+              <ng-container *ngIf="selectedRemoveItem() as item">
+                <h3>Remove Inventory</h3>
+                <div class="remove-details">
+                  <p><strong>Item:</strong> {{ item.item }}</p>
+                  <p><strong>Brand:</strong> {{ item.brand }}</p>
+                  <p><strong>Package Size:</strong> {{ item.packageSize }}</p>
+                  <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+                </div>
 
-            <button
-            mat-stroked-button
-            type="button"
-            [disabled]="scannerProcessing"
-            (click)="toggleScanner()"
-            data-cy="scan-button"
-            >
-            {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
-            </button>
-            <div *ngIf="showScanner">
-            DEBUG: SCANNER MOUNTED
+                <mat-form-field appearance="outline">
+                  <mat-label> Amount to remove</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    min="1"
+                    [ngModel]="removeAmount()"
+                    (ngModelChange)="removeAmount.set(+$event || 1)"
+                    />
+                </mat-form-field>
+
+                <div class="remove-actions">
+                  <button mat-raised-button color="warn" type="button" (click)="confirmRemove()">
+                    Confirm Remove
+                  </button>
+                  <button mat-raised-button type="button" (click)="cancelRemove()">
+                    Cancel
+                  </button>
+                </div>
+              </ng-container>
             </div>
-
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-</div>
+          </div>
 
 <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
   <!-- Item Column -->
