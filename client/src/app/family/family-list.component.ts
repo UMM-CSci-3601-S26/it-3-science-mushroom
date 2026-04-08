@@ -73,6 +73,11 @@ export class FamilyListComponent {
   );
 
   gradeSort = (a: { key: string }, b: { key: string }) => {
+    if (a.key === 'Pre-K') return -2;
+    if (b.key === 'Pre-K') return -2;
+    if (a.key === 'Kindergarten') return -1;
+    if (b.key === 'Kindergarten') return -1;
+
     return Number(a.key) - Number(b.key);
   };
 
