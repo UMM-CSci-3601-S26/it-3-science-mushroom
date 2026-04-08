@@ -119,6 +119,16 @@ export class SupplyListComponent {
     )
   );
 
+  // Custom sort for grades
+  gradeSort = (a: { key: string }, b: { key: string }) => {
+    const getGradeValue = (grade: string) => {
+      if (grade === 'Pre-K') return -2;
+      if (grade === 'Kindergarten') return -1;
+    };
+
+    return getGradeValue(a.key) - getGradeValue(b.key);
+  };
+
   // Compute a grouped version of the Supply List with the filters applied
   groupedSupplyList = computed(() => {
     return this.groupSupplyList(this.serverFilteredSupplyList());
@@ -161,17 +171,19 @@ export class SupplyListComponent {
     // Convert the final group into a SupplyListNode array and return it
     return Array.from(schoolMap.entries()).map(([schoolName, gradeMap]) => ({
       school: schoolName,
-      children: Array.from(gradeMap.entries()).map(([gradeName, teacherMap]) => ({
-        grade: gradeName,
-        children: Array.from(teacherMap.entries()).map(([teacherName, supplies]) => ({
-          teacher: teacherName,
-          children: supplies.map(supply => ({
-            description: supply.description,
-            supplyData: supply
-          }))
+      children: Array.from(gradeMap.entries())
+        .sort((a, b) => this.gradeSort({ key: a[0] }, { key: b[0] })) // Sort grades with custom sort
+        .map(([gradeName, teacherMap]) => ({
+          grade: gradeName,
+          children: Array.from(teacherMap.entries()).map(([teacherName, supplies]) => ({
+            teacher: teacherName,
+            children: supplies.map(supply => ({
+              description: supply.description,
+              supplyData: supply
+            })).sort((a, b) => a.description!.localeCompare(b.description!)) // Sort supplies alphabetically
+          })).sort((a, b) => a.teacher!.localeCompare(b.teacher!)) // Sort teachers alphabetically
         }))
-      }))
-    }));
+    })).sort((a, b) => a.school!.localeCompare(b.school!)); // Sort schools alphabetically
   }
 }
 export { SupplyListService };

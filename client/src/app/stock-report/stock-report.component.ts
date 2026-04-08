@@ -157,8 +157,8 @@ export class StockReportComponent {
           { maxQuantity: inventoryItem.maxQuantity, label: '- Max Quantity' },
           { minQuantity: inventoryItem.minQuantity, label: '- Min Quantity' },
         ]
-      }))
-    }));
+      })).sort((a, b) => a.description!.localeCompare(b.description!)) // Sort descriptions alphabetically
+    })).sort((a, b) => a.item!.localeCompare(b.item!)); // Sort items alphabetically by item name
   }
 
   // Compute tree nodes from inventory data

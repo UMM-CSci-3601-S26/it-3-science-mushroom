@@ -136,7 +136,6 @@ describe('Supply List', () => {
   });
 
   it('Should display nested items when tree is expanded', () => {
-    //cy.contains('Hancock').should('be.visible');
     page.expandTreeNode('Hancock');
     cy.contains('Kindergarten').should('be.visible');
     page.expandTreeNode('Kindergarten');
@@ -150,15 +149,15 @@ describe('Supply List', () => {
     page.expandTreeNode('Kindergarten');
     page.expandTreeNode('All Teachers');
     cy.get('[data-cy="supplylist-info-button"]').first().click();
-    cy.contains('Item View - Backpack').should('be.visible');
-    cy.contains('- Description: Backpack').should('be.visible');
+    cy.contains('Item View - Binder').should('be.visible');
+    cy.contains('- Description: 1" 3 Ring Binder').should('be.visible');
     cy.contains('- Brand: N/A').should('be.visible');
     cy.contains('- Color: N/A').should('be.visible');
-    cy.contains('- Size: N/A').should('be.visible');
-    cy.contains('- Type: N/A').should('be.visible');
+    cy.contains('- Size: 1"').should('be.visible');
+    cy.contains('- Type: 3 Ring').should('be.visible');
     cy.contains('- Material: N/A').should('be.visible');
     cy.contains('- Quantity: 1').should('be.visible');
-    cy.contains('- Notes: N/A').should('be.visible');
+    cy.contains('- Notes: 1, 3 ring binder of choice size (?)').should('be.visible');
   });
 
   it('Should close dialog when Exit button is clicked', () => {
@@ -166,17 +165,17 @@ describe('Supply List', () => {
     page.expandTreeNode('Kindergarten');
     page.expandTreeNode('All Teachers');
     cy.get('[data-cy="supplylist-info-button"]').first().click();
-    cy.contains('Item View - Backpack').should('be.visible');
-    cy.contains('- Description: Backpack').should('be.visible');
+    cy.contains('Item View - Binder').should('be.visible');
+    cy.contains('- Description: 1" 3 Ring Binder').should('be.visible');
     cy.contains('- Brand: N/A').should('be.visible');
     cy.contains('- Color: N/A').should('be.visible');
-    cy.contains('- Size: N/A').should('be.visible');
-    cy.contains('- Type: N/A').should('be.visible');
+    cy.contains('- Size: 1"').should('be.visible');
+    cy.contains('- Type: 3 Ring').should('be.visible');
     cy.contains('- Material: N/A').should('be.visible');
     cy.contains('- Quantity: 1').should('be.visible');
-    cy.contains('- Notes: N/A').should('be.visible');
+    cy.contains('- Notes: 1, 3 ring binder of choice size (?)').should('be.visible');
     cy.contains('button', 'Exit').click();
-    cy.contains('Item View - Backpack').should('not.exist');
+    cy.contains('Item View - Binder').should('not.exist');
   });
 });
 
