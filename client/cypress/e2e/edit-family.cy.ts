@@ -174,7 +174,7 @@ describe('Edit family page', () => {
       // New URL should go right back to the family list page (/family)
       cy.wait('@updateFamily');
       cy.url({ timeout: 3000 })
-        .should('match', /\/family$/)
+        .should('match', /\/family$/);
 
       // Wait for at least one family card
       cy.get('.family-card', { timeout: 10000 })
