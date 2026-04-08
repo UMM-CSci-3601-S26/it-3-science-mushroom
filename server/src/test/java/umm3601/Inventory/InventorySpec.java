@@ -54,7 +54,7 @@ public class InventorySpec {
 
   @AfterEach
   void tearDownEach() {
-    if (db != null ) {
+    if (db != null) {
       db.getCollection("inventory").drop();
     }
     if (mongoClient != null) {

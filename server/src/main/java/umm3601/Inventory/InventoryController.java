@@ -71,10 +71,14 @@ public class InventoryController implements Controller {
   }
 
   private int extractNumber(String value) {
-    if (value == null) return 0;
+    if (value == null) {
+      return 0;
+    }
 
     String digits = value.replaceAll("\\D", "");
-    if (digits.isBlank()) return 0;
+    if (digits.isBlank()) {
+      return 0;
+    }
 
     try {
       return Integer.parseInt(digits);
@@ -103,8 +107,8 @@ public class InventoryController implements Controller {
     .sort(Sorts.descending("internalBarcode"))
     .first();
 
-    int idNum = extractNumber(maxIdItem != null ? maxIdItem.internalID: null);
-    int barcodeNum = extractNumber(maxBarcodeItem != null ? maxBarcodeItem.internalBarcode: null);
+    int idNum = extractNumber(maxIdItem != null ? maxIdItem.internalID : null);
+    int barcodeNum = extractNumber(maxBarcodeItem != null ? maxBarcodeItem.internalBarcode : null);
     return Math.max(idNum, barcodeNum) + 1;
   }
   private String generateNextID() { // generates the next available internal ID
