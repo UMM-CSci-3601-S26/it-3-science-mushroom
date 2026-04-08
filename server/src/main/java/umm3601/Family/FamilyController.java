@@ -128,6 +128,58 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.CREATED);
   }
 
+  // UPDATE family
+  public void updateFamily(Context ctx) {
+    String id = ctx.pathParam("id");
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id wasn't a legal Mongo Object ID.");
+    }
+
+    Family existingFamily = familyCollection.find(eq("_id", familyId)).first();
+
+    if (existingFamily == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+
+    Family updatedFamily = ctx.bodyValidator(Family.class).get();
+
+    if (updatedFamily.email == null || !updatedFamily.email.matches(EMAIL_REGEX)) {
+      throw new BadRequestResponse(
+        "Family must have a valid email; email was " + updatedFamily.email + "; family was " + ctx.body());
+    }
+
+    List<Document> updatedStudentInfo = new ArrayList<>();
+
+    for (Family.StudentInfo student : updatedFamily.students) {
+      Document updatedStudent = new Document()
+        .append("name", student.name)
+        .append("grade", student.grade)
+        .append("school", student.school)
+        .append("teacher", student.teacher);
+
+      updatedStudentInfo.add(updatedStudent);
+    }
+
+    Bson update = new Document("$set", new Document()
+      .append("guardianName", updatedFamily.guardianName)
+      .append("email", updatedFamily.email)
+      .append("address", updatedFamily.address)
+      .append("timeSlot", updatedFamily.timeSlot)
+      .append("students", updatedStudentInfo)
+    );
+
+    familyCollection.updateOne(eq("_id", familyId), update);
+
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
   // DELETE family
   public void deleteFamily(Context ctx) {
     String id = ctx.pathParam("id");
@@ -250,6 +302,9 @@ public class FamilyController implements Controller {
     server.get(API_FAMILY, this::getFamilies); // All families
     server.get(API_FAMILY_BY_ID, this::getFamily); // Family by ID
     server.get(API_DASHBOARD, this::getDashboardStats); // Dashboard stats
+
+    // UPDATE routes
+    server.put(API_FAMILY_BY_ID, this::updateFamily); // Update family by ID
 
     // POST routes
     server.post(API_FAMILY, this::addNewFamily); // Add family
