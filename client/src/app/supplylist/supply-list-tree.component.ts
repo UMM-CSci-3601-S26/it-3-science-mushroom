@@ -2,7 +2,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButton, MatButtonModule } from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 import { Input } from '@angular/core';
 
 // Dialog Imports
@@ -32,7 +32,7 @@ export interface SupplyListNode {
 @Component({
   selector: 'app-supply-list-tree',
   templateUrl: 'supply-list-tree.component.html',
-  imports: [MatTreeModule, MatButtonModule, MatIconModule, MatButton],
+  imports: [MatTreeModule, MatButtonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SupplyListTreeComponent {

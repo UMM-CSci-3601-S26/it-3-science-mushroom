@@ -1,80 +1,137 @@
-// // Angular Imports
-// import { ComponentFixture, TestBed } from '@angular/core/testing';
+// Angular Imports
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-// // Stock Report Tree Imports
-// import { StockReportTreeComponent, StockNode } from './stock-report-tree.component';
+// Supply List Tree Imports
+import { SupplyListTreeComponent, SupplyListNode } from './supply-list-tree.component';
 
-// describe('StockReportTreeComponent', () => {
-//   let component: StockReportTreeComponent;
-//   let fixture: ComponentFixture<StockReportTreeComponent>;
+// Supply List Imports
+import { SupplyList } from './supplylist';
 
-//   beforeEach(async () => {
-//     await TestBed.configureTestingModule({
-//       imports: [StockReportTreeComponent],
-//     }).compileComponents();
+describe('SupplyListTreeComponent', () => {
+  let component: SupplyListTreeComponent;
+  let fixture: ComponentFixture<SupplyListTreeComponent>;
 
-//     fixture = TestBed.createComponent(StockReportTreeComponent);
-//     component = fixture.componentInstance;
-//     fixture.detectChanges();
-//   });
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [SupplyListTreeComponent],
+    }).compileComponents();
 
-//   it('should create', () => {
-//     expect(component).toBeTruthy();
-//   });
+    fixture = TestBed.createComponent(SupplyListTreeComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-//   describe('getChildDisplay', () => {
-//     it('should return label with quantity when quantity is defined', () => {
-//       const node: StockNode = {
-//         label: 'Apples',
-//         quantity: 5,
-//       };
+  const testSupplyList: SupplyList[] = [
+    {
+      school: "MHS",
+      grade: "PreK",
+      item: "Markers",
+      description: "8 Pack of Washable Wide Markers",
+      brand: "Crayola",
+      color: "Black",
+      count: 8,
+      size: "Wide",
+      type: "Washable",
+      material: "N/A",
+      quantity: 0,
+      notes: "N/A"
+    },
+    {
+      school: "Herman",
+      grade: "6th grade",
+      item: "Folder",
+      description: "Red 2 Prong Plastic Pocket Folder",
+      brand: "N/A",
+      color: "Red",
+      count: 1,
+      size: "N/A",
+      type: "2 Prong",
+      material: "Plastic",
+      quantity: 0,
+      notes: "N/A"
+    },
+    {
+      school: "MHS",
+      grade: "4th grade",
+      item: "Notebook",
+      description: "Yellow Wide Ruled Spiral Notebook",
+      brand: "Five Star",
+      color: "Yellow",
+      count: 1,
+      size: "Wide Ruled",
+      type: "Spiral",
+      material: "N/A",
+      quantity: 0,
+      notes: "N/A"
+    }
+  ];
 
-//       component.stockNodes = [node];
-//       fixture.detectChanges();
 
-//       const result = component.getChildDisplay(node);
 
-//       expect(result).toBe('Apples: 5');
-//     });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 
-//     it('should return label with notes when quantity, maxQuantity, and minQuantity are undefined', () => {
-//       const node: StockNode = {
-//         label: 'Grapes',
-//         notes: 'Keep refrigerated',
-//       };
+  describe('getNodeDisplay', () => {
+    it('should return school when it is defined', () => {
+      const node: SupplyListNode = {
+        school: 'MAHS'
+      };
 
-//       component.stockNodes = [node];
-//       fixture.detectChanges();
+      component.supplyListNodes = [node];
+      fixture.detectChanges();
 
-//       const result = component.getChildDisplay(node);
+      const result = component.getNodeDisplay(node);
 
-//       expect(result).toBe('Grapes: Keep refrigerated');
-//     });
+      expect(result).toBe('MAHS');
+    });
 
-//     it('should return description when no value fields are defined', () => {
-//       const node: StockNode = {
-//         description: 'Fresh tropical fruit',
-//       };
+    it('should return empty string when no fields are defined', () => {
+      const node: SupplyListNode = {};
 
-//       component.stockNodes = [node];
-//       fixture.detectChanges();
+      component.supplyListNodes = [node];
+      fixture.detectChanges();
 
-//       const result = component.getChildDisplay(node);
+      const result = component.getNodeDisplay(node);
 
-//       expect(result).toBe('Fresh tropical fruit');
-//     });
+      expect(result).toBe('');
+    });
+  });
 
-//     it('should return empty string when no value or description fields are defined', () => {
-//       const node: StockNode = {
-//         label: 'Unknown',
-//       };
+  describe('formatItemDetails', () => {
+    it('should format item details correctly', () => {
+      const result = component.formatItemDetails(testSupplyList[0]);
 
-//       component.stockNodes = [node];
-//       fixture.detectChanges();
+      expect(result).toContain('Description: 8 Pack of Washable Wide Markers');
+      expect(result).toContain('Brand: Crayola');
+      expect(result).toContain('Color: Black');
+      expect(result).toContain('Size: Wide');
+      expect(result).toContain('Type: Washable');
+      expect(result).toContain('Material: N/A');
+      expect(result).toContain('Quantity: 0');
+      expect(result).toContain('Notes: N/A');
+    });
+  });
 
-//       const result = component.getChildDisplay(node);
+  describe('openItemDialog', () => {
+    it('should not open dialog if supply is undefined', () => {
+      spyOn(component['dialogService'], 'openDialog');
 
-//       expect(result).toBe('');
-//     });
-//   });
-// });
+      component.openItemDialog(undefined as unknown as SupplyList);
+
+      expect(component['dialogService'].openDialog).not.toHaveBeenCalled();
+    });
+
+    it('should open dialog with correct data', () => {
+      spyOn(component['dialogService'], 'openDialog');
+
+      component.openItemDialog(testSupplyList[0]);
+
+      expect(component['dialogService'].openDialog).toHaveBeenCalledWith({
+        title: `Item View - ${testSupplyList[0].item}`,
+        message: component.formatItemDetails(testSupplyList[0]),
+        buttonOne: 'Exit',
+      }, '600px', '400px');
+    });
+  });
+});
