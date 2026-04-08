@@ -162,6 +162,10 @@ describe('Add family page', () => {
         .contains(family.guardianName)
         .should('exist');
 
+      cy.get('.family-card-address')
+        .contains(family.address)
+        .should('exist');
+
       cy.get('.family-card-email')
         .contains(family.email)
         .should('exist');

@@ -31,6 +31,14 @@
           </div>
 
           <mat-list-item>
+            <mat-icon matListItemIcon>home</mat-icon>
+            <p matListItemTitle>Address</p>
+            <p matListItemLine class="family-card-address">{{ family().address }}</p>
+          </mat-list-item>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <mat-list-item>
             <mat-icon matListItemIcon>schedule</mat-icon>
             <p matListItemTitle>Time Slot</p>
             <p matListItemLine class="family-card-timeSlot">{{ family().timeSlot }}</p>
