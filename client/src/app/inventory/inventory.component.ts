@@ -114,7 +114,7 @@ export class InventoryComponent {
   showRemovePanel = signal(false);
 
   async onScanned(code: string) {
-    console.log('scanned item', code)
+    console.log('scanned item', code);
 
     if (this.scannerAction() === 'remove') {
       const matched = this.matchItem(code);
