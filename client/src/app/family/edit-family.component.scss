@@ -1,32 +1,9 @@
-.student-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.student-fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  flex: 1;
-}
-
 .remove-student-button {
-  border: 1px solid gray;
-  border-radius: 4px;
-  min-height: 56px;
-  width: 110px;
-  align-self: flex-start;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-bottom: 1.25rem;
+  margin-left: .75rem;
 }
 
 .add-student-button {
-  border: 1px solid gray;
-  border-radius: 4px;
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-top: 1.25rem;
+  font-size: 16px;
 }

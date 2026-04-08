@@ -92,11 +92,10 @@
                       <mat-label>Teacher</mat-label>
                       <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
                     </mat-form-field>
+                    <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
+                    Remove Student
+                    </button>
                   </div>
-
-                  <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
-                  Remove Student
-                  </button>
                 </div>
               }
             </div>
