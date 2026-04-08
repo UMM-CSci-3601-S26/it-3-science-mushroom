@@ -128,7 +128,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
       permissionStream.getTracks().forEach(t => t.stop());
 
       const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-      console.log('video devices:', devices)
+      console.log('video devices:', devices);
 
       const deviceId = devices?.[0].deviceId;
 
@@ -201,7 +201,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     this.lastScannedTime = now;
 
     const currentQuantity = this.scanQuantities.get(normalized) ?? 0;
-    this.scanQuantities.set(normalized, currentQuantity + 1)
+    this.scanQuantities.set(normalized, currentQuantity + 1);
 
     if (!this.scannedItems.includes(normalized)) {
       this.scannedItems.push(normalized);
