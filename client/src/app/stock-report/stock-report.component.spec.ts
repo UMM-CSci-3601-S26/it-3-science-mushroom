@@ -161,7 +161,7 @@ describe('StockReportComponent', () => {
 
       expect(component.reportGenerator.deleteSinglePdfReport).toHaveBeenCalledWith(mockReport);
       expect(matSnackBar.open).toHaveBeenCalledWith(
-        jasmine.stringContaining('Deleted report Test Report'),
+        jasmine.stringContaining('Deleting report Test Report...'),
         'Okay',
         { duration: 2000 }
       );

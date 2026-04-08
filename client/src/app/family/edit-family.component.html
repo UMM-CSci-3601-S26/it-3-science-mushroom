@@ -1,16 +1,16 @@
 <div class="flex-row">
   <div class="flex-1">
-    <form [formGroup]="addFamilyForm" (ngSubmit)="submitForm();">
-      <mat-card class="add-family-card">
+    <form [formGroup]="editFamilyForm" (ngSubmit)="submitForm();">
+      <mat-card class="edit-family-card">
         <mat-card-header>
-          <mat-card-title class="add-family-title">New Family</mat-card-title>
+          <mat-card-title class="edit-family-title">Edit Family</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="flex-col">
             <mat-form-field>
               <mat-label>Guardian Name</mat-label>
               <input matInput formControlName="guardianName"
-                required>
+                required [ngModel]="family().guardianName">
               @if (formControlHasError('guardianName')) {
                 <mat-error data-test="guardianNameError">
                   {{getFamilyErrorMessage('guardianName')}}
@@ -21,7 +21,7 @@
             <mat-form-field>
               <mat-label>Email</mat-label>
               <input matInput type="email"
-                formControlName="email" required>
+                formControlName="email" required [ngModel]="family().email">
               @if (formControlHasError('email')) {
                 <mat-error data-test="emailError">
                   {{getFamilyErrorMessage('email')}}
@@ -32,7 +32,7 @@
             <mat-form-field>
               <mat-label>Address</mat-label>
               <input matInput type="text"
-                formControlName="address" required>
+                formControlName="address" required [ngModel]="family().address">
               @if (formControlHasError('address')) {
                 <mat-error data-test="addressError">
                   {{getFamilyErrorMessage('address')}}
@@ -43,7 +43,7 @@
             <mat-form-field>
               <mat-label>Time Slot</mat-label>
               <input matInput type="timeSlot"
-                formControlName="timeSlot" required>
+                formControlName="timeSlot" required [ngModel]="family().timeSlot">
               @if (formControlHasError('timeSlot')) {
                 <mat-error data-test="timeSlotError">
                   {{getFamilyErrorMessage('timeSlot')}}
@@ -55,12 +55,12 @@
 
             <div formArrayName="students">
               @for (student of students.controls; track $index; let i = $index) {
-                <div [formGroupName]="i">
+                <div [formGroupName]="i" class="student-row">
                   <div class="student-fields">
 
                     <mat-form-field>
                       <mat-label>Name</mat-label>
-                      <input matInput formControlName="name" required>
+                      <input matInput formControlName="name" required [ngModel]="family().students[i]?.name">
                       @if (studentControlHasError(i, 'name')) {
                         <mat-error data-test="nameError">
                           {{getStudentErrorMessage(i, 'name')}}
@@ -70,7 +70,7 @@
 
                     <mat-form-field>
                       <mat-label>Grade</mat-label>
-                      <input matInput formControlName="grade" required>
+                      <input matInput formControlName="grade" required [ngModel]="family().students[i]?.grade">
                       @if (studentControlHasError(i, 'grade')) {
                         <mat-error data-test="gradeError">
                           {{getStudentErrorMessage(i, 'grade')}}
@@ -80,7 +80,7 @@
 
                     <mat-form-field>
                       <mat-label>School</mat-label>
-                      <input matInput formControlName="school" required>
+                      <input matInput formControlName="school" required [ngModel]="family().students[i]?.school">
                       @if (studentControlHasError(i, 'school')) {
                         <mat-error data-test="schoolError">
                           {{getStudentErrorMessage(i, 'school')}}
@@ -89,34 +89,18 @@
                     </mat-form-field>
 
                     <mat-form-field>
-                      <mat-label>Teacher Last Name</mat-label>
-                      <input matInput formControlName="teacher">
-                      @if (studentControlHasError(i, 'teacher')) {
-                        <mat-error data-test="teacherError">
-                          {{getStudentErrorMessage(i, 'teacher')}}
-                        </mat-error>
-                      }
+                      <mat-label>Teacher</mat-label>
+                      <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
                     </mat-form-field>
-
-                    <button
-                    mat-flat-button
-                    type="button"
-                    color="accent"
-                    class="remove-button"
-                    (click)="removeStudent(i)">
-                      Remove Student
+                    <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
+                    Remove Student
                     </button>
                   </div>
                 </div>
               }
             </div>
 
-    <button
-      mat-flat-button
-      type="button"
-      color="primary"
-      class="add-button"
-      (click)="addStudent()">Add Student</button>
+    <button mat-flat-button color="primary" class="add-student-button" type="button" (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>
@@ -124,13 +108,21 @@
           <button
             mat-button
             type="button"
-            class="family-button"
             color="primary"
-            [disabled]="!addFamilyForm.valid"
-            type="submit"
-            data-test="confirmAddFamilyButton"
+            data-test="BackFamilyButton"
+            routerLink="/family"
             >
-            ADD FAMILY
+            BACK
+          </button>
+          <button
+            mat-button
+            type="button"
+            color="primary"
+            [disabled]="!editFamilyForm.valid"
+            type="submit"
+            data-test="confirmEditFamilyButton"
+            >
+            SAVE
           </button>
         </mat-card-actions>
       </mat-card>

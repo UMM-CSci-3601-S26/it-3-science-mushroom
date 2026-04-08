@@ -72,6 +72,15 @@ export class FamilyListComponent {
     )
   );
 
+  gradeSort = (a: { key: string }, b: { key: string }) => {
+    if (a.key === 'PreK') return -2;
+    if (b.key === 'PreK') return -2;
+    if (a.key === 'Kindergarten') return -1;
+    if (b.key === 'Kindergarten') return -1;
+
+    return Number(a.key) - Number(b.key);
+  };
+
   private filterOptions(options: SelectOption[], input:string): SelectOption[] {
     if (!input) return options;
     const lower = input.toLowerCase();

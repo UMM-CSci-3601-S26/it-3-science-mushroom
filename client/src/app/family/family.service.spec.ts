@@ -25,7 +25,6 @@ describe('FamilyService', () => {
           grade: '1',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['pencils', 'markers']
         },
       ]
     },
@@ -42,14 +41,12 @@ describe('FamilyService', () => {
           grade: '6',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['calculator']
         },
       ]
     },
@@ -66,21 +63,18 @@ describe('FamilyService', () => {
           grade: '11',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: []
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['backpack', 'markers']
         },
       ]
     },
@@ -285,6 +279,27 @@ describe('FamilyService', () => {
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')
           .toHaveBeenCalledWith(familyService.familyUrl, testFamilies[1]);
+      });
+    }));
+  });
+
+  describe('Updating a family using `updateFamily()`', () => {
+    it('calls the correct endpoint and returns the id', waitForAsync(() => {
+      const family_id = 'john_id';
+      const expected_http_response = { id: family_id };
+
+      const mockedMethod = spyOn(httpClient, 'put')
+        .and
+        .returnValue(of(expected_http_response));
+
+      familyService.updateFamily(family_id, testFamilies[1]).subscribe((returnedId) => {
+        expect(returnedId).toBe(family_id);
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${familyService.familyUrl}/${family_id}`, testFamilies[1]);
       });
     }));
   });

@@ -13,11 +13,3 @@ export interface SupplyList {
   quantity: number,
   notes: string
 }
-
-type NodeKind = 'school' | 'grade' | 'item';
-
-export interface SupplyTreeNode {
-  kind: NodeKind;
-  name: string;
-  children?: SupplyTreeNode[];
-}
