@@ -76,7 +76,12 @@ public class InventoryController implements Controller {
     String digits = value.replaceAll("\\D", "");
     if (digits.isBlank()) return 0;
 
-    return Integer.parseInt(digits);
+    try {
+      return Integer.parseInt(digits);
+    } catch (NumberFormatException e) {
+      // If the numeric value is too large or otherwise unparsable, fall back to 0.
+      return 0;
+    }
   }
 
   private String formatInternalID(int n) {
