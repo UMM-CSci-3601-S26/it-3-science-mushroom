@@ -71,5 +71,145 @@
         "requestedSupplies": []
       }
     ]
-  }
+  },
+  {
+  "guardianName": "Michael Carter",
+  "email": "michael.carter@email.com",
+  "address": "45 Oak Lane",
+  "timeSlot": "10:00-11:00",
+  "students": [
+    {
+      "name": "Alyssa",
+      "grade": "8",
+      "school": "MMS",
+      "teacher": "N/A",
+      "requestedSupplies": ["Headphones"]
+    }
+  ]
+},
+{
+  "guardianName": "Laura Nelson",
+  "email": "laura.nelson@email.com",
+  "address": "78 Pine Street",
+  "timeSlot": "11:00-12:00",
+  "students": [
+    {
+      "name": "Kevin",
+      "grade": "10",
+      "school": "HHS",
+      "teacher": "N/A",
+      "requestedSupplies": ["Backpack"]
+    },
+    {
+      "name": "Lily",
+      "grade": "7",
+      "school": "MMS",
+      "teacher": "N/A",
+      "requestedSupplies": []
+    }
+  ]
+},
+{
+  "guardianName": "Robert Fields",
+  "email": "rfields@email.com",
+  "address": "902 Maple Ave",
+  "timeSlot": "12:00-1:00",
+  "students": [
+    {
+      "name": "Chris",
+      "grade": "12",
+      "school": "MAHS",
+      "teacher": "N/A",
+      "requestedSupplies": ["Backpack"]
+    }
+  ]
+},
+{
+  "guardianName": "Angela Brooks",
+  "email": "angela.brooks@email.com",
+  "address": "311 Cedar Blvd",
+  "timeSlot": "1:00-2:00",
+  "students": [
+    {
+      "name": "Derek",
+      "grade": "9",
+      "school": "HHS",
+      "teacher": "N/A",
+      "requestedSupplies": ["Headphones"]
+    },
+    {
+      "name": "Maya",
+      "grade": "6",
+      "school": "MMS",
+      "teacher": "N/A",
+      "requestedSupplies": []
+    }
+  ]
+},
+{
+  "guardianName": "Samuel Ortiz",
+  "email": "samuel.ortiz@email.com",
+  "address": "129 Birch Road",
+  "timeSlot": "2:00-3:00",
+  "students": [
+    {
+      "name": "Elena",
+      "grade": "11",
+      "school": "MAHS",
+      "teacher": "N/A",
+      "requestedSupplies": []
+    },
+    {
+      "name": "Lucas",
+      "grade": "5",
+      "school": "MES",
+      "teacher": "N/A",
+      "requestedSupplies": ["Backpack"]
+    }
+  ]
+},
+{
+  "guardianName": "Danielle Kim",
+  "email": "danielle.kim@email.com",
+  "address": "555 Walnut St",
+  "timeSlot": "3:00-4:00",
+  "students": [
+    {
+      "name": "Ethan",
+      "grade": "10",
+      "school": "HHS",
+      "teacher": "N/A",
+      "requestedSupplies": []
+    }
+  ]
+},
+{
+  "guardianName": "Carlos Ramirez",
+  "email": "carlos.ramirez@email.com",
+  "address": "888 Spruce Drive",
+  "timeSlot": "4:00-5:00",
+  "students": [
+    {
+      "name": "Isabella",
+      "grade": "8",
+      "school": "MMS",
+      "teacher": "N/A",
+      "requestedSupplies": ["Backpack"]
+    },
+    {
+      "name": "Mateo",
+      "grade": "6",
+      "school": "MMS",
+      "teacher": "N/A",
+      "requestedSupplies": []
+    },
+    {
+      "name": "Sofia",
+      "grade": "3",
+      "school": "MES",
+      "teacher": "N/A",
+      "requestedSupplies": []
+    }
+  ]
+}
 ]

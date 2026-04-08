@@ -21,17 +21,19 @@ describe('Family list', () => {
   });
 
   it('Should have the dashboard display the correct number of families', () => {
-    page.getTotalFamilies().should('contain.text', '3')
+    page.getTotalFamilies().should('contain.text', '10')
   });
 
   it('Should have the dashboard display the correct number of students', () => {
-    page.getTotalStudents().should('contain.text', '7')
+    page.getTotalStudents().should('contain.text', '19')
   });
 
   it('Should have the dashboard display the correct number of students per school', () => {
     const expectedValuesSchool = [
-      { label: 'HHS', value: '3'},
-      { label: 'MAHS', value: '4'}
+      { label: 'HHS', value: '6'},
+      { label: 'MAHS', value: '6'},
+      { label: 'MES', value: '2'},
+      { label: 'MMS', value: '5'},
     ];
 
     page.getStudentsPerSchool().each((e, i) => {
@@ -42,10 +44,15 @@ describe('Family list', () => {
 
   it('Should have the dashboard display the correct number of students per grade', () => {
     const expectedValuesGrade = [
-      { label: 'Grade: 10', value: '1'},
-      { label: 'Grade: 11', value: '3'},
-      { label: 'Grade: 12', value: '1'},
-      { label: 'Grade: 9', value: '2'}
+      { label: 'Grade: 3', value: '1'},
+      { label: 'Grade: 5', value: '1'},
+      { label: 'Grade: 6', value: '2'},
+      { label: 'Grade: 7', value: '1'},
+      { label: 'Grade: 8', value: '2'},
+      { label: 'Grade: 9', value: '3'},
+      { label: 'Grade: 10', value: '3'},
+      { label: 'Grade: 11', value: '4'},
+      { label: 'Grade: 12', value: '2'}
     ];
 
     page.getStudentsPerGrade().each((e, i) => {
@@ -125,7 +132,7 @@ describe('Family list', () => {
   });
 
   it('Should show 3 families in card view', () => {
-    page.getFamilyCards().should('have.length', 3);
+    page.getFamilyCards().should('have.length', 10);
   });
 
   it('Should show students cards with the right information', () => {
@@ -136,7 +143,19 @@ describe('Family list', () => {
       { name: 'Name: Burtrum', school: 'School: HHS', grade: 'Grade: 10', teacher: 'Teacher: N/A'},
       { name: 'Name: Harold', school: 'School: HHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
       { name: 'Name: Timothy', school: 'School: MAHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
-      { name: 'Name: Sarah', school: 'School: MAHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'}
+      { name: 'Name: Sarah', school: 'School: MAHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'},
+      { name: 'Name: Alyssa', school: 'School: MMS', grade: 'Grade: 8', teacher: 'Teacher: N/A'},
+      { name: 'Name: Kevin', school: 'School: HHS', grade: 'Grade: 10', teacher: 'Teacher: N/A'},
+      { name: 'Name: Lily', school: 'School: MMS', grade: 'Grade: 7', teacher: 'Teacher: N/A'},
+      { name: 'Name: Chris', school: 'School: MAHS', grade: 'Grade: 12', teacher: 'Teacher: N/A'},
+      { name: 'Name: Derek', school: 'School: HHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'},
+      { name: 'Name: Maya', school: 'School: MMS', grade: 'Grade: 6', teacher: 'Teacher: N/A'},
+      { name: 'Name: Elena', school: 'School: MAHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
+      { name: 'Name: Lucas', school: 'School: MES', grade: 'Grade: 5', teacher: 'Teacher: N/A'},
+      { name: 'Name: Ethan', school: 'School: HHS', grade: 'Grade: 10', teacher: 'Teacher: N/A'},
+      { name: 'Name: Isabella', school: 'School: MMS', grade: 'Grade: 8', teacher: 'Teacher: N/A'},
+      { name: 'Name: Mateo', school: 'School: MMS', grade: 'Grade: 6', teacher: 'Teacher: N/A'},
+      { name: 'Name: Sofia', school: 'School: MES', grade: 'Grade: 3', teacher: 'Teacher: N/A'}
     ];
 
     page.getStudentCards().each((e, i) => {
