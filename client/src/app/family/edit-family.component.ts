@@ -109,7 +109,6 @@ export class EditFamilyComponent {
         Validators.minLength(2),
       ])),
       teacher: new FormControl<string>(''),
-      requestedSupplies: new FormControl<string>('')
     }));
   }
 
@@ -199,23 +198,9 @@ export class EditFamilyComponent {
     const familyId = this.route.snapshot.paramMap.get('id');
     const rawForm = this.editFamilyForm.value;
 
-    const payload = {
-      ...rawForm,
-      students: rawForm.students?.map(student => ({
-        ...student,
-        requestedSupplies:
-        typeof student.requestedSupplies === 'string'
-          ? student.requestedSupplies
-            .split(',')
-            .map(s => s.trim())
-            .filter(s => s.length > 0)
-          : student.requestedSupplies ?? []
-      })) ?? []
-    };
-
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-    this.familyService.updateFamily(familyId, payload).subscribe({
+    this.familyService.updateFamily(familyId, rawForm).subscribe({
       next: () => {
         this.snackBar.open(
           `Updated family ${rawForm.guardianName}`,

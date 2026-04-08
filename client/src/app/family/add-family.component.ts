@@ -69,7 +69,6 @@ export class AddFamilyComponent {
         Validators.required,
         Validators.minLength(2),
       ])),
-      requestedSupplies: new FormControl<string>('')
     }));
   }
 
@@ -158,23 +157,9 @@ export class AddFamilyComponent {
   submitForm() {
     const rawForm = this.addFamilyForm.value;
 
-    const payload = {
-      ...rawForm,
-      students: rawForm.students?.map(student => ({
-        ...student,
-        requestedSupplies:
-        typeof student.requestedSupplies === 'string'
-          ? student.requestedSupplies
-            .split(',')
-            .map(s => s.trim())
-            .filter(s => s.length > 0)
-          : student.requestedSupplies ?? []
-      })) ?? []
-    };
-
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-    this.familyService.addFamily(payload).subscribe({
+    this.familyService.addFamily(rawForm).subscribe({
       next: () => {
         this.snackBar.open(
           `Added family ${rawForm.guardianName}`,

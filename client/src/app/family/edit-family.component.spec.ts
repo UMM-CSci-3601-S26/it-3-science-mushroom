@@ -3,13 +3,13 @@ import { Location } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormGroup } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 
 // RxJS Imports
-import { of, throwError } from 'rxjs'; //of
+import { throwError } from 'rxjs'; //of
 
 // Family Imports
 import { MockFamilyService } from 'src/testing/family.service.mock';
@@ -209,15 +209,6 @@ describe('editFamilyComponent', () => {
       const teacher = student.get('teacher')!;
       teacher.setValue('');
       expect(teacher.valid).toBeTrue();
-    });
-
-    it('should be fine with optional requestedSupplies field left empty', () => {
-      editFamilyComponent.addStudent();
-      const student = editFamilyComponent.students.at(0);
-
-      const requestedSupplies = student.get('requestedSupplies')!;
-      requestedSupplies.setValue('');
-      expect(requestedSupplies.valid).toBeTrue();
     });
   });
 
@@ -474,65 +465,5 @@ describe('EditFamilyComponent#submitForm()', () => {
     expect(updateFamilySpy).toHaveBeenCalledWith(familyID,component.editFamilyForm.value);
     // Confirm that we're still at the same path.
     expect(location.path()).toBe(path);
-  });
-
-  it('should transform requestedSupplies string into trimmed array', () => {
-    const studentsArray = component.editFamilyForm.get('students') as FormArray;
-    studentsArray.clear(); // since we are loading the data, there is already one student in the form array, so we need to clear it before adding a new one for this test
-
-    studentsArray.push(new FormGroup({
-      name: new FormControl(''),
-      grade: new FormControl(''),
-      school: new FormControl(''),
-      requestedSupplies: new FormControl('')
-    }));
-
-    component.editFamilyForm.patchValue({
-      students: [{
-        name: 'John',
-        grade: '5',
-        school: 'ABC',
-        requestedSupplies: 'pencil, eraser , notebook '
-      }]
-    });
-    const updateFamilySpy = spyOn(familyService, 'updateFamily')
-      .and.returnValue(of('1'));
-    component.submitForm();
-    const familyID = 'john_id';
-    expect(updateFamilySpy).toHaveBeenCalledWith(
-      familyID,
-      jasmine.objectContaining({
-        students: [
-          jasmine.objectContaining({
-            requestedSupplies: ['pencil', 'eraser', 'notebook']
-          })
-        ]
-      })
-    );
-  });
-
-  it('should transform requestedSupplies string into trimmed array', () => {
-    const studentsArray = component.editFamilyForm.get('students') as FormArray;
-    studentsArray.clear(); // since we are loading the data, there is already one student in the form array, so we need to clear it before adding a new one for this test
-    studentsArray.push(
-      new FormGroup({
-        name: new FormControl('John'),
-        grade: new FormControl('5'),
-        school: new FormControl('ABC'),
-        requestedSupplies: new FormControl('pencil, eraser , notebook ')
-      })
-    );
-    const updateFamilySpy = spyOn(familyService, 'updateFamily')
-      .and.returnValue(of('1'));
-    component.submitForm();
-    const familyID = 'john_id';
-    expect(updateFamilySpy).toHaveBeenCalledWith(
-      familyID,
-      jasmine.objectContaining({
-        students: [
-          jasmine.objectContaining({
-            requestedSupplies: ['pencil', 'eraser', 'notebook']
-          })]
-      }));
   });
 });

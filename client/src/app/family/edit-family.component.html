@@ -92,26 +92,16 @@
                       <mat-label>Teacher</mat-label>
                       <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
                     </mat-form-field>
-
-                    <mat-form-field>
-                      <mat-label>Requested Supplies</mat-label>
-                      <input matInput formControlName="requestedSupplies" [ngModel]="family().students[i]?.requestedSupplies">
-                    <!-- @if (formControlHasError('requestedSupplies')) {
-                      <mat-error data-test="requestedSupplies">
-                        {{getErrorMessage('students')}}
-                      </mat-error>
-                    } -->
-                    </mat-form-field>
                   </div>
 
-                  <button mat-stroked-button class="remove-student-button" type="button" (click)="removeStudent(i)">
+                  <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
                   Remove Student
                   </button>
                 </div>
               }
             </div>
 
-    <button mat-stroked-button class="add-student-button" type="button" (click)="addStudent()">Add Student</button>
+    <button mat-flat-button color="primary" class="add-student-button" type="button" (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>

@@ -3,12 +3,12 @@ import { Location } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormGroup } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 
 // RxJS Imports
-import { of, throwError } from 'rxjs'; //of
+import { throwError } from 'rxjs'; //of
 
 // Family Imports
 import { MockFamilyService } from 'src/testing/family.service.mock';
@@ -219,16 +219,6 @@ describe('AddFamilyComponent', () => {
       school.setValue('Lincoln Elementary');
       expect(school.valid).toBeTrue();
     });
-
-    it('should be fine with optional requestedSupplies field left empty', () => {
-      addFamilyComponent.addStudent();
-      const student = addFamilyComponent.students.at(0);
-
-      const requestedSupplies = student.get('requestedSupplies')!;
-      requestedSupplies.setValue('');
-      expect(requestedSupplies.valid).toBeTrue();
-    });
-
   });
 
   describe('The address field', () => {
@@ -485,59 +475,5 @@ describe('AddFamilyComponent#submitForm()', () => {
     expect(addFamilySpy).toHaveBeenCalledWith(component.addFamilyForm.value);
     // Confirm that we're still at the same path.
     expect(location.path()).toBe(path);
-  });
-
-  it('should transform requestedSupplies string into trimmed array', () => {
-    const studentsArray = component.addFamilyForm.get('students') as FormArray;
-
-    studentsArray.push(new FormGroup({
-      name: new FormControl(''),
-      grade: new FormControl(''),
-      school: new FormControl(''),
-      requestedSupplies: new FormControl('')
-    }));
-
-    component.addFamilyForm.patchValue({
-      students: [{
-        name: 'John',
-        grade: '5',
-        school: 'ABC',
-        requestedSupplies: 'pencil, eraser , notebook '
-      }]
-    });
-    const addFamilySpy = spyOn(familyService, 'addFamily')
-      .and.returnValue(of('1'));
-    component.submitForm();
-    expect(addFamilySpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        students: [
-          jasmine.objectContaining({
-            requestedSupplies: ['pencil', 'eraser', 'notebook']
-          })
-        ]
-      })
-    );
-  });
-
-  it('should transform requestedSupplies string into trimmed array', () => {
-    const studentsArray = component.addFamilyForm.get('students') as FormArray;
-    studentsArray.push(
-      new FormGroup({
-        name: new FormControl('John'),
-        grade: new FormControl('5'),
-        school: new FormControl('ABC'),
-        requestedSupplies: new FormControl('pencil, eraser , notebook ')
-      })
-    );
-    const addFamilySpy = spyOn(familyService, 'addFamily')
-      .and.returnValue(of('1'));
-    component.submitForm();
-    expect(addFamilySpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        students: [
-          jasmine.objectContaining({
-            requestedSupplies: ['pencil', 'eraser', 'notebook']
-          })]
-      }));
   });
 });
