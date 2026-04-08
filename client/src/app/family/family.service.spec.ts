@@ -289,6 +289,27 @@ describe('FamilyService', () => {
     }));
   });
 
+  describe('Updating a family using `updateFamily()`', () => {
+    it('calls the correct endpoint and returns the id', waitForAsync(() => {
+      const family_id = 'john_id';
+      const expected_http_response = { id: family_id };
+
+      const mockedMethod = spyOn(httpClient, 'put')
+        .and
+        .returnValue(of(expected_http_response));
+
+      familyService.updateFamily(family_id, testFamilies[1]).subscribe((returnedId) => {
+        expect(returnedId).toBe(family_id);
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${familyService.familyUrl}/${family_id}`, testFamilies[1]);
+      });
+    }));
+  });
+
   describe('Deleting a family using `deleteFamily()`', () => {
     it('talks to the right endpoint and is called once', waitForAsync(() => {
       const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
