@@ -109,6 +109,7 @@ class FamilyControllerSpec {
       new Document()
         .append("guardianName", "Jane Doe")
         .append("email", "jane@email.com")
+        .append("address", "123 Street")
         .append("timeSlot", "10:00-11:00")
         .append("students", List.of(
           new Document()
@@ -127,6 +128,7 @@ class FamilyControllerSpec {
       new Document()
       .append("guardianName", "John Christensen")
       .append("email", "jchristensen@email.com")
+      .append("address", "713 Broadway")
       .append("timeSlot", "8:00-9:00")
       .append("students", List.of(
         new Document()
@@ -145,6 +147,7 @@ class FamilyControllerSpec {
       new Document()
         .append("guardianName", "John Johnson")
         .append("email", "jjohnson@email.com")
+        .append("address", "456 Avenue")
         .append("timeSlot", "2:00-3:00")
         .append("students", List.of(
           new Document()
@@ -161,6 +164,7 @@ class FamilyControllerSpec {
       .append("_id", testFamilyId)
       .append("guardianName", "Bob Jones")
       .append("email", "bob@email.com")
+      .append("address", "456 Oak Ave")
       .append("timeSlot", "2:00-3:00")
       .append("students", List.of(
         new Document()
@@ -265,6 +269,7 @@ class FamilyControllerSpec {
     Family newFamily = new Family();
     newFamily.guardianName = "Charlie Brown";
     newFamily.email = "charlie@email.com";
+    newFamily.address = "789 Pine St";
     newFamily.timeSlot = "Evening";
     newFamily.students = new ArrayList<>();
 
@@ -297,6 +302,7 @@ class FamilyControllerSpec {
       {
         "guardianName": "Invalid Email",
         "email": "invalid-email",
+        "address": "",
         "timeSlot": "",
         "students": []
       }
@@ -324,6 +330,7 @@ class FamilyControllerSpec {
       {
         "guardianName": "Null Email",
         "email": null,
+        "address": "",
         "timeSlot": "",
         "students": []
       }
@@ -422,6 +429,7 @@ class FamilyControllerSpec {
     Document nullStudentsFamily = new Document()
       .append("guardianName", "Null Students")
       .append("email", "")
+      .append("address", "")
       .append("timeSlot", "")
       .append("students", null);
 
@@ -455,23 +463,23 @@ class FamilyControllerSpec {
 
     // Check headers
     assertTrue(csv.contains(
-      "Guardian Name,Email,Time Slot,Number of Students"));
+      "Guardian Name,Email,Address,Time Slot,Number of Students"));
 
     // Check Jane Doe (2 students)
     assertTrue(csv.contains(
-      "\"Jane Doe\",\"jane@email.com\",\"10:00-11:00\",2"));
+      "\"Jane Doe\",\"jane@email.com\",\"123 Street\",\"10:00-11:00\",2"));
 
     // Check John Christensen (2 students)
     assertTrue(csv.contains(
-      "\"John Christensen\",\"jchristensen@email.com\",\"8:00-9:00\",2"));
+      "\"John Christensen\",\"jchristensen@email.com\",\"713 Broadway\",\"8:00-9:00\",2"));
 
     // Check John Johnson (1 student)
     assertTrue(csv.contains(
-      "\"John Johnson\",\"jjohnson@email.com\",\"2:00-3:00\",1"));
+      "\"John Johnson\",\"jjohnson@email.com\",\"456 Avenue\",\"2:00-3:00\",1"));
 
     // Check Bob Jones (1 student)
     assertTrue(csv.contains(
-      "\"Bob Jones\",\"bob@email.com\",\"2:00-3:00\",1"));
+      "\"Bob Jones\",\"bob@email.com\",\"456 Oak Ave\",\"2:00-3:00\",1"));
   }
 
   @Test
@@ -481,6 +489,7 @@ class FamilyControllerSpec {
     Document unsafeFamily = new Document()
       .append("guardianName", "=CMD(\"calc\")")
       .append("email", "dumbdwads\"@email.com")
+      .append("address", "123 Evil Beevil\nStreet")
       .append("timeSlot", "+1:00-2:00")
       .append("students", List.of());
 
@@ -495,6 +504,7 @@ class FamilyControllerSpec {
 
     assertTrue(csv.contains("\"'=CMD(\"\"calc\"\")\""));
     assertTrue(csv.contains("\"dumbdwads\"\"@email.com\""));
+    assertTrue(csv.contains("\"123 Evil Beevil Street\""));
     assertTrue(csv.contains("\"'+1:00-2:00\""));
   }
 
@@ -510,7 +520,7 @@ class FamilyControllerSpec {
     String csv = resultCaptor.getValue();
 
     // Should just be the headers, no rows
-    assertEquals("Guardian Name,Email,Time Slot,Number of Students\n", csv);
+    assertEquals("Guardian Name,Email,Address,Time Slot,Number of Students\n", csv);
   }
 
   @SuppressWarnings("static-access")
@@ -529,6 +539,7 @@ class FamilyControllerSpec {
   Document familyWithNullStudents = new Document()
     .append("guardianName", "Null Students")
       .append("email", "")
+      .append("address", "")
       .append("timeSlot", "")
       .append("students", null);
 
@@ -542,6 +553,6 @@ class FamilyControllerSpec {
   String csv = resultCaptor.getValue();
 
   // Should have the family with 0 students
-  assertTrue(csv.contains("\"Null Students\",\"\",\"\",0"));
+  assertTrue(csv.contains("\"Null Students\",\"\",\"\",\"\",0"));
 }
 }
