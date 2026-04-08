@@ -3,7 +3,6 @@ export interface StudentInfo {
   grade: string;
   school: string;
   teacher: string;
-  requestedSupplies: string[];
 }
 
 export interface Family {
