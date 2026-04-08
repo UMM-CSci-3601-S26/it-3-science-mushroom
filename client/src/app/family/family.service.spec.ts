@@ -17,7 +17,6 @@ describe('FamilyService', () => {
       _id: 'john_id',
       guardianName: 'John Johnson',
       email: 'jjohnson@email.com',
-      address: '713 Broadway',
       timeSlot: '8:00-9:00',
       students: [
         {
@@ -25,7 +24,6 @@ describe('FamilyService', () => {
           grade: '1',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['pencils', 'markers']
         },
       ]
     },
@@ -34,7 +32,6 @@ describe('FamilyService', () => {
       _id: 'jane_id',
       guardianName: 'Jane Doe',
       email: 'janedoe@email.com',
-      address: '123 Street',
       timeSlot: '10:00-11:00',
       students: [
         {
@@ -42,14 +39,12 @@ describe('FamilyService', () => {
           grade: '6',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['calculator']
         },
       ]
     },
@@ -58,7 +53,6 @@ describe('FamilyService', () => {
       _id: 'george_id',
       guardianName: 'George Peterson',
       email: 'georgepeter@email.com',
-      address: '245 Acorn Way',
       timeSlot: '1:00-2:00',
       students: [
         {
@@ -66,21 +60,18 @@ describe('FamilyService', () => {
           grade: '11',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: []
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['backpack', 'markers']
         },
       ]
     },
@@ -346,9 +337,9 @@ describe('FamilyService', () => {
   describe('optionBuilder', () => {
     it('should build unique options from Family data', () => {
       const mockFamily: Family[] = [
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []}
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', timeSlot: '9:00 - 10:00', students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');
@@ -361,9 +352,9 @@ describe('FamilyService', () => {
 
     it('should filter out empty and null values', () => {
       const mockFamily: Family[] = [
-        { guardianName: '', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Connor Night', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+        { guardianName: '', email: 'jack@gmail.com', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Connor Night', email: 'night@gmail.com', timeSlot: '9:00 - 11:00', students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');
@@ -381,9 +372,9 @@ describe('FamilyService', () => {
 
     it('should filter out whitespace-only values', () => {
       const mockFamily: Family[] = [
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: '            ', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Connor Night', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: '            ', email: 'dawn@gmail.com', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Connor Night', email: 'night@gmail.com', timeSlot: '9:00 - 11:00', students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');
@@ -396,9 +387,9 @@ describe('FamilyService', () => {
 
     it('should return a single option when all values are the same', () => {
       const mockFamily: Family[] = [
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: 'Jack Jack', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Jack Jack', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+        { guardianName: 'Jack Jack', email: 'jack@gmail.com', timeSlot: '9:00 - 10:00', students: []},
+        { guardianName: 'Jack Jack', email: 'dawn@gmail.com', timeSlot: '9:00 - 12:00', students: []},
+        { guardianName: 'Jack Jack', email: 'night@gmail.com', timeSlot: '9:00 - 11:00', students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');

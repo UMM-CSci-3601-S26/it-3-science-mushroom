@@ -27,7 +27,6 @@ describe('FamilyCardComponent', () => {
       // Family with two kids
       _id: 'chris_id',
       guardianName: 'Chris',
-      address: '123 Street',
       email: 'chris@email.com',
       timeSlot: '9:00-10:00',
       students: [
@@ -36,14 +35,12 @@ describe('FamilyCardComponent', () => {
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['backpack', 'markers']
         },
         {
           name: 'Christy',
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['backpack', 'pencils']
         }
       ]
     };

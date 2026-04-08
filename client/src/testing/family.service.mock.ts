@@ -16,7 +16,6 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       _id: 'john_id',
       guardianName: 'John Johnson',
       email: 'jjohnson@email.com',
-      address: '713 Broadway',
       timeSlot: '8:00-9:00',
       students: [
         {
@@ -24,7 +23,6 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           grade: '1',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['pencils', 'markers']
         },
       ]
     },
@@ -33,7 +31,6 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       _id: 'jane_id',
       guardianName: 'Jane Doe',
       email: 'janedoe@email.com',
-      address: '123 Street',
       timeSlot: '10:00-11:00',
       students: [
         {
@@ -41,14 +38,12 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           grade: '6',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
           teacher: "N/A",
-          requestedSupplies: ['calculator']
         },
       ]
     },
@@ -57,7 +52,6 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       _id: 'george_id',
       guardianName: 'George Peterson',
       email: 'georgepeter@email.com',
-      address: '245 Acorn Way',
       timeSlot: '1:00-2:00',
       students: [
         {
@@ -65,21 +59,18 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
           grade: '11',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: []
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
           teacher: "N/A",
-          requestedSupplies: ['headphones']
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
-          requestedSupplies: ['backpack', 'markers']
         },
       ]
     },
