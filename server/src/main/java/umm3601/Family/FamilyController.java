@@ -197,16 +197,15 @@ public class FamilyController implements Controller {
     StringBuilder csv = new StringBuilder();
 
     // Headers
-    csv.append("Guardian Name,Email,Address,Time Slot,Number of Students\n");
+    csv.append("Guardian Name,Email,Time Slot,Number of Students\n");
 
     // Fill rows
     for (Family family : families) {
       int studentCount = family.students != null ? family.students.size() : 0;
 
-      csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%d\n",
+      csv.append(String.format("\"%s\",\"%s\",\"%s\",%d\n",
         cleanUpCSV(family.guardianName),
         cleanUpCSV(family.email),
-        cleanUpCSV(family.address),
         cleanUpCSV(family.timeSlot),
         studentCount
       ));
