@@ -128,43 +128,17 @@
   </div>
 </div>
 
+<br>
 
-<!--Supply List Display-->
 <div>
-  <mat-card class="search-grid">
+  <mat-card class="supplylist-card">
+    <mat-card-header>
+        <mat-card-title class="supplylist-title">Supply List Display</mat-card-title>
+      </mat-card-header>
     <div class="tree-container" role="Display Items">
-      @for (schoolGroup of groupedSupplyList(); track schoolGroup.school) {
-        <section class="school-group">
-          <h2 class="school-heading" data-cy="supplylist-school">{{ schoolGroup.school }}</h2>
-
-          @for (gradeGroup of schoolGroup.grades; track gradeGroup.grade) {
-            <section class="grade-group">
-              <h3 class="grade-heading" data-cy="supplylist-grade"><strong>Grade(s):</strong> {{ gradeGroup.grade }}</h3>
-
-              @for (teacherGroup of gradeGroup.teachers; track teacherGroup.teacher) {
-                <section class="teacher-group">
-                  <h4 class="teacher-heading"><strong>Teacher(s):</strong> {{ teacherGroup.teacher }}</h4>
-
-                  <div class="item-grid">
-                    @for (element of teacherGroup.items; track $index) {
-                      <article>
-                        <div class="field" data-cy="supplylist-item"><strong>Item:</strong> {{ element.item }}</div>
-                        <div class="field" data-cy="supplylist-brand"><strong>Brand:</strong> {{ element.brand }}</div>
-                        <div class="field" data-cy="supplylist-color"><strong>Color:</strong> {{ element.color }}</div>
-                        <div class="field" data-cy="supplylist-size"><strong>Size:</strong> {{ element.size }}</div>
-                        <div class="field" data-cy="supplylist-type"><strong>Type:</strong> {{ element.type }}</div>
-                        <div class="field" data-cy="supplylist-material"><strong>Material:</strong> {{ element.material }}</div>
-                        <div class="field" data-cy="supplylist-quantity"><strong>Quantity:</strong> {{ element.quantity }}</div>
-                        <div class="field" data-cy="supplylist-notes"><strong>Notes:</strong> {{ element.notes }}</div>
-                      </article>
-                    }
-                  </div>
-                </section>
-              }
-            </section>
-          }
-        </section>
-      }
+      <mat-card-content>
+        <app-supply-list-tree [supplyListNodes]="groupedSupplyList()"></app-supply-list-tree>
+      </mat-card-content>
     </div>
   </mat-card>
 </div>
