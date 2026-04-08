@@ -67,9 +67,9 @@ export class SupplyListTreeComponent {
   openItemDialog(supply: SupplyList) {
     if (!supply) return;
     this.dialogService.openDialog({
-      title: 'Item View',
+      title: `Item View - ${supply.item}`,
       message: this.formatItemDetails(supply),
       buttonOne: 'Exit',
-    }, '400px', '200px');
+    }, '600px', '400px');
   }
 }

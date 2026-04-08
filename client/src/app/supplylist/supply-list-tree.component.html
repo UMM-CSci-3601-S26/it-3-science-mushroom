@@ -4,7 +4,7 @@
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
     <!-- Get the node's display info -->
     {{getNodeDisplay(node)}}
-    <button mat-icon-button (click)="openItemDialog(node)" [disabled]="!node.supplyData">
+    <button mat-icon-button (click)="openItemDialog(node.supplyData)" [disabled]="!node.supplyData">
       <mat-icon>info</mat-icon>
     </button>
   </mat-tree-node>

@@ -14,7 +14,7 @@
   <button mat-raised-button mat-dialog-close>
     {{dialogData?.buttonOne}}
   </button>
-  <button mat-raised-button color="warn" (click)="confirmDialog()">
+  <button mat-raised-button color="warn" (click)="confirmDialog()" *ngIf="dialogData?.buttonTwo">
     {{dialogData?.buttonTwo}}
   </button>
 </mat-dialog-actions>
