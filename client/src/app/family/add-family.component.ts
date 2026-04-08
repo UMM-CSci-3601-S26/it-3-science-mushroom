@@ -37,11 +37,6 @@ export class AddFamilyComponent {
       Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/), // Same regex pattern the server uses
     ])),
 
-    address: new FormControl('', Validators.compose([
-      Validators.required,
-      Validators.minLength(2),
-    ])),
-
     timeSlot: new FormControl('', Validators.compose([
       Validators.required,
       Validators.pattern(/^(?:1[0-2]|[1-9]):[0-5]\d-(?:1[0-2]|[1-9]):[0-5]\d$/) // Time slot must be HH:MM-HH:MM using 12-hour times
@@ -63,13 +58,16 @@ export class AddFamilyComponent {
       ])),
       grade: new FormControl('', Validators.compose([
         Validators.required,
-        Validators.pattern(/^(?:[1-9]|1[0-2]|Kindergarten|Pre-K)$/) // Grades can only be 1-9, Kindergarten, or Pre-K (case-sensitive)
+        Validators.pattern(/^(?:[1-9]|1[0-2]|Kindergarten|PreK)$/) // Grades can only be 1-12, Kindergarten, or PreK (case-sensitive)
       ])),
       school: new FormControl('', Validators.compose([
         Validators.required,
         Validators.minLength(2),
       ])),
-      requestedSupplies: new FormControl<string>('')
+      teacher: new FormControl('', Validators.compose([
+        Validators.required,
+        Validators.minLength(2),
+      ]))
     }));
   }
 
@@ -88,13 +86,9 @@ export class AddFamilyComponent {
       { type: 'email', message: 'Email must be formatted properly' },
       { type: 'pattern', message: 'Email must be formatted properly' }
     ],
-    address: [
-      { type: 'required', message: 'Address is required' },
-      { type: 'minlength', message: 'Address must be at least 2 characters long' }
-    ],
     timeSlot: [
       { type: 'required', message: 'Time slot is required' },
-      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times' }
+      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times - (No 0 required in front of single digit hours)' }
     ],
     students: {
       name: [
@@ -104,11 +98,15 @@ export class AddFamilyComponent {
       ],
       grade: [
         { type: 'required', message: 'Grade is required' },
-        { type: 'pattern', message: 'Grade must be 1-9, Kindergarten, or Pre-K' }
+        { type: 'pattern', message: 'Grade must be 1-12, Kindergarten, or Pre-K' }
       ],
       school: [
         { type: 'required', message: 'School is required' },
         { type: 'minlength', message: 'School must be at least 2 characters long' }
+      ],
+      teacher: [
+        { type: 'required', message: 'Teacher is required. If teacher is unknown, type N/A'},
+        { type: 'minlength', message: 'Teacher must be at least 2 characters long'}
       ]
     }
   };
@@ -120,7 +118,7 @@ export class AddFamilyComponent {
   }
 
   // Student form validation helper methods
-  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school'): boolean {
+  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): boolean {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
   }
@@ -142,7 +140,7 @@ export class AddFamilyComponent {
   // Student error message helper method
   // Necessary because the student form is a FormArray nested in FormGroup,
   // so we need to specify which student and which control we're checking for erros
-  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school'): string {
+  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): string {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
     const messages = this.addFamilyValidationMessages.students[controlName];
 
@@ -159,17 +157,7 @@ export class AddFamilyComponent {
     const rawForm = this.addFamilyForm.value;
 
     const payload = {
-      ...rawForm,
-      students: rawForm.students?.map(student => ({
-        ...student,
-        requestedSupplies:
-        typeof student.requestedSupplies === 'string'
-          ? student.requestedSupplies
-            .split(',')
-            .map(s => s.trim())
-            .filter(s => s.length > 0)
-          : student.requestedSupplies ?? []
-      })) ?? []
+      ...rawForm
     };
 
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
