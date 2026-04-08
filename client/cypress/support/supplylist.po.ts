@@ -58,4 +58,11 @@ export class SupplyListPage {
   getSupplylistNotes() {
     return cy.get('[data-cy="supplylist-notes"]');
   }
+
+  expandTreeNode(nodeName: string) {
+    // Find the mat-tree-node containing the node name and click its toggle button
+    return cy.contains('mat-tree-node', nodeName)
+      .find('button[matTreeNodeToggle]')
+      .click();
+  }
 }
