@@ -44,7 +44,7 @@
           <mat-card-content>
 
             <div class="stat-list-grade">
-              @for (grade of stats.studentsPerGrade | keyvalue; track grade.key) {
+              @for (grade of stats.studentsPerGrade | keyvalue: gradeSort; track grade.key) {
                 <div class="stat-row-grade">
                   <span class="stat-label">Grade: {{ grade.key }}</span>
                   <span class="stat-value">{{ grade.value }}</span>
