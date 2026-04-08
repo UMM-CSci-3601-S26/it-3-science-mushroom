@@ -132,8 +132,8 @@
             Clear
             </button>
 
-            <button mat-stroked-button class="count-display">
-            Count: {{ serverFilteredInventory().length }}
+            <button mat-stroked-button class="packageSize-display">
+            packageSize: {{ serverFilteredInventory().length }}
             </button>
             <div class="scanner-wrapper" *ngIf="showScanner">
             <p>Scanner is open</p>
@@ -206,10 +206,10 @@
     <td mat-cell *matCellDef="let element" class="inventory-material" data-cy="inventory-material">{{element.material}}</td>
   </ng-container>
 
-  <!-- Count Column -->
-  <ng-container matColumnDef="count">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by count">Count</th>
-    <td mat-cell *matCellDef="let element" class="inventory-count" data-cy="inventory-count">{{element.count}}</td>
+  <!-- package size Column -->
+  <ng-container matColumnDef="packageSize">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by packageSize">Package Size</th>
+    <td mat-cell *matCellDef="let element" class="inventory-packageSize" data-cy="inventory-packageSize">{{element.packageSize}}</td>
   </ng-container>
 
   <!-- Quantity Column -->

@@ -17,7 +17,7 @@ public class Inventory {
 
   public String item;
   public String brand;
-  public int count;
+  public int packageSize;
   public String size;
   public String color;
   public String type;

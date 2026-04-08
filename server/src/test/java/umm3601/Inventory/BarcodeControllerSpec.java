@@ -209,7 +209,7 @@ public class BarcodeControllerSpec {
     newItem.material = "plastic";
     newItem.description = "A standard ruler";
     newItem.quantity = 8;
-    newItem.count = 1;
+    newItem.packageSize = 1;
     newItem.notes = "N/A";
     newItem.internalBarcode = "ITEM-00004";
     newItem.externalBarcode = Arrays.asList("MFG-GHI789");

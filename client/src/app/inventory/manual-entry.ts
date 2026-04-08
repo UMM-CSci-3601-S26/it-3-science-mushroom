@@ -51,14 +51,11 @@ export class ManualEntry implements OnInit {
     // eslint-disable-next-line
     @Inject(MAT_DIALOG_DATA) public data: { barcode: string; quantity: number }) {
     this.form = this.fb.group({
-      internalID: [''],
-      internalBarcode: [''],
-      externalBarcode: [''],
       item: ['', Validators.required],
       description: [''],
       brand: [''],
       color: [''],
-      count: [0],
+      packageSize: [0, [Validators.min(0)]],
       size: [''],
       type: [''],
       material: [''],
@@ -84,14 +81,11 @@ export class ManualEntry implements OnInit {
     this.selectedItem = item;
 
     this.form.patchValue({
-      internalID: item.internalID ?? '',
-      internalBarcode: item.internalBarcode ?? '',
-      externalBarcode: this.data.barcode ?? '',
       item: item.item ?? '',
       description: item.description ?? '',
       brand: item.brand ?? '',
       color: item.color ?? '',
-      count: item.count ?? 0,
+      packageSize: item.packageSize ?? 0,
       size: item.size ?? '',
       type: item.type ?? '',
       material: item.material ?? '',
@@ -107,14 +101,11 @@ export class ManualEntry implements OnInit {
     this.selectedItem = null;
 
     this.form.patchValue({
-      internalID: '',
-      internalBarcode: '',
-      externalBarcode: '',
       item: '',
       description: '',
       brand: '',
       color: '',
-      count: 0,
+      packageSize: 0,
       size: '',
       type: '',
       material: '',
@@ -152,17 +143,17 @@ export class ManualEntry implements OnInit {
     }
 
     if (this.form.valid) {
+      const scanned = (this.data.barcode ?? '').trim();
+      const scannedIsInternal = this.isInternalBarcode(scanned);
       const newItem: Inventory = {
-        internalID: this.form.get("internalID")?.value || '',
-        internalBarcode: this.form.get("internalBarcode")?.value || '',
-        externalBarcode: this.form.get("externalBarcode")?.value
-          ? [this.form.get('externalBarcode')?.value]
-          : ([this.data.barcode]),
+        internalID: '',
+        internalBarcode: '',
+        externalBarcode: (!scannedIsInternal && scanned) ? [scanned] : [],
         item: this.form.get('item')?.value || '',
         description: this.form.get('description')?.value || '',
         brand: this.form.get('brand')?.value || '',
         color: this.form.get('color')?.value || '',
-        count: this.form.get('count')?.value || 0,
+        packageSize: Number(this.form.get('packageSize')?.value ?? 0),
         size: this.form.get('size')?.value || '',
         type: this.form.get('type')?.value || '',
         material: this.form.get('material')?.value || '',
@@ -230,6 +221,24 @@ export class ManualEntry implements OnInit {
 
   trackByInternalID(index: number, item: Inventory): string {
     return item.internalID || `${item.item}-${index}`;
+  }
+
+  isInternalBarcode(barcode: string | null | undefined): boolean {
+    return !!barcode && /^ITEM-\d+$/i.test(barcode.trim());
+  }
+
+  getDisplayExternalBarcode(): string {
+    const scanned = this.data.barcode?.trim();
+
+    if(!scanned) {
+      return 'None';
+    }
+
+    if (this.isInternalBarcode(scanned)) {
+      return "Not saved from internal scan"
+    }
+
+    return scanned;
   }
 }
 

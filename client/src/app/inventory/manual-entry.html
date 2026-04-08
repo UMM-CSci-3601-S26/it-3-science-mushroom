@@ -12,27 +12,47 @@
   </div>
 </div>
 
-<mat-dialog-content class="manual-entry-content">
-  <div class="content-grid">
-    <section class="form-section">
-      <h3>Item Information</h3>
+    <mat-dialog-content class="manual-entry-content">
+      <div class="content-grid">
+        <section class="form-section">
+          <h3>Item Information</h3>
+
+          <div class="barcode-panel">
+        <h4>Barcode Information</h4>
+
+        <div class="barcode-panel-grid">
+          <div class="barcode-info-card">
+            <span class="info-label">Internal ID</span>
+            <span class="info-value">
+              {{ selectedItem?.internalID || 'Generated on save' }}
+            </span>
+          </div>
+
+          <div class="barcode-info-card">
+            <span class="info-label">Internal Barcode</span>
+            <span class="info-value">
+              {{ selectedItem?.internalBarcode || 'Generated on save' }}
+            </span>
+          </div>
+
+          <div class="barcode-info-card">
+            <span class="info-label">Scanned Barcode</span>
+            <span class="info-value">
+              {{ data.barcode || 'None' }}
+            </span>
+          </div>
+
+          <div class="barcode-info-card">
+            <span class="info-label">External Barcode To Save</span>
+            <span class="info-value">
+              {{ getDisplayExternalBarcode() }}
+            </span>
+          </div>
+        </div>
+      </div>
 
       <form [formGroup]="form" class="manual-form">
         <div class="form-grid">
-          <mat-form-field appearance="outline">
-            <mat-label>Internal ID</mat-label>
-            <input matInput formControlName="internalID" placeholder="Internal ID" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Internal Barcode</mat-label>
-            <input matInput formControlName="internalBarcode" placeholder="ITEM-00001" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>External Barcode</mat-label>
-            <input matInput formControlName="externalBarcode" placeholder="Scanned barcode" />
-          </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Item</mat-label>
@@ -70,6 +90,11 @@
           <mat-form-field appearance="outline">
             <mat-label>Description</mat-label>
             <input matInput formControlName="description" placeholder="Description" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Package Size</mat-label>
+            <input matInput formControlName="packageSize" placeholder="Package Size" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">

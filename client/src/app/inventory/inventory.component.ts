@@ -58,7 +58,7 @@ import { ManualEntry, ManualEntryResult } from './manual-entry';
   ],
 })
 export class InventoryComponent {
-  displayedColumns: string[] = ['item', 'description', 'brand', 'color', 'size', 'type', 'material', 'count', 'quantity', 'notes'];
+  displayedColumns: string[] = ['item', 'description', 'brand', 'color', 'size', 'type', 'material', 'packageSize', 'quantity', 'notes'];
   dataSource = new MatTableDataSource<Inventory>([]);
   readonly page = viewChild<MatPaginator>(MatPaginator)
   readonly sort = viewChild<MatSort>(MatSort);
@@ -184,12 +184,13 @@ export class InventoryComponent {
         this.inventoryService.getInventory({ item, brand, color, size, type, material, description, quantity})
       ),
       catchError((err) => {
+        let message = "Unknown Error";
         if (!(err.error instanceof ErrorEvent)) {
-          this.errMsg.set(
-            `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`
-          )
-        };
-        this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
+          message = `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`;
+          this.errMsg.set(message);
+        }
+
+        this.snackBar.open(message, 'OK', { duration: 6000 });
         return of<Inventory[]>([]);
       })
     ),

@@ -43,7 +43,7 @@ public class InventoryController implements Controller {
 
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";
-  static final String COUNT_KEY = "count";
+  static final String PACKAGE_KEY = "packageSize";
   static final String SIZE_KEY = "size";
   static final String COLOR_KEY = "color";
   static final String DESCRIPTION_KEY = "description";
@@ -93,9 +93,11 @@ public class InventoryController implements Controller {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
     Bson filter;
     if (newInv.internalBarcode != null && !newInv.internalBarcode.isBlank()) {
-      filter = eq("internalBarcode", newInv.internalBarcode);
+        filter = eq("internalBarcode", newInv.internalBarcode);
+    } else if (newInv.externalBarcode != null && !newInv.externalBarcode.isEmpty()) {
+        filter = Filters.in("externalBarcode", newInv.externalBarcode);
     } else {
-      filter = eq("externalBarcode", newInv.externalBarcode);
+        filter = eq("_id", new ObjectId());
     }
 
     Inventory exists = inventoryCollection.find(filter).first();
@@ -106,12 +108,27 @@ public class InventoryController implements Controller {
       int newQuantity = existingQuantity + newInvQuantity;
       inventoryCollection.updateOne(eq("_id", exists._id),
         new Document("$set", new Document(QUANTITY_KEY, newQuantity)));
+      exists.quantity = newQuantity;
       ctx.json(exists);
     } else {
-      String newID = generateNextID();
+      if (newInv.internalID == null || newInv.internalID.isBlank()) {
+        newInv.internalID = generateNextID();
+      }
 
-      newInv.internalID = newID;
-      newInv.quantity = 1;
+      if (newInv.internalBarcode == null || newInv.internalBarcode.isBlank()) {
+        long count = inventoryCollection.countDocuments();
+        newInv.internalBarcode = String.format("ITEM-%05d", count + 1);
+      }
+
+      if (newInv.externalBarcode != null) {
+        newInv.externalBarcode = newInv.externalBarcode.stream()
+        .filter(code -> code != null && !code.matches("^ITEM-\\d+$"))
+        .toList();
+      }
+
+      if (newInv.quantity <= 0) {
+        newInv.quantity = 1;
+      }
 
       inventoryCollection.insertOne(newInv);
       ctx.json(newInv);
@@ -124,11 +141,13 @@ public class InventoryController implements Controller {
     Bson filter;
     if (inv.internalBarcode != null && !inv.internalBarcode.isBlank()) {
       filter = eq("internalBarcode", inv.internalBarcode);
+    } else if (inv.externalBarcode != null && !inv.externalBarcode.isEmpty()) {
+      filter = Filters.in("externalBarcode", inv.externalBarcode);
     } else {
-      filter = eq("externalBarcode", inv.externalBarcode);
+      throw new BadRequestResponse("A barcode is required to remove inventory");
     }
 
-    Inventory exists = inventoryCollection.find(eq(filter)).first();
+    Inventory exists = inventoryCollection.find(filter).first();
     if (exists == null) {
       throw new NotFoundResponse("No item found for internal barcode: " + inv.internalBarcode);
     }
@@ -252,6 +271,16 @@ public class InventoryController implements Controller {
       } catch (NumberFormatException e) {
         throw new BadRequestResponse("quantity must be an integer.");
       }
+    }
+
+    if (ctx.queryParamMap().containsKey(PACKAGE_KEY)) {
+      String packageParam = ctx.queryParam(PACKAGE_KEY);
+      try {
+        int p = Integer.parseInt(packageParam);
+        filters.add(Filters.eq(PACKAGE_KEY, p));
+        } catch (NumberFormatException e) {
+        throw new BadRequestResponse("packageSize must be an integer.");
+        }
     }
 
     if (ctx.queryParamMap().containsKey(NOTES_KEY)) {
