@@ -37,6 +37,11 @@ export class AddFamilyComponent {
       Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/), // Same regex pattern the server uses
     ])),
 
+    address: new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.minLength(2),
+    ])),
+
     timeSlot: new FormControl('', Validators.compose([
       Validators.required,
       Validators.pattern(/^(?:1[0-2]|[1-9]):[0-5]\d-(?:1[0-2]|[1-9]):[0-5]\d$/) // Time slot must be HH:MM-HH:MM using 12-hour times
@@ -86,6 +91,10 @@ export class AddFamilyComponent {
       { type: 'email', message: 'Email must be formatted properly' },
       { type: 'pattern', message: 'Email must be formatted properly' }
     ],
+    address: [
+      { type: 'required', message: 'Address is required' },
+      { type: 'minlength', message: 'Address must be at least 2 characters long' }
+    ],
     timeSlot: [
       { type: 'required', message: 'Time slot is required' },
       { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times - (No 0 required in front of single digit hours)' }
@@ -98,7 +107,7 @@ export class AddFamilyComponent {
       ],
       grade: [
         { type: 'required', message: 'Grade is required' },
-        { type: 'pattern', message: 'Grade must be 1-12, Kindergarten, or Pre-K' }
+        { type: 'pattern', message: 'Grade must be 1-12, Kindergarten, or PreK' }
       ],
       school: [
         { type: 'required', message: 'School is required' },

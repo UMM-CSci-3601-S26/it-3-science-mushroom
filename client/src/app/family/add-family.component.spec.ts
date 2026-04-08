@@ -120,6 +120,7 @@ describe('AddFamilyComponent', () => {
     it('should be valid when all fields are filled with correct information', () => {
       addFamilyForm.controls.guardianName.setValue('Chris Smith');
       addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
+      addFamilyForm.controls.address.setValue('123 Avenue');
       addFamilyForm.controls.email.setValue('csmith@email.com');
 
       addFamilyComponent.addStudent();
@@ -219,6 +220,25 @@ describe('AddFamilyComponent', () => {
       school.setValue('Lincoln Elementary');
       expect(school.valid).toBeTrue();
     });
+  });
+
+  describe('The address field', () => {
+    let addressControl: AbstractControl;
+
+    beforeEach(() => {
+      addressControl = addFamilyComponent.addFamilyForm.controls.address;
+    });
+
+    it('should not allow empty addresses', () => {
+      addressControl.setValue('');
+      expect(addressControl.valid).toBeFalsy();
+    });
+
+    it('should allow numbers and letters to input', () => {
+      addressControl.setValue('123 Avenue');
+      expect(addressControl.valid).toBeTruthy();
+    });
+
 
   });
 
@@ -399,6 +419,7 @@ describe('AddFamilyComponent#submitForm()', () => {
     // Set up the form with valid values
     component.addFamilyForm.controls.guardianName.setValue('Chris Smith');
     component.addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
+    component.addFamilyForm.controls.address.setValue('123 Avenue');
     component.addFamilyForm.controls.email.setValue('csmith@email.com');
   });
 

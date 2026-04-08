@@ -30,6 +30,17 @@
             </mat-form-field>
 
             <mat-form-field>
+              <mat-label>Address</mat-label>
+              <input matInput type="text"
+                formControlName="address" required>
+              @if (formControlHasError('address')) {
+                <mat-error data-test="addressError">
+                  {{getFamilyErrorMessage('address')}}
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field>
               <mat-label>Time Slot</mat-label>
               <input matInput type="timeSlot"
                 formControlName="timeSlot" required>
