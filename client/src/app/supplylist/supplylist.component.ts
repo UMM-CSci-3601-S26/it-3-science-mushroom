@@ -140,6 +140,7 @@ export class SupplyListComponent {
       return map.get(key)!;
     };
 
+    // Loop through each Supply List entry and put each in the right group
     for(const supply of supplyListEntries) {
       // Keys to use for grouping, using "Unknown x" if the data is missing for some reason
       const school = supply.school || 'Unknown School';
@@ -165,7 +166,8 @@ export class SupplyListComponent {
         children: Array.from(teacherMap.entries()).map(([teacherName, supplies]) => ({
           teacher: teacherName,
           children: supplies.map(supply => ({
-            description: supply.description
+            description: supply.description,
+            supplyData: supply
           }))
         }))
       }))

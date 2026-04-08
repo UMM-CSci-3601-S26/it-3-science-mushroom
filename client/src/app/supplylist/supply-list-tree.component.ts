@@ -1,9 +1,15 @@
 // Angular Imports
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 import { Input } from '@angular/core';
+
+// Dialog Imports
+import { DialogService } from '../dialog/dialog.service';
+
+// Supply List Imports
+import { SupplyList } from './supplylist';
 
 /**
  * Supply list node data with nested structure.
@@ -15,7 +21,7 @@ export interface SupplyListNode {
   grade?: string;
   teacher?: string;
   description?: string;
-  label?: string;
+  supplyData?: SupplyList; // Only used for leaf nodes, contains the full data for the supply list item
   children?: SupplyListNode[];
 }
 
@@ -26,11 +32,12 @@ export interface SupplyListNode {
 @Component({
   selector: 'app-supply-list-tree',
   templateUrl: 'supply-list-tree.component.html',
-  imports: [MatTreeModule, MatButtonModule, MatIconModule],
+  imports: [MatTreeModule, MatButtonModule, MatIconModule, MatButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SupplyListTreeComponent {
   @Input() supplyListNodes: SupplyListNode[] = [];
+  private dialogService = inject(DialogService);
 
   childrenAccessor = (node: SupplyListNode) => node.children ?? [];
 
@@ -42,7 +49,27 @@ export class SupplyListTreeComponent {
     if (node.grade) return node.grade;
     if (node.teacher) return node.teacher;
     if (node.description) return `- ${node.description}`;
-    if (node.label) return node.label;
     return '';
+  }
+
+  formatItemDetails(supply: SupplyList): string {
+    return `
+    - Description: ${supply.description}
+    - Brand: ${supply.brand}
+    - Color: ${supply.color}
+    - Size: ${supply.size}
+    - Type: ${supply.type}
+    - Material: ${supply.material}
+    - Quantity: ${supply.quantity}
+    - Notes: ${supply.notes}`;
+  }
+
+  openItemDialog(supply: SupplyList) {
+    if (!supply) return;
+    this.dialogService.openDialog({
+      title: 'Item View',
+      message: this.formatItemDetails(supply),
+      buttonOne: 'Exit',
+    }, '400px', '200px');
   }
 }
