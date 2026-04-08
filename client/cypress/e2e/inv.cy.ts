@@ -48,18 +48,28 @@ describe('Inventory', () => {
   });
 
   it('Should display all inventory column headers', () => {
-    cy.get('.demo-table thead th').as('headers');
+    cy.get('.demo-table thead th').then(($headers) => {
+      const headerTexts = [...$headers].map((header) => (header.textContent || '').replace(/\s+/g, ' ').trim());
+      expect(headerTexts).to.deep.equal([
+        'Item',
+        'Description',
+        'Brand',
+        'Color',
+        'Size',
+        'Type',
+        'Material',
+        'Package Size',
+        'Quantity',
+        'Notes'
+      ])
+    })
+  });
 
-    cy.get('@headers').should('contain', 'Item');
-    cy.get('@headers').should('contain', 'Description');
-    cy.get('@headers').should('contain', 'Brand');
-    cy.get('@headers').should('contain', 'Color');
-    cy.get('@headers').should('contain', 'Size');
-    cy.get('@headers').should('contain', 'Type');
-    cy.get('@headers').should('contain', 'Material');
-    cy.get('@headers').should('contain', 'Count');
-    cy.get('@headers').should('contain', 'Quantity');
-    cy.get('@headers').should('contain', 'Notes');
+  it('Should show the current inventory item count summary', () => {
+    cy.get('button.count-display').should('be.visible').invoke('text').then((text) => {
+      const normalized = text.replace(/\s+/g, ' ').trim();
+      expect(normalized).to.match(/^Items:\s*\d+$/);
+    });
   });
 
   // Cypress tests to ensure the filter boxes (including clear button) are there
@@ -283,7 +293,7 @@ describe('Inventory', () => {
       cy.get('[data-cy="inventory-size"]').should('exist');
       cy.get('[data-cy="inventory-type"]').should('exist');
       cy.get('[data-cy="inventory-material"]').should('exist');
-      cy.get('[data-cy="inventory-count"]').should('exist');
+      cy.get('[data-cy="inventory-packageSize"]').should('exist');
       cy.get('[data-cy="inventory-quantity"]').should('exist');
       cy.get('[data-cy="inventory-notes"]').should('exist');
     });
@@ -304,13 +314,30 @@ describe('Inventory', () => {
   });
 
   it('Should filter using only item field', () => {
-    cy.intercept('GET', '/api/inventory*').as('filter');
+    cy.intercept({
+      method: 'GET',
+      pathname: '/api/inventory',
+      query: {
+        item: 'Markers'
+      }
+    }).as('filterByItem');
 
-    cy.get('[data-cy="filter-item"]').type('Markers');
-    cy.wait('@filter');
+    cy.get('[data-cy="filter-item"]')
+      .clear()
+      .type('Markers')
+      .blur();
 
-    cy.get('[data-cy="inventory-item"]').each(($el) => {
-      cy.wrap($el).should('contain', 'Markers');
+    cy.wait('@filterByItem');
+
+    cy.get('[data-cy="inventory-item"]').then(($items) => {
+      const itemTexts = [...$items].map((item) =>
+        (item.textContent || '').trim()
+      );
+
+      expect(itemTexts.length).to.be.greaterThan(0);
+      itemTexts.forEach((text) => {
+        expect(text).to.contain('Markers');
+      });
     });
   });
   it('Should capture error when no autocomplete options exist', () => {
