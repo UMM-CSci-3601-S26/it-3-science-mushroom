@@ -13,6 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
+import org.junit.jupiter.api.AfterEach;
+import com.mongodb.client.MongoClient;
 
 
 // InventorySpec Class
@@ -31,12 +33,15 @@ public class InventorySpec {
 
   private Inventory inv1;
   private Inventory inv2;
+  private MongoClient mongoClient;
 
   // -- Test Management -- \\
 
   @BeforeEach
   void setupEach() {
+    mongoClient = MongoClients.create();
     db = MongoClients.create().getDatabase("test");
+    db.getCollection("inventory").drop();
     inventoryController = new InventoryController(db);
     ctx = mock(Context.class);
     inv1 = new Inventory();
@@ -45,6 +50,16 @@ public class InventorySpec {
     inv1.item = "Pencil";
     inv1.brand = "Ticonderoga";
     inv1.description = "Ticonderoga Pencil";
+  }
+
+  @AfterEach
+  void tearDownEach() {
+    if (db != null ) {
+      db.getCollection("inventory").drop();
+    }
+    if (mongoClient != null) {
+      mongoClient.close();
+    }
   }
 
   // -- Inventory ID Tests -- \\
@@ -153,6 +168,6 @@ void addInventoryUpdatesExistingItem() {
       .find(new Document("externalBarcode", List.of("EXT-123")))
       .first();
 
-    assertEquals(ADD_AMOUNT, created.getInteger("quantity")); // controller forces 1
+    assertEquals(INCOMING_QUANT, created.getInteger("quantity")); // controller forces 1
   }
 }

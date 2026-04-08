@@ -83,7 +83,7 @@ public class BarcodeControllerSpec {
         .append("item", "Pencil")
         .append("brand", "Ticonderoga")
         .append("color", "yellow")
-        .append("count", 1)
+        .append("packageSize", 1)
         .append("size", "N/A")
         .append("description", "A standard pencil")
         .append("quantity", 10)
@@ -97,7 +97,7 @@ public class BarcodeControllerSpec {
         .append("item", "Eraser")
         .append("brand", "Pink Pearl")
         .append("color", "pink")
-        .append("count", 1)
+        .append("packageSize", 1)
         .append("size", "N/A")
         .append("description", "A standard eraser")
         .append("quantity", 5)
@@ -112,7 +112,7 @@ public class BarcodeControllerSpec {
         .append("item", "Notebook")
         .append("brand", "Five Star")
         .append("color", "blue")
-        .append("count", 1)
+        .append("packageSize", 1)
         .append("size", "N/A")
         .append("description", "A standard notebook")
         .append("quantity", 3)
@@ -224,9 +224,9 @@ public class BarcodeControllerSpec {
     assertEquals("ITEM-00004", inventoryCaptor.getValue().internalBarcode);
     assertEquals("MFG-GHI789", inventoryCaptor.getValue().externalBarcode.get(0));
     // Verify it was actually inserted into the database
-    long count = db.getCollection("inventory")
+    long packageSize = db.getCollection("inventory")
         .countDocuments(new Document("internalBarcode", "ITEM-00004"));
-    assertEquals(1, count);
+    assertEquals(1, packageSize);
   }
 
   @Test
