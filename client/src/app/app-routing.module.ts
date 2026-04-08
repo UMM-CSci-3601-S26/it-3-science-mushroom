@@ -10,6 +10,7 @@ import { SupplyListComponent } from './supplylist/supplylist.component';
 // Family Imports
 import { FamilyListComponent } from './family/family-list.component';
 import { AddFamilyComponent } from './family/add-family.component';
+import { EditFamilyComponent } from './family/edit-family.component';
 
 // Stock Report Imports
 import { StockReportComponent } from './stock-report/stock-report.component';
@@ -25,6 +26,7 @@ const routes: Routes = [
   {path: '', component: HomeComponent, title: 'Home'},
   {path: 'family', component: FamilyListComponent, title: 'Family'},
   {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'},
+  {path: 'family/:id', component: EditFamilyComponent, title: 'Edit Family'},
   {path: 'inventory', component: InventoryComponent, title: 'Inventory'},
   {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'},
   {path: 'stock-report', component: StockReportComponent, title: 'Stock Report'},

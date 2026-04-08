@@ -15,9 +15,15 @@ export class ActivatedRouteStub {
   /** The mock paramMap observable */
   readonly paramMap = this.subject.asObservable();
 
+  readonly snapshot: { paramMap: ParamMap};
+
   constructor(initialParams?: Params) {
     if (initialParams) {
+      const paramMap = convertToParamMap(initialParams);
       this.setParamMap(initialParams);
+      this.snapshot = { paramMap };
+    } else {
+      this.snapshot = { paramMap: convertToParamMap({}) };
     }
   }
 

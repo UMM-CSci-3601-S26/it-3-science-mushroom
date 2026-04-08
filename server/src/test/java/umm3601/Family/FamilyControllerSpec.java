@@ -116,14 +116,14 @@ class FamilyControllerSpec {
             .append("name", "Alice")
             .append("grade", "3")
             .append("school", "MAHS")
-            .append("requestedSupplies", List.of("headphones")),
+            .append("teacher", "N/A"),
           new Document()
             .append("name", "Timmy")
             .append("grade", "5")
             .append("school", "MAHS")
-            .append("requestedSupplies", List.of("headphones"))
-        ))
-    );
+            .append("teacher", "N/A")
+        )
+    ));
     testFamilies.add(
       new Document()
       .append("guardianName", "John Christensen")
@@ -135,12 +135,12 @@ class FamilyControllerSpec {
           .append("name", "Sara")
           .append("grade", "7")
           .append("school", "MAHS")
-          .append("requestedSupplies", List.of("backpack", "headphones")),
+          .append("teacher", "N/A"),
         new Document()
           .append("name", "Ronan")
           .append("grade", "4")
           .append("school", "HHS")
-          .append("requestedSupplies", List.of())
+          .append("teacher", "N/A")
       ))
     );
     testFamilies.add(
@@ -154,7 +154,7 @@ class FamilyControllerSpec {
             .append("name", "Lilian")
             .append("grade", "1")
             .append("school", "HHS")
-            .append("requestedSupplies", List.of("backpack"))
+            .append("teacher", "N/A")
         ))
     );
 
@@ -171,7 +171,7 @@ class FamilyControllerSpec {
           .append("name", "Sara")
           .append("grade", "5")
           .append("school", "Roosevelt")
-          .append("requestedSupplies", List.of())
+          .append("teacher", "N/A")
       ));
 
     familyDocuments.insertMany(testFamilies);
@@ -351,6 +351,72 @@ class FamilyControllerSpec {
 
     assertTrue(exception.getMessage().contains("valid email"));
     assertTrue(exception.getMessage().contains("email was null"));
+  }
+
+  // -- Family PUT Tests -- \\
+  @Test
+  void updateFamily() {
+    Family updatedFamily = new Family();
+    updatedFamily._id = testFamilyId.toString();
+    updatedFamily.guardianName = "Bob Jones";
+    updatedFamily.email = "bob@email.com";
+    updatedFamily.address = "789 7th Ave";
+    updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.students = new ArrayList<>();
+
+    String json = javalinJackson.toJsonString(updatedFamily, Family.class);
+
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+        .thenReturn(new BodyValidator<>(
+            json,
+            Family.class,
+            () -> javalinJackson.fromJsonString(json, Family.class)
+        ));
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.updateFamily(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document added = db.getCollection("family")
+        .find(eq("_id", testFamilyId))
+        .first();
+
+    assertEquals("789 7th Ave", added.get("address"));
+
+    Family result = familyCaptor.getValue();
+
+    assertEquals("789 7th Ave", result.address);
+    assertEquals("Bob Jones", result.guardianName);
+    assertEquals("bob@email.com", result.email);
+    assertEquals("2:00-3:00", result.timeSlot);
+  }
+
+  @Test
+  void updateFamilyWithBadId() {
+    when(ctx.pathParam("id")).thenReturn("bad");
+
+    Throwable exception = assertThrows(BadRequestResponse.class, () -> {
+      familyController.updateFamily(ctx);
+    });
+
+    assertEquals(
+      "The requested family id wasn't a legal Mongo Object ID.",
+      exception.getMessage());
+  }
+
+  @Test
+  void updateFamiliesWithNonexistentId() throws IOException {
+    String id = "588935f5c668650dc77df581";
+    when(ctx.pathParam("id")).thenReturn(id);
+
+    Throwable exception = assertThrows(NotFoundResponse.class, () -> {
+      familyController.updateFamily(ctx);
+    });
+
+    assertEquals("The requested family was not found", exception.getMessage());
   }
 
   // -- Family DELETE Tests -- \\
