@@ -133,7 +133,7 @@ export class EditFamilyComponent {
     ],
     timeSlot: [
       { type: 'required', message: 'Time slot is required' },
-      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times' }
+      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times (No leading 0s in front of single-digit hours)' }
     ],
     students: {
       name: [

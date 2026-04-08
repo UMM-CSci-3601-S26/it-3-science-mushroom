@@ -4,21 +4,26 @@
     @if (dashboardStats(); as stats) {
       <div class="dashboard-grid">
 
+
         <!-- Total Families and Students Card -->
         <mat-card class="stat-card">
           <mat-card-title>Total Families</mat-card-title>
-          <mat-card-content>
-            <div class="stat-number-family">
-            {{ stats.totalFamilies }}
-            </div>
-          </mat-card-content>
+          <div class ="stat-content">
+            <mat-card-content>
+              <div class="stat-number-family">
+              {{ stats.totalFamilies }}
+              </div>
+            </mat-card-content>
+          </div>
 
           <mat-card-title>Total Students</mat-card-title>
-          <mat-card-content>
-            <div class="stat-number-student">
-            {{ stats.totalStudents }}
-            </div>
-          </mat-card-content>
+          <div class ="stat-content">
+            <mat-card-content>
+              <div class="stat-number-student">
+              {{ stats.totalStudents }}
+              </div>
+            </mat-card-content>
+          </div>
         </mat-card>
 
         <!-- Students Per School -->
