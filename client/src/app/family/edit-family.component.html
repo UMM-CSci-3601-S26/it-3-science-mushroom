@@ -55,62 +55,63 @@
 
             <div formArrayName="students">
               @for (student of students.controls; track $index; let i = $index) {
-                <div [formGroupName]="i">
+                <div [formGroupName]="i" class="student-row">
+                  <div class="student-fields">
 
-                  <mat-form-field>
-                    <mat-label>Name</mat-label>
-                    <input matInput formControlName="name" required [ngModel]="family().students[i]?.name">
-                    @if (studentControlHasError(i, 'name')) {
-                      <mat-error data-test="nameError">
-                        {{getStudentErrorMessage(i, 'name')}}
+                    <mat-form-field>
+                      <mat-label>Name</mat-label>
+                      <input matInput formControlName="name" required [ngModel]="family().students[i]?.name">
+                      @if (studentControlHasError(i, 'name')) {
+                        <mat-error data-test="nameError">
+                          {{getStudentErrorMessage(i, 'name')}}
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Grade</mat-label>
+                      <input matInput formControlName="grade" required [ngModel]="family().students[i]?.grade">
+                      @if (studentControlHasError(i, 'grade')) {
+                        <mat-error data-test="gradeError">
+                          {{getStudentErrorMessage(i, 'grade')}}
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>School</mat-label>
+                      <input matInput formControlName="school" required [ngModel]="family().students[i]?.school">
+                      @if (studentControlHasError(i, 'school')) {
+                        <mat-error data-test="schoolError">
+                          {{getStudentErrorMessage(i, 'school')}}
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Teacher</mat-label>
+                      <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
+                    </mat-form-field>
+
+                    <mat-form-field>
+                      <mat-label>Requested Supplies</mat-label>
+                      <input matInput formControlName="requestedSupplies" [ngModel]="family().students[i]?.requestedSupplies">
+                    <!-- @if (formControlHasError('requestedSupplies')) {
+                      <mat-error data-test="requestedSupplies">
+                        {{getErrorMessage('students')}}
                       </mat-error>
-                    }
-                  </mat-form-field>
+                    } -->
+                    </mat-form-field>
+                  </div>
 
-                  <mat-form-field>
-                    <mat-label>Grade</mat-label>
-                    <input matInput formControlName="grade" required [ngModel]="family().students[i]?.grade">
-                    @if (studentControlHasError(i, 'grade')) {
-                      <mat-error data-test="gradeError">
-                        {{getStudentErrorMessage(i, 'grade')}}
-                      </mat-error>
-                    }
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>School</mat-label>
-                    <input matInput formControlName="school" required [ngModel]="family().students[i]?.school">
-                    @if (studentControlHasError(i, 'school')) {
-                      <mat-error data-test="schoolError">
-                        {{getStudentErrorMessage(i, 'school')}}
-                      </mat-error>
-                    }
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>Teacher</mat-label>
-                    <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label>Requested Supplies</mat-label>
-                    <input matInput formControlName="requestedSupplies" [ngModel]="family().students[i]?.requestedSupplies">
-                  <!-- @if (formControlHasError('requestedSupplies')) {
-                    <mat-error data-test="requestedSupplies">
-                      {{getErrorMessage('students')}}
-                    </mat-error>
-                  } -->
-                  </mat-form-field>
-
-                  <button type="button" (click)="removeStudent(i)">
-                    Remove Student
+                  <button mat-stroked-button class="remove-student-button" type="button" (click)="removeStudent(i)">
+                  Remove Student
                   </button>
-
                 </div>
               }
             </div>
 
-    <button type="button" (click)="addStudent()">Add Student</button>
+    <button mat-stroked-button class="add-student-button" type="button" (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>
