@@ -56,46 +56,67 @@
             <div formArrayName="students">
               @for (student of students.controls; track $index; let i = $index) {
                 <div [formGroupName]="i">
+                  <div class="student-fields">
 
-                  <mat-form-field>
-                    <mat-label>Name</mat-label>
-                    <input matInput formControlName="name" required>
-                    @if (studentControlHasError(i, 'name')) {
-                      <mat-error data-test="nameError">
-                        {{getStudentErrorMessage(i, 'name')}}
-                      </mat-error>
-                    }
-                  </mat-form-field>
+                    <mat-form-field>
+                      <mat-label>Name</mat-label>
+                      <input matInput formControlName="name" required>
+                      @if (studentControlHasError(i, 'name')) {
+                        <mat-error data-test="nameError">
+                          {{getStudentErrorMessage(i, 'name')}}
+                        </mat-error>
+                      }
+                    </mat-form-field>
 
-                  <mat-form-field>
-                    <mat-label>Grade</mat-label>
-                    <input matInput formControlName="grade" required>
-                    @if (studentControlHasError(i, 'grade')) {
-                      <mat-error data-test="gradeError">
-                        {{getStudentErrorMessage(i, 'grade')}}
-                      </mat-error>
-                    }
-                  </mat-form-field>
+                    <mat-form-field>
+                      <mat-label>Grade</mat-label>
+                      <input matInput formControlName="grade" required>
+                      @if (studentControlHasError(i, 'grade')) {
+                        <mat-error data-test="gradeError">
+                          {{getStudentErrorMessage(i, 'grade')}}
+                        </mat-error>
+                      }
+                    </mat-form-field>
 
-                  <mat-form-field>
-                    <mat-label>School</mat-label>
-                    <input matInput formControlName="school" required>
-                    @if (studentControlHasError(i, 'school')) {
-                      <mat-error data-test="schoolError">
-                        {{getStudentErrorMessage(i, 'school')}}
-                      </mat-error>
-                    }
-                  </mat-form-field>
+                    <mat-form-field>
+                      <mat-label>School</mat-label>
+                      <input matInput formControlName="school" required>
+                      @if (studentControlHasError(i, 'school')) {
+                        <mat-error data-test="schoolError">
+                          {{getStudentErrorMessage(i, 'school')}}
+                        </mat-error>
+                      }
+                    </mat-form-field>
 
-                  <button type="button" (click)="removeStudent(i)">
-                    Remove Student
-                  </button>
+                    <mat-form-field>
+                      <mat-label>Teacher Last Name</mat-label>
+                      <input matInput formControlName="teacher">
+                      @if (studentControlHasError(i, 'teacher')) {
+                        <mat-error data-test="teacherError">
+                          {{getStudentErrorMessage(i, 'teacher')}}
+                        </mat-error>
+                      }
+                    </mat-form-field>
 
+                    <button
+                    mat-flat-button
+                    type="button"
+                    color="accent"
+                    class="remove-button"
+                    (click)="removeStudent(i)">
+                      Remove Student
+                    </button>
+                  </div>
                 </div>
               }
             </div>
 
-    <button type="button" (click)="addStudent()">Add Student</button>
+    <button
+      mat-flat-button
+      type="button"
+      color="primary"
+      class="add-button"
+      (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>
@@ -103,6 +124,7 @@
           <button
             mat-button
             type="button"
+            class="family-button"
             color="primary"
             [disabled]="!addFamilyForm.valid"
             type="submit"

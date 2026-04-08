@@ -63,12 +63,13 @@ export class AddFamilyComponent {
       ])),
       grade: new FormControl('', Validators.compose([
         Validators.required,
-        Validators.pattern(/^(?:[1-9]|1[0-2]|Kindergarten|Pre-K)$/) // Grades can only be 1-9, Kindergarten, or Pre-K (case-sensitive)
+        Validators.pattern(/^(?:[1-9]|1[0-2]|Kindergarten|PreK)$/) // Grades can only be 1-12, Kindergarten, or PreK (case-sensitive)
       ])),
       school: new FormControl('', Validators.compose([
         Validators.required,
         Validators.minLength(2),
       ])),
+      teacher: new FormControl('')
     }));
   }
 
@@ -93,7 +94,7 @@ export class AddFamilyComponent {
     ],
     timeSlot: [
       { type: 'required', message: 'Time slot is required' },
-      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times' }
+      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times - (No 0 required in front of single digit hours)' }
     ],
     students: {
       name: [
@@ -103,7 +104,7 @@ export class AddFamilyComponent {
       ],
       grade: [
         { type: 'required', message: 'Grade is required' },
-        { type: 'pattern', message: 'Grade must be 1-9, Kindergarten, or Pre-K' }
+        { type: 'pattern', message: 'Grade must be 1-12, Kindergarten, or PreK' }
       ],
       school: [
         { type: 'required', message: 'School is required' },
@@ -119,7 +120,7 @@ export class AddFamilyComponent {
   }
 
   // Student form validation helper methods
-  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school'): boolean {
+  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): boolean {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
   }
@@ -141,7 +142,7 @@ export class AddFamilyComponent {
   // Student error message helper method
   // Necessary because the student form is a FormArray nested in FormGroup,
   // so we need to specify which student and which control we're checking for erros
-  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school'): string {
+  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): string {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
     const messages = this.addFamilyValidationMessages.students[controlName];
 
@@ -157,9 +158,13 @@ export class AddFamilyComponent {
   submitForm() {
     const rawForm = this.addFamilyForm.value;
 
+    const payload = {
+      ...rawForm
+    };
+
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-    this.familyService.addFamily(rawForm).subscribe({
+    this.familyService.addFamily(payload).subscribe({
       next: () => {
         this.snackBar.open(
           `Added family ${rawForm.guardianName}`,

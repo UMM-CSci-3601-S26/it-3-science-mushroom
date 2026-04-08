@@ -119,8 +119,8 @@ describe('AddFamilyComponent', () => {
 
     it('should be valid when all fields are filled with correct information', () => {
       addFamilyForm.controls.guardianName.setValue('Chris Smith');
-      addFamilyForm.controls.address.setValue('123 Avenue');
       addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
+      addFamilyForm.controls.address.setValue('123 Avenue');
       addFamilyForm.controls.email.setValue('csmith@email.com');
 
       addFamilyComponent.addStudent();
@@ -129,6 +129,7 @@ describe('AddFamilyComponent', () => {
       student.get('name')!.setValue('Jimmy');
       student.get('grade')!.setValue('3');
       student.get('school')!.setValue('Morris Elementary');
+      student.get('teacher')!.setValue('Kurtis');
 
       expect(addFamilyForm.valid).toBeTrue();
     });
@@ -153,7 +154,7 @@ describe('AddFamilyComponent', () => {
       expect(name.valid).toBeTrue();
     });
 
-    it('should validate student grade, "Kindergarten", and "Pre-K"', () => {
+    it('should validate student grade, "Kindergarten", and "PreK"', () => {
       addFamilyComponent.addStudent();
       const student = addFamilyComponent.students.at(0);
 
@@ -195,8 +196,8 @@ describe('AddFamilyComponent', () => {
       expect(grade.valid).toBeFalse();
       expect(grade.hasError('pattern')).toBeTrue();
 
-      // "Pre-K" is a valid input
-      grade.setValue('Pre-K');
+      // "PreK" is a valid input
+      grade.setValue('PreK');
       expect(grade.valid).toBeTrue();
     });
 
@@ -237,6 +238,8 @@ describe('AddFamilyComponent', () => {
       addressControl.setValue('123 Avenue');
       expect(addressControl.valid).toBeTruthy();
     });
+
+
   });
 
   describe('The email field', () => {
@@ -415,8 +418,8 @@ describe('AddFamilyComponent#submitForm()', () => {
   beforeEach(() => {
     // Set up the form with valid values
     component.addFamilyForm.controls.guardianName.setValue('Chris Smith');
-    component.addFamilyForm.controls.address.setValue('123 Avenue');
     component.addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
+    component.addFamilyForm.controls.address.setValue('123 Avenue');
     component.addFamilyForm.controls.email.setValue('csmith@email.com');
   });
 
@@ -477,3 +480,4 @@ describe('AddFamilyComponent#submitForm()', () => {
     expect(location.path()).toBe(path);
   });
 });
+
