@@ -18,7 +18,7 @@ describe('InventoryService', () => {
       internalBarcode: "ITEM-00000",
       item: "Markers",
       brand: "Crayola",
-      count: 8,
+      packageSize: 8,
       size: "Wide",
       color: "Black",
       type: "Washable",
@@ -36,7 +36,7 @@ describe('InventoryService', () => {
       internalBarcode: "ITEM-00001",
       item: "Folder",
       brand: "N/A",
-      count: 1,
+      packageSize: 1,
       size: "N/A",
       color: "Red",
       type: "2 Prong",
@@ -54,7 +54,7 @@ describe('InventoryService', () => {
       internalBarcode: "ITEM-00002",
       item: "Notebook",
       brand: "N/A",
-      count: 1,
+      packageSize: 1,
       size: "Wide Ruled",
       color: "Yellow",
       type: "Spiral",
@@ -113,9 +113,9 @@ describe('InventoryService', () => {
   describe('optionBuilder', () => {
     it('should build unique options from inventory data', () => {
       const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Pants', description: '', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
+        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
+        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Pants', description: '', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
+        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
       ];
 
       const result = inventoryService.optionBuilder(mockInventory, 'item');
@@ -128,8 +128,8 @@ describe('InventoryService', () => {
 
     it('should filter out empty and null values', () => {
       const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-        { internalID: "2", internalBarcode: "ITEM-00001", item: '', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
+        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
+        { internalID: "2", internalBarcode: "ITEM-00001", item: '', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
       ];
 
       const result = inventoryService.optionBuilder(mockInventory, 'item');
@@ -146,8 +146,8 @@ describe('InventoryService', () => {
 
     it('should filter out whitespace-only values', () => {
       const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: '   ', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Shirt', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
+        { internalID: "1", internalBarcode: "ITEM-00000", item: '   ', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
+        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Shirt', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
       ];
 
       const result = inventoryService.optionBuilder(mockInventory, 'item');
@@ -159,9 +159,9 @@ describe('InventoryService', () => {
 
     it('should return a single option when all values are the same', () => {
       const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Shirt', description: '', brand: 'Nike', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Shirt', description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', count: 3, quantity: 3, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
+        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
+        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Shirt', description: '', brand: 'Nike', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
+        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Shirt', description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', packageSize: 3, quantity: 3, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
       ];
 
       const result = inventoryService.optionBuilder(mockInventory, 'item');
@@ -172,9 +172,9 @@ describe('InventoryService', () => {
 
     it('should only return options for rows where the key has a value', () => {
       const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', count: 1, quantity: 10, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Pants', description: '', brand: '',     color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', count: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Hat',   description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', count: 3, quantity: 3, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
+        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
+        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Pants', description: '', brand: '',     color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
+        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Hat',   description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', packageSize: 3, quantity: 3, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
       ];
 
       const result = inventoryService.optionBuilder(mockInventory, 'brand');
