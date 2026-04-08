@@ -45,10 +45,6 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 
-// Misc Imports
-import umm3601.supplylist.SupplyList;
-import umm3601.supplylist.SupplyListController;
-
 
 @SuppressWarnings({ "MagicNumber" })
 public class SupplyListControllerSpec {

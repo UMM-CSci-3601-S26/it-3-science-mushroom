@@ -1,24 +1,36 @@
-package umm3601.supplylist;
+// Packages
+package umm3601.SupplyList;
 
+// Static Imports
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
+
+// Java Imports
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+// Org Imports
 import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
+
+// Com Imports
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+
+// IO Imports
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+
+// Misc Imports
 import umm3601.Controller;
 
 public class SupplyListController implements Controller {
@@ -52,6 +64,13 @@ public class SupplyListController implements Controller {
     );
   }
 
+  /**
+   * Get a single Supply List by ID.
+   * @param ctx The Javalin HTTP context
+   * @throws BadRequestResponse if the ID was not a legal Mongo Object ID
+   * @throws NotFoundResponse if no Supply List with the requested ID was found
+   * @return The Supply List with the requested ID
+   */
   public void getList(Context ctx) {
     String id = ctx.pathParam("id");
     SupplyList supplylistinv;
@@ -70,6 +89,10 @@ public class SupplyListController implements Controller {
     }
   }
 
+  /**
+   * Get a list of all Supply Lists, filtered by any combination of fields and sorted by any field
+   * @param ctx The Javalin HTTP context
+   */
   public void getSupplyLists(Context ctx) {
     Bson filter = constructFilter(ctx);
 
@@ -81,6 +104,10 @@ public class SupplyListController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  /**
+   * Construct a MongoDB filter based on query parameters in the HTTP request
+   * @return A MongoDB filter
+   */
   private Bson constructFilter(Context ctx) {
     List<Bson> filters = new ArrayList<>();
     if (ctx.queryParamMap().containsKey(SCHOOL_KEY)) {

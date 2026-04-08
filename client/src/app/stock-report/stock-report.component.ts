@@ -32,7 +32,7 @@ import { StockReport } from './stock-report';
 import { ReportGeneratorComponent } from './report-generator/report-generator.component';
 
 // Dialog Imports
-import { DialogElements } from '../dialog/dialog.component';
+import { DialogService } from '../dialog/dialog.service';
 
 /**
  * StockReportComponent is responsible for displaying the Stock Reports and inventory data in a tree structure.
@@ -63,6 +63,7 @@ import { DialogElements } from '../dialog/dialog.component';
 export class StockReportComponent {
   private inventoryService = inject(InventoryService);
   private reportService = inject(StockReportService);
+  private dialogService = inject(DialogService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
@@ -106,19 +107,20 @@ export class StockReportComponent {
 
   // Delete a single PDF report. Uses the Report Generator's method, passing along the report to delete
   deleteSingleReport(report: StockReport) {
-    const dialogRef = this.dialog.open(DialogElements, {
-      data: {
-        reportName: report.reportName,
-        message: `Are you sure you want to delete the report ${report.reportName}?`
-      }
-    });
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Delete Single',
+      reportName: report.reportName,
+      message: `Are you sure you want to delete the report ${report.reportName}?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '400px', '200px');
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         if (!this.reportGenerator || !report) return;
         this.reportGenerator.deleteSinglePdfReport(report);
         this.snackBar.open(
-          `Deleted report ${report.reportName}.`,
+          `Deleting report ${report.reportName}...`,
           `Okay`,
           { duration: 2000 }
         );
@@ -155,8 +157,8 @@ export class StockReportComponent {
           { maxQuantity: inventoryItem.maxQuantity, label: '- Max Quantity' },
           { minQuantity: inventoryItem.minQuantity, label: '- Min Quantity' },
         ]
-      }))
-    }));
+      })).sort((a, b) => a.description!.localeCompare(b.description!)) // Sort descriptions alphabetically
+    })).sort((a, b) => a.item!.localeCompare(b.item!)); // Sort items alphabetically by item name
   }
 
   // Compute tree nodes from inventory data
