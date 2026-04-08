@@ -102,7 +102,7 @@ export class EditFamilyComponent {
       ])),
       grade: new FormControl('', Validators.compose([
         Validators.required,
-        Validators.pattern(/^(?:[1-9]|1[0-2]|Kindergarten|Pre-K)$/) // Grades can only be 1-9, Kindergarten, or Pre-K (case-sensitive)
+        Validators.pattern(/^(?:[1-9]|1[0-2]|Kindergarten|PreK)$/) // Grades can only be 1-12, Kindergarten, or PreK (case-sensitive)
       ])),
       school: new FormControl('', Validators.compose([
         Validators.required,
@@ -143,7 +143,7 @@ export class EditFamilyComponent {
       ],
       grade: [
         { type: 'required', message: 'Grade is required' },
-        { type: 'pattern', message: 'Grade must be 1-9, Kindergarten, or Pre-K' }
+        { type: 'pattern', message: 'Grade must be 1-12, Kindergarten, or PreK' }
       ],
       school: [
         { type: 'required', message: 'School is required' },

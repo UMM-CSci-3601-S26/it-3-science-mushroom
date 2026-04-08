@@ -135,7 +135,7 @@ describe('editFamilyComponent', () => {
       expect(name.valid).toBeTrue();
     });
 
-    it('should validate student grade, "Kindergarten", and "Pre-K"', () => {
+    it('should validate student grade, "Kindergarten", and "PreK"', () => {
       editFamilyComponent.addStudent();
       const student = editFamilyComponent.students.at(0);
 
@@ -173,12 +173,12 @@ describe('editFamilyComponent', () => {
       expect(grade.valid).toBeTrue();
 
       // "pre-k" is an an invalid input
-      grade.setValue('pre-k');
+      grade.setValue('prek');
       expect(grade.valid).toBeFalse();
       expect(grade.hasError('pattern')).toBeTrue();
 
       // "Pre-K" is a valid input
-      grade.setValue('Pre-K');
+      grade.setValue('PreK');
       expect(grade.valid).toBeTrue();
     });
 
