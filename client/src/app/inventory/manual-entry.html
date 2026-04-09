@@ -1,0 +1,187 @@
+<h2 mat-dialog-title>Manual Entry</h2>
+
+<div class="dialog-subheader">
+  <div class="barcode-block">
+    <span class="label">Scanned Barcode</span>
+    <span class="value">{{ data.barcode }}</span>
+  </div>
+
+  <div class="quantity-block">
+    <span class="label">Requested Quantity</span>
+    <span class="value">{{ form.get('quantity')?.value || data.quantity }}</span>
+  </div>
+</div>
+
+    <mat-dialog-content class="manual-entry-content">
+      <div class="content-grid">
+        <section class="form-section">
+          <h3>Item Information</h3>
+
+          <div class="barcode-panel">
+        <h4>Barcode Information</h4>
+
+        <div class="barcode-panel-grid">
+          <div class="barcode-info-card">
+            <span class="info-label">Internal ID</span>
+            <span class="info-value">
+              {{ selectedItem?.internalID || 'Generated on save' }}
+            </span>
+          </div>
+
+          <div class="barcode-info-card">
+            <span class="info-label">Internal Barcode</span>
+            <span class="info-value">
+              {{ selectedItem?.internalBarcode || 'Generated on save' }}
+            </span>
+          </div>
+
+          <div class="barcode-info-card">
+            <span class="info-label">Scanned Barcode</span>
+            <span class="info-value">
+              {{ data.barcode || 'None' }}
+            </span>
+          </div>
+
+          <div class="barcode-info-card">
+            <span class="info-label">External Barcode To Save</span>
+            <span class="info-value">
+              {{ getDisplayExternalBarcode() }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="form" class="manual-form">
+        <div class="form-grid">
+
+          <mat-form-field appearance="outline">
+            <mat-label>Item</mat-label>
+            <input matInput formControlName="item" placeholder="Item name" />
+            <mat-error *ngIf="form.get('item')?.hasError('required')">
+              Item is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Brand</mat-label>
+            <input matInput formControlName="brand" placeholder="Brand" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Color</mat-label>
+            <input matInput formControlName="color" placeholder="Color" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Size</mat-label>
+            <input matInput formControlName="size" placeholder="Size" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Type</mat-label>
+            <input matInput formControlName="type" placeholder="Type" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Material</mat-label>
+            <input matInput formControlName="material" placeholder="Material" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <input matInput formControlName="description" placeholder="Description" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Package Size</mat-label>
+            <input matInput formControlName="packageSize" placeholder="Package Size" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Quantity</mat-label>
+            <input matInput formControlName="quantity" type="number" placeholder="Quantity" />
+            <mat-error *ngIf="form.get('quantity')?.hasError('required')">
+              Quantity is required
+            </mat-error>
+            <mat-error *ngIf="form.get('quantity')?.hasError('min')">
+              Quantity must be at least 1
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </form>
+    </section>
+
+    <section class="results-section">
+      <div class="results-header">
+        <h3>Matching Inventory Items</h3>
+        <p>Use the fields above as filters, or create a new item if nothing matches.</p>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredItems.length === 0">
+        <p>No matching items found.</p>
+      </div>
+
+      <div class="match-results" *ngIf="filteredItems.length > 0">
+        <button
+          mat-stroked-button
+          type="button"
+          *ngFor="let match of filteredItems; trackBy: trackByInternalID"
+          class="match-card"
+          [class.selected]="selectedItem?.internalID === match.internalID"
+          (click)="selectExistingItem(match)"
+        >
+          <div class="match-main">
+            <div class="match-title-row">
+              <span class="match-title">{{ match.item || 'Unnamed Item' }}</span>
+              <span class="match-id">{{ match.internalID }}</span>
+            </div>
+
+            <div class="match-summary">
+              {{ match.brand || 'N/A' }}
+              {{ match.color || '' }}
+              {{ match.size || '' }}
+              {{ match.type || '' }}
+              {{ match.material || '' }}
+            </div>
+
+            <div class="match-description" *ngIf="match.description">
+              {{ match.description }}
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div *ngIf="selectedItem" class="selected-match">
+        <h4>Selected Item</h4>
+
+        <div class="selected-grid">
+          <div><span class="detail-label">Internal ID:</span> {{ selectedItem.internalID || 'N/A' }}</div>
+          <div><span class="detail-label">Internal Barcode:</span> {{ selectedItem.internalBarcode || 'N/A' }}</div>
+          <div><span class="detail-label">External Barcode:</span> {{ stringifyExternalBarcode(selectedItem.externalBarcode) || 'N/A' }}</div>
+          <div><span class="detail-label">Item:</span> {{ selectedItem.item || 'N/A' }}</div>
+          <div><span class="detail-label">Brand:</span> {{ selectedItem.brand || 'N/A' }}</div>
+          <div><span class="detail-label">Color:</span> {{ selectedItem.color || 'N/A' }}</div>
+          <div><span class="detail-label">Size:</span> {{ selectedItem.size || 'N/A' }}</div>
+          <div><span class="detail-label">Type:</span> {{ selectedItem.type || 'N/A' }}</div>
+          <div><span class="detail-label">Material:</span> {{ selectedItem.material || 'N/A' }}</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button
+    mat-stroked-button
+    type="button"
+    color="primary"
+    (click)="clearSelectedItem()"
+    [disabled]="!selectedItem"
+  >
+    Clear Selection
+  </button>
+  <button mat-raised-button color="primary" type="button" (click)="submit()">
+    Save
+  </button>
+</mat-dialog-actions>

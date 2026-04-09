@@ -1,5 +1,4 @@
 import { InventoryPage } from "../support/inv.po";
-
 const page = new InventoryPage();
 const Filters_Test = {
   Item: 'Markers',
@@ -49,18 +48,28 @@ describe('Inventory', () => {
   });
 
   it('Should display all inventory column headers', () => {
-    cy.get('.demo-table thead th').as('headers');
+    cy.get('.demo-table thead th').then(($headers) => {
+      const headerTexts = [...$headers].map((header) => (header.textContent || '').replace(/\s+/g, ' ').trim());
+      expect(headerTexts).to.deep.equal([
+        'Item',
+        'Description',
+        'Brand',
+        'Color',
+        'Size',
+        'Type',
+        'Material',
+        'Package Size',
+        'Quantity',
+        'Notes'
+      ])
+    })
+  });
 
-    cy.get('@headers').should('contain', 'Item');
-    cy.get('@headers').should('contain', 'Description');
-    cy.get('@headers').should('contain', 'Brand');
-    cy.get('@headers').should('contain', 'Color');
-    cy.get('@headers').should('contain', 'Size');
-    cy.get('@headers').should('contain', 'Type');
-    cy.get('@headers').should('contain', 'Material');
-    cy.get('@headers').should('contain', 'Count');
-    cy.get('@headers').should('contain', 'Quantity');
-    cy.get('@headers').should('contain', 'Notes');
+  it('Should show the current inventory item count summary', () => {
+    cy.get('button.count-display').should('be.visible').invoke('text').then((text) => {
+      const normalized = text.replace(/\s+/g, ' ').trim();
+      expect(normalized).to.match(/^Items:\s*\d+$/);
+    });
   });
 
   // Cypress tests to ensure the filter boxes (including clear button) are there
@@ -219,7 +228,7 @@ describe('Inventory', () => {
     });
 
     it('Should show no autocomplete options when input matches nothing', () => {
-      page.getFilterItem().type('someItem');
+      page.getFilterItem().should('be.enabled').type('someItem')
       cy.get('mat-option').should('not.exist');
     });
 
@@ -251,6 +260,95 @@ describe('Inventory', () => {
       cy.get('[data-cy="inventory-type"]').first().should('have.text', 'Washable');
     });
   });
+
+  it('Should handle empty inventory response', () => {
+    cy.intercept('GET', '/api/inventory*', {
+      body: []
+    }).as('emptyInventory');
+
+    cy.visit('/inventory');
+    cy.wait('@emptyInventory');
+
+    cy.get('[data-cy="inventory-row"]').should('have.length', 0);
+  });
+
+  it('Should handle API error gracefully', () => {
+    cy.intercept('GET', '/api/inventory*', {
+      statusCode: 500,
+      body: {}
+    }).as('apiFail');
+
+    cy.visit('/inventory');
+    cy.wait('@apiFail');
+
+    cy.contains(/error|failed/i).should('exist');
+  });
+
+  it('Should render all inventory fields', () => {
+    cy.get('[data-cy="inventory-row"]').first().within(() => {
+      cy.get('[data-cy="inventory-item"]').should('exist');
+      cy.get('[data-cy="inventory-description"]').should('exist');
+      cy.get('[data-cy="inventory-brand"]').should('exist');
+      cy.get('[data-cy="inventory-color"]').should('exist');
+      cy.get('[data-cy="inventory-size"]').should('exist');
+      cy.get('[data-cy="inventory-type"]').should('exist');
+      cy.get('[data-cy="inventory-material"]').should('exist');
+      cy.get('[data-cy="inventory-packageSize"]').should('exist');
+      cy.get('[data-cy="inventory-quantity"]').should('exist');
+      cy.get('[data-cy="inventory-notes"]').should('exist');
+    });
+  });
+
+  it('Should navigate through pages', () => {
+    cy.get('[data-cy="inventory-paginator"]').should('exist');
+
+    cy.get('button[aria-label="Next page"]').click();
+    cy.wait(500);
+
+    cy.get('[data-cy="inventory-row"]').should('exist');
+  });
+
+  it('Should handle clearing filters when already empty', () => {
+    cy.get('[data-cy="filter-clear"]').click();
+    cy.get('[data-cy="inventory-row"]').should('exist');
+  });
+
+  it('Should filter using only item field', () => {
+    cy.intercept({
+      method: 'GET',
+      pathname: '/api/inventory',
+      query: {
+        item: 'Markers'
+      }
+    }).as('filterByItem');
+
+    cy.get('[data-cy="filter-item"]')
+      .clear()
+      .type('Markers')
+      .blur();
+
+    cy.wait('@filterByItem');
+
+    cy.get('[data-cy="inventory-item"]').then(($items) => {
+      const itemTexts = [...$items].map((item) =>
+        (item.textContent || '').trim()
+      );
+
+      expect(itemTexts.length).to.be.greaterThan(0);
+      itemTexts.forEach((text) => {
+        expect(text).to.contain('Markers');
+      });
+    });
+  });
+  it('Should capture error when no autocomplete options exist', () => {
+    cy.on('fail', (err) => {
+      expect(err.message).to.include('No autocomplete options found');
+    });
+
+    page.selectAutoCompleteOption('[data-cy="filter-item"]', 'someItem');
+  });
+
+
 
   // Note: The below test should remain empty until a finalized inventory list JSON is used to seed the database.
 

@@ -12,49 +12,58 @@ export class MockInventoryService implements Pick<InventoryService,
 'getInventory' | 'itemOptions' | 'brandOptions' | 'colorOptions' | 'sizeOptions' | 'typeOptions' | 'materialOptions'> {
   static testInventory: Inventory[] = [
     {
+      internalID: "123456789",
+      internalBarcode: "ITEM-00001",
       item: "Markers",
       brand: "Crayola",
-      count: 8,
+      packageSize: 8,
       size: "Wide",
       color: "N/A",
       type: "Washable",
       material: "N/A",
       description: "8 Pack of Washable Wide Markers",
       quantity: 0,
+      notes: "N/A",
+      externalBarcode: ["MFG-XYZ123"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: '',
-      notes: "N/A"
+      stockState: ''
     },
     {
+      internalID: "987654321",
+      internalBarcode: "ITEM-00000",
       item: "Folder",
       brand: "N/A",
-      count: 1,
+      packageSize: 1,
       size: "N/A",
       color: "Red",
       type: "2 Prong",
       material: "Plastic",
       description: "Red 2 Prong Plastic Pocket Folder",
       quantity: 0,
+      notes: "N/A",
+      externalBarcode: ["MFG-ABC456"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: '',
-      notes: "N/A"
+      stockState: ''
     },
     {
+      internalID: "456789123",
+      internalBarcode: "ITEM-00002",
       item: "Notebook",
       brand: "Five Star",
-      count: 1,
+      packageSize: 1,
       size: "Wide Ruled",
       color: "Yellow",
       type: "Spiral",
       material: "N/A",
       description: "Yellow Wide Ruled Spiral Notebook",
       quantity: 0,
+      notes: "N/A",
+      externalBarcode: ["MFG-DEF789"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: '',
-      notes: "N/A"
+      stockState: ''
     }
   ];
 

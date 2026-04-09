@@ -82,23 +82,37 @@ export class InventoryPage {
   }
 
   selectAutoCompleteOption(filterSelector: string, text: string) {
-    cy.get(filterSelector).clear().type(text);
+    cy.get(filterSelector)
+      .should('be.enabled')
+      .clear()
+      .type(text);
 
-    cy.get('.cdk-overlay-pane span.mdc-list-item__primary-text')
-      .should('have.length.greaterThan', 0)
-      .then(($spans) => {
-        const normalize = (str: string) =>
-          str.replace(/\s+/g, ' ').trim();
+    cy.wait(300);
 
-        const match = [...$spans].find(
-          (el) => normalize(el.innerText) === normalize(text)
-        );
+    cy.get('body').then(($body) => {
+      const overlay = $body.find('.cdk-overlay-pane');
 
-        if (!match) {
-          throw new Error(`Exact match for "${text}" not found`);
-        }
+      if (overlay.length === 0) {
+        throw new Error('No autocomplete options found');
+      }
 
-        cy.wrap(match).click();
-      });
+      const options = overlay.find('span.mdc-list-item__primary-text');
+
+      if (options.length === 0) {
+        throw new Error('No autocomplete options found');
+      }
+
+      const normalize = (str: string) =>
+        str.replace(/\s+/g, ' ').trim();
+
+      const match = [...options].find(
+        (el) => normalize(el.textContent || '') === normalize(text)
+      );
+      if (!match) {
+        throw new Error(`Exact match for "${text}" not found`);
+      }
+
+      cy.wrap(match).click();
+    });
   }
 }

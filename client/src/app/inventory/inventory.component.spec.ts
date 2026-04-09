@@ -72,7 +72,7 @@ describe('Inventory Table', () => {
     inventoryTable.item.set('Markers');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: 'Markers', brand: undefined, color: undefined, size: undefined, type: undefined, material: undefined });
+    expect(spy).toHaveBeenCalledWith({ item: 'Markers', brand: undefined, color: undefined, size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
   }));
 
   it('should call getInventory() when brand signal changes', fakeAsync(() => {
@@ -80,7 +80,7 @@ describe('Inventory Table', () => {
     inventoryTable.brand.set('Crayola');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: undefined, size: undefined, type: undefined, material: undefined });
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: undefined, size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
   }));
 
   it('should call getInventory() when color signal changes', fakeAsync(() => {
@@ -88,7 +88,7 @@ describe('Inventory Table', () => {
     inventoryTable.color.set('Red');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: 'Red', size: undefined, type: undefined, material: undefined });
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: 'Red', size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
   }));
 
   it('should call getInventory() when size signal changes', fakeAsync(() => {
@@ -96,7 +96,7 @@ describe('Inventory Table', () => {
     inventoryTable.size.set('Wide Ruled');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: 'Wide Ruled', type: undefined, material: undefined });
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: 'Wide Ruled', type: undefined, material: undefined , description: undefined, quantity: undefined});
   }));
 
   it('should call getInventory() when type signal changes', fakeAsync(() => {
@@ -104,7 +104,7 @@ describe('Inventory Table', () => {
     inventoryTable.type.set('Spiral');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: 'Spiral', material: undefined });
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: 'Spiral', material: undefined , description: undefined, quantity: undefined});
   }));
 
   it('should call getInventory() when material signal changes', fakeAsync(() => {
@@ -112,7 +112,7 @@ describe('Inventory Table', () => {
     inventoryTable.material.set('Plastic');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: undefined, material: 'Plastic' });
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: undefined, material: 'Plastic' , description: undefined, quantity: undefined});
   }));
 
   it('should call getInventory() when brand and color signals change', fakeAsync(() => {
@@ -121,7 +121,7 @@ describe('Inventory Table', () => {
     inventoryTable.brand.set('Crayola');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: 'Black', size: undefined, type: undefined, material: undefined });
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: 'Black', size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
   }));
 
   it('should call getInventory() when item, brand, color, and material signals change', fakeAsync(() => {
@@ -132,7 +132,7 @@ describe('Inventory Table', () => {
     inventoryTable.type.set('Spiral');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: 'Notebook', brand: 'Five Star', color: 'Yellow', size: undefined, type: 'Spiral', material: undefined });
+    expect(spy).toHaveBeenCalledWith({ item: 'Notebook', brand: 'Five Star', color: 'Yellow', size: undefined, type: 'Spiral', material: undefined , description: undefined, quantity: undefined});
   }));
 
   it('should not show error message on successful load', () => {
