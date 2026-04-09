@@ -1,4 +1,3 @@
-// Packages
 package umm3601.Inventory;
 
 // Static Imports
@@ -65,6 +64,9 @@ public class InventoryControllerSpec {
   private ArgumentCaptor<Inventory> inventoryCaptor;
 
   @Captor
+  private ArgumentCaptor<Document> documentCaptor;
+
+  @Captor
   private ArgumentCaptor<Map<String, String>> mapCaptor;
 
   // -- Test Management -- \\
@@ -98,7 +100,7 @@ public class InventoryControllerSpec {
         new Document()
             .append("item",  "Pencil")
             .append("brand",  "Ticonderoga")
-            .append("count",  1)
+            .append("packageSize",  1)
             .append("size",  "N/A")
             .append("color",  "yellow")
             .append("type", "#2")
@@ -113,7 +115,7 @@ public class InventoryControllerSpec {
         new Document()
             .append("item", "Eraser")
             .append("brand", "Pink Pearl")
-            .append("count", 1)
+            .append("packageSize", 1)
             .append("size", "N/A")
             .append("color", "pink")
             .append("type", "rubber")
@@ -128,7 +130,7 @@ public class InventoryControllerSpec {
         new Document()
             .append("item", "Notebook")
             .append("brand", "Five Star")
-            .append("count", 1)
+            .append("packageSize", 1)
             .append("size", "N/A")
             .append("color", "blue")
             .append("type", "spiral")
@@ -143,7 +145,7 @@ public class InventoryControllerSpec {
         new Document()
             .append("item", "Folder")
             .append("brand", "Manilla")
-            .append("count", 1)
+            .append("packageSize", 1)
             .append("size", "3 hole")
             .append("color", "green")
             .append("type", "3 hole")
@@ -161,7 +163,7 @@ public class InventoryControllerSpec {
         .append("_id", samsId)
         .append("item", "Backpack")
         .append("brand", "JanSport")
-        .append("count", 1)
+        .append("packageSize", 1)
         .append("size", "Standard")
         .append("color", "black")
         .append("type", "shoulder bag")
@@ -373,6 +375,269 @@ public class InventoryControllerSpec {
 
     assertEquals(1, inventoryArrayListCaptor.getValue().size());
     assertEquals("shoulder bag", inventoryArrayListCaptor.getValue().get(0).type);
+  }
+  @Test
+  void getInventoriesRanksExactMatchBeforeStartsWithBeforeContains() {
+    db.getCollection("inventory").insertMany(List.of(
+        new Document()
+            .append("item", "Glue")
+            .append("brand", "Elmer's")
+            .append("packageSize", 1)
+            .append("size", "Small")
+            .append("color", "white")
+            .append("type", "liquid")
+            .append("material", "glue")
+            .append("description", "Exact match")
+            .append("quantity", 4)
+            .append("maxQuantity", 10)
+            .append("minQuantity", 1)
+            .append("notes", "N/A"),
+        new Document()
+            .append("item", "Glue Stick")
+            .append("brand", "Elmer's")
+            .append("packageSize", 1)
+            .append("size", "Small")
+            .append("color", "white")
+            .append("type", "stick")
+            .append("material", "glue")
+            .append("description", "Starts with")
+            .append("quantity", 4)
+            .append("maxQuantity", 10)
+            .append("minQuantity", 1)
+            .append("notes", "N/A"),
+        new Document()
+            .append("item", "School Glue")
+            .append("brand", "Elmer's")
+            .append("packageSize", 1)
+            .append("size", "Small")
+            .append("color", "white")
+            .append("type", "liquid")
+            .append("material", "glue")
+            .append("description", "Contains")
+            .append("quantity", 4)
+            .append("maxQuantity", 10)
+            .append("minQuantity", 1)
+            .append("notes", "N/A")));
+
+    when(ctx.queryParamMap()).thenReturn(Map.of("item", List.of("Glue")));
+    when(ctx.queryParam("item")).thenReturn("Glue");
+
+    inventoryController.getInventories(ctx);
+
+    verify(ctx).json(inventoryArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    ArrayList<Inventory> results = inventoryArrayListCaptor.getValue();
+    assertEquals("Glue", results.get(0).item);
+    assertEquals("Glue Stick", results.get(1).item);
+    assertEquals("School Glue", results.get(2).item);
+  }
+
+  @Test
+  void generateNextIdReturnsFirstWhenCollectionEmpty() {
+    db.getCollection("inventory").drop();
+
+    inventoryController.generateNextID(ctx);
+
+    verify(ctx).json("ID-00001");
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void generateNextIdReturnsNextSequentialId() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertOne(new Document()
+        .append("internalID", "ID-00009"));
+
+    inventoryController.generateNextID(ctx);
+
+    verify(ctx).json("ID-00010");
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void generateNextIdReturnsFirstWhenHighestIdIsMalformed() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertOne(new Document()
+        .append("internalID", "ID-ABC"));
+
+    inventoryController.generateNextID(ctx);
+
+    verify(ctx).json("ID-00001");
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void addInventoryAssignsNextIdsDefaultsQuantityAndSanitizesExternalBarcodes() {
+    db.getCollection("inventory").insertOne(new Document()
+        .append("internalID", "ID-00007")
+        .append("internalBarcode", "ITEM-00008")
+        .append("quantity", 2));
+
+    Inventory incoming = new Inventory();
+    incoming.item = "Markers";
+    incoming.brand = "Expo";
+    incoming.packageSize = 1;
+    incoming.size = "Medium";
+    incoming.color = "Black";
+    incoming.type = "Dry Erase";
+    incoming.material = "Plastic";
+    incoming.description = "Black dry erase markers";
+    incoming.notes = "N/A";
+    incoming.quantity = 0;
+    incoming.externalBarcode = Arrays.asList("EXT-1", "", "  ", "EXT-1", "ITEM-99999", "EXT-2");
+
+    when(ctx.bodyAsClass(Inventory.class)).thenReturn(incoming);
+
+    inventoryController.addInventory(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.CREATED);
+
+    Inventory created = inventoryCaptor.getValue();
+    assertEquals("ID-00009", created.internalID);
+    assertEquals("ITEM-00009", created.internalBarcode);
+    assertEquals(1, created.quantity);
+    assertEquals(List.of("EXT-1", "EXT-2"), created.externalBarcode);
+  }
+
+  @Test
+  void addInventoryInitializesExternalBarcodesWhenNull() {
+    db.getCollection("inventory").drop();
+
+    Inventory incoming = new Inventory();
+    incoming.item = "Stapler";
+    incoming.brand = "Swingline";
+    incoming.packageSize = 1;
+    incoming.size = "Standard";
+    incoming.color = "Black";
+    incoming.type = "Desk";
+    incoming.material = "Metal";
+    incoming.description = "A standard stapler";
+    incoming.notes = "N/A";
+    incoming.quantity = 2;
+    incoming.externalBarcode = null;
+
+    when(ctx.bodyAsClass(Inventory.class)).thenReturn(incoming);
+
+    inventoryController.addInventory(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.CREATED);
+
+    Inventory created = inventoryCaptor.getValue();
+    assertEquals("ID-00001", created.internalID);
+    assertEquals("ITEM-00001", created.internalBarcode);
+    assertEquals(0, created.externalBarcode.size());
+  }
+
+  @Test
+  void removeInventoryReducesQuantityWhenEnoughExists() {
+    db.getCollection("inventory").insertOne(new Document()
+        .append("internalID", "ID-00050")
+        .append("quantity", 6));
+
+    RemoveInventoryRequest request = new RemoveInventoryRequest();
+    request.internalID = "ID-00050";
+    request.amount = 2;
+
+    when(ctx.bodyAsClass(RemoveInventoryRequest.class)).thenReturn(request);
+
+    inventoryController.removeInventory(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(4, inventoryCaptor.getValue().quantity);
+    Document stored = db.getCollection("inventory").find(new Document("internalID", "ID-00050")).first();
+    assertEquals(4, stored.getInteger("quantity"));
+  }
+
+  @Test
+  void removeInventoryDeletesItemWhenQuantityHitsZero() {
+    db.getCollection("inventory").insertOne(new Document()
+        .append("internalID", "ID-00051")
+        .append("quantity", 2));
+
+    RemoveInventoryRequest request = new RemoveInventoryRequest();
+    request.internalID = "ID-00051";
+    request.amount = 2;
+
+    when(ctx.bodyAsClass(RemoveInventoryRequest.class)).thenReturn(request);
+
+    inventoryController.removeInventory(ctx);
+
+    verify(ctx).json(documentCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document result = documentCaptor.getValue();
+    assertEquals(true, result.getBoolean("deleted"));
+    assertEquals(0, result.getInteger("quantity"));
+    assertEquals(0, db.getCollection("inventory").countDocuments(new Document("internalID", "ID-00051")));
+  }
+
+  @Test
+  void removeInventoryRejectsBlankInternalId() {
+    RemoveInventoryRequest request = new RemoveInventoryRequest();
+    request.internalID = "   ";
+    request.amount = 1;
+
+    when(ctx.bodyAsClass(RemoveInventoryRequest.class)).thenReturn(request);
+
+    BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
+      inventoryController.removeInventory(ctx);
+    });
+
+    assertEquals("internalID is required to remove inventory", ex.getMessage());
+  }
+
+  @Test
+  void removeInventoryRejectsNonPositiveAmount() {
+    RemoveInventoryRequest request = new RemoveInventoryRequest();
+    request.internalID = "ID-00052";
+    request.amount = 0;
+
+    when(ctx.bodyAsClass(RemoveInventoryRequest.class)).thenReturn(request);
+
+    BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
+      inventoryController.removeInventory(ctx);
+    });
+
+    assertEquals("amount must be greater than 0", ex.getMessage());
+  }
+
+  @Test
+  void removeInventoryRejectsUnknownInternalId() {
+    RemoveInventoryRequest request = new RemoveInventoryRequest();
+    request.internalID = "ID-99999";
+    request.amount = 1;
+
+    when(ctx.bodyAsClass(RemoveInventoryRequest.class)).thenReturn(request);
+
+    NotFoundResponse ex = assertThrows(NotFoundResponse.class, () -> {
+      inventoryController.removeInventory(ctx);
+    });
+
+    assertEquals("No item found for internalID: ID-99999", ex.getMessage());
+  }
+
+  @Test
+  void removeInventoryRejectsRemovingTooMuch() {
+    db.getCollection("inventory").insertOne(new Document()
+        .append("internalID", "ID-00053")
+        .append("quantity", 1));
+
+    RemoveInventoryRequest request = new RemoveInventoryRequest();
+    request.internalID = "ID-00053";
+    request.amount = 2;
+
+    when(ctx.bodyAsClass(RemoveInventoryRequest.class)).thenReturn(request);
+
+    BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
+      inventoryController.removeInventory(ctx);
+    });
+
+    assertEquals("Cannot remove more than current quantity", ex.getMessage());
   }
 }
 

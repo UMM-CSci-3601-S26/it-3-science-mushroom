@@ -63,6 +63,62 @@ export class InventoryService {
     this.optionBuilder(this.inventory(), 'material')
   )
 
+  lookUpByBarcode(barcode:string): Observable<Inventory> {
+    return this.httpClient.get<Inventory>(`${environment.apiUrl}barcode/lookup/${barcode}`);
+  }
+  addManually(item: Inventory): Observable<Inventory> {
+    return this.httpClient.post<Inventory>(this.inventoryUrl, item);
+  }
+  removeOne(identifier: string): Observable<Inventory> {
+    return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/remove`, { params: { id: identifier } });
+  }
+  addInventory(item: Inventory): Observable<Inventory> {
+    return this.httpClient.post<Inventory>(this.inventoryUrl, item);
+  }
+  updateQuantity(barcode: string, action: 'add' | 'remove', amount: number = 1): Observable<Inventory> {
+    return this.httpClient.post<Inventory>(`${this.inventoryUrl}/${barcode}/quantity`, { action, amount });
+  }
+  linkExternalBarcode(internalID: string, barcode: string, quantity: number = 1): Observable<Inventory> {
+    return this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode, quantity });
+  }
+  removeInventoryById(internalID: string, amount: number) {
+    return this.httpClient.post(`${this.inventoryUrl}/remove`, { internalID, amount });
+  }
+
+  // addByScanAndUpdate(barcode: string) {
+  //   this.addByScan(barcode).subscribe(updatedItem => {
+  //     this.syncItem(updatedItem);
+  //   }, (err) => {
+  //     if (err.status ===404) {
+  //       this.openManualEntry(barcode);
+  //     } else {
+  //       console.error('Error adding item by scan:', err);
+  //     }
+  //   }
+  //   );
+  // }
+
+  removeOneAndUpdate(identifier: string) {
+    this.removeOne(identifier).subscribe(item => {
+      if (item.quantity <= 0) {
+        this.inventory.set(this.inventory().filter(i => i.internalID !== item.internalID))
+      } else {
+        this.syncItem(item);
+      }
+    });
+  }
+
+  private syncItem(updatedItem: Inventory) {
+    const currentInventory = this.inventory();
+    const index = currentInventory.findIndex(item => item.internalID === updatedItem.internalID);
+    if (index !== -1) {
+      const newInventory = [...currentInventory];
+      newInventory[index] = updatedItem;
+      this.inventory.set(newInventory);
+    } else {
+      this.inventory.set([...currentInventory, updatedItem]);
+    }
+  }
 
   getInventory(filters?: {item?: string; description?: string; brand?: string; color?: string;
     count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<Inventory[]> {

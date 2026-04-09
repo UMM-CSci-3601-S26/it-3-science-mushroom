@@ -120,26 +120,102 @@
           </mat-form-field>
         </div>
         <div class="filter-extra">
+          <div class="filter-actions">
           <!-- Clear Filters Button -->
             <button
-            mat-stroked-button
-            type="button"
-            (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined);
-            type.set(undefined); material.set(undefined)"
-            data-cy="filter-clear"
-            class="clear-button"
-            >
-            Clear
+              mat-stroked-button
+              type="button"
+              (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined);
+              type.set(undefined); material.set(undefined)"
+              data-cy="filter-clear"
+              class="clear-button"
+              >
+              Clear
             </button>
 
             <button mat-stroked-button class="count-display">
-            Count: {{ serverFilteredInventory().length }}
+            Items: {{ serverFilteredInventory().length }}
             </button>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
-</div>
+            <div class="scanner-actions">
+              <button
+                mat-stroked-button
+                type="button"
+                [disabled]="scannerProcessing"
+                (click)="toggleScanner()"
+                data-cy="scan-button"
+                >
+                {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
+              </button>
+
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="openRemoveScanner()"
+                data-cy="remove-scan-button"
+                >
+                  Remove Item
+                </button>
+              </div>
+            </div>
+
+            <div class="scanner-wrapper" *ngIf="showScanner">
+            <p>Scanner is open</p>
+            <app-scanner
+            (scanned)="onScanned($event)"
+            (manualEntryNeeded)="onManualEntryNeeded($event)"
+            (processingStarted)="scannerProcessing = true"
+            (done)="onScannerDone()"></app-scanner>
+            </div>
+            <div *ngIf="showRemovePanel() && scanCards().length > 0" class="remove-panel">
+                <h3>Remove Inventory</h3>
+                <p class="remove-summary">
+                  Total items to remove: {{ scanCards().length }}
+                </p>
+                <div *ngFor="let card of scanCards(); trackBy: trackByScanCard" class="remove-entry-card">
+                <div class="remove-details">
+                  <p><strong>Item:</strong> {{ card.item?.item || 'No item in inventory yet'}}</p>
+                  <p><strong>Brand:</strong> {{ card.item?.brand || 'N/A'}}</p>
+                  <p><strong>Package Size:</strong> {{ card.item?.packageSize ?? 'N/A'}}</p>
+                  <p><strong>Quantity:</strong> {{ card.item?.quantity ?? "N/A" }}</p>
+                  <p><strong>Barcode:</strong> {{ card.barcode }}</p>
+                </div>
+
+                <mat-form-field appearance="outline">
+                  <mat-label> Amount to remove</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    min="1"
+                    [ngModel]="card.removeAmount"
+                    (ngModelChange)="updateCardRemoveAmount(card.id, $event)"
+                    />
+                </mat-form-field>
+
+                <div class="remove-actions">
+                  <button
+                    mat-raised-button
+                    color="warn"
+                    type="button"
+                    *ngIf="card.mode === 'remove' && card.item"
+                    (click)="confirmSingleRemove(card.id)">
+                    Remove From Inventory
+                  </button>
+                  <button mat-stroked-button type="button" (click)="removeCard(card.id)">
+                    Remove Card
+                  </button>
+                </div>
+              </div>
+              <div class="remove-actions global-remove-actions">
+              <button mat-raised-button color="warn" type="button" (click)="confirmRemove()">
+                Remove All Valid Inventory Items
+              </button>
+
+              <button mat-stroked-button type="button" (click)="clearAllCards()">
+                Clear All Cards
+              </button>
+              </div>
+            </div>
+          </div>
 
 <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
   <!-- Item Column -->
@@ -184,10 +260,10 @@
     <td mat-cell *matCellDef="let element" class="inventory-material" data-cy="inventory-material">{{element.material}}</td>
   </ng-container>
 
-  <!-- Count Column -->
-  <ng-container matColumnDef="count">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by count">Count</th>
-    <td mat-cell *matCellDef="let element" class="inventory-count" data-cy="inventory-count">{{element.count}}</td>
+  <!-- package size Column -->
+  <ng-container matColumnDef="packageSize">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by packageSize">Package Size</th>
+    <td mat-cell *matCellDef="let element" class="inventory-packageSize" data-cy="inventory-packageSize">{{element.packageSize}}</td>
   </ng-container>
 
   <!-- Quantity Column -->
