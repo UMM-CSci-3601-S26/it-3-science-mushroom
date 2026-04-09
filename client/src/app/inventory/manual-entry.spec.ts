@@ -1,7 +1,6 @@
 import { FormBuilder, FormControl, ValidationErrors } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
-
 import { Inventory } from './inventory';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
 import { InventoryService } from './inventory.service';
@@ -237,5 +236,229 @@ describe('ManualEntry', () => {
 
     createComponent({ barcode: '', quantity: 1 });
     expect(component.getDisplayExternalBarcode()).toBe('None');
+  });
+
+  describe('ManualEntry branch coverage', () => {
+    const existingItem: Inventory = {
+      internalID: 'abc123',
+      internalBarcode: 'ITEM-00001',
+      externalBarcode: ['UPC-111'],
+      item: 'Markers',
+      description: 'Washable markers',
+      brand: 'Crayola',
+      color: 'Blue',
+      packageSize: 8,
+      size: 'Large',
+      type: 'School',
+      material: 'Plastic',
+      quantity: 4,
+      notes: 'Keep sealed',
+      maxQuantity: 20,
+      minQuantity: 2,
+      stockState: 'Stocked'
+    };
+
+    it('should clear inventory lists when loadInventory fails', () => {
+      inventoryServiceSpy.getInventory.and.returnValue(
+        throwError(() => new Error('load failed'))
+      )
+
+      component.allInventory = [existingItem];
+      component.filteredItems = [existingItem];
+
+      component.loadInventory();
+
+      expect(component.allInventory).toEqual([]);
+      expect(component.filteredItems).toEqual([]);
+    });
+
+    it('should close with match result when selectedItem exists', () => {
+      component.selectedItem = existingItem;
+      component.form.get('quantity')?.setValue(3);
+
+      component.submit();
+
+      expect(dialogRefSpy.close).toHaveBeenCalledWith({
+        mode: 'match',
+        selectedItem: existingItem,
+        quantity: 3
+      });
+    });
+
+    it('should create a new item and save scanned external barcode for non-internal scans', () => {
+      component.selectedItem = null;
+      component.data.barcode = '04940308';
+
+      component.form.patchValue({
+        item: 'Notebook',
+        description: 'Wide ruled notebook',
+        brand: 'Five Star',
+        color: 'Yellow',
+        packageSize: 1,
+        size: 'Wide Ruled',
+        type: 'Spiral',
+        material: 'Paper',
+        quantity: 2,
+        notes: 'new',
+        maxQuantity: 10,
+        minQuantity: 1,
+        stockState: 'Stocked'
+      });
+
+      component.submit();
+
+      expect(dialogRefSpy.close).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          mode: 'new',
+          quantity: 2,
+          newItem: jasmine.objectContaining({
+            item: 'Notebook',
+            externalBarcode: ['04940308'],
+            quantity: 2
+          })
+        })
+      );
+    });
+
+    it('should not save external barcode when scanned barcode is internal', () => {
+      component.selectedItem = null;
+      component.data.barcode = 'ITEM-00077';
+
+      component.form.patchValue({
+        item: 'Folder',
+        quantity: 1
+      });
+
+      component.submit();
+
+      expect(dialogRefSpy.close).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          mode: 'new',
+          newItem: jasmine.objectContaining({
+            externalBarcode: []
+          })
+        })
+      );
+    });
+
+    it('should default invalid quantity to 1 for selected item submit', () => {
+      component.selectedItem = existingItem;
+      component.form.get('quantity')?.setValue(0);
+
+      component.submit();
+
+      expect(dialogRefSpy.close).toHaveBeenCalledWith({
+        mode: 'match',
+        selectedItem: existingItem,
+        quantity: 1
+      });
+    });
+
+    it('should mark form as touched when submitting invalid new item', () => {
+      component.selectedItem = null;
+      component.form.patchValue({
+        item: '',
+        quantity: 1
+      });
+
+      const markSpy = spyOn(component.form, 'markAllAsTouched');
+
+      component.submit();
+
+      expect(markSpy).toHaveBeenCalled();
+      expect(dialogRefSpy.close).not.toHaveBeenCalled();
+    });
+
+    it('should reset selected item and form values in clearSelectedItem', () => {
+      component.selectedItem = existingItem;
+      component.form.patchValue({
+        item: 'Something',
+        brand: 'Brand',
+        color: 'Red',
+        packageSize: 5,
+        notes: 'x'
+      });
+
+      component.clearSelectedItem();
+
+      expect(component.selectedItem).toBeNull();
+      expect(component.form.get('item')?.value).toBe('');
+      expect(component.form.get('brand')?.value).toBe('');
+      expect(component.form.get('color')?.value).toBe('');
+      expect(component.form.get('packageSize')?.value).toBe(0);
+      expect(component.form.get('notes')?.value).toBe('');
+    });
+
+    it('should filter items by multiple fields', () => {
+      component.allInventory = [
+        existingItem,
+        {
+          ...existingItem,
+          internalID: 'other',
+          item: 'Folder',
+          brand: 'OfficeCo',
+          color: 'Red',
+          size: 'Small',
+          type: 'Pocket',
+          material: 'Paper'
+        }
+      ];
+
+      component.form.patchValue({
+        item: 'mark',
+        brand: 'cray',
+        color: 'blu',
+        size: 'lar',
+        type: 'sch',
+        material: 'plas'
+      });
+
+      const results = component.getFilteredItems();
+
+      expect(results.length).toBe(1);
+      expect(results[0].item).toBe('Markers');
+    });
+
+    it('should cover matchesArray for blank filter, array values, and string values', () => {
+      const access = component as unknown as {
+        matchesArray: (values: string[] | string | undefined, filter: string) => boolean;
+      };
+
+      expect(access.matchesArray(['A', 'B'], '')).toBeTrue();
+      expect(access.matchesArray(['UPC-111', 'UPC-222'], '222')).toBeTrue();
+      expect(access.matchesArray('ITEM-00001', '00001')).toBeTrue();
+      expect(access.matchesArray(undefined, 'zzz')).toBeFalse();
+    });
+
+    it('should stringify external barcode arrays and strings', () => {
+      expect(component.stringifyExternalBarcode(['A', 'B'])).toBe('A, B');
+      expect(component.stringifyExternalBarcode('ABC')).toBe('ABC');
+      expect(component.stringifyExternalBarcode(undefined)).toBe('');
+    });
+
+    it('should track by internalID or fall back to item-index', () => {
+      expect(component.trackByInternalID(0, existingItem)).toBe('abc123');
+
+      const noIdItem: Inventory = { ...existingItem, internalID: '' };
+      expect(component.trackByInternalID(2, noIdItem)).toBe('Markers-2');
+    });
+
+    it('should identify internal barcodes correctly', () => {
+      expect(component.isInternalBarcode('ITEM-12345')).toBeTrue();
+      expect(component.isInternalBarcode(' item-9 ')).toBeTrue();
+      expect(component.isInternalBarcode('04940308')).toBeFalse();
+      expect(component.isInternalBarcode(undefined)).toBeFalse();
+    });
+
+    it('should return proper display external barcode text', () => {
+      component.data.barcode = '';
+      expect(component.getDisplayExternalBarcode()).toBe('None');
+
+      component.data.barcode = 'ITEM-00011';
+      expect(component.getDisplayExternalBarcode()).toBe('Not saved from internal scan');
+
+      component.data.barcode = '04940308';
+      expect(component.getDisplayExternalBarcode()).toBe('04940308');
+    });
   });
 });

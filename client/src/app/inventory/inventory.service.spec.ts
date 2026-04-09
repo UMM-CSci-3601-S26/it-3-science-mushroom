@@ -1,352 +1,351 @@
-// Angular Imports
-import { HttpClient, HttpParams, provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed, waitForAsync } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
 
-// RxJS Imports
-import { of } from 'rxjs';
-
-// Inventory Imports
-import { Inventory } from './inventory';
 import { InventoryService } from './inventory.service';
+import { Inventory } from './inventory';
 
 describe('InventoryService', () => {
-  // A small test inventory
-  const testInventory: Inventory[] = [
-    {
-      internalID: "123456789",
-      internalBarcode: "ITEM-00000",
-      item: "Markers",
-      brand: "Crayola",
-      packageSize: 8,
-      size: "Wide",
-      color: "Black",
-      type: "Washable",
-      material: "N/A",
-      description: "8 Pack of Washable Wide Markers",
-      quantity: 0,
-      notes: "N/A",
-      externalBarcode: ["MFG-XYZ123"], // Example of an external barcode referencing this item
-      maxQuantity: 0,
-      minQuantity: 0,
-      stockState: ''
-    },
-    {
-      internalID: "987654321",
-      internalBarcode: "ITEM-00001",
-      item: "Folder",
-      brand: "N/A",
-      packageSize: 1,
-      size: "N/A",
-      color: "Red",
-      type: "2 Prong",
-      material: "Plastic",
-      description: "Red 2 Prong Plastic Pocket Folder",
-      quantity: 0,
-      notes: "N/A",
-      externalBarcode: ["MFG-ABC456"], // Example of an external barcode referencing this item
-      maxQuantity: 0,
-      minQuantity: 0,
-      stockState: ''
-    },
-    {
-      internalID: "456789123",
-      internalBarcode: "ITEM-00002",
-      item: "Notebook",
-      brand: "N/A",
-      packageSize: 1,
-      size: "Wide Ruled",
-      color: "Yellow",
-      type: "Spiral",
-      material: "N/A",
-      description: "Yellow Wide Ruled Spiral Notebook",
-      quantity: 0,
-      notes: "N/A",
-      externalBarcode: ["MFG-DEF789"], // Example of an external barcode referencing this item
-      maxQuantity: 0,
-      minQuantity: 0,
-      stockState: ''
-    }
-  ];
+  let service: InventoryService;
+  let httpMock: HttpTestingController;
 
-  let inventoryService: InventoryService;
-  let httpClient: HttpClient;
-  let httpTestingController: HttpTestingController;
+  const itemA: Inventory = {
+    internalID: '1',
+    internalBarcode: 'ITEM-00001',
+    externalBarcode: ['UPC-1'],
+    item: 'Markers',
+    description: 'Washable markers',
+    brand: 'Crayola',
+    color: 'Blue',
+    packageSize: 8,
+    size: 'Large',
+    type: 'School',
+    material: 'Plastic',
+    quantity: 5,
+    notes: 'Keep sealed',
+    maxQuantity: 20,
+    minQuantity: 1,
+    stockState: 'In Stock'
+  };
+
+  const itemB: Inventory = {
+    internalID: '2',
+    internalBarcode: 'ITEM-00002',
+    externalBarcode: ['UPC-2'],
+    item: 'Pencils',
+    description: 'No. 2 pencils',
+    brand: 'Ticonderoga',
+    color: 'Yellow',
+    packageSize: 12,
+    size: 'Standard',
+    type: 'Writing',
+    material: 'Wood',
+    quantity: 10,
+    notes: 'Sharpened',
+    maxQuantity: 30,
+    minQuantity: 2,
+    stockState: 'Low'
+  };
 
   beforeEach(() => {
-    // Set up the mock handling of the HTTP requests
     TestBed.configureTestingModule({
-      imports: [],
-      providers: [provideHttpClient(), provideHttpClientTesting()]
+      providers: [
+        InventoryService,
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
     });
-    // Construct an instance of the service with the mock
-    // HTTP client.
-    httpClient = TestBed.inject(HttpClient);
-    httpTestingController = TestBed.inject(HttpTestingController);
-    inventoryService = TestBed.inject(InventoryService);
 
-    const initReq = httpTestingController.expectOne(inventoryService.inventoryUrl);
-    initReq.flush(testInventory);
+    service = TestBed.inject(InventoryService);
+    httpMock = TestBed.inject(HttpTestingController);
+
+    // constructor -> loadInventory()
+    const initReq = httpMock.expectOne(service.inventoryUrl);
+    expect(initReq.request.method).toBe('GET');
+    initReq.flush([]);
   });
 
   afterEach(() => {
-    // After every test, assert that there are no more pending requests.
-    httpTestingController.verify();
+    httpMock.verify();
   });
 
+  it('should load inventory into the signal', () => {
+    service.loadInventory();
 
-  describe('When getInventory() is called with no parameters', () => {
+    const req = httpMock.expectOne(service.inventoryUrl);
+    expect(req.request.method).toBe('GET');
 
-    it('calls `api/inventories`', waitForAsync(() => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-      inventoryService.getInventory().subscribe(() => {
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(mockedMethod)
-          .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams() });
-      });
-    }));
+    req.flush([itemA, itemB]);
+
+    expect(service.inventory()).toEqual([itemA, itemB]);
   });
 
-  describe('optionBuilder', () => {
-    it('should build unique options from inventory data', () => {
-      const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Pants', description: '', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-      ];
+  it('should pass filters through loadInventory/getInventory', () => {
+    service.loadInventory({
+      item: 'Markers',
+      brand: 'Crayola',
+      color: 'Blue',
+      size: 'Large',
+      type: 'School',
+      material: 'Plastic'
+    } as Inventory);
 
-      const result = inventoryService.optionBuilder(mockInventory, 'item');
+    const req = httpMock.expectOne(request =>
+      request.url === service.inventoryUrl &&
+      request.method === 'GET' &&
+      request.params.get('item') === 'Markers' &&
+      request.params.get('brand') === 'Crayola' &&
+      request.params.get('color') === 'Blue' &&
+      request.params.get('size') === 'Large' &&
+      request.params.get('type') === 'School' &&
+      request.params.get('material') === 'Plastic'
+    );
 
-      expect(result).toEqual([
-        { label: 'Shirt', value: 'Shirt' },
-        { label: 'Pants', value: 'Pants' }
-      ]);
-    });
+    req.flush([itemA]);
 
-    it('should filter out empty and null values', () => {
-      const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-        { internalID: "2", internalBarcode: "ITEM-00001", item: '', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-      ];
-
-      const result = inventoryService.optionBuilder(mockInventory, 'item');
-
-      expect(result).toEqual([
-        { label: 'Shirt', value: 'Shirt' }
-      ]);
-    });
-
-    it('should return an empty array when given empty data', () => {
-      const result = inventoryService.optionBuilder([], 'item');
-      expect(result).toEqual([]);
-    });
-
-    it('should filter out whitespace-only values', () => {
-      const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: '   ', description: '', brand: '', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Shirt', description: '', brand: '', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-      ];
-
-      const result = inventoryService.optionBuilder(mockInventory, 'item');
-
-      expect(result).toEqual([
-        { label: 'Shirt', value: 'Shirt' }
-      ]);
-    });
-
-    it('should return a single option when all values are the same', () => {
-      const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Shirt', description: '', brand: 'Nike', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Shirt', description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', packageSize: 3, quantity: 3, notes: '',  maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-      ];
-
-      const result = inventoryService.optionBuilder(mockInventory, 'item');
-
-      expect(result.length).toBe(1);
-      expect(result[0]).toEqual({ label: 'Shirt', value: 'Shirt' });
-    });
-
-    it('should only return options for rows where the key has a value', () => {
-      const mockInventory: Inventory[] = [
-        { internalID: "1", internalBarcode: "ITEM-00000", item: 'Shirt', description: '', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked' },
-        { internalID: "2", internalBarcode: "ITEM-00001", item: 'Pants', description: '', brand: '',     color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-        { internalID: "3", internalBarcode: "ITEM-00002", item: 'Hat',   description: '', brand: 'Nike', color: 'Green', size: 'S', type: 'Top', material: 'Wool', packageSize: 3, quantity: 3, notes: '', maxQuantity: 10,minQuantity: 0,stockState:'stocked'},
-      ];
-
-      const result = inventoryService.optionBuilder(mockInventory, 'brand');
-
-      expect(result).toEqual([
-        { label: 'Nike', value: 'Nike' }
-      ]);
-    });
+    expect(service.inventory()).toEqual([itemA]);
   });
 
-  describe('When getInventory() is called with parameters, it correctly forms the HTTP request (Javalin/Server filtering)', () => {
+  it('should get inventory with no filters', () => {
+    let response: Inventory[] | undefined;
 
-    it('correctly calls api/inventory with filter parameter \'item\'', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ item: 'Markers' }).subscribe(() => {
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(mockedMethod)
-          .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams().set('item', 'Markers') });
-      });
+    service.getInventory().subscribe(data => {
+      response = data;
     });
 
-    it('correctly calls api/inventory with filter parameter \'brand\'', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
+    const req = httpMock.expectOne(service.inventoryUrl);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.keys().length).toBe(0);
 
-      inventoryService.getInventory({ brand: 'Crayola' }).subscribe(() => {
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(mockedMethod)
-          .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams().set('brand', 'Crayola') });
-      });
-    });
+    req.flush([itemA]);
 
-    it('correctly calls api/inventory with filter parameter \'color\'', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ color: 'Black' }).subscribe(() => {
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(mockedMethod)
-          .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams().set('color', 'Black') });
-      });
-    });
-
-    it('correctly calls api/inventory with filter parameter \'size\'', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ size: 'Regular' }).subscribe(() => {
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(mockedMethod)
-          .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams().set('size', 'Regular') });
-      });
-    });
-
-    it('correctly calls api/inventory with filter parameter \'type\'', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ type: 'Spiral' }).subscribe(() => {
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(mockedMethod)
-          .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams().set('type', 'Spiral') });
-      });
-    });
-
-    it('correctly calls api/inventory with filter parameter \'material\'', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ material: 'Plastic' }).subscribe(() => {
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(mockedMethod)
-          .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(inventoryService.inventoryUrl, { params: new HttpParams().set('material', 'Plastic') });
-      });
-    });
-
-    it('correctly calls api/inventory with multiple filter parameters', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ item: 'Markers', color: 'Black' }).subscribe(() => {
-
-        const [url, options] = mockedMethod.calls.argsFor(0);
-
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(url)
-          .withContext('talks to the correct endpoint')
-          .toEqual(inventoryService.inventoryUrl);
-        expect(calledHttpParams.keys().length)
-          .withContext('should have 2 params')
-          .toEqual(2);
-        expect(calledHttpParams.get('item'))
-          .withContext('item being Markers')
-          .toEqual('Markers');
-        expect(calledHttpParams.get('color'))
-          .withContext('color being Black')
-          .toEqual('Black');
-      });
-    });
-
-    it('correctly calls api/inventory with multiple filter parameters', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ type: '2 prong', material: 'Plastic' }).subscribe(() => {
-
-        const [url, options] = mockedMethod.calls.argsFor(0);
-
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(url)
-          .withContext('talks to the correct endpoint')
-          .toEqual(inventoryService.inventoryUrl);
-        expect(calledHttpParams.keys().length)
-          .withContext('should have 2 params')
-          .toEqual(2);
-        expect(calledHttpParams.get('type'))
-          .withContext('type being 2 prong')
-          .toEqual('2 prong');
-        expect(calledHttpParams.get('material'))
-          .withContext('material being Plastic')
-          .toEqual('Plastic');
-      });
-    });
-
-    it('correctly calls api/inventory with multiple filter parameters', () => {
-      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testInventory));
-
-      inventoryService.getInventory({ item: 'Notebook', color: 'Yellow', size: 'Wide Ruled', type: 'Spiral' }).subscribe(() => {
-
-        const [url, options] = mockedMethod.calls.argsFor(0);
-
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
-        expect(mockedMethod)
-          .withContext('one call')
-          .toHaveBeenCalledTimes(1);
-        expect(url)
-          .withContext('talks to the correct endpoint')
-          .toEqual(inventoryService.inventoryUrl);
-        expect(calledHttpParams.keys().length)
-          .withContext('should have 4 params')
-          .toEqual(4);
-        expect(calledHttpParams.get('item'))
-          .withContext('item being Notebook')
-          .toEqual('Notebook');
-        expect(calledHttpParams.get('color'))
-          .withContext('color being Yellow')
-          .toEqual('Yellow');
-        expect(calledHttpParams.get('size'))
-          .withContext('size being Wide Ruled')
-          .toEqual('Wide Ruled');
-        expect(calledHttpParams.get('type'))
-          .withContext('type being Spiral')
-          .toEqual('Spiral');
-      });
-    });
+    expect(response).toEqual([itemA]);
   });
-})
+
+  it('should look up an item by barcode', () => {
+    let response: Inventory | undefined;
+
+    service.lookUpByBarcode('UPC-1').subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(r => r.url.includes('/barcode/lookup/UPC-1'));
+    expect(req.request.method).toBe('GET');
+
+    req.flush(itemA);
+
+    expect(response).toEqual(itemA);
+  });
+
+  it('should add an item manually', () => {
+    let response: Inventory | undefined;
+
+    service.addManually(itemA).subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(service.inventoryUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(itemA);
+
+    req.flush(itemA);
+
+    expect(response).toEqual(itemA);
+  });
+
+  it('should add inventory', () => {
+    let response: Inventory | undefined;
+
+    service.addInventory(itemB).subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(service.inventoryUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(itemB);
+
+    req.flush(itemB);
+
+    expect(response).toEqual(itemB);
+  });
+
+  it('should remove one item by identifier', () => {
+    let response: Inventory | undefined;
+
+    service.removeOne('1').subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(r => r.url.endsWith('/inventory/remove'));
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.params.get('id')).toBe('1');
+
+    req.flush(itemA);
+
+    expect(response).toEqual(itemA);
+  });
+
+  it('should update quantity with the default amount', () => {
+    let response: Inventory | undefined;
+
+    service.updateQuantity('ITEM-00001', 'add').subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(r => r.url.includes('/ITEM-00001/quantity'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ action: 'add', amount: 1 });
+
+    req.flush(itemA);
+
+    expect(response).toEqual(itemA);
+  });
+
+  it('should update quantity with a custom amount', () => {
+    let response: Inventory | undefined;
+
+    service.updateQuantity('ITEM-00001', 'remove', 4).subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(r => r.url.includes('/ITEM-00001/quantity'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ action: 'remove', amount: 4 });
+
+    req.flush({ ...itemA, quantity: 1 });
+
+    expect(response?.quantity).toBe(1);
+  });
+
+  it('should link an external barcode', () => {
+    let response: Inventory | undefined;
+
+    service.linkExternalBarcode('1', 'UPC-NEW', 3).subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(r => r.url.includes('/1/link-barcode'));
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ barcode: 'UPC-NEW', quantity: 3 });
+
+    req.flush({
+      ...itemA,
+      externalBarcode: ['UPC-1', 'UPC-NEW']
+    });
+
+    expect(response?.externalBarcode).toEqual(['UPC-1', 'UPC-NEW']);
+  });
+
+  it('should remove inventory by internal ID', () => {
+    service.removeInventoryById('1', 2).subscribe();
+
+    const req = httpMock.expectOne(r => r.url.endsWith('/inventory/remove'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ internalID: '1', amount: 2 });
+
+    req.flush({});
+  });
+
+  it('should remove an item from the signal when quantity becomes zero', () => {
+    service.inventory.set([itemA, itemB]);
+
+    service.removeOneAndUpdate('1');
+
+    const req = httpMock.expectOne(r => r.url.endsWith('/inventory/remove'));
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.params.get('id')).toBe('1');
+
+    req.flush({ ...itemA, quantity: 0 });
+
+    expect(service.inventory()).toEqual([itemB]);
+  });
+
+  it('should update an existing item in the signal when quantity stays above zero', () => {
+    service.inventory.set([itemA, itemB]);
+
+    service.removeOneAndUpdate('1');
+
+    const req = httpMock.expectOne(r => r.url.endsWith('/inventory/remove'));
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush({ ...itemA, quantity: 2, notes: 'Updated' });
+
+    expect(service.inventory()[0].quantity).toBe(2);
+    expect(service.inventory()[0].notes).toBe('Updated');
+    expect(service.inventory().length).toBe(2);
+  });
+
+  it('should add the item to the signal when syncing an item not already present', () => {
+    service.inventory.set([itemA]);
+
+    service.removeOneAndUpdate('2');
+
+    const req = httpMock.expectOne(r => r.url.endsWith('/inventory/remove'));
+    expect(req.request.method).toBe('DELETE');
+
+    req.flush(itemB);
+
+    expect(service.inventory().length).toBe(2);
+    expect(service.inventory()).toContain(itemB);
+  });
+
+  it('should build unique string options and ignore blank strings', () => {
+    const options = service.optionBuilder(
+      [
+        itemA,
+        itemB,
+        { ...itemB, internalID: '3', brand: 'Ticonderoga' },
+        { ...itemA, internalID: '4', brand: '' }
+      ],
+      'brand'
+    );
+
+    expect(options).toEqual([
+      { label: 'Crayola', value: 'Crayola' },
+      { label: 'Ticonderoga', value: 'Ticonderoga' }
+    ]);
+  });
+
+  it('should return no options for a non-string field', () => {
+    const options = service.optionBuilder([itemA, itemB], 'quantity');
+
+    expect(options).toEqual([]);
+  });
+
+  it('should compute all option signals from inventory data', () => {
+    service.inventory.set([itemA, itemB]);
+
+    expect(service.itemOptions()).toEqual([
+      { label: 'Markers', value: 'Markers' },
+      { label: 'Pencils', value: 'Pencils' }
+    ]);
+
+    expect(service.brandOptions()).toEqual([
+      { label: 'Crayola', value: 'Crayola' },
+      { label: 'Ticonderoga', value: 'Ticonderoga' }
+    ]);
+
+    expect(service.colorOptions()).toEqual([
+      { label: 'Blue', value: 'Blue' },
+      { label: 'Yellow', value: 'Yellow' }
+    ]);
+
+    expect(service.sizeOptions()).toEqual([
+      { label: 'Large', value: 'Large' },
+      { label: 'Standard', value: 'Standard' }
+    ]);
+
+    expect(service.typeOptions()).toEqual([
+      { label: 'School', value: 'School' },
+      { label: 'Writing', value: 'Writing' }
+    ]);
+
+    expect(service.materialOptions()).toEqual([
+      { label: 'Plastic', value: 'Plastic' },
+      { label: 'Wood', value: 'Wood' }
+    ]);
+  });
+});
