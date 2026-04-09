@@ -10,9 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-// Misc Imports
-import umm3601.supplylist.SupplyList;
-
 
 public class SupplyListSpec {
   private static final String FAKE_ID_STRING_1 = "fakeIdOne";

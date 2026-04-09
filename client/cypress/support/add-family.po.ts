@@ -66,10 +66,6 @@ export class AddFamilyPage {
       this.getStudentField(i, 'name').type(student.name);
       this.getStudentField(i, 'grade').type(student.grade);
       this.getStudentField(i, 'school').type(student.school);
-      if (student.requestedSupplies.length) {
-        this.getStudentField(i, 'requestedSupplies').type(student.requestedSupplies.join(', '), { force: true });
-        // Have to use force otherwise Cypress refuses to enter text in the field
-      }
     });
     return this.addFamilyButton().click();
   }

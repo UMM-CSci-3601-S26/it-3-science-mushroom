@@ -1,3 +1,4 @@
+// Angular Imports
 import { Component, computed, effect, inject, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,12 +14,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { SupplyList } from './supplylist';
-import { SupplyListService } from './supplylist.service';
 import { MatTreeModule } from '@angular/material/tree';
 import { CommonModule } from '@angular/common';
+
+// RxJS Imports
+import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+
+// Supply List Imports
+import { SupplyList } from './supplylist';
+import { SupplyListService } from './supplylist.service';
+import { SupplyListNode, SupplyListTreeComponent } from './supply-list-tree.component';
 
 @Component({
   selector: 'app-supplylist-component',
@@ -42,15 +48,15 @@ import { CommonModule } from '@angular/common';
     MatTreeModule,
     MatIconModule,
     MatButtonModule,
-    CommonModule
+    CommonModule,
+    SupplyListTreeComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SupplyListComponent {
-  displayedColumns: string[] = ['school', 'grade', 'item', 'description', 'brand', 'color', 'size', 'type', 'material', 'count', 'quantity', 'notes'];
+  // Columns to display in the Material table
   dataSource = new MatTableDataSource<SupplyList>([]);
   readonly sort = viewChild<MatSort>(MatSort);
-
 
   private snackBar = inject(MatSnackBar);
   private supplylistService = inject(SupplyListService);
@@ -61,6 +67,7 @@ export class SupplyListComponent {
     });
   }
 
+  // Signals for each filter
   school = signal<string | undefined>(undefined);
   grade = signal<string | undefined>(undefined);
   item = signal<string | undefined>(undefined);
@@ -74,6 +81,7 @@ export class SupplyListComponent {
 
   errMsg = signal<string | undefined>(undefined);
 
+  // Observables for each filter signal
   private school$ = toObservable(this.school);
   private grade$ = toObservable(this.grade);
   private item$ = toObservable(this.item);
@@ -85,6 +93,10 @@ export class SupplyListComponent {
   private description$ = toObservable(this.description);
   private quantity$ = toObservable(this.quantity);
 
+  /**
+   * Combines all filter signals into one stream that then triggers a new server request when a filter changes
+   * Includes a debound of 300ms to prevent excessive requests when filters are changed rapdily
+  */
   serverFilteredSupplyList = toSignal(
     combineLatest([this.school$, this.grade$, this.item$, this.brand$, this.color$, this.size$, this.type$, this.material$, this.description$, this.quantity$]).pipe(
       debounceTime(300),
@@ -101,63 +113,77 @@ export class SupplyListComponent {
     { initialValue: [] }
   );
 
-  /* This function computes a new grouping structure for the supply list every time serverFilteredSupplyList changes
-  * It groups by School, then Grade, then Teacher (if no teacher, it groups them under "N/A"), and then makes an individual "chunk" for each item
-  */
-  groupedSupplyList = computed(() => {
-    // Types for the grouping structure
-    type TeacherGroup = { teacher: string; items: SupplyList[] };
-    type GradeGroup = { grade: string; teachers: TeacherGroup[] };
-    type SchoolGroup = { school: string; grades: GradeGroup[] };
-    const byName = (a: string, b: string) => a.localeCompare(b);
+  supplyList = toSignal <SupplyList[]>(
+    this.supplylistService.getSupplyList().pipe(
+      catchError(() => of([]))
+    )
+  );
 
-    // Nested map for grouping: school -> grade -> teacher -> items
+  // Custom sort for grades
+  gradeSort = (a: { key: string }, b: { key: string }) => {
+    const getGradeValue = (grade: string) => {
+      if (grade === 'Pre-K') return -2;
+      if (grade === 'Kindergarten') return -1;
+    };
+
+    return getGradeValue(a.key) - getGradeValue(b.key);
+  };
+
+  // Compute a grouped version of the Supply List with the filters applied
+  groupedSupplyList = computed(() => {
+    return this.groupSupplyList(this.serverFilteredSupplyList());
+  });
+
+  /**
+   * Groups a list of SupplyList entries into a nested structure of SupplyListNodes (similar to StockNodes in StockReport) for easier display
+   * @param supplyListEntries A list SupplyList entries to group
+   * @returns A nested array of SupplyListNodes with the proper grouping: School > Grade > Teacher > Item Description
+   */
+  private groupSupplyList(supplyListEntries: SupplyList[]): SupplyListNode[] {
+    // Highest level map for the supply list grouping. Goes School > Grade > Teacher > SupplyList[] (only displaying Item Description)
     const schoolMap = new Map<string, Map<string, Map<string, SupplyList[]>>>();
-    const getOrCreate = <T>(map: Map<string, T>, key: string, init: () => T) => {
+
+    // Helper function to get or create a map
+    // If it exists, get it. If it doesn't, make it
+    const getOrCreateMap = <T>(map: Map<string, T>, key: string, init: () => T) => {
       if (!map.has(key)) map.set(key, init());
       return map.get(key)!;
     };
 
-    // Group supplies by school, grade, and teacher
-    for (const supply of this.serverFilteredSupplyList()) {
+    // Loop through each Supply List entry and put each in the right group
+    for(const supply of supplyListEntries) {
+      // Keys to use for grouping, using "Unknown x" if the data is missing for some reason
       const school = supply.school || 'Unknown School';
       const grade = supply.grade || 'Unknown Grade';
-      const teacher = supply.teacher || 'N/A';
+      // Teacher is special because "N/A" means that the item goes to all students in the grade
+      // But like the others, if it has no data it should be "Unknown" and if its not "N/A" it should be what the teacher field is
+      const teacher = supply.teacher === 'N/A' ? 'All Teachers' : (supply.teacher || 'Unknown Teacher');
 
-      // Make maps for each level of grouping
-      const gradeMap = getOrCreate(schoolMap, school, () => new Map<string, Map<string, SupplyList[]>>());
-      const teacherMap = getOrCreate(gradeMap, grade, () => new Map<string, SupplyList[]>());
-      const items = getOrCreate(teacherMap, teacher, () => []);
+      // Get or create the maps for each level of grouping
+      const gradeMap = getOrCreateMap(schoolMap, school, () => new Map<string, Map<string, SupplyList[]>>()); // Put grades in school
+      const teacherMap = getOrCreateMap(gradeMap, grade, () => new Map<string, SupplyList[]>()); // Put teachers in grade
+      const supplies = getOrCreateMap(teacherMap, teacher, () => []); // Put supplies in teacher
 
-      items.push(supply);
+      // Add the supply to the proper group
+      supplies.push(supply);
     }
 
-    // Sort schools, grades, and teachers alphabetically
-    const sortedSchools = Array.from(schoolMap.keys()).sort(byName);
-
-    // Turn maps into the proper array structure
-    return sortedSchools.map((school): SchoolGroup => {
-      const gradeMap = schoolMap.get(school)!;
-      const sortedGrades = Array.from(gradeMap.keys()).sort(byName);
-
-      // For each grade, sort teachers and their items
-      return {
-        school,
-        grades: sortedGrades.map((grade): GradeGroup => {
-          const teacherMap = gradeMap.get(grade)!;
-          const sortedTeachers = Array.from(teacherMap.keys()).sort(byName);
-
-          // For each teacher, sort their items by item name
-          return {
-            grade,
-            teachers: sortedTeachers.map((teacher): TeacherGroup => ({
-              teacher,
-              items: teacherMap.get(teacher)!
-            }))
-          };
-        })
-      };
-    });
-  });
+    // Convert the final group into a SupplyListNode array and return it
+    return Array.from(schoolMap.entries()).map(([schoolName, gradeMap]) => ({
+      school: schoolName,
+      children: Array.from(gradeMap.entries())
+        .sort((a, b) => this.gradeSort({ key: a[0] }, { key: b[0] })) // Sort grades with custom sort
+        .map(([gradeName, teacherMap]) => ({
+          grade: gradeName,
+          children: Array.from(teacherMap.entries()).map(([teacherName, supplies]) => ({
+            teacher: teacherName,
+            children: supplies.map(supply => ({
+              description: supply.description,
+              supplyData: supply
+            })).sort((a, b) => a.description!.localeCompare(b.description!)) // Sort supplies alphabetically
+          })).sort((a, b) => a.teacher!.localeCompare(b.teacher!)) // Sort teachers alphabetically
+        }))
+    })).sort((a, b) => a.school!.localeCompare(b.school!)); // Sort schools alphabetically
+  }
 }
 export { SupplyListService };

@@ -1,12 +1,11 @@
 import { SupplyListPage } from "../support/supplylist.po";
 
 const page = new SupplyListPage();
-// const Filters_Test = {
-//   Item: 'Markers',
-//   Brand: 'Crayola',
-//   Type: 'Washable',
-//   Size: 'Wide'
-// }
+const Filters_Test = {
+  School: 'Hancock',
+  //Teacher: 'All Teachers',
+  Grade: 'Kindergarten',
+}
 
 describe('Supply List', () => {
   before(() => {
@@ -46,7 +45,7 @@ describe('Supply List', () => {
     page.getSidenav()
       .should('be.hidden');
     nextTick(300)
-    cy.contains('mat-card', 'Herman').should('exist');
+    cy.contains('mat-card', 'St. Mary\'s').should('exist');
   });
 
   // Cypress tests to ensure the filter boxes are there
@@ -112,6 +111,71 @@ describe('Supply List', () => {
         recordError(`Empty filter input for Grade`);
       }
     });
+  });
+
+  it("Should be able to take an input and display the correct filtered results", () => {
+    // Intercept the filtered API calls
+    cy.intercept('GET', '/api/supplylist*').as('filterSupplyList');
+
+    cy.get('[data-cy="filter-school"]').type(Filters_Test.School);
+    cy.get('[data-cy="filter-grade"]').type(Filters_Test.Grade);
+
+    // Wait for the filtered results to load
+    nextTick(1000);
+
+    // Check results match
+    cy.contains('Chokio').should('not.exist');
+    cy.contains('Hancock').should('be.visible');
+    page.expandTreeNode('Hancock');
+    cy.contains('Kindergarten').should('be.visible');
+    cy.contains('1st Grade').should('not.exist');
+  });
+
+  it('Should have the tree view', () => {
+    cy.get('[data-cy="supplylist-card"]', { timeout: 10000 }).should('exist');
+  });
+
+  it('Should display nested items when tree is expanded', () => {
+    page.expandTreeNode('Hancock');
+    cy.contains('Kindergarten').should('be.visible');
+    page.expandTreeNode('Kindergarten');
+    cy.contains('All Teachers').should('be.visible');
+    page.expandTreeNode('All Teachers');
+    cy.contains('Backpack').should('be.visible');
+  });
+
+  it('Should open dialog with item details when item is clicked', () => {
+    page.expandTreeNode('Hancock');
+    page.expandTreeNode('Kindergarten');
+    page.expandTreeNode('All Teachers');
+    cy.get('[data-cy="supplylist-info-button"]').first().click();
+    cy.contains('Item View - Binder').should('be.visible');
+    cy.contains('- Description: 1" 3 Ring Binder').should('be.visible');
+    cy.contains('- Brand: N/A').should('be.visible');
+    cy.contains('- Color: N/A').should('be.visible');
+    cy.contains('- Size: 1"').should('be.visible');
+    cy.contains('- Type: 3 Ring').should('be.visible');
+    cy.contains('- Material: N/A').should('be.visible');
+    cy.contains('- Quantity: 1').should('be.visible');
+    cy.contains('- Notes: 1, 3 ring binder of choice size (?)').should('be.visible');
+  });
+
+  it('Should close dialog when Exit button is clicked', () => {
+    page.expandTreeNode('Hancock');
+    page.expandTreeNode('Kindergarten');
+    page.expandTreeNode('All Teachers');
+    cy.get('[data-cy="supplylist-info-button"]').first().click();
+    cy.contains('Item View - Binder').should('be.visible');
+    cy.contains('- Description: 1" 3 Ring Binder').should('be.visible');
+    cy.contains('- Brand: N/A').should('be.visible');
+    cy.contains('- Color: N/A').should('be.visible');
+    cy.contains('- Size: 1"').should('be.visible');
+    cy.contains('- Type: 3 Ring').should('be.visible');
+    cy.contains('- Material: N/A').should('be.visible');
+    cy.contains('- Quantity: 1').should('be.visible');
+    cy.contains('- Notes: 1, 3 ring binder of choice size (?)').should('be.visible');
+    cy.contains('button', 'Exit').click();
+    cy.contains('Item View - Binder').should('not.exist');
   });
 });
 

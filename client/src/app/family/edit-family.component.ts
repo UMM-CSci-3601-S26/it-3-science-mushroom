@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, inject, Signal, signal } from '@angular/core';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -8,23 +8,62 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute, ParamMap } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 // Family Imports
+import { Family } from './family';
 import { FamilyService } from './family.service';
 
 @Component({
-  selector: 'app-add-family',
-  templateUrl: './add-family.component.html',
-  styleUrls: ['./add-family.component.scss'],
-  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatOptionModule, MatButtonModule]
+  selector: 'app-edit-family',
+  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatOptionModule, MatButtonModule, RouterLink],
+  templateUrl: './edit-family.component.html',
+  styleUrl: './edit-family.component.scss',
 })
-export class AddFamilyComponent {
+
+export class EditFamilyComponent {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  addFamilyForm = new FormGroup({
+  error = signal({ help: '', httpResponse: '', message: '' });
+
+  family: Signal<Family> = toSignal(
+    this.route.paramMap.pipe(
+      // Map the paramMap into the id
+      map((paramMap: ParamMap) => paramMap.get('id')),
+      // Maps the `id` string into the Observable<Family>,
+      // which will emit zero or one values depending on whether there is a
+      // `Family` with that ID.
+      switchMap((id: string) => this.familyService.getFamilyById(id)),
+      catchError((_err) => {
+        this.error.set({
+          help: 'There was a problem loading the family – try again.',
+          httpResponse: _err.message,
+          message: _err.error?.title,
+        });
+        return of();
+      })
+    )
+  );
+
+  // eslint-disable-next-line @angular-eslint/prefer-inject
+  constructor(private cd: ChangeDetectorRef) {}
+
+  makeStudentsVisible = effect(() => {
+    const family = this.family();
+
+    family.students.forEach(() => {
+      this.addStudent();
+      this.cd.detectChanges(); // Force change detection to avoid (NG0100 error) when adding students during the effect
+    });
+  });
+
+  editFamilyForm = new FormGroup({
     guardianName: new FormControl('', Validators.compose([
       Validators.required,
       Validators.minLength(2),
@@ -51,7 +90,7 @@ export class AddFamilyComponent {
   });
 
   get students(): FormArray {
-    return this.addFamilyForm.get('students') as FormArray;
+    return this.editFamilyForm.get('students') as FormArray;
   }
 
   addStudent() {
@@ -69,7 +108,7 @@ export class AddFamilyComponent {
         Validators.required,
         Validators.minLength(2),
       ])),
-      teacher: new FormControl('')
+      teacher: new FormControl<string>(''),
     }));
   }
 
@@ -77,7 +116,7 @@ export class AddFamilyComponent {
     this.students.removeAt(index);
   }
 
-  readonly addFamilyValidationMessages = {
+  readonly editFamilyValidationMessages = {
     guardianName: [
       { type: 'required', message: 'Guardian name is required' },
       { type: 'minlength', message: 'Name must be at least 2 characters long' },
@@ -94,7 +133,7 @@ export class AddFamilyComponent {
     ],
     timeSlot: [
       { type: 'required', message: 'Time slot is required' },
-      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times - (No 0 required in front of single digit hours)' }
+      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times (No leading 0s in front of single-digit hours)' }
     ],
     students: {
       name: [
@@ -115,24 +154,24 @@ export class AddFamilyComponent {
 
   // Form validation helper methods
   formControlHasError(controlName: string): boolean {
-    const control = this.addFamilyForm.get(controlName);
+    const control = this.editFamilyForm.get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
   }
 
   // Student form validation helper methods
-  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): boolean {
+  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school'): boolean {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
   }
 
   // Error message helper methods
-  getFamilyErrorMessage(controlName: keyof typeof this.addFamilyValidationMessages): string {
-    const messages = this.addFamilyValidationMessages[controlName];
+  getFamilyErrorMessage(controlName: keyof typeof this.editFamilyValidationMessages): string {
+    const messages = this.editFamilyValidationMessages[controlName];
     if (!Array.isArray(messages)) {
       return '';
     }
     for (const { type, message } of messages) {
-      if (this.addFamilyForm.get(controlName)?.hasError(type)) {
+      if (this.editFamilyForm.get(controlName)?.hasError(type)) {
         return message;
       }
     }
@@ -141,10 +180,10 @@ export class AddFamilyComponent {
 
   // Student error message helper method
   // Necessary because the student form is a FormArray nested in FormGroup,
-  // so we need to specify which student and which control we're checking for erros
-  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): string {
+  // so we need to specify which student and which control we're checking for errors
+  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school'): string {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
-    const messages = this.addFamilyValidationMessages.students[controlName];
+    const messages = this.editFamilyValidationMessages.students[controlName];
 
     for (const { type, message } of messages) {
       if (control?.hasError(type)) {
@@ -156,33 +195,30 @@ export class AddFamilyComponent {
   }
 
   submitForm() {
-    const rawForm = this.addFamilyForm.value;
-
-    const payload = {
-      ...rawForm
-    };
+    const familyId = this.route.snapshot.paramMap.get('id');
+    const rawForm = this.editFamilyForm.value;
 
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-    this.familyService.addFamily(payload).subscribe({
+    this.familyService.updateFamily(familyId, rawForm).subscribe({
       next: () => {
         this.snackBar.open(
-          `Added family ${rawForm.guardianName}`,
+          `Updated family ${rawForm.guardianName}`,
           null,
-          { duration: 2000 }
+          { duration: 5000 }
         );
         this.router.navigate(['/family']);
       },
       error: err => {
         if (err.status === 400) {
           this.snackBar.open(
-            `Tried to add an illegal new family – Error Code: ${err.status}\nMessage: ${err.message}`,
+            `Tried to update an illegal family – Error Code: ${err.status}\nMessage: ${err.message}`,
             'OK',
             { duration: 5000 }
           );
         } else if (err.status === 500) {
           this.snackBar.open(
-            `The server failed to process your request to add a new family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
+            `The server failed to process your request to update a family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
             'OK',
             { duration: 5000 }
           );

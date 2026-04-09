@@ -1,36 +1,27 @@
 import { Family } from 'src/app/family/family';
-import { AddFamilyPage } from '../support/add-family.po';
+import { EditFamilyPage } from '../support/edit-family.po';
 
-describe('Add family page', () => {
-  const page = new AddFamilyPage();
+describe('Edit family page', () => {
+  const page = new EditFamilyPage();
 
   beforeEach(() => {
     page.navigateTo();
   });
 
   it('Should have the correct title', () => {
-    page.getTitle().should('have.text', 'New Family');
+    page.getTitle().should('have.text', 'Edit Family');
   });
 
-  it('Should be disable the add family button when family does not have a student added', () => {
-    page.addFamilyButton().should('be.disabled');
-    page.getFormField('guardianName').type('test');
-    page.addFamilyButton().should('be.disabled');
-    page.getFormField('address').type('123 Street');
-    page.addFamilyButton().should('be.disabled');
-    page.getFormField('timeSlot').type('9:00-10:00');
-    page.addFamilyButton().should('be.disabled');
-    page.getFormField('email').clear().type('familytest@email.com');
-
-    page.addFamilyButton().should('be.disabled');
+  it('Should be enabled for the edit family button, since we are editing an existing family', () => {
+    page.editFamilyButton().should('be.enabled');
   });
 
   it('Should show error messages for invalid inputs on the family form', () => {
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=guardianNameError]').should('not.exist');
 
-    // Just clicking the guardian name field without entering anything should cause an error message
-    page.getFormField('guardianName').click().blur();
+    // Deleting and then clicking the guardian name field without entering anything should cause an error message
+    page.getFormField('guardianName').click().clear().blur();
     cy.get('[data-test=guardianNameError]').should('exist').and('be.visible');
 
     // Some more tests for various invalid guardian name inputs
@@ -49,16 +40,16 @@ describe('Add family page', () => {
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=addressError]').should('not.exist');
-    // Just clicking the address field without entering anything should cause an error message
-    page.getFormField('address').click().blur();
+    // Deleting and then clicking the address field without entering anything should cause an error message
+    page.getFormField('address').click().clear().blur();
     // Entering a valid address should remove the error.
     page.getFormField('address').clear().type('123 Street').blur();
     cy.get('[data-test=addressError]').should('not.exist');
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=emailError]').should('not.exist');
-    // Just clicking the email field without entering anything should cause an error message
-    page.getFormField('email').click().blur();
+    // Deleting and then clicking the email field without entering anything should cause an error message
+    page.getFormField('email').click().clear().blur();
     // Some more tests for various invalid email inputs
     cy.get('[data-test=emailError]').should('exist').and('be.visible');
     page.getFormField('email').type('asd').blur();
@@ -71,84 +62,109 @@ describe('Add family page', () => {
   });
 
   it('Should show error messages for invalid inputs on the student form', () => {
+    // All the errors should not exist before we do anything,
+    // since we should start with a filled out student form
+    cy.get('[data-test=nameError]').should('not.exist');
+    cy.get('[data-test=gradeError]').should('not.exist');
+    cy.get('[data-test=schoolError]').should('not.exist');
+
     page.addStudentButton().click();
 
     // Test invalid name
-    page.getStudentField(0, 'name').click().blur();
+    page.getStudentField(2, 'name').click().blur();
     cy.get('[data-test=nameError]').should('exist').and('be.visible');
     // Entering a valid name should remove the error
-    page.getStudentField(0, 'name').clear().type('Lisa').blur();
+    page.getStudentField(2, 'name').clear().type('Lisa').blur();
     cy.get('[data-test=nameError]').should('not.exist');
 
     // Test invalid grade
-    page.getStudentField(0, 'grade').type('99').blur();
+    page.getStudentField(2, 'grade').type('99').blur();
     cy.get('[data-test=gradeError]').should('exist').and('be.visible');
     // Entering a valid grade should remove the error
-    page.getStudentField(0, 'grade').clear().type('10').blur();
+    page.getStudentField(2, 'grade').clear().type('10').blur();
     cy.get('[data-test=gradeError]').should('not.exist');
 
     // Test invalid school
-    page.getStudentField(0, 'school').type('a').blur();
+    page.getStudentField(2, 'school').type('a').blur();
     cy.get('[data-test=schoolError]').should('exist').and('be.visible');
     // Entering a valid school should remove the error
-    page.getStudentField(0, 'school').clear().type('Morris Schools').blur();
+    page.getStudentField(2, 'school').clear().type('Morris Schools').blur();
     cy.get('[data-test=schoolError]').should('not.exist');
   });
 
   it('Should be able to remove a student', () => {
+    // Filled out form array should start with two students, since we're editing an existing family
+    cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 2);
+
     page.addStudentButton().click();
-    page.getStudentField(0, 'name').type('Lisa');
-    page.getStudentField(0, 'grade').type('6');
-    page.getStudentField(0, 'school').type('Morris High School');
+    page.getStudentField(2, 'name').type('Lisa');
+    page.getStudentField(2, 'grade').type('6');
+    page.getStudentField(2, 'school').type('Morris High School');
+
+    cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 3);
 
     cy.contains('button', 'Remove').click();
-    cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 0);
+    cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 2);
   });
 
-  describe('Adding a new family', () => {
+  describe('Updating a new family', () => {
     beforeEach(() => {
       cy.task('seed:database');
+      page.navigateTo();
     });
 
     it('Should go to the right page, and have the right info', () => {
-      const family: Family = {
-        _id: null,
-        guardianName: 'Test Family',
-        address: '123 Street',
-        timeSlot: '7:00-8:00',
-        email: 'test@email.com',
+      const expectedFamily: Family = {
+        guardianName: 'Jane Doe',
+        email: 'jane@email.com',
+        address: '467 8th Street NE',
+        timeSlot: '9:00-10:00',
         students: [
           {
-            name: 'Lisa',
-            grade: '6',
-            school: "Morris High School",
-            teacher: "N/A",
+            name: 'Tim',
+            grade: '12',
+            school: 'MAHS',
+            teacher: '',
           },
           {
-            name: 'Allie',
-            grade: '7',
-            school: "Morris High School",
-            teacher: "N/A",
-          },
-          {
-            name: 'Joe',
-            grade: '8',
-            school: "Morris Elementary",
-            teacher: "N/A",
-          },
+            name: 'Sara',
+            grade: '11',
+            school: 'MAHS',
+            teacher: 'Mr. Test',
+          }
         ]
       };
 
-      cy.intercept('/api/family').as('addFamily');
-      page.addFamily(family);
-      cy.wait('@addFamily');
+      const formInfo: Family = {
+        guardianName: '',
+        email: '',
+        address: '467 8th Street NE',
+        timeSlot: '',
+        students: [
+          {
+            name: '',
+            grade: '',
+            school: '',
+            teacher: '',
+          },
+          {
+            name: '',
+            grade: '',
+            school: '',
+            teacher: 'Mr. Test',
+          }
+        ]
+      };
+
+      cy.intercept('/api/family').as('updateFamily');
+      page.updateFamily(formInfo);
+      cy.wait('@updateFamily');
       cy.log('API intercepted, checking URL...');
 
-      // New URL should go right back to the family list page (/family) and stay there (not /family/new)
-      cy.wait('@addFamily');
+      // New URL should go right back to the family list page (/family)
+      cy.wait('@updateFamily');
       cy.url({ timeout: 3000 })
-        .should('match', /\/family$/)
-        .should('not.match', /\/family\/new$/);
+        .should('match', /\/family$/);
 
       // Wait for at least one family card
       cy.get('.family-card', { timeout: 10000 })
@@ -156,23 +172,23 @@ describe('Add family page', () => {
 
       // Valid test family information
       cy.get('.family-card-guardianName')
-        .contains(family.guardianName)
+        .contains(expectedFamily.guardianName)
         .should('exist');
 
       cy.get('.family-card-address')
-        .contains(family.address)
+        .contains(expectedFamily.address)
         .should('exist');
 
       cy.get('.family-card-email')
-        .contains(family.email)
+        .contains(expectedFamily.email)
         .should('exist');
 
       cy.get('.family-card-timeSlot')
-        .contains(family.timeSlot)
+        .contains(expectedFamily.timeSlot)
         .should('exist');
 
       // We should see the confirmation message at the bottom of the screen
-      page.getSnackBar().should('contain', `Added family ${family.guardianName}`);
+      page.getSnackBar().should('contain', `Updated family ${expectedFamily.guardianName}`);
     });
   });
 });
