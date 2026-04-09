@@ -25,7 +25,7 @@ import umm3601.Controller;
 
 public class BarcodeController implements Controller {
     private static final String API_BARCODE_LOOKUP = "/api/barcode/lookup/{code}"; // find barcode in internal system
-    // private static final String API_BARCODE_SCAN = "/api/barcode/scan"; // decide behavior
+    private static final String API_BARCODE_VALIDATE = "/api/barcode/validate/{code}";
     private static final String API_BARCODE_NEXT = "/api/barcode/next";
     private static final String API_BARCODE_QTY = "/api/inventory/{id}/quantity";
     private static final String API_LINK_EXTERNAL_BARCODE = "/api/inventory/{internalID}/link-barcode";
@@ -123,7 +123,6 @@ public class BarcodeController implements Controller {
 
   public void updateQuantity(Context ctx) {
     String id = ctx.pathParam("id");
-    System.out.println("Raw ID: " + id);
     Document body = ctx.bodyAsClass(Document.class);
     String action = body.getString("action");
     Integer amount = body.getInteger("amount");
@@ -178,7 +177,7 @@ public class BarcodeController implements Controller {
       new FindOneAndUpdateOptions().returnDocument(AFTER));
 
     if (updated == null) {
-      throw new NotFoundResponse("Inventory itme not found for internalID" + internalID);
+      throw new NotFoundResponse("Inventory item not found for internalID" + internalID);
     }
 
     ctx.json(updated);
@@ -188,7 +187,7 @@ public class BarcodeController implements Controller {
   public void addRoutes(Javalin server) {
     server.get(API_BARCODE_LOOKUP, this::lookupBarcode);
     server.get(API_BARCODE_NEXT, this::getNextBarcode);
-    // server.post(API_BARCODE_SCAN, this::scanBarcode);
+    server.get(API_BARCODE_VALIDATE, this::barcodeValidation);
     server.post(API_BARCODE_QTY, this::updateQuantity);
     server.patch(API_LINK_EXTERNAL_BARCODE, this::linkExternalBarcode);
   }
