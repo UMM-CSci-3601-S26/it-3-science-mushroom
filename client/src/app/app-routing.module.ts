@@ -20,6 +20,10 @@ import { ReportGeneratorComponent } from './stock-report/report-generator/report
 
 import { StationOrderComponent } from './station-order/station-order.component';
 
+// Tote Imports
+
+import { ToteComponent } from './tote/tote.component';
+
 // Note: Any routes for adding new items need to come before the routes for getting an item by an individual ID
 // Ie: 'user/new' comes before 'users/:id'
 const routes: Routes = [
@@ -32,7 +36,8 @@ const routes: Routes = [
   {path: 'stock-report', component: StockReportComponent, title: 'Stock Report'},
   {path: 'pdf-generator', component: ReportGeneratorComponent, title: 'PDF Generator'},
   {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'},
-  {path: 'stationOrder', component: StationOrderComponent, title: 'Station Order'}
+  {path: 'stationOrder', component: StationOrderComponent, title: 'Station Order'},
+  {path: 'totes', component: ToteComponent, title: 'Tote Management'}
 ];
 
 @NgModule({

@@ -307,7 +307,7 @@ export class ToteComponent implements OnInit {
     return this.scanService.normalizeBarcode(value ?? '');
   }
 
-  private normalizeToteBarcode(value: string): string {
+  private normalizeToteBarcode(value: string): string | null {
     return this.normalizeBarcode(value);
   }
 
