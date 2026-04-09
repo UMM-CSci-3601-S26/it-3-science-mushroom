@@ -25,7 +25,6 @@ public class InventorySpec {
   private InventoryController inventoryController;
   private Context ctx;
   private static final int INITIAL_QUANT = 5;
-  private static final int ADD_AMOUNT = 1;
   private static final int EXPECTED_QUANT = 6;
   private static final int INCOMING_QUANT = 3;
   private static final int FIVE = 5;
@@ -39,8 +38,9 @@ public class InventorySpec {
 
   @BeforeEach
   void setupEach() {
-    mongoClient = MongoClients.create();
-    db = MongoClients.create().getDatabase("test");
+    String mongoAddr = System.getenv().getOrDefault("MONGO_ADDR", "mongodb://localhost:27017");
+    mongoClient = MongoClients.create(mongoAddr);
+    db = mongoClient.getDatabase("test");
     db.getCollection("inventory").drop();
     inventoryController = new InventoryController(db);
     ctx = mock(Context.class);
@@ -168,6 +168,6 @@ void addInventoryUpdatesExistingItem() {
       .find(new Document("externalBarcode", List.of("EXT-123")))
       .first();
 
-    assertEquals(INCOMING_QUANT, created.getInteger("quantity")); // controller forces 1
+    assertEquals(INCOMING_QUANT, created.getInteger("quantity"));
   }
 }
