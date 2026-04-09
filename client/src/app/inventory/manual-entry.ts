@@ -64,8 +64,8 @@ export class ManualEntry implements OnInit {
       material: [''],
       quantity: [data.quantity ?? 1, [Validators.required, Validators.min(1)]],
       notes: [''],
-      maxQuantity: [0],
-      minQuantity: [0],
+      maxQuantity: [null],
+      minQuantity: [null],
       stockState: ['']
     });
   }
