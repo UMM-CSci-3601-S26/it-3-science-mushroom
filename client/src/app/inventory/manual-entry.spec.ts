@@ -112,7 +112,7 @@ describe('ManualEntry', () => {
     expect(component.selectedItem).toBeNull();
     expect(component.form.get('item')?.value).toBe('');
     expect(component.form.get('brand')?.value).toBe('');
-    expect(component.form.get('packageSize')?.value).toBe(0);
+    expect(component.form.get('packageSize')?.value).toBe(1);
   });
 
   it('submits a match result when an existing item is selected', () => {
@@ -385,7 +385,7 @@ describe('ManualEntry', () => {
       expect(component.form.get('item')?.value).toBe('');
       expect(component.form.get('brand')?.value).toBe('');
       expect(component.form.get('color')?.value).toBe('');
-      expect(component.form.get('packageSize')?.value).toBe(0);
+      expect(component.form.get('packageSize')?.value).toBe(1);
       expect(component.form.get('notes')?.value).toBe('');
     });
 
