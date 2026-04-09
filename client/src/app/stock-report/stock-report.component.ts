@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, computed, inject, ViewChild } from '@angular/core';
+import { Component, computed, inject, ViewChild, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,7 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // RxJS Imports
-import { catchError, of} from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 
 // Inventory Imports
 import { Inventory } from '../inventory/inventory';
@@ -69,9 +69,22 @@ export class StockReportComponent {
 
   @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
 
+  // Track inventory data load errors
+  inventoryError = signal<boolean>(false);
+
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
-      catchError(() => of([]))
+      tap(() => this.inventoryError.set(false)),
+      catchError((error) => {
+        this.inventoryError.set(true);
+        this.snackBar.open(
+          'Error loading inventory data from server. Please try again later.',
+          'Close',
+          { duration: 5000, panelClass: ['error-snackbar'] }
+        );
+        console.error('Error loading inventory:', error);
+        return of([]);
+      })
     )
   );
 

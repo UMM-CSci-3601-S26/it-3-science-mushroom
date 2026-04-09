@@ -11,7 +11,7 @@
           Welcome to the Stock Reports page! Here, you can view the current stock levels of all items in the inventory, as well as save and export reports.
         </p>
         <p class="page-description">
-          Below, you can choose to Save or Finalize the current report by clicking the appropriate button in the "Generation Actions" section. Finalizing will create a PDF/CSV of the report and upload it to the server, while Saving will create a PDF/CSV and save it your computer.
+          Below, you can choose to Generate or Generate & Download the current report by clicking the appropriate button in the "Generation Actions" section. Generating will create a PDF/CSV of the report and upload it to the server, while Generating & Downloading will create a PDF/CSV and save it to your computer.
         </p>
         <p class="page-description">
           Once you have generated a report, it will appear in the "Saved Reports" section, where you can then Save or Delete the report.
@@ -37,7 +37,7 @@
       <div class="reports-list" data-cy="pdf-reports-list">
         @for (report of pdfReports(); track report._id) {
           <div class="reports-container" data-cy="pdf-report-item">
-            <div class="flex-1">
+            <div style="display: flex; gap: 8px; flex-direction: row; align-items: center;">
               <span>{{ report.reportName }}</span>
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-pdf-button">
                 <mat-icon>download</mat-icon>
@@ -50,7 +50,7 @@
         }
       </div>
     } @else {
-      <p>No PDF reports are available.</p>
+      <p>No PDF reports are available. If you have generated any but they are not here, there may be issues with fetching the saved reports. Please try again later.</p>
     }
 
   <br>
@@ -60,7 +60,7 @@
       <div class="reports-list" data-cy="csv-reports-list">
         @for (report of csvReports(); track report._id) {
           <div class="reports-container" data-cy="csv-report-item">
-            <div class="flex-1">
+            <div style="display: flex; gap: 8px; flex-direction: row; align-items: center;">
               <span>{{ report.reportName }}</span>
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-csv-button">
                 <mat-icon>download</mat-icon>
@@ -73,7 +73,7 @@
         }
       </div>
     } @else {
-      <p>No CSV reports are available.</p>
+      <p>No CSV reports are available. If you have generated any but they are not here, there may be issues with fetching the saved reports. Please try again later.</p>
     }
 
   <!--Actions-->
@@ -98,7 +98,16 @@
 
   <!--Stock Report Cards-->
   <div class="flex-row">
-    @if (inventory() !== undefined) {
+    @if (inventoryError()) {
+      <div class="flex-1 stock-report-error">
+        <mat-error>
+          There was a problem loading the Stock Report. The server encountered an error while fetching inventory data.
+        </mat-error>
+        <mat-error>
+          Please wait a bit and try again.
+        </mat-error>
+      </div>
+    } @else if (inventory() && inventory().length > 0) {
     <div class="flex-1">
       <!--Stocked/Out-->
         <div class="stock-cards-container flex-row gap-8 flex-wrap">
@@ -140,14 +149,11 @@
           </mat-card>
         </div>
     </div>
-  }  @else {
+  } @else {
     <div class="flex-1 stock-report-error">
       <mat-error>
         There was a problem loading the Stock Report. Possibly the server is down or perhaps there are network
-        issues.
-      </mat-error>
-      <mat-error>
-        Please wait a bit and try again or start the server.
+        issues. Please try again later.
       </mat-error>
     </div>
     }
