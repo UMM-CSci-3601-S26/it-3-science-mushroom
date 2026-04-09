@@ -10,6 +10,7 @@ import umm3601.Inventory.BarcodeController;
 import umm3601.Inventory.InventoryController;
 import umm3601.StockReport.StockReportController;
 import umm3601.SupplyList.SupplyListController;
+import umm3601.Tote.ToteController;
 
 // Main
 public class Main {
@@ -70,7 +71,8 @@ public class Main {
       new BarcodeController(database),
       new SupplyListController(database),
       new FamilyController(database),
-      new StockReportController(database)
+      new StockReportController(database),
+      new ToteController(database)
     };
     return controllers;
   }
