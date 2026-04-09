@@ -57,11 +57,29 @@ export class FamilyService {
   }
 
   addFamily(newFamily: Partial<Family>): Observable<string> {
-    return this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(map(response => response.id));
+    return new Observable(observer => {
+      this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(map(response => response.id)).subscribe({
+        next: (result) => {
+          this.loadFamilies();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
   }
 
   updateFamily(id: string, updatedFamily: Partial<Family>): Observable<string> {
-    return this.httpClient.put<{id: string}>(`${this.familyUrl}/${id}`, updatedFamily).pipe(map(response => response.id));
+    return new Observable(observer => {
+      this.httpClient.put<{id: string}>(`${this.familyUrl}/${id}`, updatedFamily).pipe(map(response => response.id)).subscribe({
+        next: (result) => {
+          this.loadFamilies();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
   }
 
   deleteFamily(id: string): Observable<void> {
