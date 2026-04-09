@@ -53,10 +53,6 @@
       placeholder="Scan barcode here"
       autocomplete="off"
     />
-
-    <button type="button" (click)="submitHandheldScan(handheldInputValue)">
-    Test Submit
-  </button>
   </div>
 
   <div *ngIf="getScanEntries().length > 0" class="scanned-items-panel">
