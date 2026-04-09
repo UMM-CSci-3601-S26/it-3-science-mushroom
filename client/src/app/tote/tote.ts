@@ -7,6 +7,7 @@ export interface Tote {
   toteBarcode: string;
   name?: string;
   contents: ToteEntry[];
+  notes?: string;
 }
 
 export interface ToteEntryView extends ToteEntry {
