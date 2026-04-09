@@ -32,7 +32,7 @@ dependencies {
   implementation 'io.javalin:javalin:6.7.0'
 
   // Mongo DB Driver for Java
-  implementation 'org.mongodb:mongodb-driver-sync:5.6.4'
+  implementation 'org.mongodb:mongodb-driver-sync:5.6.5'
 
   // MongoJack, MongoDB integration for Jackson
   implementation 'org.mongojack:mongojack:5.1.0'
