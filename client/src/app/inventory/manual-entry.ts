@@ -24,6 +24,7 @@ export type ManualEntryResult =
 @Component({
   selector: 'app-manual-entry',
   templateUrl: './manual-entry.html',
+  styleUrls: ['./manual-entry.component.scss'],
   imports: [
     ReactiveFormsModule,
     MatDialogModule,
@@ -63,8 +64,8 @@ export class ManualEntry implements OnInit {
       material: [''],
       quantity: [data.quantity ?? 1, [Validators.required, Validators.min(1)]],
       notes: [''],
-      maxQuantity: [0],
-      minQuantity: [0],
+      maxQuantity: [null],
+      minQuantity: [null],
       stockState: ['']
     });
   }

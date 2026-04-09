@@ -16,5 +16,5 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 })
 
 export class AppComponent {
-  title = 'CSCI 3601 - HGBT Iteration 1';
+  title = 'Ready 4 Learning Interface';
 }

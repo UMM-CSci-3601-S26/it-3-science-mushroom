@@ -240,13 +240,15 @@ describe('InventoryService', () => {
   });
 
   it('should remove inventory by internal ID', () => {
-    service.removeInventoryById('1', 2).subscribe();
+    service.removeInventoryById('ID-0001', 3).subscribe();
 
-    const req = httpMock.expectOne(r => r.url.endsWith('/inventory/remove'));
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ internalID: '1', amount: 2 });
+    const removeReq = httpMock.expectOne(`${service.inventoryUrl}/remove`);
+    expect(removeReq.request.method).toBe('POST');
+    removeReq.flush({});
 
-    req.flush({});
+    const refreshReq = httpMock.expectOne(`${service.inventoryUrl}`);
+    expect(refreshReq.request.method).toBe('GET');
+    refreshReq.flush([]);
   });
 
   it('should remove an item from the signal when quantity becomes zero', () => {

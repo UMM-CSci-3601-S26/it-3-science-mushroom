@@ -81,8 +81,17 @@ export class InventoryService {
   linkExternalBarcode(internalID: string, barcode: string, quantity: number = 1): Observable<Inventory> {
     return this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode, quantity });
   }
-  removeInventoryById(internalID: string, amount: number) {
-    return this.httpClient.post(`${this.inventoryUrl}/remove`, { internalID, amount });
+  removeInventoryById(internalID: string, amount: number): Observable<unknown> {
+    return new Observable(observer => {
+      this.httpClient.post(`${this.inventoryUrl}/remove`, { internalID, amount }).subscribe({
+        next: (result) => {
+          this.loadInventory();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
   }
 
   // addByScanAndUpdate(barcode: string) {
