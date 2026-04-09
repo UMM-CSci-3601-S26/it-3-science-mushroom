@@ -7,6 +7,7 @@ import { CommonModule } from "@angular/common";
 import { MatError, MatFormField, MatLabel } from "@angular/material/form-field";
 import { Inventory } from "./inventory";
 import { InventoryService } from "./inventory.service";
+import { MatButtonModule } from "@angular/material/button";
 
 export type ManualEntryResult =
 {
@@ -31,7 +32,8 @@ export type ManualEntryResult =
     MatFormField,
     MatLabel,
     MatError,
-    MatInputModule
+    MatInputModule,
+    MatButtonModule
   ]
 })
 export class ManualEntry implements OnInit {

@@ -31,6 +31,10 @@ export class InventoryIndex {
         existingItem: existing,
         incomingItem: item
       });
+
+      this.unregisterItem(item.internalID);
+    } else if (existing) {
+      this.unregisterItem(item.internalID);
     }
 
     this.itemMap.set(item.internalID, item);
