@@ -191,6 +191,8 @@ export class InventoryComponent {
 
         this.scanCards.update(cards => cards.filter(c => c.id !== cardId));
 
+        this.scannerRef()?.removeScannedItem?.(card.barcode);
+
         if (this.scanCards().length === 0) {
           this.showRemovePanel.set(false);
         }
