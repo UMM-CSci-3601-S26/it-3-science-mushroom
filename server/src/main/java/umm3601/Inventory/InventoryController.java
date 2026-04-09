@@ -98,14 +98,14 @@ public class InventoryController implements Controller {
 
   private int getNextSequence() {
     Inventory maxIdItem = inventoryCollection
-    .find()
-    .sort(Sorts.descending("internalID"))
-    .first();
+    .find(Filters.and(
+      Filters.exists("internalID", true), Filters.ne("internalID", null)))
+      .sort(Sorts.descending("internalID")).first();
 
     Inventory maxBarcodeItem = inventoryCollection
-    .find()
-    .sort(Sorts.descending("internalBarcode"))
-    .first();
+    .find(Filters.and(
+      Filters.exists("internalBarcode", true), Filters.ne("internalBarcode", null)))
+      .sort(Sorts.descending("internalBarcode")).first();
 
     int idNum = extractNumber(maxIdItem != null ? maxIdItem.internalID : null);
     int barcodeNum = extractNumber(maxBarcodeItem != null ? maxBarcodeItem.internalBarcode : null);
