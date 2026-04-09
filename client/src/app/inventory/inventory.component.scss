@@ -1,5 +1,43 @@
 :host {
   display: block;
+
+  --inventory-muted-text: #4b5563;
+  --inventory-body-text: #111827;
+
+  --inventory-scanner-bg: #f8fafc;
+  --inventory-scanner-border: #d8dce3;
+
+  --inventory-remove-panel-bg: #fff7ed;
+  --inventory-remove-panel-border: #fed7aa;
+  --inventory-remove-panel-heading: #9a3412;
+
+  --inventory-card-bg: #ffffff;
+  --inventory-card-border: #f3e2c7;
+  --inventory-card-text: #374151;
+
+  --inventory-table-header-bg: #f8fafc;
+  --inventory-table-hover-bg: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --inventory-muted-text: #d1d5db;
+    --inventory-body-text: #f3f4f6;
+
+    --inventory-scanner-bg: #111827;
+    --inventory-scanner-border: #374151;
+
+    --inventory-remove-panel-bg: #2a1a0f;
+    --inventory-remove-panel-border: #7c4a21;
+    --inventory-remove-panel-heading: #fdba74;
+
+    --inventory-card-bg: #1f2937;
+    --inventory-card-border: #374151;
+    --inventory-card-text: #e5e7eb;
+
+    --inventory-table-header-bg: #1f2937;
+    --inventory-table-hover-bg: #374151;
+  }
 }
 
 /* Layout */
@@ -26,7 +64,7 @@
 /* Text */
 .page-description,
 .filters-description {
-  color: #4b5563;
+  color: var(--inventory-muted-text);
   line-height: 1.5;
 }
 
@@ -69,13 +107,14 @@
 .scanner-wrapper {
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid #d8dce3;
+  border: 1px solid var(--inventory-scanner-border);
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--inventory-scanner-bg);
 
   p {
     margin: 0 0 0.5rem;
     font-weight: 500;
+    color: var(--inventory-body-text);
   }
 }
 
@@ -84,19 +123,19 @@
   margin-top: 1rem;
   padding: 1rem;
   border-radius: 14px;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
+  background: var(--inventory-remove-panel-bg);
+  border: 1px solid var(--inventory-remove-panel-border);
 
   h3 {
     margin-bottom: 1rem;
-    color: #9a3412;
+    color: var(--inventory-remove-panel-heading);
     font-weight: 700;
   }
 }
 
 .remove-entry-card {
-  background: white;
-  border: 1px solid #f3e2c7;
+  background: var(--inventory-card-bg);
+  border: 1px solid var(--inventory-card-border);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 0.9rem;
@@ -121,7 +160,7 @@
   p {
     margin: 0;
     font-size: 0.95rem;
-    color: #374151;
+    color: var(--inventory-card-text);
   }
 }
 
@@ -146,7 +185,7 @@
 }
 
 .mat-mdc-header-row {
-  background: #f8fafc;
+  background: var(--inventory-table-header-bg);
 }
 
 .mat-mdc-header-cell {
@@ -154,7 +193,7 @@
 }
 
 .mat-mdc-row:hover {
-  background: #f9fafb;
+  background: var(--inventory-table-hover-bg);
 }
 
 /* Paginator */
