@@ -317,36 +317,6 @@ public class BarcodeControllerSpec {
 
   // <<==================>>
   // New tests
-
-  @Test
-  void barcodeValidationReturnsInternalAndExistsTrue() {
-    when(ctx.pathParam("code")).thenReturn("ITEM-00001");
-
-    barcodeController.barcodeValidation(ctx);
-
-    verify(ctx).json(documentCaptor.capture());
-    verify(ctx).status(HttpStatus.OK);
-
-    Document result = documentCaptor.getValue();
-    assertEquals("ITEM-00001", result.getString("barcode"));
-    assertEquals("internal", result.getString("type"));
-    assertEquals(true, result.getBoolean("exists"));
-  }
-
-  @Test
-  void barcodeValidationReturnsExternalAndExistsFalse() {
-    when(ctx.pathParam("code")).thenReturn("NON-EXISTENT");
-
-    barcodeController.barcodeValidation(ctx);
-
-    verify(ctx).json(documentCaptor.capture());
-    verify(ctx).status(HttpStatus.OK);
-
-    Document result = documentCaptor.getValue();
-    assertEquals("NON-EXISTENT", result.getString("barcode"));
-    assertEquals("external", result.getString("type"));
-    assertEquals(false, result.getBoolean("exists"));
-  }
   @Test
   void updateQuantityWorksWithExternalBarcode() {
     when(ctx.pathParam("id")).thenReturn("MFG-ABC123");
@@ -380,29 +350,6 @@ public class BarcodeControllerSpec {
     assertEquals("MFG-NEW123", inventoryCaptor.getValue().externalBarcode.get(0));
   }
 
-  @Test
-  void barcodeValidationInternalRegexBug() {
-    when(ctx.pathParam("code")).thenReturn("ITEM-00001");
-
-    barcodeController.barcodeValidation(ctx);
-
-    verify(ctx).json(documentCaptor.capture());
-
-
-    assertEquals("internal", documentCaptor.getValue().getString("type"));
-  }
-  @Test
-  void barcodeValidationInternalButDoesNotExist() {
-    when(ctx.pathParam("code")).thenReturn("ITEM-99999");
-
-    barcodeController.barcodeValidation(ctx);
-
-    verify(ctx).json(documentCaptor.capture());
-
-    Document result = documentCaptor.getValue();
-    assertEquals("internal", result.getString("type"));
-    assertEquals(false, result.getBoolean("exists"));
-  }
   @Test
   void getNextBarcodeHandlesInvalidFormat() {
     MongoCollection<Document> collection = db.getCollection("inventory");

@@ -25,7 +25,6 @@ import umm3601.Controller;
 
 public class BarcodeController implements Controller {
     private static final String API_BARCODE_LOOKUP = "/api/barcode/lookup/{code}"; // find barcode in internal system
-    private static final String API_BARCODE_VALIDATE = "/api/barcode/validate/{code}";
     private static final String API_BARCODE_NEXT = "/api/barcode/next";
     private static final String API_BARCODE_QTY = "/api/inventory/{id}/quantity";
     private static final String API_LINK_EXTERNAL_BARCODE = "/api/inventory/{internalID}/link-barcode";
@@ -39,33 +38,6 @@ public class BarcodeController implements Controller {
           Inventory.class,
           UuidRepresentation.STANDARD);
     }
-
-  /**
-   * Get /api/barcode/validate/{code}
-   * decides whether the barcode is internal by matching the contents to ITEM-XXXXX
-   * If the prefix doesn't match then its an external barcode
-   *
-   * Back end will respond with
-   * the barcode: { barcode : "ITEM-00001"}
-   * type of barcode : { type: "internal"}
-   * if it exists { exists : true }
-   *
-   *
-   *
-   */
-  public void barcodeValidation(Context ctx) {
-    String code = ctx.pathParam("code");
-
-    boolean isInternal = code.matches("^ITEM-\\d{5}$");
-    String barcodeType = isInternal ? "internal" : "external";
-
-    Bson filter = isInternal ? eq("internalBarcode", code) : Filters.in("externalBarcode", code);
-
-    boolean exists = inventoryCollection.find(filter).first() != null;
-
-    ctx.json(new Document("barcode", code).append("type", barcodeType).append("exists", exists));
-    ctx.status(HttpStatus.OK);
-  }
 
   public void getNextBarcode(Context ctx) {
       Inventory last = inventoryCollection.find(new Document("internalBarcode", new Document("$exists", true)))
@@ -187,7 +159,6 @@ public class BarcodeController implements Controller {
   public void addRoutes(Javalin server) {
     server.get(API_BARCODE_LOOKUP, this::lookupBarcode);
     server.get(API_BARCODE_NEXT, this::getNextBarcode);
-    server.get(API_BARCODE_VALIDATE, this::barcodeValidation);
     server.post(API_BARCODE_QTY, this::updateQuantity);
     server.patch(API_LINK_EXTERNAL_BARCODE, this::linkExternalBarcode);
   }
