@@ -24,6 +24,7 @@ export type ManualEntryResult =
 @Component({
   selector: 'app-manual-entry',
   templateUrl: './manual-entry.html',
+  styleUrls: ['./manual-entry.component.scss'],
   imports: [
     ReactiveFormsModule,
     MatDialogModule,
