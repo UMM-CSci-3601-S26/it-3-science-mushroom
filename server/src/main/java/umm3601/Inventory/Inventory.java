@@ -49,18 +49,19 @@ public class Inventory {
 
   public String buildDescription() {
     StringJoiner mainParts = new StringJoiner(" ");
-    addIfPresent(mainParts, brand);
+    StringJoiner detailParts = new StringJoiner(", ");
+
+    if (packageSize > 1) {
+      mainParts.add(packageSize + " Pack of");
+    }
     addIfPresent(mainParts, color);
+    addIfPresent(mainParts, type);
+    addIfPresent(mainParts, size);
+    addIfPresent(mainParts, brand);
     addIfPresent(mainParts, item);
 
-    StringJoiner detailParts = new StringJoiner(", ");
-    addIfPresent(detailParts, type);
-    addIfPresent(detailParts, size);
     addIfPresent(detailParts, material);
 
-    if (packageSize > 0) {
-      detailParts.add("package size " + packageSize);
-    }
 
     String main = mainParts.toString().trim();
     String details = detailParts.toString().trim();
