@@ -192,6 +192,7 @@ public class InventoryController implements Controller {
     return;
     }
 
+    newInv.refreshDescription();
     inventoryCollection.insertOne(newInv);
     ctx.json(newInv);
     ctx.status(HttpStatus.CREATED);
@@ -298,6 +299,7 @@ public class InventoryController implements Controller {
 
     for (Inventory inv : matching) {
       updateStockState(inv);
+      generateDescription(inv);
     }
     ctx.json(matching);
     ctx.status(HttpStatus.OK);
