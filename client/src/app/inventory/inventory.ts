@@ -9,7 +9,7 @@ export interface Inventory {
   color:string;
   type: string;
   material:string;
-  description: string;
+  description?: string;
   quantity: number;
   maxQuantity: number;
   minQuantity: number;
