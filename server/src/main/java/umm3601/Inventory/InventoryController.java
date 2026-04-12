@@ -316,7 +316,7 @@ public class InventoryController implements Controller {
     inv.description = generated;
 
     if (inv._id != null && generated.equals(current)) {
-      inventoryCollection.updateOne(eq("_id", inv._id), Updates.set(DESCRIPTION_KEY,generated));
+      inventoryCollection.updateOne(eq("_id", inv._id), Updates.set(DESCRIPTION_KEY, generated));
     }
   }
 
