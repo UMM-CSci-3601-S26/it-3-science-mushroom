@@ -6,6 +6,7 @@ import org.mongojack.Id;
 import org.mongojack.ObjectId;
 // Java Imports
 import java.util.List;
+import java.util.StringJoiner;
 
 // Inventory Class
 @SuppressWarnings({"VisibilityModifier"})
@@ -46,8 +47,56 @@ public class Inventory {
     return _id == null ? 0 : _id.hashCode();
   }
 
+  public String buildDescription() {
+    StringJoiner mainParts = new StringJoiner(" ");
+    StringJoiner detailParts = new StringJoiner(", ");
+
+    if (packageSize > 1) {
+      mainParts.add(packageSize + " Pack of");
+    }
+    addIfPresent(mainParts, color);
+    addIfPresent(mainParts, type);
+    addIfPresent(mainParts, size);
+    addIfPresent(mainParts, brand);
+    addIfPresent(mainParts, item);
+
+    addIfPresent(detailParts, material);
+
+
+    String main = mainParts.toString().trim();
+    String details = detailParts.toString().trim();
+
+    if (!main.isEmpty() && !details.isEmpty()) {
+      return main + " (" + details + ")";
+    }
+    if (!main.isEmpty()) {
+      return main;
+    }
+    if (!details.isEmpty()) {
+      return details;
+    }
+
+    return "";
+  }
+
+  public void refreshDescription() {
+    this.description = buildDescription();
+  }
+
+  private void addIfPresent(StringJoiner joiner, String value) {
+    if (hasValue(value)) {
+      joiner.add(value.trim());
+    }
+  }
+
+  private boolean hasValue(String value) {
+    return value != null
+      && !value.trim().isEmpty()
+      && !value.trim().equalsIgnoreCase("N/A");
+  }
+
   @Override
   public String toString() {
-    return item + " " + brand + " " + description;
+    return buildDescription();
   }
 }

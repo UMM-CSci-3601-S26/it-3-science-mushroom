@@ -326,16 +326,20 @@ public class InventoryControllerSpec {
 
   @Test
   void canFilterInventoryByDescriptionCaseInsensitive() {
-    when(ctx.queryParamMap()).thenReturn(Map.of("description", List.of("A standard backpack")));
-    when(ctx.queryParam("description")).thenReturn("A standard backpack");
+    when(ctx.queryParamMap()).thenReturn(Map.of("description", List.of("backpack")));
+    when(ctx.queryParam("description")).thenReturn("backpack");
 
     inventoryController.getInventories(ctx);
 
     verify(ctx).json(inventoryArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
 
-    assertEquals(1, inventoryArrayListCaptor.getValue().size());
-    assertEquals("A standard backpack", inventoryArrayListCaptor.getValue().get(0).description);
+    List<Inventory> results = inventoryArrayListCaptor.getValue();
+    assertEquals(1, results.size());
+
+    Inventory result = results.get(0);
+    assertEquals("Backpack", result.item);
+    assertEquals(result.buildDescription(), result.description);
   }
 
   @Test
@@ -482,7 +486,6 @@ public class InventoryControllerSpec {
     incoming.color = "Black";
     incoming.type = "Dry Erase";
     incoming.material = "Plastic";
-    incoming.description = "Black dry erase markers";
     incoming.notes = "N/A";
     incoming.quantity = 0;
     incoming.externalBarcode = Arrays.asList("EXT-1", "", "  ", "EXT-1", "ITEM-99999", "EXT-2");
@@ -499,6 +502,7 @@ public class InventoryControllerSpec {
     assertEquals("ITEM-00009", created.internalBarcode);
     assertEquals(1, created.quantity);
     assertEquals(List.of("EXT-1", "EXT-2"), created.externalBarcode);
+    assertEquals(created.buildDescription(), created.description);
   }
 
   @Test

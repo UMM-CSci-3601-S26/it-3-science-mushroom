@@ -109,7 +109,7 @@ public class InventorySpec {
 
   @Test
   void inventoryToString() {
-    assertEquals(inv1.toString(), "Pencil Ticonderoga Ticonderoga Pencil");
+    assertEquals("Ticonderoga Pencil", inv1.toString());
   }
   @Test
 void addInventoryUpdatesExistingItem() {

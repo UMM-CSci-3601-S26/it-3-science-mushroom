@@ -134,6 +134,7 @@ public class InventoryController implements Controller {
 
   public void addInventory(Context ctx) {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
+    newInv.refreshDescription();
 
     Bson filter;
     if (newInv.internalBarcode != null && !newInv.internalBarcode.isBlank()) {
@@ -150,6 +151,8 @@ public class InventoryController implements Controller {
       int existingQuantity = (exists.quantity > 0) ? exists.quantity : 0;
       int newInvQuantity = (newInv.quantity > 0) ? newInv.quantity : 1;
       int newQuantity = existingQuantity + newInvQuantity;
+
+      generateDescription(exists);
 
       inventoryCollection.updateOne(
         eq("_id", exists._id),
@@ -189,6 +192,7 @@ public class InventoryController implements Controller {
     return;
     }
 
+    newInv.refreshDescription();
     inventoryCollection.insertOne(newInv);
     ctx.json(newInv);
     ctx.status(HttpStatus.CREATED);
@@ -295,9 +299,25 @@ public class InventoryController implements Controller {
 
     for (Inventory inv : matching) {
       updateStockState(inv);
+      generateDescription(inv);
     }
     ctx.json(matching);
     ctx.status(HttpStatus.OK);
+  }
+
+  private void generateDescription(Inventory inv) {
+    if (inv == null) {
+      return;
+    }
+
+    String generated = inv.buildDescription();
+    String current = inv.description == null ? "" : inv.description.trim();
+
+    inv.description = generated;
+
+    if (inv._id != null && generated.equals(current)) {
+      inventoryCollection.updateOne(eq("_id", inv._id), Updates.set(DESCRIPTION_KEY, generated));
+    }
   }
 
   private Bson constructFilter(Context ctx) {
