@@ -46,7 +46,7 @@
     "@angular/cli": "^20.3.14",
     "@angular/compiler-cli": "^20.3.16",
     "@angular/language-service": "^20.3.16",
-    "@cypress/schematic": "^3.0.0",
+    "@cypress/schematic": "^5.0.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.24.0",
     "@floogulinc/cypress-mongo-seeder": "^1.1.1",
