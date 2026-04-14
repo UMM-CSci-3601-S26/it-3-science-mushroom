@@ -1,5 +1,5 @@
 // Angular Imports
-import { ComponentFixture, TestBed, waitForAsync, tick, fakeAsync} from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, tick, fakeAsync } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { InventoryService } from './inventory.service';
 import { provideHttpClient } from '@angular/common/http';
@@ -17,6 +17,7 @@ import { Observable } from 'rxjs';
 import { MockInventoryService } from 'src/testing/inventory.service.mock';
 import { Inventory, SelectOption } from './inventory';
 import { InventoryComponent } from './inventory.component';
+import { By } from '@angular/platform-browser';
 
 
 describe('Inventory Table', () => {
@@ -24,6 +25,21 @@ describe('Inventory Table', () => {
   let fixture: ComponentFixture<InventoryComponent>
   let inventoryService: InventoryService;
   let loader: HarnessLoader
+  const baseInventory: Inventory = {
+    item: '',
+    description: '',
+    brand: '',
+    color: '',
+    size: '',
+    type: '',
+    material: '',
+    quantity: 0,
+    notes: '',
+    internalID: '',
+    minQuantity: 0,
+    maxQuantity: 0,
+    stockState: 'Unknown'
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -72,7 +88,7 @@ describe('Inventory Table', () => {
     inventoryTable.item.set('Markers');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: 'Markers', brand: undefined, color: undefined, size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: 'Markers', brand: undefined, color: undefined, size: undefined, type: undefined, material: undefined, description: undefined, quantity: undefined });
   }));
 
   it('should call getInventory() when brand signal changes', fakeAsync(() => {
@@ -80,7 +96,7 @@ describe('Inventory Table', () => {
     inventoryTable.brand.set('Crayola');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: undefined, size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: undefined, size: undefined, type: undefined, material: undefined, description: undefined, quantity: undefined });
   }));
 
   it('should call getInventory() when color signal changes', fakeAsync(() => {
@@ -88,7 +104,7 @@ describe('Inventory Table', () => {
     inventoryTable.color.set('Red');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: 'Red', size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: 'Red', size: undefined, type: undefined, material: undefined, description: undefined, quantity: undefined });
   }));
 
   it('should call getInventory() when size signal changes', fakeAsync(() => {
@@ -96,7 +112,7 @@ describe('Inventory Table', () => {
     inventoryTable.size.set('Wide Ruled');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: 'Wide Ruled', type: undefined, material: undefined , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: 'Wide Ruled', type: undefined, material: undefined, description: undefined, quantity: undefined });
   }));
 
   it('should call getInventory() when type signal changes', fakeAsync(() => {
@@ -104,7 +120,7 @@ describe('Inventory Table', () => {
     inventoryTable.type.set('Spiral');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: 'Spiral', material: undefined , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: 'Spiral', material: undefined, description: undefined, quantity: undefined });
   }));
 
   it('should call getInventory() when material signal changes', fakeAsync(() => {
@@ -112,7 +128,7 @@ describe('Inventory Table', () => {
     inventoryTable.material.set('Plastic');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: undefined, material: 'Plastic' , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: undefined, color: undefined, size: undefined, type: undefined, material: 'Plastic', description: undefined, quantity: undefined });
   }));
 
   it('should call getInventory() when brand and color signals change', fakeAsync(() => {
@@ -121,7 +137,7 @@ describe('Inventory Table', () => {
     inventoryTable.brand.set('Crayola');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: 'Black', size: undefined, type: undefined, material: undefined , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: undefined, brand: 'Crayola', color: 'Black', size: undefined, type: undefined, material: undefined, description: undefined, quantity: undefined });
   }));
 
   it('should call getInventory() when item, brand, color, and material signals change', fakeAsync(() => {
@@ -132,11 +148,61 @@ describe('Inventory Table', () => {
     inventoryTable.type.set('Spiral');
     fixture.detectChanges();
     tick(300);
-    expect(spy).toHaveBeenCalledWith({ item: 'Notebook', brand: 'Five Star', color: 'Yellow', size: undefined, type: 'Spiral', material: undefined , description: undefined, quantity: undefined});
+    expect(spy).toHaveBeenCalledWith({ item: 'Notebook', brand: 'Five Star', color: 'Yellow', size: undefined, type: 'Spiral', material: undefined, description: undefined, quantity: undefined });
   }));
 
   it('should not show error message on successful load', () => {
     expect(inventoryTable.errMsg()).toBeUndefined();
+  });
+
+  // Tests for N/A toggle functionality
+  it('should hide N/A values when toggle is OFF', () => {
+    inventoryTable.showNAValues.set(false);
+
+    expect(inventoryTable.displayCellValue('N/A')).toBe('');
+    expect(inventoryTable.displayCellValue('n/a')).toBe('');
+    expect(inventoryTable.displayCellValue('N/A ')).toBe('');
+  });
+
+  it('should show N/A values when toggle is ON', () => {
+    inventoryTable.showNAValues.set(true);
+
+    expect(inventoryTable.displayCellValue('N/A')).toBe('N/A');
+  });
+
+  it('should update the signal when the slide toggle changes', () => {
+    const toggle = fixture.debugElement.query(By.css('mat-slide-toggle'));
+    toggle.triggerEventHandler('ngModelChange', true);
+
+    expect(inventoryTable.showNAValues()).toBe(true);
+  });
+
+  it('should hide N/A in the table when toggle is OFF', () => {
+    inventoryTable.showNAValues.set(false);
+
+    inventoryTable.displayedInventory = signal<Inventory[]>([
+      { ...baseInventory, item: 'N/A' }
+    ]);
+
+    fixture.detectChanges();
+
+    const cell = fixture.debugElement.query(By.css('[data-cy="inventory-item"]')).nativeElement;
+    expect(cell.textContent.trim()).toBe('');
+  });
+
+
+
+  it('should show N/A in the table when toggle is ON', () => {
+    inventoryTable.showNAValues.set(true);
+
+    inventoryTable.displayedInventory = signal([
+      { ...baseInventory, item: 'N/A'}
+    ]);
+
+    fixture.detectChanges();
+
+    const cell = fixture.debugElement.query(By.css('[data-cy="inventory-item"]')).nativeElement;
+    expect(cell.textContent.trim()).toBe('N/A');
   });
 });
 
@@ -171,7 +237,7 @@ describe('Filter Dropdown options', () => {
     expect(options.map(option => option.value)).toContain('Notebook');
   });
 
-  it('should return empty options when item signal matches nothing',() => {
+  it('should return empty options when item signal matches nothing', () => {
     inventoryTable.item.set('someItem');
     fixture.detectChanges();
     expect(inventoryTable.filteredItemOptions().length).toBe(0);
@@ -204,7 +270,7 @@ describe('Misbehaving Inventory Table', () => {
       colorOptions: signal<SelectOption[]>([]),
       sizeOptions: signal<SelectOption[]>([]),
       typeOptions: signal<SelectOption[]>([]),
-      materialOptions:signal<SelectOption[]>([]),
+      materialOptions: signal<SelectOption[]>([]),
       //filterInventory: () => []
     };
   });
