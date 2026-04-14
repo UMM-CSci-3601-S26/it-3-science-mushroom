@@ -115,7 +115,7 @@ export class InventoryComponent {
   scanCards = signal<ScanCard[]>([]);
   // changed from `number` to `number | undefined` to better handle invalid user input in
   // remove amount field (e.g. empty string, non-numeric input)
-  removeAmount: number | undefined;
+  removeAmount: number;
   showRemovePanel = signal(false);
 
   async onScanned(code: string) {
@@ -294,8 +294,7 @@ export class InventoryComponent {
   async onManualEntryNeeded(event: { barcode: string; quantity: number}) {
     const dialogRef = this.dialog.open(ManualEntry, { data: { barcode: event.barcode, quantity: event.quantity}});
     const result: ManualEntryResult | null = await firstValueFrom(dialogRef.afterClosed());
-    // Forward null for cancelled manual entry so scanner.resolveManualEntry receives ManualEntryResult | null.
-    this.scannerRef()?.resolveManualEntry(result ?? null);
+    this.scannerRef()?.resolveManualEntry(result ?? undefined);
     this.reload.update(v => v + 1);
   }
 
