@@ -34,8 +34,7 @@ describe('TermsService', () => {
       color: ['Red', 'Blue'],
       size: ['Small', 'Large'],
       type: ['Type1', 'Type2'],
-      material: ['Wood', 'Plastic'],
-      style: ['Style1', 'Style2']
+      material: ['Wood', 'Plastic']
     };
 
     service.getTerms().subscribe(terms => {

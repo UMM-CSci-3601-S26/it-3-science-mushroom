@@ -18,11 +18,9 @@ const testTerms = {
   item:     ['crayon', 'marker', 'notebook', 'pencil', 'folder', 'tissue'],
   brand:    ['Crayola', 'Kleenex', 'Expo', 'BIC'],
   color:    ['red', 'blue', 'green', 'yellow', 'black'],
-  size:     ['letter', 'legal'],
-  // wide ruled / college ruled appear in BOTH type and style to test style-first filtering
-  type:     ['spiral', 'washable', 'wide ruled', 'college ruled'],
-  material: ['plastic', 'paper'],
-  style:    ['wide ruled', 'college ruled']
+  size:     ['letter', 'legal', 'wide ruled', 'college ruled'],
+  type:     ['spiral', 'washable'],
+  material: ['plastic', 'paper']
 };
 
 // ─── Shared provider array ────────────────────────────────────────────────────
@@ -360,7 +358,6 @@ describe('AddSupplyListComponent#submitForm()', () => {
     size:     'Wide',
     type:     'Washable',
     material: 'N/A',
-    style:    '',
     quantity: '3',
     notes:    ''
   };
@@ -815,7 +812,7 @@ describe('AddSupplyListComponent#submitForm() — pipe separator (anyOf) path', 
 
   const baseFormValues = {
     school: 'MHS', grade: 'PreK', item: 'Markers',
-    brand: '', color: '', count: '', size: '', type: '', material: '', style: '', quantity: '1', notes: ''
+    brand: '', color: '', count: '', size: '', type: '', material: '', quantity: '1', notes: ''
   };
 
   beforeEach(waitForAsync(() => {

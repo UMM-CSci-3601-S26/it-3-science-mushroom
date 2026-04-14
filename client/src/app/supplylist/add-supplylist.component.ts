@@ -45,45 +45,45 @@ export class AddSupplyListComponent implements OnInit {
   readonly grades = GRADES;
 
   // All terms loaded from the server
-  private terms: Terms = { item: [], brand: [], color: [], size: [], type: [], material: [], style: [] };
+  private terms: Terms = { item: [], brand: [], color: [], size: [], type: [], material: [] };
 
   // Maps well-known brand names (lowercase) → item keywords to try when no item is detected.
   // Keywords are checked against this.terms.item using the same plural-aware matching.
   private readonly brandItemHints: Record<string, string[]> = {
     // Tissues
-    'puffs':     ['tissue', 'facial tissue'],
-    'kleenex':   ['tissue', 'facial tissue'],
+    'puffs': ['tissue', 'facial tissue'],
+    'kleenex': ['tissue', 'facial tissue'],
     // Disinfecting
-    'clorox':    ['disinfectant wipe', 'wipe', 'disinfecting wipe'],
-    'lysol':     ['disinfectant wipe', 'wipe', 'disinfecting wipe', 'spray'],
+    'clorox': ['disinfectant wipe', 'wipe', 'disinfecting wipe'],
+    'lysol': ['disinfectant wipe', 'wipe', 'disinfecting wipe', 'spray'],
     // Art / drawing
-    'crayola':   ['crayon', 'marker', 'colored pencil', 'paint', 'watercolor'],
-    'fiskars':   ['scissors'],
-    'sharpie':   ['marker', 'permanent marker'],
-    'expo':      ['marker', 'dry erase marker', 'dry erase'],
+    'crayola': ['crayon', 'marker', 'colored pencil', 'paint', 'watercolor'],
+    'fiskars': ['scissors'],
+    'sharpie': ['marker', 'permanent marker'],
+    'expo': ['marker', 'dry erase marker', 'dry erase'],
     // Adhesives / office
-    'elmer':     ['glue', 'glue stick'],
-    'scotch':    ['tape', 'scissors'],
-    'avery':     ['label', 'binder', 'divider'],
-    'post-it':   ['sticky note', 'note', 'flag'],
+    'elmer': ['glue', 'glue stick'],
+    'scotch': ['tape', 'scissors'],
+    'avery': ['label', 'binder', 'divider'],
+    'post-it': ['sticky note', 'note', 'flag'],
     // Writing
     'ticonderoga': ['pencil'],
-    'dixon':     ['pencil'],
+    'dixon': ['pencil'],
     'papermate': ['pencil', 'pen', 'eraser'],
-    'bic':       ['pen', 'pencil', 'eraser'],
-    'pentel':    ['pen', 'pencil', 'marker'],
-    'pilot':     ['pen', 'marker'],
+    'bic': ['pen', 'pencil', 'eraser'],
+    'pentel': ['pen', 'pencil', 'marker'],
+    'pilot': ['pen', 'marker'],
     // Paper
     'hammermill': ['paper', 'copy paper'],
     'astrobrights': ['paper', 'cardstock'],
     // Storage / organization
-    'mead':      ['notebook', 'folder', 'binder', 'composition book'],
-    'five star':  ['notebook', 'folder', 'binder'],
-    'oxford':    ['index card', 'notebook'],
+    'mead': ['notebook', 'folder', 'binder', 'composition book'],
+    'five star': ['notebook', 'folder', 'binder'],
+    'oxford': ['index card', 'notebook'],
     // Hygiene
-    'purell':    ['hand sanitizer', 'sanitizer'],
-    'germ-x':   ['hand sanitizer', 'sanitizer'],
-    'dial':      ['soap', 'hand soap'],
+    'purell': ['hand sanitizer', 'sanitizer'],
+    'germ-x': ['hand sanitizer', 'sanitizer'],
+    'dial': ['soap', 'hand soap'],
   };
 
   // Natural language description input
@@ -99,7 +99,6 @@ export class AddSupplyListComponent implements OnInit {
   filteredSize$!: Observable<string[]>;
   filteredType$!: Observable<string[]>;
   filteredMaterial$!: Observable<string[]>;
-  filteredStyle$!: Observable<string[]>;
 
   addSupplyListForm = new FormGroup({
     school: new FormControl('', Validators.required),
@@ -111,7 +110,6 @@ export class AddSupplyListComponent implements OnInit {
     size: new FormControl(''),
     type: new FormControl(''),
     material: new FormControl(''),
-    style: new FormControl(''),
     quantity: new FormControl('', [Validators.required, Validators.min(1)]),
     notes: new FormControl('')
   });
@@ -129,7 +127,6 @@ export class AddSupplyListComponent implements OnInit {
     size: [{ type: 'required', message: 'Size is required' }],
     type: [{ type: 'required', message: 'Type is required' }],
     material: [{ type: 'required', message: 'Material is required' }],
-    style: [],
     quantity: [
       { type: 'required', message: 'Quantity is required' },
       { type: 'min', message: 'Quantity must be at least 1' }
@@ -154,7 +151,6 @@ export class AddSupplyListComponent implements OnInit {
         this.filteredSize$ = this.filterFor('size', terms.size);
         this.filteredType$ = this.filterFor('type', terms.type);
         this.filteredMaterial$ = this.filterFor('material', terms.material);
-        this.filteredStyle$ = this.filterFor('style', terms.style);
       },
       error: () => {
         // Terms are optional — autocomplete just won't suggest anything
@@ -164,7 +160,6 @@ export class AddSupplyListComponent implements OnInit {
         this.filteredSize$ = of([]);
         this.filteredType$ = of([]);
         this.filteredMaterial$ = of([]);
-        this.filteredStyle$ = of([]);
       }
     });
   }
@@ -276,10 +271,19 @@ export class AddSupplyListComponent implements OnInit {
       patch['size'] = fallbackSize;
     }
 
-    // ── Type (exclude any term that is already in the style list) ─────────────
-    const styleSet = new Set(this.terms.style.map(t => t.toLowerCase()));
-    const typeOnlyTerms = this.terms.type.filter(t => !styleSet.has(t.toLowerCase()));
-    const matchedTypes = this.allTermMatches(lower, typeOnlyTerms);
+    // ── Default container size for new system (Option B: "Box of 24") ─────────────
+    // If quantity > 1 and no size was detected from the new DB terms,
+    // infer a container type. If a count exists, include it.
+    if (!patch['size'] && patch['quantity']) {
+      const qty = Number(patch['quantity']);
+      if (qty > 1) {
+        const count = patch['count'] ? ` of ${patch['count']}` : '';
+        patch['size'] = `Box${count}`;   // e.g., "Box of 24", "Box"
+      }
+    }
+
+    // ── Type ─────────────
+    const matchedTypes = this.allTermMatches(lower, this.terms.type);
     if (matchedTypes.length) {
       patch['type'] = matchedTypes.join(sep);
     }
@@ -298,7 +302,7 @@ export class AddSupplyListComponent implements OnInit {
     const structuredParenPattern = /^\d+\s*(?:count|ct\.?|pk\.?|pack\.?|oz\.?|lb\.?|ml\.?|g\.?|mm\.?|cm\.?|in\.?|ft\.?)?\s*$/i;
     const allTermWords = [
       ...this.terms.item, ...this.terms.brand, ...this.terms.color,
-      ...this.terms.size, ...this.terms.type, ...this.terms.material, ...this.terms.style
+      ...this.terms.size, ...this.terms.type, ...this.terms.material
     ];
     const noteFragments = [...input.matchAll(/\(([^)]+)\)/g)]
       .map(m => m[1].trim())
@@ -321,6 +325,10 @@ export class AddSupplyListComponent implements OnInit {
 
     this.addSupplyListForm.patchValue(patch);
     this.showPreview = true;
+
+    console.log("Brand match:", this.bestTermMatch(lower, this.terms.brand));
+    console.log("Item match:", this.bestTermMatch(lower, this.terms.item));
+    console.log("Loaded terms:", this.terms);
   }
 
   /** Returns the longest term from the list that appears as a whole word in the input, or null.
@@ -331,7 +339,7 @@ export class AddSupplyListComponent implements OnInit {
       const t = term.toLowerCase();
       const candidates = this.pluralForms(t);
       const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const matched = candidates.some(c => new RegExp(`\\b${esc(c)}\\b`).test(lower));
+      const matched = candidates.some(c => new RegExp(`(?:^|\\s)${esc(c)}(?:$|\\s)`).test(lower));
       if (matched && (!best || t.length > best.length)) {
         best = term; // keep original casing from terms list
       }
@@ -348,7 +356,7 @@ export class AddSupplyListComponent implements OnInit {
       const t = term.toLowerCase();
       const candidates = this.pluralForms(t);
       const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const matched = candidates.some(c => new RegExp(`\\b${esc(c)}\\b`).test(lower));
+      const matched = candidates.some(c => new RegExp(`(?:^|\\s)${esc(c)}(?:$|\\s)`).test(lower));
       if (matched && !seen.has(t)) {
         seen.add(t);
         results.push(term);

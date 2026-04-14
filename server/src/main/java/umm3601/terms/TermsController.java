@@ -37,7 +37,7 @@ public class TermsController implements Controller {
   /**
    * GET /api/terms
    * Returns a Terms object containing sorted, case-deduplicated lists for
-   * item, brand, color, size, type, material, and style — pulling values from
+   * item, brand, color, size, type, and material — pulling values from
    * both the supplylist and inventory collections.
    */
   public void getTerms(Context ctx) {
@@ -61,7 +61,8 @@ public class TermsController implements Controller {
     );
 
     terms.size = merge(
-      distinctStrings(supplyListCollection, "size"),
+      distinctStrings(supplyListCollection, "size.allOf"),
+      distinctStrings(supplyListCollection, "size.anyOf"),
       distinctStrings(inventoryCollection, "size")
     );
 
@@ -75,12 +76,6 @@ public class TermsController implements Controller {
       distinctStrings(supplyListCollection, "material.allOf"),
       distinctStrings(supplyListCollection, "material.anyOf"),
       distinctStrings(inventoryCollection, "material")
-    );
-
-    terms.style = merge(
-      distinctStrings(supplyListCollection, "style.allOf"),
-      distinctStrings(supplyListCollection, "style.anyOf"),
-      distinctStrings(inventoryCollection, "style")
     );
 
     ctx.json(terms);

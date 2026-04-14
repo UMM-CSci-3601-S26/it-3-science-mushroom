@@ -5,5 +5,4 @@ export interface Terms {
   size: string[];
   type: string[];
   material: string[];
-  style: string[];
 }

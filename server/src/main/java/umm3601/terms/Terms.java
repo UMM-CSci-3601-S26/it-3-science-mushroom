@@ -15,5 +15,4 @@ public class Terms {
   public List<String> size;
   public List<String> type;
   public List<String> material;
-  public List<String> style;
 }

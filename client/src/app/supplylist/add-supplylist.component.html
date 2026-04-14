@@ -113,16 +113,6 @@
               </mat-autocomplete>
             </mat-form-field>
 
-            <mat-form-field>
-              <mat-label>Style</mat-label>
-              <input matInput type="text" formControlName="style"
-                     data-cy="style-input"
-                     [matAutocomplete]="styleAuto">
-              <mat-autocomplete #styleAuto="matAutocomplete">
-                <mat-option *ngFor="let opt of filteredStyle$ | async" [value]="opt">{{ opt }}</mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
-
             <!-- Row 6: Quantity + Count -->
             <mat-form-field>
               <mat-label>Quantity</mat-label>
@@ -174,7 +164,6 @@
             <tr *ngIf="previewValues.count"><th>Count</th><td>{{ previewValues.count }}</td></tr>
             <tr *ngIf="previewValues.type"><th>Type</th><td>{{ previewValues.type }}</td></tr>
             <tr *ngIf="previewValues.material"><th>Material</th><td>{{ previewValues.material }}</td></tr>
-            <tr *ngIf="previewValues.style"><th>Style</th><td>{{ previewValues.style }}</td></tr>
           </tbody>
         </table>
       </mat-card-content>
