@@ -1,13 +1,13 @@
 package umm3601.Family;
 
 public class FamilyStatusUpdateRequest {
-    private boolean status;
+    private boolean helped;
 
-    public boolean getStatus() {
-      return status;
+    public boolean getHelped() {
+      return helped;
     }
 
-    public void setStatus(boolean status){
-      this.status = status;
+    public void setHelped(boolean helped){
+      this.helped = helped;
   }
 }

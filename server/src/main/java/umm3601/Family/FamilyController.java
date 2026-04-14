@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.naming.NameNotFoundException;
+
 // Org Imports
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -50,6 +52,7 @@ public class FamilyController implements Controller {
   private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
   private static final String API_FAMILY_EXPORT = "/api/family/export";
+  private static final String API_FAMILY_HELPED = "/api/family/{id}/helped";
 
   // Regex
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -170,6 +173,7 @@ public class FamilyController implements Controller {
       .append("address", updatedFamily.address)
       .append("timeSlot", updatedFamily.timeSlot)
       .append("students", updatedStudentInfo)
+      .append("helped", existingFamily.helped)
     );
 
     familyCollection.updateOne(eq("_id", familyId), update);
@@ -200,6 +204,34 @@ public class FamilyController implements Controller {
           + id
           + "; perhaps illegal Family ID or an ID for a Family not in the system?");
     }
+    ctx.status(HttpStatus.OK);
+  }
+
+  public void updateFamilyHelped (Context ctx) {
+    String id = ctx.pathParam("id");
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id was not legal");
+    }
+
+    Family existingFamily = familyCollection.find(eq("_id", familyId)).first();
+
+    if (existingFamily == null) {
+      throw new NotFoundResponse("The family was not found");
+    }
+
+    FamilyStatusUpdateRequest statusUpdate = ctx.bodyValidator(FamilyStatusUpdateRequest.class).get();
+
+    Bson update = new Document("$set", new Document("helped", statusUpdate.getHelped()));
+
+    familyCollection.updateOne(eq("_id", familyId), update);
+
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
     ctx.status(HttpStatus.OK);
   }
 
@@ -305,6 +337,7 @@ public class FamilyController implements Controller {
 
     // UPDATE routes
     server.put(API_FAMILY_BY_ID, this::updateFamily); // Update family by ID
+    server.patch(API_FAMILY_HELPED, this::updateFamilyHelped);
 
     // POST routes
     server.post(API_FAMILY, this::addNewFamily); // Add family

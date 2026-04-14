@@ -18,7 +18,7 @@ public class Family {
   public String email;
   public String address;
   public String timeSlot;
-  public boolean status;
+  public boolean helped;
 
   public List<StudentInfo> students;
 
