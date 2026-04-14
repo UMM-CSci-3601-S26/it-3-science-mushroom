@@ -1,0 +1,186 @@
+<div class="page-layout">
+  <div class="form-col">
+    <form [formGroup]="addSupplyListForm" (ngSubmit)="submitForm()">
+      <mat-card class="add-supplylist-card" data-cy="add-supply-card">
+
+        <mat-card-header>
+          <mat-card-title data-cy="add-supply-title">New Supply List Item</mat-card-title>
+        </mat-card-header>
+
+        <!-- ── Natural-language parse strip ───────────────────────────── -->
+        <mat-card-content class="parse-strip">
+          <mat-form-field class="parse-field">
+            <mat-label>Describe the item (optional)</mat-label>
+            <input matInput type="text" [(ngModel)]="descriptionInput" [ngModelOptions]="{standalone: true}"
+                   placeholder='e.g. "1 box of 24 count Crayola crayons"'
+                   data-cy="description-input"
+                   (keyup.enter)="parseDescription(descriptionInput)">
+          </mat-form-field>
+          <button mat-raised-button color="accent" type="button"
+                  (click)="parseDescription(descriptionInput)"
+                  data-cy="autofill-button"
+                  [disabled]="!descriptionInput.trim()">
+            Auto-fill fields
+          </button>
+        </mat-card-content>
+
+        <mat-card-content>
+          <div class="form-grid">
+
+            <!-- Row 1: School + Grade -->
+            <!-- <mat-form-field>
+              <mat-label>School</mat-label>
+              <mat-select formControlName="school" required data-cy="school-select">
+                @for (s of availableSchools$ | async; track s) {
+                  <mat-option [value]="s">{{ s }}</mat-option>
+                }
+              </mat-select>
+              <mat-error *ngIf="formControlHasError('school')">{{ getErrorMessage('school') }}</mat-error>
+            </mat-form-field> -->
+
+            <mat-form-field>
+              <mat-label>Grade</mat-label>
+              <mat-select formControlName="grade" required data-cy="grade-select">
+                @for (g of grades; track g) {
+                  <mat-option [value]="g">{{ g }}</mat-option>
+                }
+              </mat-select>
+              <mat-error *ngIf="formControlHasError('grade')">{{ getErrorMessage('grade') }}</mat-error>
+            </mat-form-field>
+
+            <!-- Row 2: Item (full width) -->
+            <mat-form-field class="span-2">
+              <mat-label>Item</mat-label>
+              <input matInput type="text" formControlName="item" required
+                     data-cy="item-input"
+                     [matAutocomplete]="itemAuto">
+              <mat-autocomplete #itemAuto="matAutocomplete">
+                <mat-option *ngFor="let opt of filteredItem$ | async" [value]="opt">{{ opt }}</mat-option>
+              </mat-autocomplete>
+              <mat-error *ngIf="formControlHasError('item')" data-cy="item-error">{{ getErrorMessage('item') }}</mat-error>
+            </mat-form-field>
+
+            <!-- Row 3: Brand + Color -->
+            <mat-form-field>
+              <mat-label>Brand</mat-label>
+              <input matInput type="text" formControlName="brand"
+                     data-cy="brand-input"
+                     [matAutocomplete]="brandAuto">
+              <mat-autocomplete #brandAuto="matAutocomplete">
+                <mat-option *ngFor="let opt of filteredBrand$ | async" [value]="opt">{{ opt }}</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Color</mat-label>
+              <input matInput type="text" formControlName="color"
+                     data-cy="color-input"
+                     [matAutocomplete]="colorAuto">
+              <mat-autocomplete #colorAuto="matAutocomplete">
+                <mat-option *ngFor="let opt of filteredColor$ | async" [value]="opt">{{ opt }}</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <!-- Row 4: Size + Type -->
+            <mat-form-field>
+              <mat-label>Size</mat-label>
+              <input matInput type="text" formControlName="size"
+                     data-cy="size-input"
+                     [matAutocomplete]="sizeAuto">
+              <mat-autocomplete #sizeAuto="matAutocomplete">
+                <mat-option *ngFor="let opt of filteredSize$ | async" [value]="opt">{{ opt }}</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Type</mat-label>
+              <input matInput type="text" formControlName="type"
+                     data-cy="type-input"
+                     [matAutocomplete]="typeAuto">
+              <mat-autocomplete #typeAuto="matAutocomplete">
+                <mat-option *ngFor="let opt of filteredType$ | async" [value]="opt">{{ opt }}</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <!-- Row 5: Material + Style -->
+            <mat-form-field>
+              <mat-label>Material</mat-label>
+              <input matInput type="text" formControlName="material"
+                     data-cy="material-input"
+                     [matAutocomplete]="materialAuto">
+              <mat-autocomplete #materialAuto="matAutocomplete">
+                <mat-option *ngFor="let opt of filteredMaterial$ | async" [value]="opt">{{ opt }}</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Style</mat-label>
+              <input matInput type="text" formControlName="style"
+                     data-cy="style-input"
+                     [matAutocomplete]="styleAuto">
+              <mat-autocomplete #styleAuto="matAutocomplete">
+                <mat-option *ngFor="let opt of filteredStyle$ | async" [value]="opt">{{ opt }}</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <!-- Row 6: Quantity + Count -->
+            <mat-form-field>
+              <mat-label>Quantity</mat-label>
+              <input matInput type="number" formControlName="quantity" required min="1" data-cy="quantity-input">
+              <mat-error *ngIf="formControlHasError('quantity')" data-cy="quantity-error">{{ getErrorMessage('quantity') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Count per unit</mat-label>
+              <input matInput type="number" formControlName="count" min="1" data-cy="count-input">
+            </mat-form-field>
+
+            <!-- Row 7: Notes (full width) -->
+            <mat-form-field class="span-2">
+              <mat-label>Notes</mat-label>
+              <input matInput type="text" formControlName="notes" placeholder="Optional — or use (parentheses) in description" data-cy="notes-input">
+            </mat-form-field>
+
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-flat-button color="primary" type="submit" [disabled]="addSupplyListForm.invalid" data-cy="submit-add-supply">Add Item</button>
+          <button mat-stroked-button color="warn" type="button" (click)="clearForm()" data-cy="clear-add-supply">Clear</button>
+          <button mat-stroked-button type="button" routerLink="/supplylist" data-cy="cancel-add-supply">Cancel</button>
+        </mat-card-actions>
+
+      </mat-card>
+    </form>
+  </div>
+
+  <!-- ── Preview column (right side) ───────────────────────────────── -->
+  <div class="preview-col" *ngIf="showPreview">
+    <mat-card class="preview-card" data-cy="add-supply-preview">
+      <mat-card-header>
+        <mat-card-title>Preview</mat-card-title>
+        <mat-card-subtitle>This is what will be added. Adjust the fields above if needed.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <table class="preview-table">
+          <tbody>
+            <tr *ngIf="previewValues.school"><th>School</th><td>{{ previewValues.school }}</td></tr>
+            <tr *ngIf="previewValues.grade"><th>Grade</th><td>{{ previewValues.grade }}</td></tr>
+            <tr *ngIf="previewValues.item"><th>Item</th><td>{{ previewValues.item }}</td></tr>
+            <tr *ngIf="previewValues.brand"><th>Brand</th><td>{{ previewValues.brand }}</td></tr>
+            <tr *ngIf="previewValues.color"><th>Color</th><td>{{ previewValues.color }}</td></tr>
+            <tr *ngIf="previewValues.size"><th>Size</th><td>{{ previewValues.size }}</td></tr>
+            <tr *ngIf="previewValues.quantity"><th>Quantity</th><td>{{ previewValues.quantity }}</td></tr>
+            <tr *ngIf="previewValues.count"><th>Count</th><td>{{ previewValues.count }}</td></tr>
+            <tr *ngIf="previewValues.type"><th>Type</th><td>{{ previewValues.type }}</td></tr>
+            <tr *ngIf="previewValues.material"><th>Material</th><td>{{ previewValues.material }}</td></tr>
+            <tr *ngIf="previewValues.style"><th>Style</th><td>{{ previewValues.style }}</td></tr>
+          </tbody>
+        </table>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="warn" type="button" (click)="showPreview = false">Dismiss</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

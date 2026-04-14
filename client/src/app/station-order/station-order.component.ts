@@ -4,6 +4,21 @@ import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { SupplyList } from '../supplylist/supplylist';
 import { SupplyListService } from '../supplylist/supplylist.service';
+
+type SupplyListFilters = {
+  school?: string;
+  grade?: string;
+  item?: string;
+  brand?: string;
+  color?: string;
+  count?: number;
+  size?: string;
+  type?: string;
+  material?: string;
+  quantity?: number;
+  notes?: string;
+};
+
 @Component({
   selector: 'app-station-order',
   imports: [
@@ -29,7 +44,7 @@ export class StationOrderComponent {
     this.loadSupplyList();
   }
 
-  loadSupplyList(filters?: SupplyList): void {
+  loadSupplyList(filters?: SupplyListFilters): void {
     this.SupplyListService.getSupplyList(filters).subscribe(data => {
       this.supplyList.set(data);
     })
@@ -70,7 +85,15 @@ export class StationOrderComponent {
 
   optionBuilder(data: SupplyList[], key: keyof SupplyList): string[] {
     return [...new Set(
-      data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '' && v.trim() !== 'N/A' && !this.stationOrder.includes(v))
+      data
+        .flatMap(item => {
+          const value = item[key];
+          if (Array.isArray(value)) {
+            return value;
+          }
+          return typeof value === 'string' ? [value] : [];
+        })
+        .filter(v => v.trim() !== '' && v.trim() !== 'N/A' && !this.stationOrder.includes(v))
     )]
   }
 }

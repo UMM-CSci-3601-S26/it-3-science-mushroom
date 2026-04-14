@@ -7,121 +7,84 @@
 
       <mat-card-content>
         <p class="page-description">
-          Welcome to the Supply List page! Here, you can view the items a student in each grade at each school needs, as well as filter them by various attributes. In the future, functionality for generating supply sheets and other similar features may be added!
+          Welcome to the Supply List page! Here, you can view the items a student in each grade at each school needs, as
+          well as filter them by various attributes. In the future, functionality for generating supply sheets and other
+          similar features may be added!
         </p>
         <hr style="margin: 1rem 0;" />
 
         <p class="filters-description">
-          Use the fields below to filter the inventory by school, grade, item, brand, color, size, type, and material. The filters will be applied as you type, and you can clear them all at once using the "Clear" button on the bottom.
+          Use the fields below to filter the inventory by school, grade, item, brand, color, size, type, and material.
+          The filters will be applied as you type, and you can clear them all at once using the "Clear" button on the
+          bottom.
         </p>
 
         <!-- Filter Fields -->
         <div class="filter-container">
           <mat-form-field appearance="outline">
             <mat-label>School</mat-label>
-            <input
-              matInput
-              [ngModel]="school() ?? ''"
-              (ngModelChange)="school.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-school"
-            />
+            <input matInput [ngModel]="school() ?? ''" (ngModelChange)="school.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-school" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label class="filter">Grade</mat-label>
-            <input
-              matInput
-              [ngModel]="grade() ?? ''"
-              (ngModelChange)="grade.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-grade"
-            />
+            <input matInput [ngModel]="grade() ?? ''" (ngModelChange)="grade.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-grade" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label class="filter">Item</mat-label>
-            <input
-              matInput
-              [ngModel]="item() ?? ''"
-              (ngModelChange)="item.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-item"
-            />
+            <input matInput [ngModel]="item() ?? ''" (ngModelChange)="item.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-item" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label class="filter">Brand</mat-label>
-            <input
-              matInput
-              [ngModel]="brand() ?? ''"
-              (ngModelChange)="brand.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-brand"
-            />
+            <input matInput [ngModel]="brand() ?? ''" (ngModelChange)="brand.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-brand" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label class="filter">Color</mat-label>
-            <input
-              matInput
-              [ngModel]="color() ?? ''"
-              (ngModelChange)="color.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-color"
-            />
+            <input matInput [ngModel]="color() ?? ''" (ngModelChange)="color.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-color" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label class="filter">Size</mat-label>
-            <input
-              matInput
-              [ngModel]="size() ?? ''"
-              (ngModelChange)="size.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-size"
-            />
+            <input matInput [ngModel]="size() ?? ''" (ngModelChange)="size.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-size" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label class="filter">Type</mat-label>
-            <input
-              matInput
-              [ngModel]="type() ?? ''"
-              (ngModelChange)="type.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-type"
-            />
+            <input matInput [ngModel]="type() ?? ''" (ngModelChange)="type.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-type" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label class="filter">Material</mat-label>
-            <input
-              matInput
-              [ngModel]="material() ?? ''"
-              (ngModelChange)="material.set($event?.trim() || undefined)"
-              placeholder="contains..."
-              data-cy="filter-material"
-            />
+            <input matInput [ngModel]="material() ?? ''" (ngModelChange)="material.set($event?.trim() || undefined)"
+              placeholder="contains..." data-cy="filter-material" />
           </mat-form-field>
         </div>
 
         <div class="filter-extra">
-            <!-- Clear Filters Button -->
-            <button
-            mat-stroked-button
-            type="button"
-            (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined);
-            type.set(undefined); material.set(undefined); school.set(undefined); grade.set(undefined)"
-            data-cy="filter-clear"
-            class="clear-button"
-            >
+          <!-- Clear Filters Button -->
+          <button mat-stroked-button type="button" (click)="resetFilters()" data-cy="filter-clear" class="clear-button">
             Clear
-            </button>
-            <!--# of Current Entries Displayed-->
-            <button mat-stroked-button class="count-display">
+          </button>
+          <!-- Expand / Collapse All -->
+          <button mat-stroked-button (click)="toggleAll()" data-cy="expand-collapse-all">
+            <mat-icon>{{ allExpanded() ? 'unfold_less' : 'unfold_more' }}</mat-icon>
+            {{ allExpanded() ? 'Collapse All' : 'Expand All' }}
+          </button>
+
+          <!--# of Current Entries Displayed-->
+          <button mat-stroked-button class="count-display">
             Count: {{ serverFilteredSupplyList().length }}
-            </button>
+          </button>
         </div>
       </mat-card-content>
     </mat-card>
@@ -130,15 +93,114 @@
 
 <br>
 
+<!--Supply List Display-->
 <div>
-  <mat-card class="supplylist-card" data-cy="supplylist-card">
-    <mat-card-header>
-        <mat-card-title class="supplylist-title">Supply List Display</mat-card-title>
-      </mat-card-header>
+  <mat-card class="search-grid" data-cy="supplylist-card">
     <div class="tree-container" role="Display Items">
-      <mat-card-content>
-        <app-supply-list-tree [supplyListNodes]="groupedSupplyList()"></app-supply-list-tree>
-      </mat-card-content>
+      @for (schoolGroup of groupedSupplyList(); track schoolGroup.school) {
+      <section class="school-group">
+        <h2 class="school-heading" data-cy="supplylist-school">{{ schoolGroup.school }}</h2>
+
+        @for (gradeGroup of schoolGroup.grades; track gradeGroup.grade) {
+        <mat-expansion-panel class="grade-panel" [expanded]="allExpanded()">
+          <mat-expansion-panel-header>
+            <mat-panel-title data-cy="supplylist-grade">{{ gradeGroup.grade }}</mat-panel-title>
+            <mat-panel-description>{{ gradeGroup.teachers[0]?.items?.length ?? 0 }} item(s)</mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div class="grade-add-row">
+            <button mat-stroked-button color="primary" [routerLink]="['/supplylist/new']"
+              [queryParams]="{ school: schoolGroup.school, grade: gradeGroup.grade }" data-cy="add-item-button">
+              <mat-icon>add</mat-icon> Add Item
+            </button>
+          </div>
+
+          @for (teacherGroup of gradeGroup.teachers; track teacherGroup.teacher) {
+          <section class="teacher-group">
+            <h4 class="teacher-heading"><strong>Teacher(s):</strong> {{ teacherGroup.teacher }}</h4>
+
+            <ul class="item-list">
+              @for (element of teacherGroup.items; track element._id) {
+              <li class="item-row">
+
+                @if (editingItemId === element._id) {
+                <!-- Inline edit mode -->
+                <div class="item-edit-grid">
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Item</mat-label>
+                    <input matInput [ngModel]="element.item?.join(', ')"
+                      (ngModelChange)="element.item = parseStringArray($event)" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Brand</mat-label>
+                    <input matInput [ngModel]="element.brand?.allOf ?? ''"
+                      (ngModelChange)="element.brand = { allOf: ($event ?? '').trim(), anyOf: element.brand?.anyOf ?? [] }" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Color</mat-label>
+                    <input matInput [ngModel]="element.color?.allOf?.join(', ')"
+                      (ngModelChange)="element.color = { allOf: parseStringArray($event), anyOf: element.color?.anyOf ?? [] }" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Size</mat-label>
+                    <input matInput [ngModel]="element.size?.allOf ?? ''"
+                      (ngModelChange)="element.size = { allOf: ($event ?? '').trim(), anyOf: element.size?.anyOf ?? [] }" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Type</mat-label>
+                    <input matInput [ngModel]="element.type?.allOf ?? ''"
+                      (ngModelChange)="element.type = { allOf: ($event ?? '').trim(), anyOf: element.type?.anyOf ?? [] }" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Material</mat-label>
+                    <input matInput [ngModel]="element.material?.allOf ?? ''"
+                      (ngModelChange)="element.material = { allOf: ($event ?? '').trim(), anyOf: element.material?.anyOf ?? [] }" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Count</mat-label>
+                    <input matInput type="number" [(ngModel)]="element.count" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Quantity</mat-label>
+                    <input matInput type="number" [(ngModel)]="element.quantity" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Notes</mat-label>
+                    <input matInput [(ngModel)]="element.notes" />
+                  </mat-form-field>
+                </div>
+                <div class="item-actions">
+                  <button mat-icon-button color="primary" matTooltip="Save" (click)="saveEdit(element)"
+                    data-cy="save-item">
+                    <mat-icon>check</mat-icon>
+                  </button>
+                  <button mat-icon-button matTooltip="Cancel" (click)="cancelEdit()" data-cy="cancel-edit">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                } @else {
+                <!-- Display mode -->
+                <span class="item-label" data-cy="supplylist-item-label">{{ toLabel(element) }}</span>
+                <div class="item-actions">
+                  <button mat-icon-button matTooltip="Edit" (click)="startEdit(element)" data-cy="edit-item">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" matTooltip="Delete" (click)="confirmDelete(element._id)"
+                    data-cy="delete-item">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+                }
+
+              </li>
+              }
+            </ul>
+          </section>
+          }
+        </mat-expansion-panel>
+        }
+      </section>
+      }
     </div>
   </mat-card>
 </div>

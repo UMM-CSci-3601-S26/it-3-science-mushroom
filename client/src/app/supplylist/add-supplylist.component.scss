@@ -1,0 +1,71 @@
+.page-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1rem;
+
+  .form-col {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .preview-col {
+    flex: 0 0 340px;
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.parse-strip {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0;
+
+  .parse-field {
+    flex: 1;
+  }
+}
+
+.preview-card {
+  width: 100%;
+
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 0.35rem 0.75rem;
+      text-align: left;
+        border-bottom: 1px solid var(--app-divider-color);
+      width: 35%;
+      font-weight: 600;
+    }
+  }
+}
+
+.add-supplylist-card {
+  max-width: 700px;
+  margin: 2rem auto;
+
+  mat-card-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+
+    mat-form-field {
+      width: 100%;
+    }
+
+    .span-2 {
+      grid-column: 1 / -1;
+    }
+  }
+}
