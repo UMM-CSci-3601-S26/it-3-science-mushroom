@@ -1,10 +1,10 @@
-.mat-list-item {
-  border-bottom: 1px solid black;
-  padding: 12px;
-}
+// .mat-list-item {
+//   border-bottom: 1px solid black;
+//   padding: 12px;
+// }
 
 .list-style {
-  border: 2px solid black;
+  border: 2px solid;
   width: 100%;
   border-radius: 8px;
   padding: 0.75rem;
@@ -13,12 +13,8 @@
   gap: 0.5rem 1rem;
 }
 
-.demo-table {
-  width: 100%;
-}
-
 th.mat-sort-header-sorted {
-  color: black;
+  color: var(--app-primary-color);
 }
 
 .filter-container {
@@ -35,31 +31,27 @@ th.mat-sort-header-sorted {
 }
 
 .clear-button {
-  border: 1px solid gray;
+  border: 1px solid var(--app-divider-color);
   border-radius: 4px;
   padding: 0 16px;
   min-height: 36px;
   display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .filter-extra {
-  display: grid;
-  grid-template-columns: auto auto;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .count-display {
-  border: 1px solid gray;
+  border: 1px solid var(--app-divider-color);
   border-radius: 4px;
   padding: 0 16px;
   min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
 }
 
 .page-description {
@@ -83,14 +75,16 @@ th.mat-sort-header-sorted {
 }
 
 .school-group {
-  border-left: 3px solid rgba(0, 0, 0, 0.2);
+  border-left: 3px solid var(--app-divider-color);
   padding-left: 0.75rem;
 }
 
-.grade-group {
-  margin-left: 1rem;
-  border-left: 2px solid rgba(0, 0, 0, 0.15);
-  padding-left: 0.75rem;
+.grade-panel {
+  margin: 0.25rem 0 0.25rem 1rem;
+}
+
+.grade-add-row {
+  margin-bottom: 0.75rem;
 }
 
 .teacher-group {
@@ -113,7 +107,53 @@ th.mat-sort-header-sorted {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 0.75rem;
-  border: 1px solid gray;
+  border: 1px solid var(--app-divider-color);
   border-radius: 4px;
   padding: 1rem;
+}
+
+.item-list {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid; //rgba(0, 0, 0, 0.1);
+  min-height: 40px;
+
+  &:hover {
+    background: var(--app-hover-color);
+  }
+}
+
+.item-label {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.item-edit-grid {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .edit-field {
+    width: 130px;
+    font-size: 0.85rem;
+  }
 }
