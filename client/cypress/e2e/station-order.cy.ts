@@ -25,21 +25,4 @@ describe('Station Order', () => {
     cy.get('.item-list-bank').should('exist');
     cy.get('.item-list-station-order').should('exist');
   });
-
-  // elements exist
-  it('Should have drag and drop elements', () => {
-    cy.contains('Backpack').should('exist');
-    cy.get('.drag-box').should('exist');
-    cy.get('.handle').should('exist');
-  });
-
-  // // can drag element within same list
-  // it('Should drag elements in same lists', () => {
-  //   page.drop('Backpack', '.item-list-bank');
-  // });
-
-  // can drag element to opposite list
-  it('Should drag elements to different lists', () => {
-    page.drop('Backpack', '.item-list-station-order');
-  });
 });

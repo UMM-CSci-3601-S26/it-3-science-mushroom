@@ -122,7 +122,7 @@
 
             <mat-form-field>
               <mat-label>Count per unit</mat-label>
-              <input matInput type="number" formControlName="count" min="1" data-cy="count-input">
+              <input matInput type="number" formControlName="packageSize" min="1" data-cy="packageSize-input">
             </mat-form-field>
 
             <!-- Row 7: Notes (full width) -->
@@ -161,7 +161,7 @@
             <tr *ngIf="previewValues.color"><th>Color</th><td>{{ previewValues.color }}</td></tr>
             <tr *ngIf="previewValues.size"><th>Size</th><td>{{ previewValues.size }}</td></tr>
             <tr *ngIf="previewValues.quantity"><th>Quantity</th><td>{{ previewValues.quantity }}</td></tr>
-            <tr *ngIf="previewValues.count"><th>Count</th><td>{{ previewValues.count }}</td></tr>
+            <tr *ngIf="previewValues.packageSize"><th>Count</th><td>{{ previewValues.packageSize }}</td></tr>
             <tr *ngIf="previewValues.type"><th>Type</th><td>{{ previewValues.type }}</td></tr>
             <tr *ngIf="previewValues.material"><th>Material</th><td>{{ previewValues.material }}</td></tr>
           </tbody>

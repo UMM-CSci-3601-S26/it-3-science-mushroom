@@ -17,7 +17,7 @@ export class SupplyListService {
   private readonly itemKey = 'item';
   private readonly brandKey = 'brand';
   private readonly colorKey = 'color';
-  private readonly countKey = 'count';
+  private readonly packageSizeKey = 'packageSize';
   private readonly sizeKey = 'size';
   private readonly typeKey = 'type';
   private readonly materialKey = 'material';
@@ -25,7 +25,7 @@ export class SupplyListService {
   private readonly notesKey = 'notes';
 
   getSupplyList(filters?: {school?: string; grade?: string; item?: string; brand?: string; color?: string;
-    count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<SupplyList[]> {
+    packageSize?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<SupplyList[]> {
 
     let httpParams: HttpParams = new HttpParams();
     if (filters) {

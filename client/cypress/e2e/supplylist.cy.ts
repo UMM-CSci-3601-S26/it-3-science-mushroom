@@ -50,7 +50,7 @@ describe('Supply List', () => {
     cy.url().should('match', /\/supplylist$/);
     page.getSidenav()
       .should('be.hidden');
-    page.getResultsCard().should('contain', 'Chokio-Alberta Elementary');
+    page.getResultsCard().should('contain', 'Hancock Elementary');
   });
 
   // Cypress tests to ensure the filter boxes are there

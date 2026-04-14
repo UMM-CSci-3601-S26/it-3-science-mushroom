@@ -36,7 +36,7 @@ public class SupplyList {
       public List<String> allOf;
       public List<String> anyOf;
     }
-  public Integer count;
+  public Integer packageSize;
   public Integer quantity;
   public String notes;
 
@@ -67,8 +67,8 @@ public class SupplyList {
     }
 
     // Count (e.g., 24ct)
-    if (count != null && count > 1) {
-      sb.append(count).append("ct ");
+    if (packageSize != null && packageSize > 1) {
+      sb.append(packageSize).append("ct ");
     }
 
     // Item (pluralize if quantity > 1)

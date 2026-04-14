@@ -56,7 +56,7 @@ export class SupplyListPage {
     return cy.get('[data-cy="supplylist-material"]');
   }
   getSupplylistCount() {
-    return cy.get('[data-cy="supplylist-count"]');
+    return cy.get('[data-cy="supplylist-packageSize"]');
   }
   getSupplylistQuantity() {
     return cy.get('[data-cy="supplylist-quantity"]');

@@ -133,7 +133,7 @@ public class SupplyListControllerSpec {
         .append("color", new Document()
           .append("allOf", Arrays.asList("yellow"))
           .append("anyOf", new ArrayList<>()))
-        .append("count", 1)
+        .append("packageSize", 1)
         .append("size", new Document()
           .append("allOf", "Standard")
           .append("anyOf", new ArrayList<>()))
@@ -157,7 +157,7 @@ public class SupplyListControllerSpec {
         .append("color", new Document()
           .append("allOf", Arrays.asList("pink"))
           .append("anyOf", new ArrayList<>()))
-        .append("count", 1)
+        .append("packageSize", 1)
         .append("size", new Document()
           .append("allOf", "Small")
           .append("anyOf", new ArrayList<>()))
@@ -181,7 +181,7 @@ public class SupplyListControllerSpec {
         .append("color", new Document()
           .append("allOf", Arrays.asList("blue"))
           .append("anyOf", new ArrayList<>()))
-        .append("count", 1)
+        .append("packageSize", 1)
         .append("size", new Document()
           .append("allOf", "N/A")
           .append("anyOf", new ArrayList<>()))
@@ -206,7 +206,7 @@ public class SupplyListControllerSpec {
       .append("color", new Document()
         .append("allOf", Arrays.asList("black"))
         .append("anyOf", new ArrayList<>()))
-      .append("count", 1)
+      .append("packageSize", 1)
       .append("size", new Document()
         .append("allOf", "Standard")
         .append("anyOf", new ArrayList<>()))
@@ -540,7 +540,7 @@ public class SupplyListControllerSpec {
           "item": ["Marker"],
           "brand": {"allOf": "", "anyOf": ["Crayola"]},
           "color": {"allOf": [], "anyOf": ["red"]},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
@@ -571,7 +571,7 @@ public class SupplyListControllerSpec {
           "item": ["Marker"],
           "brand": {"allOf": "", "anyOf": ["Crayola"]},
           "color": {"allOf": [], "anyOf": ["red"]},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "N/A", "anyOf": []},
           "quantity": -5,
           "notes": "N/A",
@@ -605,7 +605,7 @@ public class SupplyListControllerSpec {
           "item": ["Marker"],
           "brand": {"allOf": "", "anyOf": ["Crayola"]},
           "color": {"allOf": [], "anyOf": ["red"]},
-          "count": 0,
+          "packageSize": 0,
           "size": {"allOf": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
@@ -630,7 +630,7 @@ public class SupplyListControllerSpec {
       exception.getErrors()
         .get("REQUEST_BODY")
         .stream()
-        .anyMatch(err -> err.toString().contains("count"))
+        .anyMatch(err -> err.toString().contains("packageSize"))
     );
   }
 
@@ -642,7 +642,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "brand": {"allOf": "", "anyOf": ["Crayola"]},
           "color": {"allOf": [], "anyOf": ["red"]},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
@@ -674,7 +674,7 @@ public class SupplyListControllerSpec {
           "item": ["Marker"],
           "brand": {"allOf": "", "anyOf": ["Crayola"]},
           "color": {"allOf": [], "anyOf": ["red"]},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
@@ -711,7 +711,7 @@ public class SupplyListControllerSpec {
           "item": ["Marker"],
           "brand": {"allOf": "", "anyOf": ["Crayola"]},
           "color": {"allOf": [], "anyOf": ["red"]},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
@@ -803,8 +803,8 @@ public class SupplyListControllerSpec {
 
   @Test
   void canFilterSupplyListByCount() {
-    when(ctx.queryParamMap()).thenReturn(Map.of("count", List.of("1")));
-    when(ctx.queryParam("count")).thenReturn("1");
+    when(ctx.queryParamMap()).thenReturn(Map.of("packageSize", List.of("1")));
+    when(ctx.queryParam("packageSize")).thenReturn("1");
 
     supplylistController.getSupplyLists(ctx);
 
@@ -812,19 +812,19 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertTrue(supplylistArrayCaptor.getValue().size() > 0);
-    assertEquals(1, supplylistArrayCaptor.getValue().get(0).count);
+    assertEquals(1, supplylistArrayCaptor.getValue().get(0).packageSize);
   }
 
   @Test
   void getSupplyListsRejectsNonIntegerCount() {
-    when(ctx.queryParamMap()).thenReturn(Map.of("count", List.of("notAnInt")));
-    when(ctx.queryParam("count")).thenReturn("notAnInt");
+    when(ctx.queryParamMap()).thenReturn(Map.of("packageSize", List.of("notAnInt")));
+    when(ctx.queryParam("packageSize")).thenReturn("notAnInt");
 
     BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
       supplylistController.getSupplyLists(ctx);
     });
 
-    assertEquals("count must be an integer.", ex.getMessage());
+    assertEquals("packageSize must be an integer.", ex.getMessage());
   }
 
   @Test
@@ -842,7 +842,7 @@ public class SupplyListControllerSpec {
             .append("color", new Document()
               .append("allOf", Arrays.asList("clear"))
               .append("anyOf", new ArrayList<>()))
-            .append("count", 1)
+            .append("packageSize", 1)
             .append("size", new Document()
               .append("allOf", "12 inch")
               .append("anyOf", new ArrayList<>()))
@@ -880,7 +880,7 @@ public class SupplyListControllerSpec {
             .append("color", new Document()
                 .append("allOf", Arrays.asList("orange"))
                 .append("anyOf", new ArrayList<>()))
-            .append("count", 1)
+            .append("packageSize", 1)
             .append("size", new Document()
                 .append("allOf", "5 inch")
                 .append("anyOf", new ArrayList<>()))
@@ -929,7 +929,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["red"], "anyOf": []},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": 3,
           "notes": "Updated notes",
@@ -959,7 +959,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["black"], "anyOf": []},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
@@ -997,7 +997,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["black"], "anyOf": []},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
@@ -1035,7 +1035,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["black"], "anyOf": []},
-          "count": null,
+          "packageSize": null,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": null,
           "notes": "N/A",
@@ -1066,7 +1066,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["black"], "anyOf": []},
-          "count": 0,
+          "packageSize": 0,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
@@ -1090,7 +1090,7 @@ public class SupplyListControllerSpec {
       exception.getErrors()
         .get("REQUEST_BODY")
         .stream()
-        .anyMatch(err -> err.toString().contains("count"))
+        .anyMatch(err -> err.toString().contains("packageSize"))
     );
   }
 
@@ -1104,7 +1104,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["black"], "anyOf": []},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": 0,
           "notes": "N/A",
@@ -1141,7 +1141,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["black"], "anyOf": []},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
@@ -1174,7 +1174,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "JanSport", "anyOf": []},
           "color": {"allOf": ["black"], "anyOf": []},
-          "count": 1,
+          "packageSize": 1,
           "size": {"allOf": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
@@ -1207,7 +1207,7 @@ public class SupplyListControllerSpec {
           "item": ["Backpack"],
           "brand": {"allOf": "Nike", "anyOf": []},
           "color": {"allOf": ["blue"], "anyOf": []},
-          "count": 2,
+          "packageSize": 2,
           "size": {"allOf": "Large", "anyOf": []},
           "quantity": 5,
           "notes": "No wheels",

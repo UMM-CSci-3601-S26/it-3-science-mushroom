@@ -85,7 +85,7 @@ describe('StationOrderComponent', () => {
           "size": { allOf: "#2", anyOf: []},
           "type": { allOf: "Unsharpened", anyOf: []},
           "material": { allOf: "N/A", anyOf: []},
-          "count": 1,
+          "packageSize": 1,
           "quantity": 12,
           "notes": "N/A"
         },
@@ -101,7 +101,7 @@ describe('StationOrderComponent', () => {
           "size": { allOf: "N/A", anyOf: []},
           "type": { allOf: "2 Prong", anyOf: []},
           "material": { allOf: "Plastic", anyOf: []},
-          "count": 1,
+          "packageSize": 1,
           "quantity": 2,
           "notes": "N/A"
         },
@@ -117,7 +117,7 @@ describe('StationOrderComponent', () => {
           "size": { allOf: "8\" x 5\"", anyOf: []},
           "type": { allOf: "N/A", anyOf: []},
           "material": { allOf: "Plastic", anyOf: []},
-          "count": 1,
+          "packageSize": 1,
           "quantity": 1,
           "notes": "N/A"
         },

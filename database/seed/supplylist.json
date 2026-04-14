@@ -28,7 +28,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Large enough for folders"
   },
@@ -61,7 +61,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Resting rug"
   },
@@ -94,7 +94,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -127,7 +127,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -160,7 +160,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -193,7 +193,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -226,7 +226,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -259,7 +259,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "Color of choice and one green folder"
   },
@@ -292,7 +292,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 6,
     "notes": ""
   },
@@ -325,7 +325,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Thick crayons for easier grasping"
   },
@@ -358,7 +358,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 6,
     "notes": ""
   },
@@ -391,7 +391,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 10,
+    "packageSize": 10,
     "quantity": 1,
     "notes": "No scented markers"
   },
@@ -426,7 +426,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Set of markers; black preferred"
   },
@@ -459,7 +459,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Must have lid"
   },
@@ -492,7 +492,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Velcro preferred over laced"
   },
@@ -525,7 +525,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Backpack or school bag"
   },
@@ -558,7 +558,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Resting rug or towel"
   },
@@ -591,7 +591,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -624,7 +624,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -657,7 +657,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 6,
     "notes": ""
   },
@@ -690,7 +690,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 6,
     "notes": ""
   },
@@ -723,7 +723,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -756,7 +756,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -789,7 +789,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -822,7 +822,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 3,
     "notes": ""
   },
@@ -855,7 +855,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -888,7 +888,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -921,7 +921,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -954,7 +954,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -989,7 +989,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": 50,
+    "packageSize": 50,
     "quantity": 1,
     "notes": "Used for memory book"
   },
@@ -1022,7 +1022,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Place sheet protectors inside"
   },
@@ -1055,7 +1055,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1088,7 +1088,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1121,7 +1121,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -1154,7 +1154,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -1187,7 +1187,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 6,
     "notes": ""
   },
@@ -1220,7 +1220,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -1253,7 +1253,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1286,7 +1286,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -1319,7 +1319,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 10,
     "notes": ""
   },
@@ -1352,7 +1352,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1385,7 +1385,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -1420,7 +1420,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1453,7 +1453,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -1491,7 +1491,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": ""
   },
@@ -1524,7 +1524,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -1557,7 +1557,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1590,7 +1590,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -1623,7 +1623,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -1656,7 +1656,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1689,7 +1689,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -1722,7 +1722,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -1755,7 +1755,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Or a sock"
   },
@@ -1788,7 +1788,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1821,7 +1821,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -1854,7 +1854,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -1887,7 +1887,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 6,
     "notes": "At least one must be green"
   },
@@ -1920,7 +1920,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -1953,7 +1953,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -1986,7 +1986,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -2019,7 +2019,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2055,7 +2055,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": "At least one must be black or Blue"
   },
@@ -2090,7 +2090,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2123,7 +2123,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -2156,7 +2156,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2191,7 +2191,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": "Ticonderoga preferred"
   },
@@ -2224,7 +2224,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -2259,7 +2259,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -2292,7 +2292,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2325,7 +2325,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Not bendy"
   },
@@ -2358,7 +2358,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -2391,7 +2391,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -2424,7 +2424,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -2457,7 +2457,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "No wheels"
   },
@@ -2490,7 +2490,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2523,7 +2523,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "One subject notebook preferred"
   },
@@ -2556,7 +2556,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -2589,7 +2589,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -2622,7 +2622,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -2655,7 +2655,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2688,7 +2688,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -2721,7 +2721,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2754,7 +2754,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Package of glue sticks"
   },
@@ -2787,7 +2787,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": "Wooden or mechanical"
   },
@@ -2820,7 +2820,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -2853,7 +2853,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2888,7 +2888,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2921,7 +2921,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2954,7 +2954,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -2987,7 +2987,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 3,
     "notes": ""
   },
@@ -3020,7 +3020,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -3053,7 +3053,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Loose Leaf or Filler Paper"
   },
@@ -3086,7 +3086,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -3119,7 +3119,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -3152,7 +3152,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -3188,7 +3188,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "Not red"
   },
@@ -3223,7 +3223,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -3256,7 +3256,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "Low odor"
   },
@@ -3289,7 +3289,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -3322,7 +3322,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -3355,7 +3355,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -3388,7 +3388,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -3421,7 +3421,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -3454,7 +3454,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -3487,7 +3487,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -3520,7 +3520,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Pencil/Crayon box"
   },
@@ -3553,7 +3553,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -3586,7 +3586,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -3619,7 +3619,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -3653,7 +3653,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Markers or Colored Pencils allowed"
   },
@@ -3686,7 +3686,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -3719,7 +3719,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -3752,7 +3752,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -3785,7 +3785,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -3818,7 +3818,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "No red pens"
   },
@@ -3851,7 +3851,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -3885,7 +3885,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -3918,7 +3918,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": "OR Disinfectant Wipes"
   },
@@ -3951,7 +3951,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Alternative to Tissues"
   },
@@ -3984,7 +3984,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 3,
     "notes": "To be dispersed in high school classrooms"
   },
@@ -4017,7 +4017,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "One pocket Folder for each class"
   },
@@ -4050,7 +4050,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "One Notebook for each class"
   },
@@ -4083,7 +4083,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -4116,7 +4116,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "General supply for all classes"
   },
@@ -4149,7 +4149,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -4182,7 +4182,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "For Language Arts"
   },
@@ -4215,7 +4215,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "For Language Arts"
   },
@@ -4248,7 +4248,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -4281,7 +4281,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "For Language Arts"
   },
@@ -4314,7 +4314,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "For Language Arts"
   },
@@ -4347,7 +4347,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -4380,7 +4380,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -4413,7 +4413,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -4446,7 +4446,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -4475,7 +4475,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -4508,7 +4508,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -4541,7 +4541,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 8,
     "notes": ""
   },
@@ -4574,7 +4574,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -4607,7 +4607,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -4640,7 +4640,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Crackers, granola bars, fruit Snacks, etc."
   },
@@ -4673,7 +4673,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -4706,7 +4706,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -4739,7 +4739,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 5,
     "notes": ""
   },
@@ -4772,7 +4772,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -4805,7 +4805,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Take home Folder"
   },
@@ -4838,7 +4838,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -4871,7 +4871,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": ""
   },
@@ -4904,7 +4904,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -4937,7 +4937,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -4970,7 +4970,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Families Aâ€“J"
   },
@@ -5003,7 +5003,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Families K-Z"
   },
@@ -5036,7 +5036,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "No earbuds or Bluetooth"
   },
@@ -5069,7 +5069,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -5102,7 +5102,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -5135,7 +5135,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5168,7 +5168,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 24,
     "notes": ""
   },
@@ -5201,7 +5201,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "no lock"
   },
@@ -5234,7 +5234,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5267,7 +5267,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -5300,7 +5300,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": ""
   },
@@ -5333,7 +5333,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -5366,7 +5366,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Families L-Z"
   },
@@ -5399,7 +5399,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5432,7 +5432,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "One subject notebook preferred"
   },
@@ -5467,7 +5467,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -5500,7 +5500,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -5533,7 +5533,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5568,7 +5568,7 @@
       "allOf": "Wood",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 24,
     "notes": "PLEASE LABEL WITH INITIALS, not Paper wrapped"
   },
@@ -5601,7 +5601,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5634,7 +5634,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -5667,7 +5667,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 8,
+    "packageSize": 8,
     "quantity": 2,
     "notes": "or 10ct packs"
   },
@@ -5700,7 +5700,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5733,7 +5733,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5766,7 +5766,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 12,
     "notes": ""
   },
@@ -5799,7 +5799,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5832,7 +5832,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 8,
+    "packageSize": 8,
     "quantity": 2,
     "notes": "or 10ct boxes"
   },
@@ -5865,7 +5865,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5898,7 +5898,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -5931,7 +5931,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": ""
   },
@@ -5964,7 +5964,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Families K-Z"
   },
@@ -5997,7 +5997,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Families A-J"
   },
@@ -6030,7 +6030,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -6063,7 +6063,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "No earbuds"
   },
@@ -6096,7 +6096,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -6129,7 +6129,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": ""
   },
@@ -6162,7 +6162,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6195,7 +6195,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": null,
     "notes": ""
   },
@@ -6228,7 +6228,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Take home Folder"
   },
@@ -6261,7 +6261,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6294,7 +6294,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": ""
   },
@@ -6327,7 +6327,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -6360,7 +6360,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": null,
     "notes": ""
   },
@@ -6393,7 +6393,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6426,7 +6426,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6459,7 +6459,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -6492,7 +6492,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 10,
+    "packageSize": 10,
     "quantity": 1,
     "notes": ""
   },
@@ -6529,7 +6529,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -6562,7 +6562,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "placed in Ziploc bag"
   },
@@ -6597,7 +6597,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -6630,7 +6630,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": ""
   },
@@ -6663,7 +6663,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6696,7 +6696,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": null,
     "notes": ""
   },
@@ -6729,7 +6729,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Take home Folder"
   },
@@ -6762,7 +6762,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6795,7 +6795,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": ""
   },
@@ -6828,7 +6828,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -6861,7 +6861,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6894,7 +6894,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6927,7 +6927,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -6960,7 +6960,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 10,
+    "packageSize": 10,
     "quantity": 1,
     "notes": ""
   },
@@ -6997,7 +6997,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -7030,7 +7030,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "placed in Ziploc bag"
   },
@@ -7065,7 +7065,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -7098,7 +7098,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -7131,7 +7131,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -7164,7 +7164,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 200,
+    "packageSize": 200,
     "quantity": 1,
     "notes": ""
   },
@@ -7197,7 +7197,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -7230,7 +7230,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 12,
     "notes": ""
   },
@@ -7263,7 +7263,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -7296,7 +7296,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -7329,7 +7329,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 24,
+    "packageSize": 24,
     "quantity": 1,
     "notes": ""
   },
@@ -7362,7 +7362,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -7395,7 +7395,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -7428,7 +7428,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -7462,7 +7462,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For listening station and computer time"
   },
@@ -7495,7 +7495,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -7528,7 +7528,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 200,
+    "packageSize": 200,
     "quantity": 1,
     "notes": "For the classroom"
   },
@@ -7561,7 +7561,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": ""
   },
@@ -7594,7 +7594,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -7627,7 +7627,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -7660,7 +7660,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -7693,7 +7693,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": "One subject notebook preferred"
   },
@@ -7726,7 +7726,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": ""
   },
@@ -7759,7 +7759,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -7792,7 +7792,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -7827,7 +7827,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -7860,7 +7860,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -7893,7 +7893,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "For correcting"
   },
@@ -7926,7 +7926,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 5,
     "notes": ""
   },
@@ -7959,7 +7959,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -7993,7 +7993,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For computer time and testing"
   },
@@ -8026,7 +8026,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 200,
+    "packageSize": 200,
     "quantity": 1,
     "notes": ""
   },
@@ -8059,7 +8059,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 3,
     "notes": "3-5 boxes of pencils"
   },
@@ -8092,7 +8092,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8125,7 +8125,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8158,7 +8158,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 5,
     "notes": ""
   },
@@ -8191,7 +8191,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8224,7 +8224,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -8257,7 +8257,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "Correcting pens"
   },
@@ -8292,7 +8292,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -8325,7 +8325,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8358,7 +8358,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8391,7 +8391,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8424,7 +8424,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -8458,7 +8458,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Optional: choose markers OR Colored Pencils"
   },
@@ -8491,7 +8491,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Give to advisor on first day"
   },
@@ -8524,7 +8524,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8557,7 +8557,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "One for every class"
   },
@@ -8590,7 +8590,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "One for every class"
   },
@@ -8623,9 +8623,9 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
-    "notes": "Required for Accounting"
+    "notes": "Required for AcpackageSizeing"
   },
   {
     "academicYear": "2025-2026",
@@ -8656,9 +8656,9 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
-    "notes": "For Accounting"
+    "notes": "For AcpackageSizeing"
   },
   {
     "academicYear": "2025-2026",
@@ -8689,7 +8689,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -8722,7 +8722,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8755,7 +8755,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8788,7 +8788,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -8821,7 +8821,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -8854,7 +8854,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Required for Grades 7â€“9"
   },
@@ -8887,7 +8887,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Recommended for college-level math"
   },
@@ -8920,7 +8920,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Wooden or mechanical"
   },
@@ -8953,7 +8953,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -8986,7 +8986,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -9019,7 +9019,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Geometry"
   },
@@ -9052,7 +9052,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Algebra II"
   },
@@ -9085,7 +9085,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Foundations of Math"
   },
@@ -9118,7 +9118,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -9151,7 +9151,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -9184,7 +9184,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Wooden or mechanical"
   },
@@ -9217,7 +9217,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -9250,7 +9250,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -9284,7 +9284,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -9317,7 +9317,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For Health"
   },
@@ -9350,7 +9350,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -9383,7 +9383,7 @@
       "allOf": "Wood",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "7th and 8th Art"
   },
@@ -9416,7 +9416,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "7th and 8th Art"
   },
@@ -9449,7 +9449,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "7th and 8th Art (regular Paper size)"
   },
@@ -9484,7 +9484,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "7th and 8th Art"
   },
@@ -9517,7 +9517,7 @@
       "allOf": "Wood",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "Studio Art / Intro to Art / Art Iâ€“III"
   },
@@ -9550,7 +9550,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "Studio Art / Intro to Art / Art Iâ€“III"
   },
@@ -9583,7 +9583,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Studio Art / Intro to Art / Art Iâ€“III (regular Paper size)"
   },
@@ -9618,7 +9618,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Studio Art / Intro to Art / Art Iâ€“III"
   },
@@ -9651,7 +9651,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "(Media Art/Yearbook) May reuse Sketchbook from Studio Art"
   },
@@ -9684,7 +9684,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "3-D Art, may reuse Sketchbook from Studio Art"
   },
@@ -9717,7 +9717,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "3-D Art"
   },
@@ -9750,7 +9750,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Spanish I"
   },
@@ -9783,7 +9783,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Spanish I"
   },
@@ -9816,7 +9816,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Spanish I"
   },
@@ -9849,7 +9849,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Spanish I"
   },
@@ -9882,7 +9882,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Spanish I"
   },
@@ -9915,7 +9915,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "English 8 and 9"
   },
@@ -9948,7 +9948,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "English 8 and 9"
   },
@@ -9981,7 +9981,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "English 8 and 9"
   },
@@ -10014,7 +10014,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Wooden or mechanical"
   },
@@ -10047,7 +10047,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "(English) Or loose leaf Paper in 3-ring Binder"
   },
@@ -10080,7 +10080,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "(English) Or use Binder with loose leaf Paper"
   },
@@ -10113,7 +10113,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Appreciated"
   },
@@ -10146,7 +10146,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "Required for Science"
   },
@@ -10179,7 +10179,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Required for Science"
   },
@@ -10212,7 +10212,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Required for Science"
   },
@@ -10247,7 +10247,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Required for Science"
   },
@@ -10280,7 +10280,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Required for Science"
   },
@@ -10313,7 +10313,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Required for Science"
   },
@@ -10346,7 +10346,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "Required for Science"
   },
@@ -10379,7 +10379,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Required for Science"
   },
@@ -10412,7 +10412,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Required for Math"
   },
@@ -10446,7 +10446,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": "Required for Math"
   },
@@ -10479,7 +10479,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Required for Math"
   },
@@ -10512,7 +10512,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -10545,7 +10545,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -10578,7 +10578,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -10611,7 +10611,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -10645,7 +10645,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -10678,7 +10678,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Large enough for folders"
   },
@@ -10711,7 +10711,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -10746,7 +10746,7 @@
       "allOf": "Plastic",
       "anyOf": []
     },
-    "count": 50,
+    "packageSize": 50,
     "quantity": 1,
     "notes": ""
   },
@@ -10779,7 +10779,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Used for memory book"
   },
@@ -10812,7 +10812,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Velcro preferred over laced"
   },
@@ -10845,7 +10845,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Backpack or school bag"
   },
@@ -10878,7 +10878,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Resting rug or towel"
   },
@@ -10911,7 +10911,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -10944,7 +10944,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Used for memory book"
   },
@@ -10977,7 +10977,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -11010,7 +11010,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -11043,7 +11043,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -11076,7 +11076,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11109,7 +11109,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11142,7 +11142,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -11175,7 +11175,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -11208,7 +11208,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -11241,7 +11241,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -11274,7 +11274,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11307,7 +11307,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -11340,7 +11340,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11373,7 +11373,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11406,7 +11406,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -11439,7 +11439,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11472,7 +11472,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -11505,7 +11505,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -11538,7 +11538,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "No wheels"
   },
@@ -11571,7 +11571,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11604,7 +11604,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "Used for memory book"
   },
@@ -11637,7 +11637,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "One subject notebook preferred"
   },
@@ -11670,7 +11670,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": "Wooden or mechanical"
   },
@@ -11703,7 +11703,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 12,
+    "packageSize": 12,
     "quantity": 1,
     "notes": ""
   },
@@ -11736,7 +11736,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -11769,7 +11769,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11802,7 +11802,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -11835,7 +11835,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -11870,7 +11870,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -11908,7 +11908,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "one of each color"
   },
@@ -11943,7 +11943,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 5,
     "notes": ""
   },
@@ -11976,7 +11976,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -12009,7 +12009,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -12042,7 +12042,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -12075,7 +12075,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -12113,7 +12113,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "one of each color"
   },
@@ -12148,7 +12148,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -12181,7 +12181,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -12214,7 +12214,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "with clear front"
   },
@@ -12247,7 +12247,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "One subject notebook preferred"
   },
@@ -12280,7 +12280,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": "Wooden or mechanical"
   },
@@ -12313,7 +12313,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 12,
+    "packageSize": 12,
     "quantity": 1,
     "notes": ""
   },
@@ -12346,7 +12346,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -12379,7 +12379,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -12412,7 +12412,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -12445,7 +12445,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -12480,7 +12480,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -12518,7 +12518,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "one of each color"
   },
@@ -12553,7 +12553,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 5,
     "notes": ""
   },
@@ -12586,7 +12586,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -12619,7 +12619,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -12652,7 +12652,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -12685,7 +12685,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": "Large box"
   },
@@ -12723,7 +12723,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "one of each color"
   },
@@ -12758,7 +12758,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -12791,7 +12791,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -12824,7 +12824,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "with clear front"
   },
@@ -12857,7 +12857,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": "One subject notebook preferred"
   },
@@ -12890,7 +12890,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 20,
     "notes": "Wooden or mechanical"
   },
@@ -12923,7 +12923,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 12,
+    "packageSize": 12,
     "quantity": 1,
     "notes": ""
   },
@@ -12956,7 +12956,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -12989,7 +12989,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -13022,7 +13022,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -13055,7 +13055,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym"
   },
@@ -13090,7 +13090,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 2,
     "notes": ""
   },
@@ -13128,7 +13128,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "one of each color"
   },
@@ -13163,7 +13163,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 5,
     "notes": ""
   },
@@ -13196,7 +13196,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -13229,7 +13229,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -13262,7 +13262,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 3,
     "notes": ""
   },
@@ -13295,7 +13295,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": "Large box"
   },
@@ -13333,7 +13333,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 4,
     "notes": "one of each color"
   },
@@ -13368,7 +13368,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 2,
     "notes": ""
   },
@@ -13401,7 +13401,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -13434,7 +13434,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "with clear front"
   },
@@ -13467,7 +13467,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "One pocket Folder for each class"
   },
@@ -13500,7 +13500,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": "One Notebook for each class"
   },
@@ -13533,7 +13533,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -13570,7 +13570,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -13603,7 +13603,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -13636,7 +13636,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": null,
     "notes": ""
   },
@@ -13669,7 +13669,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": null,
+    "packageSize": null,
     "quantity": 1,
     "notes": ""
   },
@@ -13702,7 +13702,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": ""
   },
@@ -13735,7 +13735,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For grades 7-9 (must do trigonometry functions)"
   },
@@ -13768,7 +13768,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For grades 10-12 (can check out from school)"
   },
@@ -13801,7 +13801,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For geometry"
   },
@@ -13834,7 +13834,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For geometry"
   },
@@ -13867,7 +13867,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For geometry"
   },
@@ -13900,7 +13900,7 @@
       "allOf": "",
       "anyOf": []
     },
-    "count": 1,
+    "packageSize": 1,
     "quantity": 1,
     "notes": "For gym (grades 7-10)"
   }

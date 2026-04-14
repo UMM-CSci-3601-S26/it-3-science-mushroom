@@ -45,7 +45,7 @@ public class SupplyListController implements Controller {
   static final String TEACHER_KEY = "teacher";
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";
-  static final String COUNT_KEY = "count";
+  static final String COUNT_KEY = "packageSize";
   static final String SIZE_KEY = "size";
   static final String COLOR_KEY = "color";
   static final String QUANTITY_KEY = "quantity";
@@ -183,14 +183,14 @@ public class SupplyListController implements Controller {
       }
     }
 
-    // For count, which must be an integer
+    // For packageSize, which must be an integer
     if (ctx.queryParamMap().containsKey(COUNT_KEY)) {
       String cParam = ctx.queryParam(COUNT_KEY);
       try {
         int c = Integer.parseInt(cParam);
         filters.add(Filters.eq(COUNT_KEY, c));
       } catch (NumberFormatException e) {
-        throw new BadRequestResponse("count must be an integer.");
+        throw new BadRequestResponse("packageSize must be an integer.");
       }
     }
 
@@ -219,7 +219,7 @@ public class SupplyListController implements Controller {
     .check(s -> s.school != null && !s.school.isBlank(), "school must be a non-empty string")
     .check(s -> s.grade != null && !s.grade.isBlank(), "grade must be a non-empty string")
     .check(s -> s.item != null && !s.item.isEmpty(), "item must be a non-empty list")
-    .check(s -> s.count == null || s.count > 0, "count must be null or a positive integer")
+    .check(s -> s.packageSize == null || s.packageSize > 0, "packageSize must be null or a positive integer")
     .check(s -> s.quantity == null || s.quantity > 0, "quantity must be null or a positive integer")
     .get();
 
@@ -246,7 +246,7 @@ public class SupplyListController implements Controller {
       .check(s -> s.school != null && !s.school.isBlank(), "school must be a non-empty string")
       .check(s -> s.grade != null && !s.grade.isBlank(), "grade must be a non-empty string")
       .check(s -> s.item != null && !s.item.isEmpty(), "item must be a non-empty list")
-      .check(s -> s.count == null || s.count > 0, "count must be null or a positive integer")
+      .check(s -> s.packageSize == null || s.packageSize > 0, "packageSize must be null or a positive integer")
       .check(s -> s.quantity == null || s.quantity > 0, "quantity must be null or a positive integer")
       .get();
 

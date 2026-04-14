@@ -113,8 +113,6 @@ export class InventoryComponent {
 
   scannerAction = signal<'add' | 'remove'>('add');
   scanCards = signal<ScanCard[]>([]);
-  // changed from `number` to `number | undefined` to better handle invalid user input in
-  // remove amount field (e.g. empty string, non-numeric input)
   removeAmount: number;
   showRemovePanel = signal(false);
 

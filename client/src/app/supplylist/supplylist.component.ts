@@ -66,7 +66,7 @@ export class SupplyListComponent {
     'size',
     'type',
     'material',
-    'count',
+    'packageSize',
     'quantity',
     'notes'
   ];
@@ -223,7 +223,7 @@ export class SupplyListComponent {
     const parts: string[] = [];
     const qty = s.quantity > 0 ? s.quantity : null;
     if (qty) parts.push(`${qty}x`);
-    if (s.count > 1) parts.push(`${s.count}ct.`);
+    if (s.packageSize > 1) parts.push(`${s.packageSize}ct.`);
     const sizeStr = attrStr(s.size);
     if (sizeStr) {
       parts.push(`${sizeStr}${(qty ?? 0) > 1 ? 's' : ''} of`);

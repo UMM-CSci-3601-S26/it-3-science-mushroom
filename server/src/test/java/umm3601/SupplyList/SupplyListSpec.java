@@ -34,7 +34,7 @@ public class SupplyListSpec {
     inv1.brand.allOf = "Ticonderoga";
     inv1.color = new SupplyList.ColorAttributeOptions();
     inv1.color.allOf = Arrays.asList("yellow");
-    inv1.count = EXPECTED_COUNT;
+    inv1.packageSize = EXPECTED_COUNT;
     inv1.quantity = EXPECTED_QUANTITY;
   }
 

@@ -229,7 +229,7 @@ describe('SupplyList Table', () => {
         item: ['Pencil'],
         brand: { allOf: '', anyOf: [] },
         color: { allOf: [], anyOf: [] },
-        count: 1,
+        packageSize: 1,
         size: { allOf: '', anyOf: [] },
         type: { allOf: '', anyOf: [] },
         material: { allOf: '', anyOf: [] },
@@ -257,7 +257,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Eraser'], brand: { allOf: '', anyOf: [] },
         color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, count: 1, quantity: 1, notes: ''
+        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -279,7 +279,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Ruler'], brand: { allOf: '', anyOf: [] },
         color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, count: 1, quantity: 1, notes: ''
+        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -310,7 +310,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Tape'], brand: { allOf: '', anyOf: [] },
         color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, count: 1, quantity: 1, notes: ''
+        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -336,7 +336,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Marker'], brand: { allOf: '', anyOf: [] },
         color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, count: 1, quantity: 1, notes: ''
+        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
       };
       supplylistTable.startEdit(item);
       expect(supplylistTable.editingItemId).toBe('edit-id');
@@ -355,7 +355,7 @@ describe('SupplyList Table', () => {
         size: { allOf: '', anyOf: [] },
         type: { allOf: '', anyOf: [] },
         material: { allOf: '', anyOf: [] },
-        count: 1,
+        packageSize: 1,
         quantity: 2,
         notes: ''
       };
@@ -383,7 +383,7 @@ describe('SupplyList Table', () => {
         size: { allOf: '', anyOf: [] },
         type: { allOf: '', anyOf: [] },
         material: { allOf: '', anyOf: [] },
-        count: 1,
+        packageSize: 1,
         quantity: 1,
         notes: ''
       };
@@ -406,7 +406,7 @@ describe('SupplyList Table', () => {
         size: { allOf: '', anyOf: [] },
         type: { allOf: '', anyOf: [] },
         material: { allOf: '', anyOf: [] },
-        count: 1,
+        packageSize: 1,
         quantity: 3,
         notes: ''
       };
@@ -432,7 +432,7 @@ describe('SupplyList Table', () => {
         size: { allOf: 'Wide Ruled', anyOf: [] },
         type: { allOf: 'Spiral', anyOf: [] },
         material: { allOf: '', anyOf: [] },
-        count: 1,
+        packageSize: 1,
         quantity: 2,
         notes: ''
       };
@@ -459,7 +459,7 @@ describe('SupplyList Table', () => {
         size: { allOf: '', anyOf: [] },
         type: { allOf: '', anyOf: [] },
         material: { allOf: '', anyOf: [] },
-        count: 1,
+        packageSize: 1,
         quantity: 1,
         notes: ''
       };
@@ -484,7 +484,7 @@ describe('SupplyList Table', () => {
         size: { allOf: '', anyOf: [] },
         type: { allOf: '', anyOf: [] },
         material: { allOf: '', anyOf: [] },
-        count: 1,
+        packageSize: 1,
         quantity: 1,
         notes: ''
       };
@@ -566,7 +566,7 @@ describe('SupplyListComponent#toLabel()', () => {
     _id: '', academicYear: '', teacher: '', school: 'MHS', grade: 'K', item: ['crayon'],
     brand: { allOf: '', anyOf: [] }, color: { allOf: [], anyOf: [] },
     size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-    material: { allOf: '', anyOf: [] }, count: 0, quantity: 1, notes: ''
+    material: { allOf: '', anyOf: [] }, packageSize: 0, quantity: 1, notes: ''
   };
 
   beforeEach(() => {

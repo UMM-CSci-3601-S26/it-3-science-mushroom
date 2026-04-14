@@ -106,7 +106,7 @@ export class AddSupplyListComponent implements OnInit {
     item: new FormControl('', Validators.required),
     brand: new FormControl(''),
     color: new FormControl(''),
-    count: new FormControl('', Validators.min(1)),
+    packageSize: new FormControl('', Validators.min(1)),
     size: new FormControl(''),
     type: new FormControl(''),
     material: new FormControl(''),
@@ -120,7 +120,7 @@ export class AddSupplyListComponent implements OnInit {
     item: [{ type: 'required', message: 'Item is required' }],
     brand: [{ type: 'required', message: 'Brand is required' }],
     color: [{ type: 'required', message: 'Color is required' }],
-    count: [
+    packageSize: [
       { type: 'required', message: 'Count is required' },
       { type: 'min', message: 'Count must be at least 1' }
     ],
@@ -227,10 +227,10 @@ export class AddSupplyListComponent implements OnInit {
 
     // ── Count ─────────────────────────────────────────────────────────────────
     // "24 count", "24ct", "24-count", "pack of 24", "box of 24"
-    const countMatch = lower.match(/(\d+)\s*[-]?\s*(?:count|ct|pk|pack)\b/)
+    const packageSizeMatch = lower.match(/(\d+)\s*[-]?\s*(?:count|ct|pk|pack)\b/)
       || lower.match(/(?:pack|box|set)\s+of\s+(\d+)/);
-    if (countMatch) {
-      patch['count'] = countMatch[1];
+    if (packageSizeMatch) {
+      patch['packageSize'] = packageSizeMatch[1];
     }
 
     // ── Brand ─────────────────────────────────────────────────────────────────
@@ -277,8 +277,8 @@ export class AddSupplyListComponent implements OnInit {
     if (!patch['size'] && patch['quantity']) {
       const qty = Number(patch['quantity']);
       if (qty > 1) {
-        const count = patch['count'] ? ` of ${patch['count']}` : '';
-        patch['size'] = `Box${count}`;   // e.g., "Box of 24", "Box"
+        const packageSize = patch['packageSize'] ? ` of ${patch['packageSize']}` : '';
+        patch['size'] = `Box${packageSize}`;   // e.g., "Box of 24", "Box"
       }
     }
 
@@ -433,7 +433,7 @@ export class AddSupplyListComponent implements OnInit {
       type: toAttr(raw.type),
       material: toAttr(raw.material),
       notes: raw.notes ?? undefined,
-      count: raw.count ? parseInt(raw.count, 10) : 1,
+      packageSize: raw.packageSize ? parseInt(raw.packageSize, 10) : 1,
       quantity: raw.quantity ? parseInt(raw.quantity, 10) : 1
     };
 

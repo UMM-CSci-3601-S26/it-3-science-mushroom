@@ -26,7 +26,7 @@ export interface SupplyList {
   color: ColorAttributeOptions;
   size: AttributeOptions;
   material: AttributeOptions;
-  count: number;
+  packageSize: number;
   quantity: number;
   notes: string;
 }

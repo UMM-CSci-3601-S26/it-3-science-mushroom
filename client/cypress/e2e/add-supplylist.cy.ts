@@ -13,7 +13,7 @@ const NEW_ITEM = {
   brand: 'Five Star',
   color: 'Blue',
   quantity: '2',
-  count: '1',
+  packageSize: '1',
   notes: 'Created by Cypress add-supply test'
 };
 
@@ -50,7 +50,7 @@ describe('Add Supply List Item', () => {
     page.getField('brand-input').type(NEW_ITEM.brand);
     page.getField('color-input').type(NEW_ITEM.color);
     page.getField('quantity-input').clear().type(NEW_ITEM.quantity);
-    page.getField('count-input').clear().type(NEW_ITEM.count);
+    page.getField('packageSize-input').clear().type(NEW_ITEM.packageSize);
     page.getField('notes-input').type(NEW_ITEM.notes);
 
     page.getSubmitButton().should('not.be.disabled').click();
@@ -62,7 +62,7 @@ describe('Add Supply List Item', () => {
       expect(request.body.brand.allOf).to.equal(NEW_ITEM.brand);
       expect(request.body.color.allOf).to.deep.equal([NEW_ITEM.color]);
       expect(request.body.quantity).to.equal(2);
-      expect(request.body.count).to.equal(1);
+      expect(request.body.packageSize).to.equal(1);
       expect(request.body.notes).to.equal(NEW_ITEM.notes);
     });
 

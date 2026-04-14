@@ -186,27 +186,27 @@ describe('AddSupplyListComponent', () => {
     });
   });
 
-  describe('The count field', () => {
-    let countControl: AbstractControl;
+  describe('The packageSize field', () => {
+    let packageSizeControl: AbstractControl;
 
     beforeEach(() => {
-      countControl = addSupplyListForm.controls['count'];
+      packageSizeControl = addSupplyListForm.controls['packageSize'];
     });
 
-    it('should allow empty count (no required validator)', () => {
-      countControl.setValue('');
-      expect(countControl.valid).toBeTruthy();
+    it('should allow empty packageSize (no required validator)', () => {
+      packageSizeControl.setValue('');
+      expect(packageSizeControl.valid).toBeTruthy();
     });
 
     it('should be valid with a positive number', () => {
-      countControl.setValue(5);
-      expect(countControl.valid).toBeTruthy();
+      packageSizeControl.setValue(5);
+      expect(packageSizeControl.valid).toBeTruthy();
     });
 
-    it('should not allow count less than 1', () => {
-      countControl.setValue(0);
-      expect(countControl.valid).toBeFalsy();
-      expect(countControl.hasError('min')).toBeTruthy();
+    it('should not allow packageSize less than 1', () => {
+      packageSizeControl.setValue(0);
+      expect(packageSizeControl.valid).toBeFalsy();
+      expect(packageSizeControl.hasError('min')).toBeTruthy();
     });
   });
 
@@ -324,7 +324,7 @@ describe('AddSupplyListComponent', () => {
       addSupplyListComponent.addSupplyListForm.get(controlName)!.setErrors({ min: true });
       expect(addSupplyListComponent.getErrorMessage(controlName)).toEqual('Quantity must be at least 1');
 
-      controlName = 'count';
+      controlName = 'packageSize';
       addSupplyListComponent.addSupplyListForm.get(controlName)!.setErrors({ min: true });
       expect(addSupplyListComponent.getErrorMessage(controlName)).toEqual('Count must be at least 1');
     });
@@ -354,7 +354,7 @@ describe('AddSupplyListComponent#submitForm()', () => {
     item:     'Markers',
     brand:    'Crayola',
     color:    'N/A',
-    count:    '8',
+    packageSize:    '8',
     size:     'Wide',
     type:     'Washable',
     material: 'N/A',
@@ -466,14 +466,14 @@ describe('AddSupplyListComponent#parseDescription()', () => {
     expect(component.addSupplyListForm.get('quantity')?.value).toBe('2');
   });
 
-  it('should parse count from a "N count" pattern', () => {
+  it('should parse packageSize from a "N count" pattern', () => {
     component.parseDescription('24 count crayons');
-    expect(component.addSupplyListForm.get('count')?.value).toBe('24');
+    expect(component.addSupplyListForm.get('packageSize')?.value).toBe('24');
   });
 
-  it('should parse count from a "pack of N" pattern', () => {
+  it('should parse packageSize from a "pack of N" pattern', () => {
     component.parseDescription('pack of 12 crayons');
-    expect(component.addSupplyListForm.get('count')?.value).toBe('12');
+    expect(component.addSupplyListForm.get('packageSize')?.value).toBe('12');
   });
 
   it('should match an item by exact term', () => {
@@ -525,7 +525,7 @@ describe('AddSupplyListComponent#parseDescription()', () => {
   it('should NOT put a count-like parenthetical into notes', () => {
     component.parseDescription('crayons (24 ct.)');
     expect(component.addSupplyListForm.get('notes')?.value || '').toBe('');
-    expect(component.addSupplyListForm.get('count')?.value).toBe('24');
+    expect(component.addSupplyListForm.get('packageSize')?.value).toBe('24');
   });
 
   it('should append a new note to existing notes, separated by "; "', () => {
@@ -812,7 +812,7 @@ describe('AddSupplyListComponent#submitForm() — pipe separator (anyOf) path', 
 
   const baseFormValues = {
     school: 'MHS', grade: 'PreK', item: 'Markers',
-    brand: '', color: '', count: '', size: '', type: '', material: '', quantity: '1', notes: ''
+    brand: '', color: '', packageSize: '', size: '', type: '', material: '', quantity: '1', notes: ''
   };
 
   beforeEach(waitForAsync(() => {

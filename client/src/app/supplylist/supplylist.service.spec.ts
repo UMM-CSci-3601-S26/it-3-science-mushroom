@@ -17,7 +17,7 @@ describe('SupplyListService', () => {
       item: ["Washable Marker"],
       brand: { allOf: "", anyOf: ["Crayola"] },
       color: { allOf: [], anyOf: ["Black"] },
-      count: 8,
+      packageSize: 8,
       size: { allOf: "Wide", anyOf: [] },
       type: { allOf: "", anyOf: [] },
       material: { allOf: "", anyOf: [] },
@@ -33,7 +33,7 @@ describe('SupplyListService', () => {
       item: ["Folder"],
       brand: { allOf: "", anyOf: ["N/A"] },
       color: { allOf: [], anyOf: ["Red"] },
-      count: 1,
+      packageSize: 1,
       size: { allOf: "N/A", anyOf: [] },
       type: { allOf: "2 Prong", anyOf: [] },
       material: { allOf: "Plastic", anyOf: [] },
@@ -49,7 +49,7 @@ describe('SupplyListService', () => {
       item: ["Notebook"],
       brand: { allOf: "", anyOf: ["Five Star"] },
       color: { allOf: [], anyOf: ["Yellow"] },
-      count: 1,
+      packageSize: 1,
       size: { allOf: "Wide Ruled", anyOf: [] },
       type: { allOf: "Spiral", anyOf: [] },
       material: { allOf: "", anyOf: ["N/A"] },
@@ -322,7 +322,7 @@ describe('SupplyListService', () => {
         size: { allOf: 'Kids', anyOf: [] },
         type: { allOf: 'Blunt', anyOf: [] },
         material: { allOf: '', anyOf: ['Metal'] },
-        count: 1,
+        packageSize: 1,
         quantity: 5,
         notes: 'N/A'
       };
@@ -338,7 +338,7 @@ describe('SupplyListService', () => {
       const newItem: Partial<SupplyList> = { item: ['Glue Stick'], school: 'Herman', grade: '2nd grade',
         brand: { allOf: '', anyOf: ['Elmer\'s'] }, color: { allOf: [], anyOf: ['White'] },
         size: { allOf: 'Regular', anyOf: [] }, type: { allOf: 'Stick', anyOf: [] },
-        material: { allOf: '', anyOf: ['N/A'] }, count: 1, quantity: 3, notes: '' };
+        material: { allOf: '', anyOf: ['N/A'] }, packageSize: 1, quantity: 3, notes: '' };
 
       supplylistService.addSupplyList(newItem).subscribe();
 
@@ -361,7 +361,7 @@ describe('SupplyListService', () => {
         size: { allOf: 'Wide Ruled', anyOf: [] },
         type: { allOf: 'Spiral', anyOf: [] },
         material: { allOf: '', anyOf: ['N/A'] },
-        count: 1,
+        packageSize: 1,
         quantity: 2,
         notes: 'N/A'
       };
