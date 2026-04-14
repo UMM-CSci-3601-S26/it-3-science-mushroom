@@ -295,39 +295,37 @@ describe('FamilyService', () => {
     }));
   });
 
-  //FIX LATER
+  describe('Updating a family using `updateFamily()`', () => {
+    it('calls the correct endpoint and returns the id', waitForAsync(() => {
+      const family_id = 'john_id';
+      const expected_http_response = { id: family_id };
 
-  // describe('Updating a family using `updateFamily()`', () => {
-  //   it('calls the correct endpoint and returns the id', waitForAsync(() => {
-  //     const family_id = 'john_id';
-  //     const expected_http_response = { id: family_id };
+      const mockedMethod = spyOn(httpClient, 'put')
+        .and
+        .returnValue(of(expected_http_response));
+      const mockedMethod2 = spyOn(httpClient, 'get')
+        .and
+        .returnValue(of(expected_http_response));
 
-  //     const mockedMethod = spyOn(httpClient, 'post')
-  //       .and
-  //       .returnValue(of(expected_http_response));
-  //     const mockedMethod2 = spyOn(httpClient, 'get')
-  //       .and
-  //       .returnValue(of(expected_http_response));
-
-  //     familyService.updateFamily(family_id, testFamilies[1]).subscribe((returnedId) => {
-  //       expect(returnedId).toBe(family_id);
-  //       expect(mockedMethod)
-  //         .withContext('one call')
-  //         .toHaveBeenCalledTimes(1);
-  //       expect(mockedMethod)
-  //         .withContext('talks to the correct endpoint')
-  //         .toHaveBeenCalledWith(`${familyService.familyUrl}/${family_id}`, testFamilies[1]);
-  //     });
-  //     familyService.addFamily(testFamilies[1]).subscribe((new_family_id_2) => {
-  //       expect(new_family_id_2).toBe(family_id);
-  //       expect(mockedMethod2)
-  //         .withContext('one call')
-  //         .toHaveBeenCalledTimes(1);
-  //       expect(mockedMethod2)
-  //         .withContext('talks to the correct endpoint');
-  //     });
-  //   }));
-  // });
+      familyService.updateFamily(family_id, testFamilies[1]).subscribe((returnedId) => {
+        expect(returnedId).toBe(family_id);
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${familyService.familyUrl}/${family_id}`, testFamilies[1]);
+      });
+      familyService.updateFamily(family_id, testFamilies[1]).subscribe((new_family_id_2) => {
+        expect(new_family_id_2).toBe(family_id);
+        expect(mockedMethod2)
+          .withContext('two calls')
+          .toHaveBeenCalledTimes(2);
+        expect(mockedMethod2)
+          .withContext('talks to the correct endpoint');
+      });
+    }));
+  });
 
   describe('Deleting a family using `deleteFamily()`', () => {
     it('talks to the right endpoint and is called once', waitForAsync(() => {
