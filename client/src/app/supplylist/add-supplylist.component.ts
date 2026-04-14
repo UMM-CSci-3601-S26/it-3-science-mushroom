@@ -15,6 +15,7 @@ import { SupplyListService } from './supplylist.service';
 import { TermsService } from '../terms/terms.service';
 import { Terms } from '../terms/terms';
 import { GRADES } from './supplylist';
+import { SettingsService } from '../settings/settings.service';
 
 @Component({
   selector: 'app-add-supplylist',
@@ -37,9 +38,15 @@ import { GRADES } from './supplylist';
 export class AddSupplyListComponent implements OnInit {
   private supplyListService = inject(SupplyListService);
   private termsService = inject(TermsService);
+  private settingsService = inject(SettingsService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+
+  // Schools loaded from settings for the dropdown
+  availableSchools$ = this.settingsService.getSettings().pipe(
+    map(settings => settings.schools.map(s => s.name))
+  );
 
   // Grades list shared with add-family
   readonly grades = GRADES;

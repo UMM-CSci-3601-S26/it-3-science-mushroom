@@ -1,0 +1,211 @@
+<div class="settings-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Settings</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-tab-group dynamicHeight>
+
+        <!-- ── Schools Tab ── -->
+        <mat-tab label="Schools">
+          <div class="tab-content">
+
+            <!-- Add School Form -->
+            <form [formGroup]="addSchoolForm" (ngSubmit)="addSchool()">
+              <div class="add-school-row">
+                <mat-form-field>
+                  <mat-label>School Name</mat-label>
+                  <input matInput formControlName="name" required>
+                  <mat-error *ngIf="addSchoolForm.get('name')?.hasError('required')">Name is required</mat-error>
+                  <mat-error *ngIf="addSchoolForm.get('name')?.hasError('minlength')">Name must be at least 2 characters</mat-error>
+                </mat-form-field>
+
+                <button mat-raised-button color="primary" type="submit" [disabled]="!addSchoolForm.valid">
+                  Add School
+                </button>
+              </div>
+            </form>
+
+            <!-- Current Schools List -->
+            <mat-list>
+              @for (school of schools; track $index; let i = $index) {
+                <mat-list-item>
+                  <span matListItemTitle>{{ school.name }}</span>
+                  <button matListItemMeta mat-icon-button color="warn"
+                          (click)="removeSchool(i)"
+                          [attr.aria-label]="'Remove ' + school.name">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </mat-list-item>
+              } @empty {
+                <mat-list-item>
+                  <span matListItemTitle>No schools added yet.</span>
+                </mat-list-item>
+              }
+            </mat-list>
+
+          </div>
+        </mat-tab>
+
+        <!-- ── Time Availability Tab ── -->
+        <mat-tab label="Time Availability">
+          <div class="tab-content">
+            <p class="tab-description">
+              Set the clock-time range for each availability slot. These labels are shown on the family
+              registration form so families know what time they are selecting.
+            </p>
+
+            <form [formGroup]="timeAvailabilityForm" (ngSubmit)="saveTimeAvailability()">
+              <div class="flex-col">
+
+                <mat-form-field>
+                  <mat-label>Early Morning</mat-label>
+                  <input matInput formControlName="earlyMorning" placeholder="e.g. 8:00–9:00 AM">
+                  <mat-error *ngIf="timeAvailabilityForm.get('earlyMorning')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Late Morning</mat-label>
+                  <input matInput formControlName="lateMorning" placeholder="e.g. 9:00–10:00 AM">
+                  <mat-error *ngIf="timeAvailabilityForm.get('lateMorning')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Early Afternoon</mat-label>
+                  <input matInput formControlName="earlyAfternoon" placeholder="e.g. 12:00–1:00 PM">
+                  <mat-error *ngIf="timeAvailabilityForm.get('earlyAfternoon')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>Late Afternoon</mat-label>
+                  <input matInput formControlName="lateAfternoon" placeholder="e.g. 1:00–2:00 PM">
+                  <mat-error *ngIf="timeAvailabilityForm.get('lateAfternoon')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+
+                <div class="save-button">
+                  <button mat-raised-button color="primary" type="submit" [disabled]="!timeAvailabilityForm.valid">
+                    Save Time Availability
+                  </button>
+                </div>
+
+              </div>
+            </form>
+          </div>
+        </mat-tab>
+
+        <!-- ── Drive Order Tab ── -->
+        <mat-tab label="Drive Order">
+          <div class="tab-content">
+            <p class="tab-description">
+              Control how supply items appear on checklists during the drive.
+              <strong>Staged</strong> items are included in the exact order shown — drag to reorder.
+              <strong>Unstaged</strong> items are in the drive but appended after staged items.
+              <strong>Not Given</strong> items are excluded from checklists entirely.
+            </p>
+
+            <div class="save-button" style="margin-bottom: 16px;">
+              <button mat-raised-button color="primary" (click)="saveSupplyOrder()">
+                Save Drive Order
+              </button>
+              <button mat-raised-button color="accent" (click)="saveAndGenerateChecklists()">
+                <mat-icon>playlist_add_check</mat-icon>
+                Save &amp; Generate Checklists
+              </button>
+            </div>
+
+            <div class="drive-order-columns">
+
+              <!-- Staged column -->
+              <div class="order-section">
+                <h3 class="section-title staged-title">
+                  <mat-icon>format_list_numbered</mat-icon> Staged
+                  <span class="section-count">({{ stagedTerms.length }})</span>
+                </h3>
+                <div
+                  cdkDropList
+                  [cdkDropListData]="stagedTerms"
+                  (cdkDropListDropped)="dropStaged($event)"
+                  class="drop-list">
+                  @for (term of stagedTerms; track term) {
+                    <div cdkDrag class="supply-order-item">
+                      <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                      <span class="item-label">{{ term }}</span>
+                      <span class="item-actions">
+                        <button mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
+                          <mat-icon>arrow_forward</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
+                          <mat-icon>block</mat-icon>
+                        </button>
+                      </span>
+                    </div>
+                  }
+                  @empty {
+                    <div class="empty-hint">No staged items. Move items here to set the checklist order.</div>
+                  }
+                </div>
+              </div>
+
+              <!-- Unstaged column -->
+              <div class="order-section">
+                <h3 class="section-title unstaged-title">
+                  <mat-icon>radio_button_unchecked</mat-icon> Unstaged
+                  <span class="section-count">({{ unstagedTerms.length }})</span>
+                </h3>
+                <div class="drop-list">
+                  @for (term of unstagedTerms; track term) {
+                    <div class="supply-order-item">
+                      <mat-icon class="status-icon">inventory_2</mat-icon>
+                      <span class="item-label">{{ term }}</span>
+                      <span class="item-actions">
+                        <button mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
+                          <mat-icon>arrow_back</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
+                          <mat-icon>block</mat-icon>
+                        </button>
+                      </span>
+                    </div>
+                  }
+                  @empty {
+                    <div class="empty-hint">No unstaged items.</div>
+                  }
+                </div>
+              </div>
+
+              <!-- Not Given column -->
+              <div class="order-section">
+                <h3 class="section-title not-given-title">
+                  <mat-icon>block</mat-icon> Not Given
+                  <span class="section-count">({{ notGivenTerms.length }})</span>
+                </h3>
+                <div class="drop-list">
+                  @for (term of notGivenTerms; track term) {
+                    <div class="supply-order-item not-given-item">
+                      <mat-icon class="status-icon not-given-icon">do_not_disturb</mat-icon>
+                      <span class="item-label">{{ term }}</span>
+                      <span class="item-actions">
+                        <button mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
+                          <mat-icon>format_list_numbered</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
+                          <mat-icon>arrow_back</mat-icon>
+                        </button>
+                      </span>
+                    </div>
+                  }
+                  @empty {
+                    <div class="empty-hint">No excluded items.</div>
+                  }
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>
