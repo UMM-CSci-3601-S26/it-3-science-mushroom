@@ -51,12 +51,16 @@ describe('FamilyCardComponent', () => {
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Christy',
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         }
       ]
     };

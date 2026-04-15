@@ -123,18 +123,24 @@ describe('Add family page', () => {
             grade: '6',
             school: "Morris High School",
             teacher: "N/A",
+            headphones: true,
+            backpack: false
           },
           {
             name: 'Allie',
             grade: '7',
             school: "Morris High School",
             teacher: "N/A",
+            headphones: true,
+            backpack: false
           },
           {
             name: 'Joe',
             grade: '8',
             school: "Morris Elementary",
             teacher: "N/A",
+            headphones: true,
+            backpack: false
           },
         ]
       };
@@ -153,6 +159,10 @@ describe('Add family page', () => {
       // Wait for at least one family card
       cy.get('.family-card', { timeout: 10000 })
         .should('have.length.greaterThan', 0);
+
+      // Filter the family list by the new family's guardian name to make sure it appears,
+      // since the pagination may cause it to not appear on the first page of the family list
+      page.getFilterFamily().type(family.guardianName);
 
       // Valid test family information
       cy.get('.family-card-guardianName')

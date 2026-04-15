@@ -116,12 +116,16 @@ class FamilyControllerSpec {
             .append("name", "Alice")
             .append("grade", "3")
             .append("school", "MAHS")
-            .append("teacher", "N/A"),
+            .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false),
           new Document()
             .append("name", "Timmy")
             .append("grade", "5")
             .append("school", "MAHS")
             .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false)
         )
     ));
     testFamilies.add(
@@ -135,12 +139,16 @@ class FamilyControllerSpec {
           .append("name", "Sara")
           .append("grade", "7")
           .append("school", "MAHS")
-          .append("teacher", "N/A"),
+          .append("teacher", "N/A")
+          .append("backpack", true)
+          .append("headphones", false),
         new Document()
           .append("name", "Ronan")
           .append("grade", "4")
           .append("school", "HHS")
           .append("teacher", "N/A")
+          .append("backpack", true)
+          .append("headphones", false)
       ))
     );
     testFamilies.add(
@@ -155,6 +163,8 @@ class FamilyControllerSpec {
             .append("grade", "1")
             .append("school", "HHS")
             .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false)
         ))
     );
 
@@ -172,6 +182,9 @@ class FamilyControllerSpec {
           .append("grade", "5")
           .append("school", "Roosevelt")
           .append("teacher", "N/A")
+          .append("backpack", true)
+          .append("headphones", false)
+
       ));
 
     familyDocuments.insertMany(testFamilies);
