@@ -9,44 +9,50 @@ describe('SupplyListService', () => {
   // A small test inventory
   const testSupplyList: SupplyList[] = [
     {
+      _id: '1',
+      academicYear: '',
+      teacher: '',
       school: "MHS",
       grade: "PreK",
-      item: "Markers",
-      description: "8 Pack of Washable Wide Markers",
-      brand: "Crayola",
-      color: "Black",
-      count: 8,
-      size: "Wide",
-      type: "Washable",
-      material: "N/A",
+      item: ["Washable Marker"],
+      brand: { allOf: "", anyOf: ["Crayola"] },
+      color: { allOf: [], anyOf: ["Black"] },
+      packageSize: 8,
+      size: { allOf: "Wide", anyOf: [] },
+      type: { allOf: "", anyOf: [] },
+      material: { allOf: "", anyOf: [] },
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
     },
     {
+      _id: '2',
+      academicYear: '',
+      teacher: '',
       school: "Herman",
-      grade: "6th grade",
-      item: "Folder",
-      description: "Red 2 Prong Plastic Pocket Folder",
-      brand: "N/A",
-      color: "Red",
-      count: 1,
-      size: "N/A",
-      type: "2 Prong",
-      material: "Plastic",
+      grade: "6",
+      item: ["Folder"],
+      brand: { allOf: "", anyOf: ["N/A"] },
+      color: { allOf: [], anyOf: ["Red"] },
+      packageSize: 1,
+      size: { allOf: "N/A", anyOf: [] },
+      type: { allOf: "2 Prong", anyOf: [] },
+      material: { allOf: "Plastic", anyOf: [] },
       quantity: 0,
       notes: "N/A"
     },
     {
+      _id: '3',
+      academicYear: '',
+      teacher: '',
       school: "MHS",
-      grade: "4th grade",
-      item: "Notebook",
-      description: "Yellow Wide Ruled Spiral Notebook",
-      brand: "Five Star",
-      color: "Yellow",
-      count: 1,
-      size: "Wide Ruled",
-      type: "Spiral",
-      material: "N/A",
+      grade: "4",
+      item: ["Notebook"],
+      brand: { allOf: "", anyOf: ["Five Star"] },
+      color: { allOf: [], anyOf: ["Yellow"] },
+      packageSize: 1,
+      size: { allOf: "Wide Ruled", anyOf: [] },
+      type: { allOf: "Spiral", anyOf: [] },
+      material: { allOf: "", anyOf: ["N/A"] },
       quantity: 0,
       notes: "N/A"
     }
@@ -95,13 +101,13 @@ describe('SupplyListService', () => {
     it('correctly calls api/inventory with filter parameter \'item\'', () => {
       const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testSupplyList));
 
-      supplylistService.getSupplyList({ item: 'Markers' }).subscribe(() => {
+      supplylistService.getSupplyList({ item: 'Washable Marker' }).subscribe(() => {
         expect(mockedMethod)
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(supplylistService.supplylistUrl, { params: new HttpParams().set('item', 'Markers') });
+          .toHaveBeenCalledWith(supplylistService.supplylistUrl, { params: new HttpParams().set('item', 'Washable Marker') });
       });
     });
 
@@ -134,13 +140,13 @@ describe('SupplyListService', () => {
     it('correctly calls api/inventory with filter parameter \'grade\'', () => {
       const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testSupplyList));
 
-      supplylistService.getSupplyList({ grade: '4th grade' }).subscribe(() => {
+      supplylistService.getSupplyList({ grade: '4' }).subscribe(() => {
         expect(mockedMethod)
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')
-          .toHaveBeenCalledWith(supplylistService.supplylistUrl, { params: new HttpParams().set('grade', '4th grade') });
+          .toHaveBeenCalledWith(supplylistService.supplylistUrl, { params: new HttpParams().set('grade', '4') });
       });
     });
 
@@ -203,7 +209,7 @@ describe('SupplyListService', () => {
 
         const [url, options] = mockedMethod.calls.argsFor(0);
 
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
+        const calledHttpParams: HttpParams = (options?.params) as HttpParams;
         expect(mockedMethod)
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
@@ -229,7 +235,7 @@ describe('SupplyListService', () => {
 
         const [url, options] = mockedMethod.calls.argsFor(0);
 
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
+        const calledHttpParams: HttpParams = (options?.params) as HttpParams;
         expect(mockedMethod)
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
@@ -255,7 +261,7 @@ describe('SupplyListService', () => {
 
         const [url, options] = mockedMethod.calls.argsFor(0);
 
-        const calledHttpParams: HttpParams = (options.params) as HttpParams;
+        const calledHttpParams: HttpParams = (options?.params) as HttpParams;
         expect(mockedMethod)
           .withContext('one call')
           .toHaveBeenCalledTimes(1);
@@ -278,6 +284,104 @@ describe('SupplyListService', () => {
           .withContext('type being Spiral')
           .toEqual('Spiral');
       });
+    });
+  });
+
+  describe('When deleteSupplyList() is called', () => {
+
+    it('calls DELETE on the correct URL with the given id', () => {
+      const testId = 'abc123';
+      supplylistService.deleteSupplyList(testId).subscribe();
+
+      const req = httpTestingController.expectOne(`${supplylistService.supplylistUrl}/${testId}`);
+      expect(req.request.method).toEqual('DELETE');
+      req.flush(null);
+    });
+
+    it('calls DELETE with a different id', () => {
+      const testId = 'xyz789';
+      supplylistService.deleteSupplyList(testId).subscribe();
+
+      const req = httpTestingController.expectOne(`${supplylistService.supplylistUrl}/${testId}`);
+      expect(req.request.method).toEqual('DELETE');
+      req.flush(null);
+    });
+  });
+
+  describe('When addSupplyList() is called', () => {
+
+    it('calls POST on the correct URL with the new item body', () => {
+      const newItem: Partial<SupplyList> = {
+        academicYear: '',
+        teacher: '',
+        school: 'MHS',
+        grade: 'PreK',
+        item: ['Scissors'],
+        brand: { allOf: '', anyOf: ['Fiskars'] },
+        color: { allOf: [], anyOf: ['Orange'] },
+        size: { allOf: 'Kids', anyOf: [] },
+        type: { allOf: 'Blunt', anyOf: [] },
+        material: { allOf: '', anyOf: ['Metal'] },
+        packageSize: 1,
+        quantity: 5,
+        notes: 'N/A'
+      };
+      supplylistService.addSupplyList(newItem).subscribe();
+
+      const req = httpTestingController.expectOne(supplylistService.supplylistUrl);
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual(newItem);
+      req.flush({ id: 'new-id' });
+    });
+
+    it('returns the id from the server response', () => {
+      const newItem: Partial<SupplyList> = { item: ['Glue Stick'], school: 'Herman', grade: '2nd grade',
+        brand: { allOf: '', anyOf: ['Elmer\'s'] }, color: { allOf: [], anyOf: ['White'] },
+        size: { allOf: 'Regular', anyOf: [] }, type: { allOf: 'Stick', anyOf: [] },
+        material: { allOf: '', anyOf: ['N/A'] }, packageSize: 1, quantity: 3, notes: '' };
+
+      supplylistService.addSupplyList(newItem).subscribe();
+
+      const req = httpTestingController.expectOne(supplylistService.supplylistUrl);
+      req.flush({ id: 'returned-id' });
+      expect(req.request.method).toEqual('POST');
+    });
+  });
+
+  describe('When editSupplyList() is called', () => {
+
+    it('calls PUT on the correct URL with the updated item body', () => {
+      const testId = 'item42';
+      const updatedItem: Partial<SupplyList> = {
+        school: 'MHS',
+        grade: '4th grade',
+        item: ['Notebook'],
+        brand: { allOf: '', anyOf: ['Five Star'] },
+        color: { allOf: [], anyOf: ['Blue'] },
+        size: { allOf: 'Wide Ruled', anyOf: [] },
+        type: { allOf: 'Spiral', anyOf: [] },
+        material: { allOf: '', anyOf: ['N/A'] },
+        packageSize: 1,
+        quantity: 2,
+        notes: 'N/A'
+      };
+      supplylistService.editSupplyList(testId, updatedItem).subscribe();
+
+      const req = httpTestingController.expectOne(`${supplylistService.supplylistUrl}/${testId}`);
+      expect(req.request.method).toEqual('PUT');
+      expect(req.request.body).toEqual(updatedItem);
+      req.flush(null);
+    });
+
+    it('calls PUT with a different id and partial body', () => {
+      const testId = 'item99';
+      const updatedItem: Partial<SupplyList> = { quantity: 10, notes: 'Replenished' };
+      supplylistService.editSupplyList(testId, updatedItem).subscribe();
+
+      const req = httpTestingController.expectOne(`${supplylistService.supplylistUrl}/${testId}`);
+      expect(req.request.method).toEqual('PUT');
+      expect(req.request.body).toEqual(updatedItem);
+      req.flush(null);
     });
   });
 })

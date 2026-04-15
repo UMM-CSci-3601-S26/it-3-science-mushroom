@@ -1,11 +1,17 @@
 import { SupplyListPage } from "../support/supplylist.po";
 
 const page = new SupplyListPage();
-const Filters_Test = {
-  School: 'Hancock',
-  //Teacher: 'All Teachers',
-  Grade: 'Kindergarten',
-}
+const FILTERS_TEST = {
+  school: 'Hancock',
+  grade: 'Kindergarten',
+};
+
+const HANCOCK_GROUP = {
+  school: 'Hancock Elementary',
+  grade: 'Kindergarten',
+  teacher: 'N/A',
+  item: 'Binder',
+};
 
 describe('Supply List', () => {
   before(() => {
@@ -44,8 +50,7 @@ describe('Supply List', () => {
     cy.url().should('match', /\/supplylist$/);
     page.getSidenav()
       .should('be.hidden');
-    nextTick(300)
-    cy.contains('mat-card', 'St. Mary\'s').should('exist');
+    page.getResultsCard().should('contain', 'Hancock Elementary');
   });
 
   // Cypress tests to ensure the filter boxes are there
@@ -114,71 +119,70 @@ describe('Supply List', () => {
   });
 
   it("Should be able to take an input and display the correct filtered results", () => {
-    // Intercept the filtered API calls
     cy.intercept('GET', '/api/supplylist*').as('filterSupplyList');
 
-    cy.get('[data-cy="filter-school"]').type(Filters_Test.School);
-    cy.get('[data-cy="filter-grade"]').type(Filters_Test.Grade);
+    cy.get('[data-cy="filter-school"]').type(FILTERS_TEST.school);
+    cy.get('[data-cy="filter-grade"]').type(FILTERS_TEST.grade);
 
-    // Wait for the filtered results to load
-    nextTick(1000);
+    cy.wait('@filterSupplyList');
 
-    // Check results match
-    cy.contains('Chokio').should('not.exist');
-    cy.contains('Hancock').should('be.visible');
-    page.expandTreeNode('Hancock');
-    cy.contains('Kindergarten').should('be.visible');
-    cy.contains('1st Grade').should('not.exist');
+    page.getSupplyListSchool().should('have.length', 1);
+    page.getResultsCard().should('contain', HANCOCK_GROUP.school);
+    page.getResultsCard().should('not.contain', 'Chokio-Alberta Elementary');
+    page.expandGradePanel(HANCOCK_GROUP.school, HANCOCK_GROUP.grade);
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .should('exist');
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .should('contain', HANCOCK_GROUP.item);
+    page.getResultsCard().should('not.contain', '1st Grade');
   });
 
   it('Should have the tree view', () => {
-    cy.get('[data-cy="supplylist-card"]', { timeout: 10000 }).should('exist');
+    page.getResultsCard().should('exist');
+    page.getSupplyListSchool().its('length').should('be.greaterThan', 0);
   });
 
-  it('Should display nested items when tree is expanded', () => {
-    page.expandTreeNode('Hancock');
-    cy.contains('Kindergarten').should('be.visible');
-    page.expandTreeNode('Kindergarten');
-    cy.contains('All Teachers').should('be.visible');
-    page.expandTreeNode('All Teachers');
-    cy.contains('Backpack').should('be.visible');
+  it('Should display grouped items when a grade panel is expanded', () => {
+    page.expandGradePanel(HANCOCK_GROUP.school, HANCOCK_GROUP.grade);
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .should('contain', 'Teacher(s):');
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .should('contain', 'Backpack');
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .should('contain', HANCOCK_GROUP.item);
   });
 
-  it('Should open dialog with item details when item is clicked', () => {
-    page.expandTreeNode('Hancock');
-    page.expandTreeNode('Kindergarten');
-    page.expandTreeNode('All Teachers');
-    cy.get('[data-cy="supplylist-info-button"]').first().click();
-    cy.contains('Item View - Binder').should('be.visible');
-    cy.contains('- Description: 1" 3 Ring Binder').should('be.visible');
-    cy.contains('- Brand: N/A').should('be.visible');
-    cy.contains('- Color: N/A').should('be.visible');
-    cy.contains('- Size: 1"').should('be.visible');
-    cy.contains('- Type: 3 Ring').should('be.visible');
-    cy.contains('- Material: N/A').should('be.visible');
-    cy.contains('- Quantity: 1').should('be.visible');
-    cy.contains('- Notes: 1, 3 ring binder of choice size (?)').should('be.visible');
+  it('Should enter inline edit mode when edit is clicked', () => {
+    page.expandGradePanel(HANCOCK_GROUP.school, HANCOCK_GROUP.grade);
+    page.getFirstItemRow(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .scrollIntoView()
+      .find('[data-cy="edit-item"]')
+      .click();
+
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .find('[data-cy="save-item"]')
+      .should('be.visible');
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .find('[data-cy="cancel-edit"]')
+      .should('be.visible');
   });
 
-  it('Should close dialog when Exit button is clicked', () => {
-    page.expandTreeNode('Hancock');
-    page.expandTreeNode('Kindergarten');
-    page.expandTreeNode('All Teachers');
-    cy.get('[data-cy="supplylist-info-button"]').first().click();
-    cy.contains('Item View - Binder').should('be.visible');
-    cy.contains('- Description: 1" 3 Ring Binder').should('be.visible');
-    cy.contains('- Brand: N/A').should('be.visible');
-    cy.contains('- Color: N/A').should('be.visible');
-    cy.contains('- Size: 1"').should('be.visible');
-    cy.contains('- Type: 3 Ring').should('be.visible');
-    cy.contains('- Material: N/A').should('be.visible');
-    cy.contains('- Quantity: 1').should('be.visible');
-    cy.contains('- Notes: 1, 3 ring binder of choice size (?)').should('be.visible');
-    cy.contains('button', 'Exit').click();
-    cy.contains('Item View - Binder').should('not.exist');
+  it('Should leave inline edit mode when Cancel is clicked', () => {
+    page.expandGradePanel(HANCOCK_GROUP.school, HANCOCK_GROUP.grade);
+    page.getFirstItemRow(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .scrollIntoView()
+      .find('[data-cy="edit-item"]')
+      .click();
+
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .find('[data-cy="cancel-edit"]')
+      .click();
+
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .find('[data-cy="edit-item"]')
+      .should('be.visible');
+    page.getTeacherGroup(HANCOCK_GROUP.school, HANCOCK_GROUP.grade, HANCOCK_GROUP.teacher)
+      .find('[data-cy="save-item"]')
+      .should('not.exist');
   });
 });
-
-function nextTick(ms: number) {
-  cy.wait(ms);
-}

@@ -6,19 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Java Imports
+import java.util.Arrays;
+
 // Org Imports
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 public class SupplyListSpec {
   private static final String FAKE_ID_STRING_1 = "fakeIdOne";
   private static final String FAKE_ID_STRING_2 = "fakeIdTwo";
+  private static final int EXPECTED_COUNT = 20;
+  private static final int EXPECTED_QUANTITY = 2;
 
   private SupplyList inv1;
   private SupplyList inv2;
-
-  // -- Test Management -- \\
 
   @BeforeEach
   void setupEach() {
@@ -27,12 +29,14 @@ public class SupplyListSpec {
 
     inv1.school = "MHS";
     inv1.grade = "PreK";
-    inv1.item = "Pencil";
-    inv1.brand = "Ticonderoga";
-    inv1.description = "Ticonderoga Pencil";
+    inv1.item = Arrays.asList("Pencil");
+    inv1.brand = new SupplyList.AttributeOptions();
+    inv1.brand.allOf = "Ticonderoga";
+    inv1.color = new SupplyList.ColorAttributeOptions();
+    inv1.color.allOf = Arrays.asList("yellow");
+    inv1.packageSize = EXPECTED_COUNT;
+    inv1.quantity = EXPECTED_QUANTITY;
   }
-
-  // -- Supply List ID Tests -- \\
 
   @Test
   void supplyListWithEqualIdAreEqual() {
@@ -66,6 +70,7 @@ public class SupplyListSpec {
     assertFalse(inv1.equals(FAKE_ID_STRING_1));
   }
 
+
   @Test
   void nullId() {
     inv1._id = null;
@@ -75,10 +80,8 @@ public class SupplyListSpec {
     assertFalse(inv1.equals(inv2));
   }
 
-  // -- Misc Supply List Tests -- \\
-
   @Test
   void listToString() {
-    assertEquals(inv1.toString(), "Pencil Ticonderoga Ticonderoga Pencil");
+    assertEquals(inv1.toString(), "2 20ct Pencils yellow, Ticonderoga");
   }
 }

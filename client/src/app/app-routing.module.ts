@@ -6,6 +6,7 @@ import { HomeComponent } from './home/home.component';
 // Inventory/Supply List Imports
 import { InventoryComponent } from './inventory/inventory.component';
 import { SupplyListComponent } from './supplylist/supplylist.component';
+import { AddSupplyListComponent } from './supplylist/add-supplylist.component';
 
 // Family Imports
 import { FamilyListComponent } from './family/family-list.component';
@@ -28,10 +29,10 @@ const routes: Routes = [
   {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'},
   {path: 'family/:id', component: EditFamilyComponent, title: 'Edit Family'},
   {path: 'inventory', component: InventoryComponent, title: 'Inventory'},
+  {path: 'supplylist/new', component: AddSupplyListComponent, title: 'Add Supply List Item'},
   {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'},
   {path: 'stock-report', component: StockReportComponent, title: 'Stock Report'},
   {path: 'pdf-generator', component: ReportGeneratorComponent, title: 'PDF Generator'},
-  {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'},
   {path: 'stationOrder', component: StationOrderComponent, title: 'Station Order'}
 ];
 

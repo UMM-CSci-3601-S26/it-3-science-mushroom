@@ -29,10 +29,19 @@ describe('AppRoutingModule', () => {
     expect(routeSummary).toContain({ path: 'stationOrder', title: 'Station Order' });
   });
 
-  it('contains the duplicated supplylist route configuration currently defined in the module', () => {
+  // What is the point of this test? It is just testing that the same route is defined twice, which is not a good thing.
+  // If we want to test that the supply list route is defined, we should test that it is defined once, not that it is defined twice.
+  // it('contains the duplicated supplylist route configuration currently defined in the module', () => {
+  //   const supplyRoutes = router.config.filter(route => route.path === 'supplylist');
+
+  //   expect(supplyRoutes.length).toBe(2);
+  //   expect(supplyRoutes.every(route => route.title === 'Supply List')).toBeTrue();
+  // });
+
+  it('contains the single supplylist route configuration currently defined in the module', () => {
     const supplyRoutes = router.config.filter(route => route.path === 'supplylist');
 
-    expect(supplyRoutes.length).toBe(2);
+    expect(supplyRoutes.length).toBe(1);
     expect(supplyRoutes.every(route => route.title === 'Supply List')).toBeTrue();
   });
 });
