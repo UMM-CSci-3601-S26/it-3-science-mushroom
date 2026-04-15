@@ -131,8 +131,9 @@ describe('Family list', () => {
     });
   });
 
-  it('Should show 3 families in card view', () => {
-    page.getFamilyCards().should('have.length', 10);
+  // With the default pagination settings, there should be 8 families displayed in card view
+  it('Should show 8 families in card view', () => {
+    page.getFamilyCards().should('have.length', 8);
   });
 
   it('Should show students cards with the right information', () => {
