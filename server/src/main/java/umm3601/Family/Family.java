@@ -26,5 +26,7 @@ public class Family {
     public String grade;
     public String school;
     public String teacher;
+    public Boolean backpack;
+    public Boolean headphones;
   }
 }

@@ -3,6 +3,8 @@ export interface StudentInfo {
   grade: string;
   school: string;
   teacher: string;
+  headphones: boolean;
+  backpack: boolean;
 }
 
 export interface Family {

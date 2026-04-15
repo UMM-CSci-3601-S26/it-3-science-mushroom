@@ -25,6 +25,8 @@ describe('FamilyService', () => {
           grade: '1',
           school: "Morris Elementary",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
@@ -41,12 +43,16 @@ describe('FamilyService', () => {
           grade: '6',
           school: "Hancock Middle School",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
@@ -63,18 +69,24 @@ describe('FamilyService', () => {
           grade: '11',
           school: "Morris High School",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
