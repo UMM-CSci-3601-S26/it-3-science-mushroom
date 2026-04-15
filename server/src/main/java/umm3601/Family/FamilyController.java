@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.naming.NameNotFoundException;
-
 // Org Imports
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -207,7 +205,7 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
-  public void updateFamilyHelped (Context ctx) {
+  public void updateFamilyHelped(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
 

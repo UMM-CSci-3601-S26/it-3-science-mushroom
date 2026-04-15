@@ -7,7 +7,7 @@ public class FamilyStatusUpdateRequest {
       return helped;
     }
 
-    public void setHelped(boolean helped){
+    public void setHelped(boolean helped) {
       this.helped = helped;
   }
 }
