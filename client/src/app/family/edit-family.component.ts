@@ -12,6 +12,7 @@ import { Router, RouterLink, ActivatedRoute, ParamMap } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { DialogService } from '../dialog/dialog.service';
 
 // Family Imports
 import { Family } from './family';
@@ -29,6 +30,7 @@ export class EditFamilyComponent {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private dialogService = inject(DialogService);
 
   error = signal({ help: '', httpResponse: '', message: '' });
 
@@ -230,6 +232,56 @@ export class EditFamilyComponent {
           );
         }
       },
+    });
+  }
+
+  deleteForm() {
+    const familyId = this.route.snapshot.paramMap.get('id');
+    const rawForm = this.editFamilyForm.value;
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Delete',
+      familyName: rawForm.guardianName,
+      message: `Are you sure you want to delete the family ${rawForm.guardianName}?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '400px', '200px');
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
+
+        this.familyService.deleteFamily(familyId).subscribe({
+          next: () => {
+            this.snackBar.open(
+              `Deleted family ${rawForm.guardianName}`,
+              null,
+              { duration: 5000 }
+            );
+            this.router.navigate(['/family']);
+          },
+          error: err => {
+            if (err.status === 400) {
+              this.snackBar.open(
+                `Tried to delete an illegal family – Error Code: ${err.status}\nMessage: ${err.message}`,
+                'OK',
+                { duration: 5000 }
+              );
+            } else if (err.status === 500) {
+              this.snackBar.open(
+                `The server failed to process your request to delete a family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
+                'OK',
+                { duration: 5000 }
+              );
+            } else {
+              this.snackBar.open(
+                `An unexpected error occurred – Error Code: ${err.status}\nMessage: ${err.message}`,
+                'OK',
+                { duration: 5000 }
+              );
+            }
+          },
+        });
+      }
     });
   }
 }

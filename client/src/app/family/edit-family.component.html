@@ -108,6 +108,15 @@
           <button
             mat-button
             type="button"
+            color="warn"
+            data-test="deleteFamilyButton"
+            (click)="deleteForm()"
+            >
+            DELETE FAMILY
+          </button>
+          <button
+            mat-button
+            type="button"
             color="primary"
             data-test="BackFamilyButton"
             routerLink="/family"
