@@ -4,6 +4,7 @@ export class SupplyListPage {
   private readonly sideNavButton = '.sidenav-button';
   private readonly sideNav = '.sidenav';
   private readonly sideNavOption = '[routerlink] > .mdc-list-item__content';
+  private readonly resultsCard = '[data-cy="supplylist-card"]';
 
 
   navigateTo() {
@@ -25,6 +26,11 @@ export class SupplyListPage {
   getNavLink(navOption: 'Home' | 'Supply List' ) {
     return cy.contains(this.sideNavOption, `${navOption}`);
   }
+
+  getResultsCard() {
+    return cy.get(this.resultsCard);
+  }
+
   getSupplyListSchool() {
     return cy.get('[data-cy=supplylist-school]')
   }
@@ -50,7 +56,7 @@ export class SupplyListPage {
     return cy.get('[data-cy="supplylist-material"]');
   }
   getSupplylistCount() {
-    return cy.get('[data-cy="supplylist-count"]');
+    return cy.get('[data-cy="supplylist-packageSize"]');
   }
   getSupplylistQuantity() {
     return cy.get('[data-cy="supplylist-quantity"]');
@@ -59,10 +65,43 @@ export class SupplyListPage {
     return cy.get('[data-cy="supplylist-notes"]');
   }
 
-  expandTreeNode(nodeName: string) {
-    // Find the mat-tree-node containing the node name and click its toggle button
-    return cy.contains('mat-tree-node', nodeName)
-      .find('button[matTreeNodeToggle]')
-      .click();
+  getSchoolGroup(schoolName: string) {
+    return cy.contains('[data-cy="supplylist-school"]', schoolName).closest('.school-group');
+  }
+
+  getGradePanel(schoolName: string, gradeName: string) {
+    return this.getSchoolGroup(schoolName)
+      .contains('[data-cy="supplylist-grade"]', gradeName)
+      .closest('mat-expansion-panel');
+  }
+
+  expandGradePanel(schoolName: string, gradeName: string) {
+    return this.getGradePanel(schoolName, gradeName).then(($panel) => {
+      const expanded = $panel.attr('class')?.includes('mat-expanded');
+
+      if (!expanded) {
+        cy.wrap($panel).find('mat-expansion-panel-header').click();
+      }
+
+      cy.wrap($panel).should('have.class', 'mat-expanded');
+    });
+  }
+
+  getTeacherGroup(schoolName: string, gradeName: string, teacherName: string) {
+    return this.getGradePanel(schoolName, gradeName)
+      .contains('.teacher-heading', teacherName)
+      .closest('.teacher-group');
+  }
+
+  getItemRow(schoolName: string, gradeName: string, teacherName: string, itemText: string) {
+    return this.getTeacherGroup(schoolName, gradeName, teacherName)
+      .contains('.item-row', itemText)
+      .closest('.item-row');
+  }
+
+  getFirstItemRow(schoolName: string, gradeName: string, teacherName: string) {
+    return this.getTeacherGroup(schoolName, gradeName, teacherName)
+      .find('.item-row')
+      .first();
   }
 }

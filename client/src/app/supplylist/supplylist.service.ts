@@ -15,18 +15,17 @@ export class SupplyListService {
   private readonly schoolKey = 'school';
   private readonly gradeKey = 'grade';
   private readonly itemKey = 'item';
-  private readonly descriptionKey = 'description';
   private readonly brandKey = 'brand';
   private readonly colorKey = 'color';
-  private readonly countKey = 'count';
+  private readonly packageSizeKey = 'packageSize';
   private readonly sizeKey = 'size';
   private readonly typeKey = 'type';
   private readonly materialKey = 'material';
   private readonly quantityKey = 'quantity';
   private readonly notesKey = 'notes';
 
-  getSupplyList(filters?: {school?: string; grade?: string; item?: string; description?: string; brand?: string; color?: string;
-    count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<SupplyList[]> {
+  getSupplyList(filters?: {school?: string; grade?: string; item?: string; brand?: string; color?: string;
+    packageSize?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<SupplyList[]> {
 
     let httpParams: HttpParams = new HttpParams();
     if (filters) {
@@ -54,8 +53,19 @@ export class SupplyListService {
       if (filters.material) {
         httpParams = httpParams.set(this.materialKey, filters.material);
       }
-
     }
     return this.httpClient.get<SupplyList[]>(this.supplylistUrl, { params: httpParams });
+  }
+
+  deleteSupplyList(id: string): Observable<unknown> {
+    return this.httpClient.delete<void>(`${this.supplylistUrl}/${id}`);
+  }
+
+  addSupplyList(newItem: Partial<SupplyList>): Observable<void> {
+    return this.httpClient.post<void>(this.supplylistUrl, newItem);
+  }
+
+  editSupplyList(id: string, updatedItem: Partial<SupplyList>): Observable<void> {
+    return this.httpClient.put<void>(`${this.supplylistUrl}/${id}`, updatedItem);
   }
 }
