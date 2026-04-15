@@ -93,7 +93,7 @@
         @if (families()) {
         <div class="flex-1">
             <div class="family-cards-container flex-row gap-8 flex-wrap">
-              @for (family of serverFilteredFamilies(); track family._id) {
+              @for (family of familiesPerPage(); track family._id) {
               <app-family-card class="family-card" [family]="family"></app-family-card>
               }
             </div>
@@ -109,6 +109,17 @@
           </mat-error>
         </div>
         }
+      </div>
+      <div>
+        <mat-paginator
+          data-cy="family-paginator"
+          [length]=" serverFilteredFamilies().length "
+          [pageSize]="8"
+          [pageSizeOptions]="[6, 8, 10]"
+          (page)="pageChange($event)"
+          aria-label="Select page"
+        >
+        </mat-paginator>
       </div>
     </mat-card>
 

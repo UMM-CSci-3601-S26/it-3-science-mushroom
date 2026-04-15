@@ -15,6 +15,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 // RxJS Imports
 import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
@@ -49,7 +50,8 @@ import { DashboardStats } from '../family/family';
     MatCard,
     MatCardTitle,
     MatCardContent,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatPaginatorModule
   ],
 })
 
@@ -121,6 +123,20 @@ export class FamilyListComponent {
         })
       )
     );
+
+  pageNum = signal(0);
+  pageSize = signal(8);
+
+  familiesPerPage = computed(() => {
+    const data = this.serverFilteredFamilies();
+    const initialSetup = this.pageNum() * this.pageSize();
+    return data.slice(initialSetup, initialSetup + this.pageSize());
+  });
+
+  pageChange(event: PageEvent) {
+    this.pageNum.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+  }
 
 
   downloadCSV() {
