@@ -28,7 +28,7 @@
           <div class="form-grid">
 
             <!-- Row 1: School + Grade -->
-            <!-- <mat-form-field>
+            <mat-form-field>
               <mat-label>School</mat-label>
               <mat-select formControlName="school" required data-cy="school-select">
                 @for (s of availableSchools$ | async; track s) {
@@ -36,7 +36,7 @@
                 }
               </mat-select>
               <mat-error *ngIf="formControlHasError('school')">{{ getErrorMessage('school') }}</mat-error>
-            </mat-form-field> -->
+            </mat-form-field>
 
             <mat-form-field>
               <mat-label>Grade</mat-label>
