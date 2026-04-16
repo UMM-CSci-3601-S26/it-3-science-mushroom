@@ -10,9 +10,11 @@ import { BehaviorSubject } from 'rxjs';
 // JS Imports
 import JSZip from 'jszip';
 
-// Family Imports
-import { environment } from '../../environments/environment';
+// Stock Report Imports
 import { StockReport } from './stock-report';
+
+// Misc Imports
+import { environment } from '../../environments/environment';
 
 /**
  * StockReportService is responsible for handling logic related to Stock Reports, including fetching reports from the server, deleting reports, and downloading reports as PDFs or ZIPs.
@@ -87,7 +89,7 @@ export class StockReportService {
 
   /**
    * Call endpoint to add a new Stock Report
-   * @param formData Data of the new report to add, containing the report name and data for the report file (PDF or CSV)
+   * @param formData Data of the new report to add, containing the report name, type, and data for the report (PDF or CSV)
    * @returns Response from the server, which should be the ID of the newly created report
    */
   addNewReport(formData: FormData): Observable<string> {

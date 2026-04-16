@@ -96,11 +96,11 @@ export class StockReportComponent {
 
   // Compute PDF and CSV reports separately for easier display
   pdfReports = computed(() => {
-    return this.reports();
+    return this.reports()?.filter(report => report.reportType === 'PDF') ?? [];
   });
 
   csvReports = computed(() => {
-    return []; // CSV reports aren't implemented, so we'll just always return an empty array :)
+    return this.reports()?.filter(report => report.reportType === 'CSV') ?? [];
   });
 
   constructor() {
@@ -190,13 +190,13 @@ export class StockReportComponent {
 
   underStockedItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Under-Stocked') ?? [];
+      ?.filter(item => item.stockState === 'Understocked') ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
   overStockedItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Over-Stocked') ?? [];
+      ?.filter(item => item.stockState === 'Overstocked') ?? [];
     return this.groupInventoryByItem(filtered);
   });
 }

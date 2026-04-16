@@ -48,7 +48,7 @@ export class ReportGeneratorComponent {
   private snackBar = inject(MatSnackBar);
 
   /**
-   * Helper function that formats a Date object into a string format of MM-DD-YYYY_HH:MM(AM/PM)
+   * Helper method that formats a Date object into a string format of MM-DD-YYYY_HH:MM(AM/PM)
    * @param date A Date object to format into a string
    * @returns An array of two strings.
    * The first (0): The formatted date string in format MM-DD-YYYY HH:MM (AM/PM) for use in the file descriptions.
@@ -69,19 +69,19 @@ export class ReportGeneratorComponent {
     // Format the date and time as MM-DD-YYYY_HH:MM(AM/PM)
     if (hour > 12) { // PM hours
       formattedStrings.push(`${month}-${day}-${year} ${hour-12}:${minute} PM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_${hour-12}-${minute} PM`); // Format for file name
+      formattedStrings.push(`${month}-${day}-${year}_${hour-12}-${minute}_PM`); // Format for file name
       return formattedStrings;
     } else if (hour < 12 && hour > 0) { // AM hours
       formattedStrings.push(`${month}-${day}-${year} ${hour}:${minute} AM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute} AM`); // Format for file name
+      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute}_AM`); // Format for file name
       return formattedStrings;
     } else if (hour === 12) { // Noon
       formattedStrings.push(`${month}-${day}-${year} ${hour}:${minute} PM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute} PM`); // Format for file name
+      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute}_PM`); // Format for file name
       return formattedStrings;
     } else { // Just assume midnight if its not anything else
       formattedStrings.push(`${month}-${day}-${year} 12:${minute} AM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_12-${minute} AM`); // Format for file name
+      formattedStrings.push(`${month}-${day}-${year}_12-${minute}_AM`); // Format for file name
       return formattedStrings;
     }
   }
@@ -214,8 +214,9 @@ export class ReportGeneratorComponent {
       const pdfBlob = doc.output('blob');
 
       const formData = new FormData();
-      formData.append("uploadedPDF", pdfBlob);
+      formData.append("uploadedReport", pdfBlob);
       formData.append("reportName", filename);
+      formData.append("reportType", "PDF");
 
       this.stockReportService.addNewReport(formData).subscribe({
         next: (response) => {
@@ -376,13 +377,13 @@ export class ReportGeneratorComponent {
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `StockReports_${this.formatDateTime(this.dateTime)}.zip`;
+        a.download = `StockReports_${this.formatDateTime(this.dateTime)[1]}.zip`;
         a.click();
         URL.revokeObjectURL(url);
 
         // Show success message
         this.snackBar.open(
-          `Downloaded all report(s) as ZIP file.`,
+          `Downloaded all PDF report(s) as ZIP file.`,
           `Okay`,
           { duration: 2000 }
         );
@@ -416,7 +417,7 @@ export class ReportGeneratorComponent {
       error: (error) => {
         console.error("Error downloading PDF report:", error);
         this.snackBar.open(
-          `Error downloading report. Please try again.`,
+          `Error downloading PDF report. Please try again.`,
           `Okay`,
           { duration: 2000 }
         );
