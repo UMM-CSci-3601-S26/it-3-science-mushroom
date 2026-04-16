@@ -92,6 +92,20 @@
                       <mat-label>Teacher</mat-label>
                       <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
                     </mat-form-field>
+
+                    <div class="radio-group">
+                      <h3>Backpack Needed?</h3>
+                      <mat-radio-group formControlName="backpack" [ngModel]="family().students[i]?.backpack">
+                        <mat-radio-button [value]="true">Yes</mat-radio-button>
+                        <mat-radio-button [value]="false">No</mat-radio-button>
+                      </mat-radio-group>
+
+                      <h3>Headphones Needed?</h3>
+                      <mat-radio-group formControlName="headphones" [ngModel]="family().students[i]?.headphones">
+                        <mat-radio-button [value]="true">Yes</mat-radio-button>
+                        <mat-radio-button [value]="false">No</mat-radio-button>
+                      </mat-radio-group>
+                    </div>
                     <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
                     Remove Student
                     </button>

@@ -12,6 +12,9 @@ import { Router, RouterLink, ActivatedRoute, ParamMap } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
+
+// Dialog Imports
 import { DialogService } from '../dialog/dialog.service';
 
 // Family Imports
@@ -20,7 +23,19 @@ import { FamilyService } from './family.service';
 
 @Component({
   selector: 'app-edit-family',
-  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatOptionModule, MatButtonModule, RouterLink],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatButtonModule,
+    RouterLink,
+    MatRadioButton,
+    MatRadioGroup
+  ],
   templateUrl: './edit-family.component.html',
   styleUrl: './edit-family.component.scss',
 })
@@ -111,6 +126,8 @@ export class EditFamilyComponent {
         Validators.minLength(2),
       ])),
       teacher: new FormControl<string>(''),
+      backpack: new FormControl<boolean>(undefined),
+      headphones: new FormControl<boolean>(undefined),
     }));
   }
 
