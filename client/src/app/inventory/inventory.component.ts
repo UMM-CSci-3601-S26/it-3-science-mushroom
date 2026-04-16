@@ -71,7 +71,8 @@ type ScanCard = {
   ],
 })
 export class InventoryComponent {
-  displayedColumns: string[] = ['item', 'description', 'brand', 'color', 'size', 'type', 'material', 'packageSize', 'quantity', 'notes'];
+  displayedColumnsDetailed: string[] = ['item', 'description', 'brand', 'color', 'size', 'type', 'material', 'packageSize', 'quantity', 'notes'];
+  displayedColumnsSimple: string[] = ['description', 'quantity', 'notes'];
   dataSource = new MatTableDataSource<Inventory>([]);
   readonly page = viewChild<MatPaginator>(MatPaginator)
   readonly sort = viewChild<MatSort>(MatSort);
@@ -110,6 +111,7 @@ export class InventoryComponent {
   description = signal<string | undefined>(undefined);
   quantity = signal<number | undefined>(undefined);
   showNAValues = signal(true);
+  viewType = signal<'detailed' | 'simple'>('detailed');
 
   errMsg = signal<string | undefined>(undefined);
 

@@ -165,9 +165,9 @@
                   Remove Item
               </button>
             </div>
-            <mat-button-toggle-group class="view-toggle" group="toggle">
-              <mat-button-toggle mode="simple" >Simple</mat-button-toggle>
-              <mat-button-toggle mode="detailed">Detailed</mat-button-toggle>
+            <mat-button-toggle-group class="view-toggle" [(ngModel)]="viewType" data-test="viewTypeToggle">
+              <mat-button-toggle value="simple" >Simple</mat-button-toggle>
+              <mat-button-toggle value="detailed">Detailed</mat-button-toggle>
             </mat-button-toggle-group>
           </div>
 
@@ -230,78 +230,129 @@
             </div>
           </div>
 
-@if (toggle.mode === "detailed") {
-  <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
-    <!-- Item Column -->
-    <ng-container matColumnDef="item">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by item">Item</th>
-      <td mat-cell *matCellDef="let element" class="inventory-item" data-cy="inventory-item">{{element.item}}</td>
-    </ng-container>
+@if (serverFilteredInventory()) {
 
-    <!-- Description Column -->
-    <ng-container matColumnDef="description">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by description">Description</th>
-      <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ element.description }}</td>
-    </ng-container>
+  @switch (viewType()) {
 
-    <!-- Brand Column -->
-    <ng-container matColumnDef="brand">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by brand">Brand</th>
-      <td mat-cell *matCellDef="let element" class="inventory-brand" data-cy="inventory-brand">{{element.brand}}</td>
-    </ng-container>
+    @case ('detailed') {
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
+        <!-- Item Column -->
+        <ng-container matColumnDef="item">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by item">Item</th>
+          <td mat-cell *matCellDef="let element" class="inventory-item" data-cy="inventory-item">{{element.item}}</td>
+        </ng-container>
 
-    <!-- Color Column -->
-    <ng-container matColumnDef="color">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by color">Color</th>
-      <td mat-cell *matCellDef="let element" class="inventory-color" data-cy="inventory-color">{{element.color}}</td>
-    </ng-container>
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by description">Description</th>
+          <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ element.description }}</td>
+        </ng-container>
 
-    <!-- Size Column -->
-    <ng-container matColumnDef="size">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by size">Size</th>
-      <td mat-cell *matCellDef="let element" class="inventory-size" data-cy="inventory-size">{{element.size}}</td>
-    </ng-container>
+        <!-- Brand Column -->
+        <ng-container matColumnDef="brand">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by brand">Brand</th>
+          <td mat-cell *matCellDef="let element" class="inventory-brand" data-cy="inventory-brand">{{element.brand}}</td>
+        </ng-container>
 
-    <!-- Type Column -->
-    <ng-container matColumnDef="type">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by type">Type</th>
-      <td mat-cell *matCellDef="let element" class="inventory-type" data-cy="inventory-type">{{element.type}}</td>
-    </ng-container>
+        <!-- Color Column -->
+        <ng-container matColumnDef="color">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by color">Color</th>
+          <td mat-cell *matCellDef="let element" class="inventory-color" data-cy="inventory-color">{{element.color}}</td>
+        </ng-container>
 
-    <!-- Material Column -->
-    <ng-container matColumnDef="material">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by material">Material</th>
-      <td mat-cell *matCellDef="let element" class="inventory-material" data-cy="inventory-material">{{element.material}}</td>
-    </ng-container>
+        <!-- Size Column -->
+        <ng-container matColumnDef="size">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by size">Size</th>
+          <td mat-cell *matCellDef="let element" class="inventory-size" data-cy="inventory-size">{{element.size}}</td>
+        </ng-container>
 
-    <!-- package size Column -->
-    <ng-container matColumnDef="packageSize">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by packageSize">Package Size</th>
-      <td mat-cell *matCellDef="let element" class="inventory-packageSize" data-cy="inventory-packageSize">{{element.packageSize}}</td>
-    </ng-container>
+        <!-- Type Column -->
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by type">Type</th>
+          <td mat-cell *matCellDef="let element" class="inventory-type" data-cy="inventory-type">{{element.type}}</td>
+        </ng-container>
 
-    <!-- Quantity Column -->
-    <ng-container matColumnDef="quantity">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by quantity">Quantity</th>
-      <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{element.quantity}}</td>
-    </ng-container>
+        <!-- Material Column -->
+        <ng-container matColumnDef="material">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by material">Material</th>
+          <td mat-cell *matCellDef="let element" class="inventory-material" data-cy="inventory-material">{{element.material}}</td>
+        </ng-container>
 
-    <!-- Notes Column -->
-    <ng-container matColumnDef="notes">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by notes">Notes</th>
-      <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{element.notes}}</td>
-    </ng-container>
+        <!-- package size Column -->
+        <ng-container matColumnDef="packageSize">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by packageSize">Package Size</th>
+          <td mat-cell *matCellDef="let element" class="inventory-packageSize" data-cy="inventory-packageSize">{{element.packageSize}}</td>
+        </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;" data-cy="inventory-row"></tr>
-  </table>
+        <!-- Quantity Column -->
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by quantity">Quantity</th>
+          <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{element.quantity}}</td>
+        </ng-container>
 
-  <mat-paginator
-    data-cy="inventory-paginator"
-    [length]=" serverFilteredInventory().length "
-    [pageSize]="25"
-    [pageSizeOptions]="[10, 25, 50, 100]"
-    aria-label="Select page"
-  >
-  </mat-paginator>
-}
+        <!-- Notes Column -->
+        <ng-container matColumnDef="notes">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by notes">Notes</th>
+          <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{element.notes}}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsDetailed"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsDetailed;" data-cy="inventory-row"></tr>
+      </table>
+
+      <mat-paginator
+        data-cy="inventory-paginator"
+        [length]=" serverFilteredInventory().length "
+        [pageSize]="25"
+        [pageSizeOptions]="[10, 25, 50, 100]"
+        aria-label="Select page"
+      >
+      </mat-paginator>
+    }
+
+    @case ('simple') {
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
+
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by description">Description</th>
+          <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ element.description }}</td>
+        </ng-container>
+
+        <!-- Quantity Column -->
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by quantity">Quantity</th>
+          <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{element.quantity}}</td>
+        </ng-container>
+
+        <!-- Notes Column -->
+        <ng-container matColumnDef="notes">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by notes">Notes</th>
+          <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{element.notes}}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsSimple"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsSimple;" data-cy="inventory-row"></tr>
+      </table>
+
+      <mat-paginator
+        data-cy="inventory-paginator"
+        [length]=" serverFilteredInventory().length "
+        [pageSize]="25"
+        [pageSizeOptions]="[10, 25, 50, 100]"
+        aria-label="Select page"
+      >
+      </mat-paginator>
+    }
+  }
+} @else {
+  <div class="flex-1" class="table-error">
+    <mat-error>
+      There was a problem loading the inventory table. The server is possibly down or perhaps there are network
+      issues.
+    </mat-error>
+    <mat-error>
+      Please wait a bit and try again or start the server.
+    </mat-error>
+  </div>
+  }
