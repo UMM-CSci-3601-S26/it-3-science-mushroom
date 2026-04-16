@@ -107,8 +107,8 @@ public class TermsController implements Controller {
    * For more robust needs, use a library.
    */
   @SuppressWarnings("MagicNumber")
-  private String singularize(String word) {
-    if (word == null || word.isEmpty()) {
+  public String singularize(String word) {
+    if (word == null || word.isEmpty() || word.length() < 3) {
       return word;
     }
     String lower = word.toLowerCase();

@@ -135,4 +135,37 @@ class TermsControllerSpec {
     verify(ctx).json(any(Terms.class));
     verify(ctx).status(eq(HttpStatus.OK));
   }
+
+  @Test
+  void singularizeHandlesBasicCases() {
+    assertEquals("box", controller.singularize("boxes"));
+    assertEquals("battery", controller.singularize("batteries"));
+    assertEquals("brush", controller.singularize("brushes"));
+    assertEquals("class", controller.singularize("classes"));
+    assertEquals("glass", controller.singularize("glasses"));
+    assertEquals("bus", controller.singularize("buses"));
+    assertEquals("dress", controller.singularize("dresses"));
+    assertEquals("blue", controller.singularize("blue"));
+    assertEquals("crayon", controller.singularize("crayon"));
+  }
+
+  @Test
+  void singularizeHandlesNullAndEmpty() {
+    assertEquals(null, controller.singularize(null));
+    assertEquals("", controller.singularize(""));
+  }
+
+  @Test
+  void singularizeDoesNotMangleShortWords() {
+    assertEquals("is", controller.singularize("is"));
+    assertEquals("as", controller.singularize("as"));
+    assertEquals("us", controller.singularize("us"));
+  }
+
+  @Test
+  void singularizeDoesNotMangleWordsEndingWithss () {
+    assertEquals("class", controller.singularize("class"));
+    assertEquals("glass", controller.singularize("glass"));
+    assertEquals("kiss", controller.singularize("kiss"));
+  }
 }
