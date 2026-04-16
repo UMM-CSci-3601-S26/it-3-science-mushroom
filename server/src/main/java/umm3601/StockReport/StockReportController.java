@@ -4,16 +4,20 @@ package umm3601.StockReport;
 // Static Imports
 import static com.mongodb.client.model.Filters.eq;
 
-import java.io.IOException;
 // Java Imports
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 // Org Imports
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 // Com Imports
 import com.mongodb.client.MongoDatabase;
@@ -197,13 +201,20 @@ public class StockReportController implements Controller {
 
   /**
    * Makes CSVs for each Stock State from Inventory
-   * @returns Array of CSV strings, one for each Stock State report in the system (Stocked, Out of Stock, Understocked, Overstocked)
+   * @returns Array of CSV strings, one for each Stock State report in the system
+   * (Stocked, Out of Stock, Understocked, Overstocked)
    */
-  private String stockStateToCSV(List<StockReport> reports) {
+  private String stockStateToCSV() {
     ArrayList<Inventory> inventoryItems = inventoryCollection
       .find()
       // Only get fields relevant to Stock Reports
-      .projection(Projections.include("itemDescription", "quantity", "maxQuantity", "minQuantity", "stockState", "notes"))
+      .projection(Projections.include(
+        "description",
+        "quantity",
+        "maxQuantity",
+        "minQuantity",
+        "stockState",
+        "notes"))
       .into(new ArrayList<>());
 
     StringBuilder stockedCSV = new StringBuilder();
@@ -246,7 +257,7 @@ public class StockReportController implements Controller {
           overstockedCSV.append(row);
           break;
         default:
-          break; // Skip items with invalid Stock State
+          continue; // Skip items with invalid Stock State
       }
     }
 
@@ -255,6 +266,103 @@ public class StockReportController implements Controller {
       + "Out of Stock Report:\n" + outOfStockCSV.toString() + "\n\n"
       + "Understocked Report:\n" + understockedCSV.toString() + "\n\n"
       + "Overstocked Report:\n" + overstockedCSV.toString();
+  }
+
+  /**
+   * Creates an XLSX file with a separate sheet for each Stock State report
+   * Uses stockStateToCSV() to get the data for each sheet
+   * @throws IOException if there is an error writing the XLSX file
+   */
+  private void createXLSXFile() throws IOException {
+    // Try to create workbook and file output stream
+    try (
+      XSSFWorkbook workbook = new XSSFWorkbook();
+      FileOutputStream fileOut = new FileOutputStream("tmp/StockReport.xlsx")
+    ) {
+      // Make separate sheets for each Stock State
+      XSSFSheet stockedSheet = workbook.createSheet("Stocked Items");
+      XSSFSheet outOfStockSheet = workbook.createSheet("Out of Stock Items");
+      XSSFSheet understockedSheet = workbook.createSheet("Understocked Items");
+      XSSFSheet overstockedSheet = workbook.createSheet("Overstocked Items");
+
+      // Get CSV data for each sheet
+      String csvData = stockStateToCSV();
+
+      // Parse CSV data and fill sheets
+      String[] sections = csvData.split("\n\n"); // Split into sections for each report type
+      for (String section : sections) {
+          String[] lines = section.split("\n");
+          String sheetName = lines[0].replace(" Report:", ""); // Get sheet name
+          // Fill appropriate sheet based on section header
+          switch (sheetName) {
+              case "Stocked Items":
+                  String[] stockedRows = sections[0].toString().split("\n");
+                  for (int i = 0; i < stockedRows.length; i++) {
+                      String[] cells = stockedRows[i].split(",");
+                      XSSFRow row = stockedSheet.createRow(i);
+                      for (int j = 0; j < cells.length; j++) {
+                          row.createCell(j).setCellValue(cells[j]);
+                      }
+                  }
+                  break;
+              case "Out of Stock Items":
+                  String[] outOfStockRows = sections[1].toString().split("\n");
+                  for (int i = 0; i < outOfStockRows.length; i++) {
+                      String[] cells = outOfStockRows[i].split(",");
+                      XSSFRow row = outOfStockSheet.createRow(i);
+                      for (int j = 0; j < cells.length; j++) {
+                          row.createCell(j).setCellValue(cells[j]);
+                      }
+                  }
+                  break;
+              case "Understocked Items":
+                  String[] understockedRows = sections[2].toString().split("\n");
+                  for (int i = 0; i < understockedRows.length; i++) {
+                      String[] cells = understockedRows[i].split(",");
+                      XSSFRow row = understockedSheet.createRow(i);
+                      for (int j = 0; j < cells.length; j++) {
+                          row.createCell(j).setCellValue(cells[j]);
+                      }
+                  }
+                  break;
+              case "Overstocked Items":
+                  String[] overstockedRows = sections[3].toString().split("\n");
+                  for (int i = 0; i < overstockedRows.length; i++) {
+                      String[] cells = overstockedRows[i].split(",");
+                      XSSFRow row = overstockedSheet.createRow(i);
+                      for (int j = 0; j < cells.length; j++) {
+                          row.createCell(j).setCellValue(cells[j]);
+                      }
+                  }
+                  break;
+              default:
+                  continue; // Skip invalid sections
+          }
+      }
+
+      workbook.write(fileOut);
+
+    } catch (IOException e) {
+      throw new IOException("Failed to create or write XLSX file. Details: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Generate Stock Report XLSX file and download it to client machine or
+   * save to the server's MongoDB database
+   * @param ctx Javlin context containing necessary parameters
+   * @param saveToDatabase Whether to save the report to the MongoDB database (true) or download it to the client machine (false)
+   * @throws IOException if there is an error generating the XLSX file
+   */
+  public void generateStockReport(Context ctx, boolean saveToDatabase) {
+    try {
+      createXLSXFile();
+      ctx.result("Stock report generated successfully.");
+      ctx.status(HttpStatus.OK);
+    } catch (IOException e) {
+      ctx.result("Failed to generate stock report: " + e.getMessage());
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Override
