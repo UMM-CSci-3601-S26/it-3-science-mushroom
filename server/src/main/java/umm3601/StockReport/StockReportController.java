@@ -7,6 +7,7 @@ import static com.mongodb.client.model.Filters.eq;
 import java.io.IOException;
 // Java Imports
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 // Org Imports
@@ -29,6 +30,8 @@ import io.javalin.http.UploadedFile;
 
 // Misc Imports
 import umm3601.Controller;
+import umm3601.Inventory.Inventory;
+import umm3601.Family.FamilyController;
 
 // Controller
 public class StockReportController implements Controller {
@@ -38,12 +41,20 @@ public class StockReportController implements Controller {
   private static final String API_REPORT_BYTES_BY_ID = "/api/stockreport/{id}/bytes";
 
   private final JacksonMongoCollection<StockReport> stockReportCollection;
+  private final JacksonMongoCollection<Inventory> inventoryCollection;
 
   public StockReportController(MongoDatabase database) {
     stockReportCollection = JacksonMongoCollection.builder().build(
       database,
       "stockReport",
       StockReport.class,
+      UuidRepresentation.STANDARD
+    );
+
+    inventoryCollection = JacksonMongoCollection.builder().build(
+      database,
+      "inventory",
+      Inventory.class,
       UuidRepresentation.STANDARD
     );
   }
@@ -182,6 +193,68 @@ public class StockReportController implements Controller {
     }
 
     ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Makes CSVs for each Stock State from Inventory
+   * @returns Array of CSV strings, one for each Stock State report in the system (Stocked, Out of Stock, Understocked, Overstocked)
+   */
+  private String stockStateToCSV(List<StockReport> reports) {
+    ArrayList<Inventory> inventoryItems = inventoryCollection
+      .find()
+      // Only get fields relevant to Stock Reports
+      .projection(Projections.include("itemDescription", "quantity", "maxQuantity", "minQuantity", "stockState", "notes"))
+      .into(new ArrayList<>());
+
+    StringBuilder stockedCSV = new StringBuilder();
+    StringBuilder outOfStockCSV = new StringBuilder();
+    StringBuilder understockedCSV = new StringBuilder();
+    StringBuilder overstockedCSV = new StringBuilder();
+
+    // Headers
+    stockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
+    outOfStockCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
+    understockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
+    overstockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
+
+    // Fill rows for each report type
+    for (Inventory item : inventoryItems) {
+      String row = String.format("\"%s\",%d,%d,%d,\"%s\"\n",
+        FamilyController.cleanUpCSV(item.description),
+        item.quantity,
+        item.maxQuantity,
+        item.minQuantity,
+        FamilyController.cleanUpCSV(item.notes)
+      );
+
+      if (item.stockState == null) {
+        continue; // skip items with no stock state
+      }
+
+      // Append row to appropriate CSV based on Stock State
+      switch (item.stockState) {
+        case "Stocked":
+          stockedCSV.append(row);
+          break;
+        case "Out of Stock":
+          outOfStockCSV.append(row);
+          break;
+        case "Understocked":
+          understockedCSV.append(row);
+          break;
+        case "Overstocked":
+          overstockedCSV.append(row);
+          break;
+        default:
+          break; // Skip items with invalid Stock State
+      }
+    }
+
+    // Return all the CSVs as a map
+    return "Stocked Report:\n" + stockedCSV.toString() + "\n\n"
+      + "Out of Stock Report:\n" + outOfStockCSV.toString() + "\n\n"
+      + "Understocked Report:\n" + understockedCSV.toString() + "\n\n"
+      + "Overstocked Report:\n" + overstockedCSV.toString();
   }
 
   @Override
