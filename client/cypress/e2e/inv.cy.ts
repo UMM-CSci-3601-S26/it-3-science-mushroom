@@ -38,7 +38,7 @@ describe('Inventory', () => {
     // Note: Once 'test item' gets removed, this needs to be updated (possibly update to not check the first?)
   });
 
-  it('Should have pagination controls', () => {
+  it('Should have pagination controls in detailed view', () => {
     page.getSidenavButton().click();
     page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);
@@ -47,7 +47,49 @@ describe('Inventory', () => {
     cy.get('.mat-mdc-paginator').should('exist');
   });
 
-  it('Should display all inventory column headers', () => {
+  it('Should have pagination controls in simple view', () => {
+    page.getSidenavButton().click();
+    page.getNavLink('Inventory').click();
+    cy.url().should('match', /\/inventory$/);
+    page.getSidenav()
+      .should('be.hidden');
+    cy.get('[data-test="simple-view"]').click();
+    cy.get('.mat-mdc-paginator').should('exist');
+  });
+
+  it('Should display all inventory column headers in detailed view default', () => {
+    cy.get('.demo-table thead th').then(($headers) => {
+      const headerTexts = [...$headers].map((header) => (header.textContent || '').replace(/\s+/g, ' ').trim());
+      expect(headerTexts).to.deep.equal([
+        'Item',
+        'Description',
+        'Brand',
+        'Color',
+        'Size',
+        'Type',
+        'Material',
+        'Package Size',
+        'Quantity',
+        'Notes'
+      ])
+    })
+  });
+
+  it('Should display all inventory column headers in simple view', () => {
+    cy.get('[data-test="simple-view"]').click();
+    cy.get('.demo-table thead th').then(($headers) => {
+      const headerTexts = [...$headers].map((header) => (header.textContent || '').replace(/\s+/g, ' ').trim());
+      expect(headerTexts).to.deep.equal([
+        'Description',
+        'Quantity',
+        'Notes'
+      ])
+    })
+  });
+
+  it('Should display all inventory column headers in detailed view when switched to', () => {
+    cy.get('[data-test="simple-view"]').click();
+    cy.get('[data-test="detailed-view"]').click();
     cy.get('.demo-table thead th').then(($headers) => {
       const headerTexts = [...$headers].map((header) => (header.textContent || '').replace(/\s+/g, ' ').trim());
       expect(headerTexts).to.deep.equal([
