@@ -539,7 +539,8 @@ class FamilyControllerSpec {
         FamilyStatusUpdateRequest.class,
         () -> javalinJackson.fromJsonString(json, FamilyStatusUpdateRequest.class)));
 
-    BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> familyController.updateFamilyStatus(ctx));
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+       () -> familyController.updateFamilyStatus(ctx));
 
     assertTrue(exception.getMessage().contains("must include either helped or status"));
   }
@@ -1018,8 +1019,8 @@ class FamilyControllerSpec {
     inventory.packageSize = 1;
 
     boolean matches = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] { Inventory.class, SupplyList.class }, inventory, supplyList);
-    int score = invokePrivate("inventorySpecificityScore", new Class<?>[] { Inventory.class }, inventory);
+      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, supplyList);
+    int score = invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, inventory);
 
     assertTrue(matches);
     assertTrue(score > 0);
@@ -1027,24 +1028,24 @@ class FamilyControllerSpec {
 
   @Test
   void privateLookupAndConsumeHelpersCoverErrorBranches() throws Exception {
-    Inventory found = invokePrivate("findInventoryByBarcode", new Class<?>[] { String.class }, "SUB-10001");
+    Inventory found = invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, "SUB-10001");
     assertNotNull(found);
     assertEquals("ID-10001", found.internalID);
 
     NotFoundResponse missingInventory = assertThrows(NotFoundResponse.class,
-      () -> invokePrivate("consumeInventory", new Class<?>[] { String.class, int.class }, "DOES-NOT-EXIST", 1));
+      () -> invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, "DOES-NOT-EXIST", 1));
     assertTrue(missingInventory.getMessage().contains("No item found for internalID"));
 
     BadRequestResponse missingInternalId = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("consumeInventory", new Class<?>[] { String.class, int.class }, "", 1));
+      () -> invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, "", 1));
     assertTrue(missingInternalId.getMessage().contains("missing its inventory match"));
   }
 
   @Test
   void privateReasonHelpersNormalizeAndValidate() throws Exception {
-    String normalized = invokePrivate("normalizeReason", new Class<?>[] { String.class }, "Available Didn't Need");
-    boolean valid = invokePrivate("isValidNotPickedUpReason", new Class<?>[] { String.class }, normalized);
-    boolean invalid = invokePrivate("isValidNotPickedUpReason", new Class<?>[] { String.class }, "bad_reason");
+    String normalized = invokePrivate("normalizeReason", new Class<?>[] {String.class}, "Available Didn't Need");
+    boolean valid = invokePrivate("isValidNotPickedUpReason", new Class<?>[] {String.class}, normalized);
+    boolean invalid = invokePrivate("isValidNotPickedUpReason", new Class<?>[] {String.class}, "bad_reason");
 
     assertEquals("available_didnt_need", normalized);
     assertTrue(valid);
@@ -1053,7 +1054,7 @@ class FamilyControllerSpec {
 
   @Test
   void privateFindInventoryByBarcodeReturnsNullWhenMissing() throws Exception {
-    Inventory found = invokePrivate("findInventoryByBarcode", new Class<?>[] { String.class }, "MISSING-BARCODE");
+    Inventory found = invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, "MISSING-BARCODE");
     assertNull(found);
   }
 
@@ -1120,7 +1121,7 @@ class FamilyControllerSpec {
     inventory.packageSize = 2;
 
     boolean missingItems = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] { Inventory.class, SupplyList.class }, inventory, emptyItems);
+      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, emptyItems);
     assertFalse(missingItems);
 
     SupplyList mismatchedBrand = new SupplyList();
@@ -1129,7 +1130,7 @@ class FamilyControllerSpec {
     mismatchedBrand.brand.allOf = "Other";
 
     boolean brandMismatch = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] { Inventory.class, SupplyList.class }, inventory, mismatchedBrand);
+      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, mismatchedBrand);
     assertFalse(brandMismatch);
 
     SupplyList mismatchedPackage = new SupplyList();
@@ -1137,43 +1138,43 @@ class FamilyControllerSpec {
     mismatchedPackage.packageSize = 1;
 
     boolean packageMismatch = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] { Inventory.class, SupplyList.class }, inventory, mismatchedPackage);
+      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, mismatchedPackage);
     assertFalse(packageMismatch);
   }
 
   @Test
   void privateAttributeHelpersCoverNullAndMismatchBranches() throws Exception {
     boolean nullAttribute = invokePrivate("matchesAttribute",
-      new Class<?>[] { SupplyList.AttributeOptions.class, String.class }, null, "Blue");
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, null, "Blue");
     assertTrue(nullAttribute);
 
     SupplyList.AttributeOptions anyOf = new SupplyList.AttributeOptions();
     anyOf.anyOf = List.of("Blue", "Black");
     boolean anyOfMatch = invokePrivate("matchesAttribute",
-      new Class<?>[] { SupplyList.AttributeOptions.class, String.class }, anyOf, "Blue");
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, anyOf, "Blue");
     boolean anyOfMiss = invokePrivate("matchesAttribute",
-      new Class<?>[] { SupplyList.AttributeOptions.class, String.class }, anyOf, "Red");
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, anyOf, "Red");
     assertTrue(anyOfMatch);
     assertFalse(anyOfMiss);
 
     SupplyList.AttributeOptions allOfMismatch = new SupplyList.AttributeOptions();
     allOfMismatch.allOf = "Wide";
     boolean allOfFalse = invokePrivate("matchesAttribute",
-      new Class<?>[] { SupplyList.AttributeOptions.class, String.class }, allOfMismatch, "Narrow");
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, allOfMismatch, "Narrow");
     assertFalse(allOfFalse);
 
     SupplyList.ColorAttributeOptions colorAllOf = new SupplyList.ColorAttributeOptions();
     colorAllOf.allOf = List.of("Blue");
     boolean colorAllOfMiss = invokePrivate("matchesColorAttribute",
-      new Class<?>[] { SupplyList.ColorAttributeOptions.class, String.class }, colorAllOf, "Red");
+      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, colorAllOf, "Red");
     assertFalse(colorAllOfMiss);
 
     SupplyList.ColorAttributeOptions colorAnyOf = new SupplyList.ColorAttributeOptions();
     colorAnyOf.anyOf = List.of("Black", "Red");
     boolean colorAnyOfMatch = invokePrivate("matchesColorAttribute",
-      new Class<?>[] { SupplyList.ColorAttributeOptions.class, String.class }, colorAnyOf, "Red");
+      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, colorAnyOf, "Red");
     boolean colorAnyOfMiss = invokePrivate("matchesColorAttribute",
-      new Class<?>[] { SupplyList.ColorAttributeOptions.class, String.class }, colorAnyOf, "Green");
+      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, colorAnyOf, "Green");
     assertTrue(colorAnyOfMatch);
     assertFalse(colorAnyOfMiss);
   }
@@ -1184,13 +1185,15 @@ class FamilyControllerSpec {
     unavailableSelected.selected = true;
     unavailableSelected.available = false;
     assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] { Family.ChecklistItem.class }, unavailableSelected));
+      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class},
+        unavailableSelected));
 
     Family.ChecklistItem availableUnchecked = new Family.ChecklistItem();
     availableUnchecked.selected = false;
     availableUnchecked.available = true;
     BadRequestResponse missingReason = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] { Family.ChecklistItem.class }, availableUnchecked));
+      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class},
+        availableUnchecked));
     assertTrue(missingReason.getMessage().contains("must include a reason or substitution barcode"));
 
     Family.ChecklistItem invalidReason = new Family.ChecklistItem();
@@ -1198,13 +1201,14 @@ class FamilyControllerSpec {
     invalidReason.available = true;
     invalidReason.notPickedUpReason = "bad_reason";
     BadRequestResponse invalidReasonException = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] { Family.ChecklistItem.class }, invalidReason));
+      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class},
+        invalidReason));
     assertTrue(invalidReasonException.getMessage().contains("Checklist reason must be"));
 
     Family.ChecklistItem unavailableUnchecked = new Family.ChecklistItem();
     unavailableUnchecked.selected = false;
     unavailableUnchecked.available = false;
-    invokePrivate("validateChecklistItemForSave", new Class<?>[] { Family.ChecklistItem.class }, unavailableUnchecked);
+    invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class}, unavailableUnchecked);
     assertEquals("not_available_didnt_receive", unavailableUnchecked.notPickedUpReason);
   }
 
@@ -1216,7 +1220,7 @@ class FamilyControllerSpec {
 
     Family.ChecklistSection normalizedSection = invokePrivate(
       "normalizeSectionForSave",
-      new Class<?>[] { String.class, Family.ChecklistSection.class },
+      new Class<?>[] {String.class, Family.ChecklistSection.class},
       "student-1",
       section);
     assertEquals("student-1", normalizedSection.id);
@@ -1224,15 +1228,15 @@ class FamilyControllerSpec {
     assertEquals("student-1-item-1", normalizedSection.items.get(0).id);
     assertEquals(1, normalizedSection.items.get(0).requestedQuantity);
 
-    String beingHelped = invokePrivate("normalizeStatusValue", new Class<?>[] { String.class }, "being helped");
+    String beingHelped = invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, "being helped");
     assertEquals("being_helped", beingHelped);
 
     BadRequestResponse invalidStatus = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("normalizeStatusValue", new Class<?>[] { String.class }, "done"));
+      () -> invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, "done"));
     assertTrue(invalidStatus.getMessage().contains("must be helped, not_helped, or being_helped"));
 
-    String normalizedToken = invokePrivate("normalizeToken", new Class<?>[] { String.class }, " Notebooks ");
-    String normalizedNull = invokePrivate("normalizeToken", new Class<?>[] { String.class }, (Object) null);
+    String normalizedToken = invokePrivate("normalizeToken", new Class<?>[] {String.class}, " Notebooks ");
+    String normalizedNull = invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) null);
     assertEquals("notebook", normalizedToken);
     assertEquals("", normalizedNull);
   }
@@ -1240,7 +1244,7 @@ class FamilyControllerSpec {
   @Test
   void privateConsumeInventoryRejectsLowQuantity() throws Exception {
     BadRequestResponse exception = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("consumeInventory", new Class<?>[] { String.class, int.class }, "ID-10000", 10));
+      () -> invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, "ID-10000", 10));
 
     assertTrue(exception.getMessage().contains("Inventory quantity is too low"));
   }
@@ -1255,7 +1259,7 @@ class FamilyControllerSpec {
     sparseInventory.material = "N/A";
     sparseInventory.packageSize = 1;
 
-    int score = invokePrivate("inventorySpecificityScore", new Class<?>[] { Inventory.class }, sparseInventory);
+    int score = invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, sparseInventory);
 
     assertEquals(0, score);
   }
@@ -1276,7 +1280,7 @@ class FamilyControllerSpec {
     mismatchedSchool.teacher = "N/A";
 
     List<SupplyList> noMatches = invokePrivate("getSupplyListsForStudent",
-      new Class<?>[] { Family.StudentInfo.class }, mismatchedSchool);
+      new Class<?>[] {Family.StudentInfo.class}, mismatchedSchool);
     assertEquals(0, noMatches.size());
 
     Family.StudentInfo mismatchedTeacher = new Family.StudentInfo();
@@ -1285,7 +1289,7 @@ class FamilyControllerSpec {
     mismatchedTeacher.teacher = "N/A";
 
     List<SupplyList> filteredMatches = invokePrivate("getSupplyListsForStudent",
-      new Class<?>[] { Family.StudentInfo.class }, mismatchedTeacher);
+      new Class<?>[] {Family.StudentInfo.class}, mismatchedTeacher);
     assertEquals(2, filteredMatches.size());
   }
 
@@ -1296,7 +1300,7 @@ class FamilyControllerSpec {
     supplyList.quantity = 0;
 
     Family.ChecklistItem item = invokePrivate("buildChecklistItemSnapshot",
-      new Class<?>[] { SupplyList.class, String.class }, supplyList, "section-item-1");
+      new Class<?>[] {SupplyList.class, String.class}, supplyList, "section-item-1");
 
     assertEquals("section-item-1", item.id);
     assertEquals(1, item.requestedQuantity);
@@ -1308,11 +1312,11 @@ class FamilyControllerSpec {
   @Test
   void privateRequireFamilyCoversErrorBranches() {
     BadRequestResponse badId = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("requireFamily", new Class<?>[] { String.class }, "bad-id"));
+      () -> invokePrivate("requireFamily", new Class<?>[] {String.class}, "bad-id"));
     assertTrue(badId.getMessage().contains("family id was not legal"));
 
     NotFoundResponse missing = assertThrows(NotFoundResponse.class,
-      () -> invokePrivate("requireFamily", new Class<?>[] { String.class }, new ObjectId().toString()));
+      () -> invokePrivate("requireFamily", new Class<?>[] {String.class}, new ObjectId().toString()));
     assertTrue(missing.getMessage().contains("family was not found"));
   }
 

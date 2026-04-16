@@ -842,7 +842,8 @@ public class FamilyController implements Controller {
       if (nameEquivalent(inventory.internalBarcode, barcode)) {
         return inventory;
       }
-      if (inventory.externalBarcode != null && inventory.externalBarcode.stream().anyMatch(code -> nameEquivalent(code, barcode))) {
+      if (inventory.externalBarcode != null && inventory.externalBarcode.stream()
+        .anyMatch(code -> nameEquivalent(code, barcode))) {
         return inventory;
       }
     }
@@ -862,7 +863,8 @@ public class FamilyController implements Controller {
       throw new BadRequestResponse("Inventory quantity is too low to fulfill checklist item: " + internalId);
     }
 
-    inventoryCollection.updateOne(eq("_id", new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity - amount));
+    inventoryCollection.updateOne(eq("_id",
+     new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity - amount));
   }
 
   private boolean nameEquivalent(String left, String right) {
