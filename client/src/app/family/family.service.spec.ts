@@ -275,7 +275,7 @@ describe('FamilyService', () => {
   });
 
   describe('Adding a family using `addFamily()`', () => {
-    it('talks to the right endpoint and is called once', waitForAsync(() => {
+    it('talks to the right endpoint', waitForAsync(() => {
       const family_id = 'john_id';
       const expected_http_response = { id: family_id } ;
 
@@ -301,8 +301,6 @@ describe('FamilyService', () => {
         expect(mockedMethod2)
           .withContext('two calls')
           .toHaveBeenCalledTimes(2);
-        expect(mockedMethod2)
-          .withContext('talks to the correct endpoint');
       });
     }));
   });
@@ -333,15 +331,14 @@ describe('FamilyService', () => {
         expect(mockedMethod2)
           .withContext('two calls')
           .toHaveBeenCalledTimes(2);
-        expect(mockedMethod2)
-          .withContext('talks to the correct endpoint');
       });
     }));
   });
 
   describe('Deleting a family using `deleteFamily()`', () => {
-    it('talks to the right endpoint and is called once', waitForAsync(() => {
+    it('talks to the right endpoint', waitForAsync(() => {
       const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
+      const mockedMethod2 = spyOn(httpClient, 'get').and.returnValue(of(void 0));
 
       familyService.deleteFamily('john_id').subscribe((res) => {
         expect(res).toBeUndefined();
@@ -352,6 +349,13 @@ describe('FamilyService', () => {
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')
           .toHaveBeenCalledWith(`${familyService.familyUrl}/john_id`);
+      });
+      familyService.deleteFamily('john_id').subscribe((res) => {
+        expect(res).toBeUndefined();
+
+        expect(mockedMethod2)
+          .withContext('two calls')
+          .toHaveBeenCalledTimes(2);
       });
     }));
   });
