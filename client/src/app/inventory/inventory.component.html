@@ -239,61 +239,61 @@
         <!-- Item Column -->
         <ng-container matColumnDef="item">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by item">Item</th>
-          <td mat-cell *matCellDef="let element" class="inventory-item" data-cy="inventory-item">{{element.item}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-item" data-cy="inventory-item">{{ displayCellValue(element.item) }}</td>
         </ng-container>
 
         <!-- Description Column -->
         <ng-container matColumnDef="description">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by description">Description</th>
-          <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ element.description }}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ displayCellValue(element.description) }}</td>
         </ng-container>
 
         <!-- Brand Column -->
         <ng-container matColumnDef="brand">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by brand">Brand</th>
-          <td mat-cell *matCellDef="let element" class="inventory-brand" data-cy="inventory-brand">{{element.brand}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-brand" data-cy="inventory-brand">{{ displayCellValue(element.brand) }}</td>
         </ng-container>
 
         <!-- Color Column -->
         <ng-container matColumnDef="color">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by color">Color</th>
-          <td mat-cell *matCellDef="let element" class="inventory-color" data-cy="inventory-color">{{element.color}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-color" data-cy="inventory-color">{{ displayCellValue(element.color) }}</td>
         </ng-container>
 
         <!-- Size Column -->
         <ng-container matColumnDef="size">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by size">Size</th>
-          <td mat-cell *matCellDef="let element" class="inventory-size" data-cy="inventory-size">{{element.size}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-size" data-cy="inventory-size">{{ displayCellValue(element.size) }}</td>
         </ng-container>
 
         <!-- Type Column -->
         <ng-container matColumnDef="type">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by type">Type</th>
-          <td mat-cell *matCellDef="let element" class="inventory-type" data-cy="inventory-type">{{element.type}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-type" data-cy="inventory-type">{{ displayCellValue(element.type) }}</td>
         </ng-container>
 
         <!-- Material Column -->
         <ng-container matColumnDef="material">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by material">Material</th>
-          <td mat-cell *matCellDef="let element" class="inventory-material" data-cy="inventory-material">{{element.material}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-material" data-cy="inventory-material">{{ displayCellValue(element.material) }}</td>
         </ng-container>
 
         <!-- package size Column -->
         <ng-container matColumnDef="packageSize">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by packageSize">Package Size</th>
-          <td mat-cell *matCellDef="let element" class="inventory-packageSize" data-cy="inventory-packageSize">{{element.packageSize}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-packageSize" data-cy="inventory-packageSize">{{ displayCellValue(element.packageSize) }}</td>
         </ng-container>
 
         <!-- Quantity Column -->
         <ng-container matColumnDef="quantity">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by quantity">Quantity</th>
-          <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{element.quantity}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{ displayCellValue(element.quantity) }}</td>
         </ng-container>
 
         <!-- Notes Column -->
         <ng-container matColumnDef="notes">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by notes">Notes</th>
-          <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{element.notes}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{ displayCellValue(element.notes) }}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumnsDetailed"></tr>
@@ -316,19 +316,19 @@
         <!-- Description Column -->
         <ng-container matColumnDef="description">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by description">Description</th>
-          <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ element.description }}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ displayCellValue(element.description) }}</td>
         </ng-container>
 
         <!-- Quantity Column -->
         <ng-container matColumnDef="quantity">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by quantity">Quantity</th>
-          <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{element.quantity}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{ displayCellValue(element.quantity) }}</td>
         </ng-container>
 
         <!-- Notes Column -->
         <ng-container matColumnDef="notes">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by notes">Notes</th>
-          <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{element.notes}}</td>
+          <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{ displayCellValue(element.notes) }}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumnsSimple"></tr>
