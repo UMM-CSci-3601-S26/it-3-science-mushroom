@@ -106,6 +106,7 @@ public class TermsController implements Controller {
    * Handles basic cases: boxes -> box, batteries -> battery, etc.
    * For more robust needs, use a library.
    */
+  @SuppressWarnings("MagicNumber")
   private String singularize(String word) {
     if (word == null || word.isEmpty()) {
       return word;
