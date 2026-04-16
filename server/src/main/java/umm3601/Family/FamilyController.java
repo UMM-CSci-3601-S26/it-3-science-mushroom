@@ -402,6 +402,9 @@ public class FamilyController implements Controller {
 
     family.status = areAllSectionsSaved(family.checklist) ? STATUS_HELPED : STATUS_BEING_HELPED;
     family.helped = STATUS_HELPED.equals(family.status);
+    if (family.helped) {
+      family.checklist = null;
+    }
     persistFamilyChecklistAndStatus(family);
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
@@ -430,6 +433,7 @@ public class FamilyController implements Controller {
 
     family.status = STATUS_HELPED;
     family.helped = true;
+    family.checklist = null;
     persistFamilyChecklistAndStatus(family);
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
