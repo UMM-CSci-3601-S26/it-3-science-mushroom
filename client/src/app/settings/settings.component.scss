@@ -1,0 +1,167 @@
+.settings-container {
+  padding: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.tab-content {
+  padding: 16px 0;
+}
+
+.tab-description {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.add-school-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  button {
+    margin-top: 4px;
+  }
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+}
+
+.save-button {
+  margin-top: 8px;
+}
+
+// ── Drive Order ───
+
+.drive-order-columns {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.order-section {
+  flex: 1;
+  min-width: 220px;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.section-count {
+  font-weight: 400;
+  font-size: 13px;
+  margin-left: 2px;
+}
+
+.staged-title {
+  color: var(--app-primary-color);
+}
+
+.unstaged-title {
+  color: #e65100;
+}
+
+.not-given-title {
+  color: var(--app-warn-color);
+}
+
+.drop-list {
+  min-height: 60px;
+}
+
+// CDK drag-and-drop container active highlight
+.cdk-drop-list-dragging .supply-order-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.supply-order-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  border-radius: 4px;
+  border: 1px solid;
+  margin-bottom: 6px;
+  font-size: 13px;
+  cursor: default;
+
+  &.cdk-drag-preview {
+    box-shadow: 0 4px 12px;
+  }
+
+  &.cdk-drag-placeholder {
+    opacity: 0.4;
+  }
+}
+
+.not-given-item {
+  opacity: 0.7;
+}
+
+.drag-handle {
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.status-icon {
+  flex-shrink: 0;
+}
+
+.not-given-icon {
+  color: var(--app-warn-muted-color);
+}
+
+.item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+
+  button[mat-icon-button] {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
+  }
+}
+
+.empty-hint {
+  font-size: 13px;
+  padding: 8px 4px;
+  font-style: italic;
+}
