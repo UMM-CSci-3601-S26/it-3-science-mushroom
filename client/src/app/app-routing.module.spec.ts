@@ -26,7 +26,9 @@ describe('AppRoutingModule', () => {
     expect(routeSummary).toContain({ path: 'inventory', title: 'Inventory' });
     expect(routeSummary).toContain({ path: 'stock-report', title: 'Stock Report' });
     expect(routeSummary).toContain({ path: 'pdf-generator', title: 'PDF Generator' });
-    expect(routeSummary).toContain({ path: 'stationOrder', title: 'Station Order' });
+    expect(routeSummary).toContain({ path: 'settings', title: 'Settings' });
+    expect(routeSummary).toContain({ path: 'supplylist', title: 'Supply List' });
+    expect(routeSummary).toContain({ path: 'supplylist/new', title: 'Add Supply List Item' });
   });
 
   // What is the point of this test? It is just testing that the same route is defined twice, which is not a good thing.
