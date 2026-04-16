@@ -49,13 +49,13 @@ public class StockReportController implements Controller {
   }
 
   /**
-   * Get all reports in the system. Only returns the report name and ID, not the PDF bytes.
+   * Get all reports in the system. Does not return content bytes, only name, type, and ID
    * @param ctx the Javalin context containing the report
    */
   public void getReports(Context ctx) {
     ArrayList<StockReport> matchingReports = stockReportCollection
       .find()
-      .projection(Projections.include("reportName", "_id")) // Only get report name and ID
+      .projection(Projections.include("reportName", "reportType", "_id")) // Only get report name, type, and ID
       .into(new ArrayList<>());
 
     ctx.json(matchingReports);
@@ -63,7 +63,7 @@ public class StockReportController implements Controller {
   }
 
   /**
-   * Get a single report by its ID. Returns the report name, ID, and PDF bytes.
+   * Get a single report by its ID. Returns the report name, type, ID, and bytes.
    * @param ctx Javlin context containing the report
    * @throws IllegalArgumentException if the provided ID is not a valid Mongo Object ID
    * @throws NotFoundResponse if no report with the provided ID exists in the system
@@ -86,7 +86,7 @@ public class StockReportController implements Controller {
   }
 
   /**
-   * Get the raw PDF bytes of a report by its ID. Returns only the PDF bytes with the correct content type.
+   * Get the raw bytes of a report by its ID. Returns only the bytes with the correct content type.
    * @param ctx the Javalin context containing the report
    * @throws IllegalArgumentException if the provided ID is not a valid Mongo Object ID
    * @throws NotFoundResponse if no report with the provided ID exists in the system
@@ -101,16 +101,17 @@ public class StockReportController implements Controller {
     String id = ctx.pathParam("id");
     StockReport report = stockReportCollection
       .find(eq("_id", new ObjectId(id)))
-      .projection(Projections.include("stockReportPDF"))  // Only get the PDF bytes
+      .projection(Projections.include("stockReportData"))  // Only get the report's bytes
       .first();
 
     if (report == null) {
       throw new NotFoundResponse("No report with id " + id);
     }
 
-    // Return the raw PDF bytes with correct content type
-    ctx.contentType("application/pdf");
-    ctx.result(report.stockReportPDF);
+    // Return the raw report bytes (octet-stream is for generic binary data)
+    // Note: could use an if statement based on reportType to set exact content type?
+    ctx.contentType("application/octet-stream");
+    ctx.result(report.stockReportData);
     ctx.status(HttpStatus.OK);
   }
 
@@ -121,7 +122,7 @@ public class StockReportController implements Controller {
    */
   public void addNewReport(Context ctx) {
     byte[] fileBytes;
-    UploadedFile uploadedFile = ctx.uploadedFile("uploadedPDF");
+    UploadedFile uploadedFile = ctx.uploadedFile("uploadedReport");
     if (uploadedFile != null) {
       try {
         fileBytes = uploadedFile.content().readAllBytes();
@@ -129,7 +130,7 @@ public class StockReportController implements Controller {
         throw new BadRequestResponse("Failed to read uploaded file: " + e.getMessage());
       }
     } else {
-      throw new BadRequestResponse("No file uploaded with key 'uploadedPDF'");
+      throw new BadRequestResponse("No file uploaded with key 'uploadedReport'");
     }
 
     String reportName = ctx.formParam("reportName");
@@ -137,10 +138,16 @@ public class StockReportController implements Controller {
       throw new BadRequestResponse("Report name is required");
     }
 
+    String reportType = ctx.formParam("reportType");
+    if (reportType == null || reportType.isEmpty()) {
+      throw new BadRequestResponse("Report type is required");
+    }
+
     StockReport newReport = new StockReport();
 
     newReport.reportName = reportName;
-    newReport.stockReportPDF = fileBytes;
+    newReport.reportType = reportType;
+    newReport.stockReportData = fileBytes;
 
     stockReportCollection.insertOne(newReport);
 

@@ -26,7 +26,7 @@ public class StockReportSpec {
     report1 = new StockReport();
     report2 = new StockReport();
 
-    report1.stockReportPDF = new byte[]{0x25, 0x50, 0x44, 0x46}; // PDF file header bytes
+    report1.stockReportData = new byte[]{0x25, 0x50, 0x44, 0x46}; // PDF file header bytes
     report1.reportName = "Report 1";
   }
 

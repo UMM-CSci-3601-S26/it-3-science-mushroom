@@ -151,7 +151,7 @@ public class StockReportControllerSpec {
 
     // Make sure PDF bytes aren't in the response
     for (StockReport report : stockReportArrayListCaptor.getValue()) {
-      assertEquals(null, report.stockReportPDF, "PDF bytes should not be included in list response");
+      assertEquals(null, report.stockReportData, "PDF bytes should not be included in list response");
     }
   }
 
