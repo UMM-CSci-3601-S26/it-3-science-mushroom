@@ -790,6 +790,36 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void clearFamilyHelpSessionResetsInProgressSession() {
+    startHelpSessionAndGetFamily();
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.clearFamilyHelpSession(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family clearedFamily = familyCaptor.getValue();
+    assertEquals("not_helped", clearedFamily.status);
+    assertFalse(clearedFamily.helped);
+    assertNull(clearedFamily.checklist);
+
+    Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
+    assertEquals("not_helped", updatedFamily.getString("status"));
+    assertFalse(updatedFamily.getBoolean("helped"));
+    assertNull(updatedFamily.get("checklist"));
+  }
+
+  @Test
+  void clearFamilyHelpSessionRejectsMissingSnapshot() {
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> familyController.clearFamilyHelpSession(ctx));
+
+    assertTrue(exception.getMessage().contains("must be started before saving checklist progress"));
+  }
+
+  @Test
   void saveFamilyHelpSessionChildRejectsUnknownSection() {
     startHelpSessionAndGetFamily();
 

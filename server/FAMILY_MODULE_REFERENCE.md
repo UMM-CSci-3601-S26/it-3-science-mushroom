@@ -26,6 +26,8 @@ Every method listed in this section is defined in this file.
 - Create, read, update, and delete family records
 - Filter families by query params like guardian name, first name, last name, status, and helped state
 - Start and manage a family help session
+- Support draft/in-progress sessions that can be resumed later
+- Support clearing an in-progress session and resetting the family
 - Build checklist snapshots from students and supply lists
 - Match supply-list items to inventory items
 - Save checklist progress and consume inventory
@@ -168,6 +170,8 @@ It:
 - saves everything
 - returns the updated family
 
+This is the main method that begins the working session for a family. It creates or reuses the snapshot that later becomes the draft session state.
+
 #### `saveFamilyHelpSessionChild(Context ctx)`
 
 Saves one checklist section, usually one student's section, during a help session.
@@ -185,6 +189,17 @@ It:
 - persists the changes
 - returns the updated family
 
+Draft behavior:
+
+- if not all sections are saved yet, this method keeps the family in `being_helped`
+- the checklist snapshot remains stored on the family
+- that means the current progress acts like a draft session that can be resumed later
+
+Completion behavior:
+
+- if the saved section was the last unsaved section, this method marks the family `helped`
+- then it clears the checklist snapshot because the session is finished
+
 #### `saveFamilyHelpSessionAll(Context ctx)`
 
 Finishes a help session by saving all remaining sections.
@@ -198,8 +213,26 @@ It:
 - marks all sections saved
 - sets family status to `helped`
 - sets `helped` to `true`
+- clears the checklist snapshot
 - persists the result
 - returns the updated family
+
+This is the explicit "finish everything now" path. Unlike a draft save, it ends the session and removes the saved snapshot.
+
+#### `clearFamilyHelpSession(Context ctx)`
+
+Clears the current in-progress help session for a family.
+
+It:
+
+- requires an existing help-session snapshot
+- removes the checklist snapshot
+- resets family status to `not_helped`
+- sets `helped` to `false`
+- persists the reset family
+- returns the updated family
+
+This is the backend method intended for the "X" or "clear current session" confirmation flow.
 
 #### `getDashboardStats(Context ctx)`
 
@@ -257,6 +290,8 @@ It also normalizes the family before returning it so downstream logic works with
 Checks that the family has a checklist snapshot representing an active help session.
 
 If not, it throws a `BadRequestResponse`.
+
+This helper is used by the save and clear methods so they only operate on real active/draft sessions.
 
 #### `generateChecklistSnapshot(Family family)`
 
@@ -347,6 +382,8 @@ It supports color `allOf` and `anyOf` behavior.
 #### `persistFamilyChecklistAndStatus(Family family)`
 
 Writes the family's checklist, status, and helped state back to Mongo in one combined update.
+
+This helper is what actually preserves draft progress when a session remains `being_helped`, and it also persists the cleared state when a session is discarded.
 
 #### `findSectionById(Family.FamilyChecklist checklist, String sectionId)`
 
@@ -860,6 +897,8 @@ Checks that starting again does not replace an already existing snapshot.
 
 Checks that saving one child section consumes inventory and keeps the family in progress if not all sections are saved yet.
 
+This is one of the main draft-session tests because it verifies that partial progress remains stored instead of ending the session.
+
 #### `saveFamilyHelpSessionChildSupportsSubstitutionBarcode()`
 
 Checks that a substitute barcode can be used and that substitution metadata is stored.
@@ -867,6 +906,16 @@ Checks that a substitute barcode can be used and that substitution metadata is s
 #### `saveFamilyHelpSessionAllSupportsProvidedChecklistPayload()`
 
 Checks that the "save all" endpoint can accept a checklist payload and finish the session.
+
+It also verifies that the checklist snapshot is removed once the session is completed.
+
+#### `clearFamilyHelpSessionResetsInProgressSession()`
+
+Checks that clearing an active session removes the checklist snapshot and resets the family back to `not_helped`.
+
+#### `clearFamilyHelpSessionRejectsMissingSnapshot()`
+
+Checks that clearing is rejected when there is no active/draft session to clear.
 
 #### `saveFamilyHelpSessionChildRequiresExistingSnapshot()`
 
@@ -1004,3 +1053,20 @@ If you want a quick way to think about these files:
 - `Family.java` is the family data model
 - `FamilyChecklistUpdateRequest.java` and `FamilyHelpSessionSaveAllRequest.java` are request wrappers for checklist payloads
 - `FamilyControllerSpec.java` is the verification suite that proves the controller and helper logic work
+
+## Draft And Clear Session Summary
+
+The current backend supports two different unfinished-session outcomes:
+
+- Draft / resumable session:
+  `startFamilyHelpSession(...)` creates the snapshot, and `saveFamilyHelpSessionChild(...)` keeps the family in `being_helped` when not all sections are finished.
+  In that case, the checklist snapshot stays stored on the family and acts as the draft session.
+
+- Clear current session:
+  `clearFamilyHelpSession(...)` removes the checklist snapshot and resets the family to `not_helped`.
+  This is the backend path intended for the frontend "X" confirmation flow.
+
+Completion is handled separately:
+
+- `saveFamilyHelpSessionAll(...)` always finishes the session and clears the snapshot
+- `saveFamilyHelpSessionChild(...)` also clears the snapshot when the last unsaved section has just been completed

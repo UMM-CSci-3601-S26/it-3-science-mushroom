@@ -63,6 +63,7 @@ public class FamilyController implements Controller {
   private static final String API_FAMILY_HELP_SESSION_START = "/api/family/{id}/help-session/start";
   private static final String API_FAMILY_HELP_SESSION_SAVE_CHILD = "/api/family/{id}/help-session/save-child";
   private static final String API_FAMILY_HELP_SESSION_SAVE_ALL = "/api/family/{id}/help-session/save-all";
+  private static final String API_FAMILY_HELP_SESSION_CLEAR = "/api/family/{id}/help-session/clear";
   private static final String STATUS_HELPED = "helped";
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
@@ -434,6 +435,20 @@ public class FamilyController implements Controller {
     family.status = STATUS_HELPED;
     family.helped = true;
     family.checklist = null;
+    persistFamilyChecklistAndStatus(family);
+
+    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  public void clearFamilyHelpSession(Context ctx) {
+    Family family = requireFamily(ctx.pathParam("id"));
+    ensureHelpSessionExists(family);
+
+    family.checklist = null;
+    family.status = STATUS_NOT_HELPED;
+    family.helped = false;
     persistFamilyChecklistAndStatus(family);
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
@@ -1130,6 +1145,7 @@ public class FamilyController implements Controller {
     server.post(API_FAMILY_HELP_SESSION_START, this::startFamilyHelpSession);
     server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
     server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);
+    server.post(API_FAMILY_HELP_SESSION_CLEAR, this::clearFamilyHelpSession);
 
     server.delete(API_FAMILY_BY_ID, this::deleteFamily);
   }
