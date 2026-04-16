@@ -2,6 +2,7 @@
 import { Component, effect, inject, signal, viewChild, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -65,7 +66,8 @@ type ScanCard = {
     MatAutocompleteModule,
     MatSlideToggleModule,
     ScannerComponent,
-    CommonModule
+    CommonModule,
+    MatButtonToggleModule
   ],
 })
 export class InventoryComponent {
