@@ -163,7 +163,7 @@ class TermsControllerSpec {
   }
 
   @Test
-  void singularizeDoesNotMangleWordsEndingWithss () {
+  void singularizeDoesNotMangleWordsEndingWithss() {
     assertEquals("class", controller.singularize("class"));
     assertEquals("glass", controller.singularize("glass"));
     assertEquals("kiss", controller.singularize("kiss"));
