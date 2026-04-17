@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.flex-row {
+  display: flex;
+  width: 100%;
+}
+
+.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.pos-card {
+  border-radius: 14px;
+  margin-bottom: 1rem;
+}
+
+.pos-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.filter-container {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-box {
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.family-card-container {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}

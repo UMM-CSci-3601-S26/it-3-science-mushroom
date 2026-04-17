@@ -1,0 +1,42 @@
+.family-card {
+  border-radius: 14px;
+  border: 1px solid #d9e1ea;
+  box-shadow: none;
+}
+
+.family-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.family-name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.family-slot {
+  margin: 0.35rem 0 0;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.help-family-button {
+  white-space: nowrap;
+}
+
+.family-details {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: #334155;
+}
+
+.family-address,
+.student-count {
+  margin: 0;
+}
