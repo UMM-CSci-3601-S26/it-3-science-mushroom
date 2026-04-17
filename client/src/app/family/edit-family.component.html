@@ -82,7 +82,7 @@
 
                     <mat-form-field>
                       <mat-label>School</mat-label>
-                      <mat-select formControlName="school" required [ngModel]="family().students[i]?.school">
+                      <mat-select formControlName="school" required [ngModel]="family().students[i]?.schoolAbbreviation">
                         <mat-option *ngFor="let s of schools" [value]="s.abbreviation">
                           {{ s.name }} ({{ s.abbreviation }})
                         </mat-option>
