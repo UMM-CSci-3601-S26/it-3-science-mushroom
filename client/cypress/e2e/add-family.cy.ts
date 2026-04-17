@@ -122,6 +122,7 @@ describe('Add family page', () => {
             name: 'Lisa',
             grade: '6',
             school: "Morris High School",
+            schoolAbbreviation: "MHS",
             teacher: "N/A",
             headphones: true,
             backpack: false
@@ -130,6 +131,7 @@ describe('Add family page', () => {
             name: 'Allie',
             grade: '7',
             school: "Morris High School",
+            schoolAbbreviation: "MHS",
             teacher: "N/A",
             headphones: true,
             backpack: false
@@ -138,6 +140,7 @@ describe('Add family page', () => {
             name: 'Joe',
             grade: '8',
             school: "Morris Elementary",
+            schoolAbbreviation: "ME",
             teacher: "N/A",
             headphones: true,
             backpack: false

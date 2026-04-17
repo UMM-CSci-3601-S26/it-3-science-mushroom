@@ -2,6 +2,7 @@ export interface StudentInfo {
   name: string;
   grade: string;
   school: string;
+  schoolAbbreviation: string;
   teacher: string;
   headphones: boolean;
   backpack: boolean;

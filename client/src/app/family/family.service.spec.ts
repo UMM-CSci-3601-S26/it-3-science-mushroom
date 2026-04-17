@@ -24,6 +24,7 @@ describe('FamilyService', () => {
           name: 'John Jr.',
           grade: '1',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
           headphones: true,
           backpack: false
@@ -42,6 +43,7 @@ describe('FamilyService', () => {
           name: 'Jennifer',
           grade: '6',
           school: "Hancock Middle School",
+          schoolAbbreviation: "HMS",
           teacher: "N/A",
           headphones: true,
           backpack: false
@@ -50,6 +52,7 @@ describe('FamilyService', () => {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
+          schoolAbbreviation: "HMS",
           teacher: "N/A",
           headphones: true,
           backpack: false
@@ -68,6 +71,7 @@ describe('FamilyService', () => {
           name: 'Harold',
           grade: '11',
           school: "Morris High School",
+          schoolAbbreviation: "MHS",
           teacher: "N/A",
           headphones: true,
           backpack: false
@@ -76,6 +80,7 @@ describe('FamilyService', () => {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
+          schoolAbbreviation: "MHS",
           teacher: "N/A",
           headphones: true,
           backpack: false
@@ -84,6 +89,7 @@ describe('FamilyService', () => {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
           headphones: true,
           backpack: false

@@ -50,6 +50,7 @@ describe('FamilyCardComponent', () => {
           name: 'Chris Jr.',
           grade: '2',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
           headphones: true,
           backpack: false
@@ -58,6 +59,7 @@ describe('FamilyCardComponent', () => {
           name: 'Christy',
           grade: '2',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
           headphones: true,
           backpack: false
