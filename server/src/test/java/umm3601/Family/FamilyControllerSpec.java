@@ -1085,9 +1085,8 @@ class FamilyControllerSpec {
     inventory.material = "Paper";
     inventory.packageSize = 1;
 
-    boolean matches = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, supplyList);
-    int score = invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, inventory);
+    boolean matches = invokeInventoryMatchesSupplyList(inventory, supplyList);
+    int score = invokeInventorySpecificityScore(inventory);
 
     assertTrue(matches);
     assertTrue(score > 0);
@@ -1095,24 +1094,24 @@ class FamilyControllerSpec {
 
   @Test
   void privateLookupAndConsumeHelpersCoverErrorBranches() throws Exception {
-    Inventory found = invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, "SUB-10001");
+    Inventory found = invokeFindInventoryByBarcode("SUB-10001");
     assertNotNull(found);
     assertEquals("ID-10001", found.internalID);
 
     NotFoundResponse missingInventory = assertThrows(NotFoundResponse.class,
-      () -> invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, "DOES-NOT-EXIST", 1));
+      () -> invokeConsumeInventory("DOES-NOT-EXIST", 1));
     assertTrue(missingInventory.getMessage().contains("No item found for internalID"));
 
     BadRequestResponse missingInternalId = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, "", 1));
+      () -> invokeConsumeInventory("", 1));
     assertTrue(missingInternalId.getMessage().contains("missing its inventory match"));
   }
 
   @Test
   void privateReasonHelpersNormalizeAndValidate() throws Exception {
-    String normalized = invokePrivate("normalizeReason", new Class<?>[] {String.class}, "Available Didn't Need");
-    boolean valid = invokePrivate("isValidNotPickedUpReason", new Class<?>[] {String.class}, normalized);
-    boolean invalid = invokePrivate("isValidNotPickedUpReason", new Class<?>[] {String.class}, "bad_reason");
+    String normalized = invokeNormalizeReason("Available Didn't Need");
+    boolean valid = invokeIsValidNotPickedUpReason(normalized);
+    boolean invalid = invokeIsValidNotPickedUpReason("bad_reason");
 
     assertEquals("available_didnt_need", normalized);
     assertTrue(valid);
@@ -1121,7 +1120,7 @@ class FamilyControllerSpec {
 
   @Test
   void privateFindInventoryByBarcodeReturnsNullWhenMissing() throws Exception {
-    Inventory found = invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, "MISSING-BARCODE");
+    Inventory found = invokeFindInventoryByBarcode("MISSING-BARCODE");
     assertNull(found);
   }
 
@@ -1185,10 +1184,13 @@ class FamilyControllerSpec {
     Inventory inventory = new Inventory();
     inventory.item = "Notebook";
     inventory.brand = "Acme";
+    inventory.color = "Blue";
+    inventory.size = "Wide";
+    inventory.type = "Ruled";
+    inventory.material = "Paper";
     inventory.packageSize = 2;
 
-    boolean missingItems = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, emptyItems);
+    boolean missingItems = invokeInventoryMatchesSupplyList(inventory, emptyItems);
     assertFalse(missingItems);
 
     SupplyList mismatchedBrand = new SupplyList();
@@ -1196,52 +1198,75 @@ class FamilyControllerSpec {
     mismatchedBrand.brand = new SupplyList.AttributeOptions();
     mismatchedBrand.brand.allOf = "Other";
 
-    boolean brandMismatch = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, mismatchedBrand);
+    boolean brandMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedBrand);
     assertFalse(brandMismatch);
 
     SupplyList mismatchedPackage = new SupplyList();
     mismatchedPackage.item = List.of("Notebook");
     mismatchedPackage.packageSize = 1;
 
-    boolean packageMismatch = invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, mismatchedPackage);
+    boolean packageMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedPackage);
     assertFalse(packageMismatch);
+
+    SupplyList mismatchedColor = new SupplyList();
+    mismatchedColor.item = List.of("Notebook");
+    mismatchedColor.color = new SupplyList.ColorAttributeOptions();
+    mismatchedColor.color.allOf = List.of("Red");
+
+    boolean colorMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedColor);
+    assertFalse(colorMismatch);
+
+    SupplyList mismatchedSize = new SupplyList();
+    mismatchedSize.item = List.of("Notebook");
+    mismatchedSize.size = new SupplyList.AttributeOptions();
+    mismatchedSize.size.allOf = "Narrow";
+
+    boolean sizeMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedSize);
+    assertFalse(sizeMismatch);
+
+    SupplyList mismatchedType = new SupplyList();
+    mismatchedType.item = List.of("Notebook");
+    mismatchedType.type = new SupplyList.AttributeOptions();
+    mismatchedType.type.allOf = "Composition";
+
+    boolean typeMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedType);
+    assertFalse(typeMismatch);
+
+    SupplyList mismatchedMaterial = new SupplyList();
+    mismatchedMaterial.item = List.of("Notebook");
+    mismatchedMaterial.material = new SupplyList.AttributeOptions();
+    mismatchedMaterial.material.allOf = "Plastic";
+
+    boolean materialMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedMaterial);
+    assertFalse(materialMismatch);
   }
 
   @Test
   void privateAttributeHelpersCoverNullAndMismatchBranches() throws Exception {
-    boolean nullAttribute = invokePrivate("matchesAttribute",
-      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, null, "Blue");
+    boolean nullAttribute = invokeMatchesAttribute(null, "Blue");
     assertTrue(nullAttribute);
 
     SupplyList.AttributeOptions anyOf = new SupplyList.AttributeOptions();
     anyOf.anyOf = List.of("Blue", "Black");
-    boolean anyOfMatch = invokePrivate("matchesAttribute",
-      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, anyOf, "Blue");
-    boolean anyOfMiss = invokePrivate("matchesAttribute",
-      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, anyOf, "Red");
+    boolean anyOfMatch = invokeMatchesAttribute(anyOf, "Blue");
+    boolean anyOfMiss = invokeMatchesAttribute(anyOf, "Red");
     assertTrue(anyOfMatch);
     assertFalse(anyOfMiss);
 
     SupplyList.AttributeOptions allOfMismatch = new SupplyList.AttributeOptions();
     allOfMismatch.allOf = "Wide";
-    boolean allOfFalse = invokePrivate("matchesAttribute",
-      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, allOfMismatch, "Narrow");
+    boolean allOfFalse = invokeMatchesAttribute(allOfMismatch, "Narrow");
     assertFalse(allOfFalse);
 
     SupplyList.ColorAttributeOptions colorAllOf = new SupplyList.ColorAttributeOptions();
     colorAllOf.allOf = List.of("Blue");
-    boolean colorAllOfMiss = invokePrivate("matchesColorAttribute",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, colorAllOf, "Red");
+    boolean colorAllOfMiss = invokeMatchesColorAttribute(colorAllOf, "Red");
     assertFalse(colorAllOfMiss);
 
     SupplyList.ColorAttributeOptions colorAnyOf = new SupplyList.ColorAttributeOptions();
     colorAnyOf.anyOf = List.of("Black", "Red");
-    boolean colorAnyOfMatch = invokePrivate("matchesColorAttribute",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, colorAnyOf, "Red");
-    boolean colorAnyOfMiss = invokePrivate("matchesColorAttribute",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, colorAnyOf, "Green");
+    boolean colorAnyOfMatch = invokeMatchesColorAttribute(colorAnyOf, "Red");
+    boolean colorAnyOfMiss = invokeMatchesColorAttribute(colorAnyOf, "Green");
     assertTrue(colorAnyOfMatch);
     assertFalse(colorAnyOfMiss);
   }
@@ -1252,15 +1277,13 @@ class FamilyControllerSpec {
     unavailableSelected.selected = true;
     unavailableSelected.available = false;
     assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class},
-        unavailableSelected));
+      () -> invokeValidateChecklistItemForSave(unavailableSelected));
 
     Family.ChecklistItem availableUnchecked = new Family.ChecklistItem();
     availableUnchecked.selected = false;
     availableUnchecked.available = true;
     BadRequestResponse missingReason = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class},
-        availableUnchecked));
+      () -> invokeValidateChecklistItemForSave(availableUnchecked));
     assertTrue(missingReason.getMessage().contains("must include a reason or substitution barcode"));
 
     Family.ChecklistItem invalidReason = new Family.ChecklistItem();
@@ -1268,14 +1291,13 @@ class FamilyControllerSpec {
     invalidReason.available = true;
     invalidReason.notPickedUpReason = "bad_reason";
     BadRequestResponse invalidReasonException = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class},
-        invalidReason));
+      () -> invokeValidateChecklistItemForSave(invalidReason));
     assertTrue(invalidReasonException.getMessage().contains("Checklist reason must be"));
 
     Family.ChecklistItem unavailableUnchecked = new Family.ChecklistItem();
     unavailableUnchecked.selected = false;
     unavailableUnchecked.available = false;
-    invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class}, unavailableUnchecked);
+    invokeValidateChecklistItemForSave(unavailableUnchecked);
     assertEquals("not_available_didnt_receive", unavailableUnchecked.notPickedUpReason);
   }
 
@@ -1285,25 +1307,21 @@ class FamilyControllerSpec {
     section.printableTitle = "Printable";
     section.items = new ArrayList<>(List.of(new Family.ChecklistItem()));
 
-    Family.ChecklistSection normalizedSection = invokePrivate(
-      "normalizeSectionForSave",
-      new Class<?>[] {String.class, Family.ChecklistSection.class},
-      "student-1",
-      section);
+    Family.ChecklistSection normalizedSection = invokeNormalizeSectionForSave("student-1", section);
     assertEquals("student-1", normalizedSection.id);
     assertEquals("Printable", normalizedSection.title);
     assertEquals("student-1-item-1", normalizedSection.items.get(0).id);
     assertEquals(1, normalizedSection.items.get(0).requestedQuantity);
 
-    String beingHelped = invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, "being helped");
+    String beingHelped = invokeNormalizeStatusValue("being helped");
     assertEquals("being_helped", beingHelped);
 
     BadRequestResponse invalidStatus = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, "done"));
+      () -> invokeNormalizeStatusValue("done"));
     assertTrue(invalidStatus.getMessage().contains("must be helped, not_helped, or being_helped"));
 
-    String normalizedToken = invokePrivate("normalizeToken", new Class<?>[] {String.class}, " Notebooks ");
-    String normalizedNull = invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) null);
+    String normalizedToken = invokeNormalizeToken(" Notebooks ");
+    String normalizedNull = invokeNormalizeToken(null);
     assertEquals("notebook", normalizedToken);
     assertEquals("", normalizedNull);
   }
@@ -1311,7 +1329,7 @@ class FamilyControllerSpec {
   @Test
   void privateConsumeInventoryRejectsLowQuantity() throws Exception {
     BadRequestResponse exception = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, "ID-10000", 10));
+      () -> invokeConsumeInventory("ID-10000", 10));
 
     assertTrue(exception.getMessage().contains("Inventory quantity is too low"));
   }
@@ -1326,9 +1344,24 @@ class FamilyControllerSpec {
     sparseInventory.material = "N/A";
     sparseInventory.packageSize = 1;
 
-    int score = invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, sparseInventory);
+    int score = invokeInventorySpecificityScore(sparseInventory);
 
     assertEquals(0, score);
+  }
+
+  @Test
+  void privateInventorySpecificityScoreCountsPackageSizeGreaterThanOne() throws Exception {
+    Inventory bulkInventory = new Inventory();
+    bulkInventory.brand = "N/A";
+    bulkInventory.color = null;
+    bulkInventory.size = "";
+    bulkInventory.type = " ";
+    bulkInventory.material = "N/A";
+    bulkInventory.packageSize = 2;
+
+    int score = invokeInventorySpecificityScore(bulkInventory);
+
+    assertEquals(1, score);
   }
 
   @Test
@@ -1346,17 +1379,23 @@ class FamilyControllerSpec {
     mismatchedSchool.grade = "5";
     mismatchedSchool.teacher = "N/A";
 
-    List<SupplyList> noMatches = invokePrivate("getSupplyListsForStudent",
-      new Class<?>[] {Family.StudentInfo.class}, mismatchedSchool);
+    List<SupplyList> noMatches = invokeGetSupplyListsForStudent(mismatchedSchool);
     assertEquals(0, noMatches.size());
+
+    Family.StudentInfo mismatchedGrade = new Family.StudentInfo();
+    mismatchedGrade.school = "Roosevelt";
+    mismatchedGrade.grade = "6";
+    mismatchedGrade.teacher = "N/A";
+
+    List<SupplyList> wrongGradeMatches = invokeGetSupplyListsForStudent(mismatchedGrade);
+    assertEquals(0, wrongGradeMatches.size());
 
     Family.StudentInfo mismatchedTeacher = new Family.StudentInfo();
     mismatchedTeacher.school = "Roosevelt";
     mismatchedTeacher.grade = "5";
     mismatchedTeacher.teacher = "N/A";
 
-    List<SupplyList> filteredMatches = invokePrivate("getSupplyListsForStudent",
-      new Class<?>[] {Family.StudentInfo.class}, mismatchedTeacher);
+    List<SupplyList> filteredMatches = invokeGetSupplyListsForStudent(mismatchedTeacher);
     assertEquals(2, filteredMatches.size());
   }
 
@@ -1366,8 +1405,7 @@ class FamilyControllerSpec {
     supplyList.item = List.of("Scissors");
     supplyList.quantity = 0;
 
-    Family.ChecklistItem item = invokePrivate("buildChecklistItemSnapshot",
-      new Class<?>[] {SupplyList.class, String.class}, supplyList, "section-item-1");
+    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
 
     assertEquals("section-item-1", item.id);
     assertEquals(1, item.requestedQuantity);
@@ -1379,11 +1417,11 @@ class FamilyControllerSpec {
   @Test
   void privateRequireFamilyCoversErrorBranches() {
     BadRequestResponse badId = assertThrows(BadRequestResponse.class,
-      () -> invokePrivate("requireFamily", new Class<?>[] {String.class}, "bad-id"));
+      () -> invokeRequireFamily("bad-id"));
     assertTrue(badId.getMessage().contains("family id was not legal"));
 
     NotFoundResponse missing = assertThrows(NotFoundResponse.class,
-      () -> invokePrivate("requireFamily", new Class<?>[] {String.class}, new ObjectId().toString()));
+      () -> invokeRequireFamily(new ObjectId().toString()));
     assertTrue(missing.getMessage().contains("family was not found"));
   }
 
@@ -1410,6 +1448,74 @@ class FamilyControllerSpec {
 
     db.getCollection("family").updateOne(eq("_id", familyId), new Document(
       "$set", new Document("checklist", checklist)));
+  }
+
+  private boolean invokeInventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) throws Exception {
+    return invokePrivate("inventoryMatchesSupplyList",
+      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, supplyList);
+  }
+
+  private int invokeInventorySpecificityScore(Inventory inventory) throws Exception {
+    return invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, inventory);
+  }
+
+  private Inventory invokeFindInventoryByBarcode(String barcode) throws Exception {
+    return invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, barcode);
+  }
+
+  private void invokeConsumeInventory(String internalId, int amount) throws Exception {
+    invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, internalId, amount);
+  }
+
+  private String invokeNormalizeReason(String reason) throws Exception {
+    return invokePrivate("normalizeReason", new Class<?>[] {String.class}, reason);
+  }
+
+  private boolean invokeIsValidNotPickedUpReason(String reason) throws Exception {
+    return invokePrivate("isValidNotPickedUpReason", new Class<?>[] {String.class}, reason);
+  }
+
+  private boolean invokeMatchesAttribute(SupplyList.AttributeOptions options, String inventoryValue) throws Exception {
+    return invokePrivate("matchesAttribute",
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private boolean invokeMatchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue)
+      throws Exception {
+    return invokePrivate("matchesColorAttribute",
+      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private void invokeValidateChecklistItemForSave(Family.ChecklistItem item) throws Exception {
+    invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class}, item);
+  }
+
+  private Family.ChecklistSection invokeNormalizeSectionForSave(String sectionId, Family.ChecklistSection section)
+      throws Exception {
+    return invokePrivate("normalizeSectionForSave",
+      new Class<?>[] {String.class, Family.ChecklistSection.class}, sectionId, section);
+  }
+
+  private String invokeNormalizeStatusValue(String status) throws Exception {
+    return invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, status);
+  }
+
+  private String invokeNormalizeToken(String value) throws Exception {
+    return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
+  }
+
+  private List<SupplyList> invokeGetSupplyListsForStudent(Family.StudentInfo student) throws Exception {
+    return invokePrivate("getSupplyListsForStudent", new Class<?>[] {Family.StudentInfo.class}, student);
+  }
+
+  private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
+      throws Exception {
+    return invokePrivate("buildChecklistItemSnapshot",
+      new Class<?>[] {SupplyList.class, String.class}, supplyList, itemId);
+  }
+
+  private Family invokeRequireFamily(String id) throws Exception {
+    return invokePrivate("requireFamily", new Class<?>[] {String.class}, id);
   }
 
   @SuppressWarnings("unchecked")
