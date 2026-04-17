@@ -2,6 +2,7 @@
 import { Component, effect, inject, signal, viewChild, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -65,11 +66,13 @@ type ScanCard = {
     MatAutocompleteModule,
     MatSlideToggleModule,
     ScannerComponent,
-    CommonModule
+    CommonModule,
+    MatButtonToggleModule
   ],
 })
 export class InventoryComponent {
-  displayedColumns: string[] = ['item', 'description', 'brand', 'color', 'size', 'type', 'material', 'packageSize', 'quantity', 'notes'];
+  displayedColumnsDetailed: string[] = ['item', 'description', 'brand', 'color', 'size', 'type', 'material', 'packageSize', 'quantity', 'notes'];
+  displayedColumnsSimple: string[] = ['description', 'quantity', 'notes'];
   dataSource = new MatTableDataSource<Inventory>([]);
   readonly page = viewChild<MatPaginator>(MatPaginator)
   readonly sort = viewChild<MatSort>(MatSort);
@@ -108,6 +111,7 @@ export class InventoryComponent {
   description = signal<string | undefined>(undefined);
   quantity = signal<number | undefined>(undefined);
   showNAValues = signal(true);
+  viewType = signal<'detailed' | 'simple'>('detailed');
 
   errMsg = signal<string | undefined>(undefined);
 
