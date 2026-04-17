@@ -21,6 +21,14 @@
                   <mat-error *ngIf="addSchoolForm.get('name')?.hasError('minlength')">Name must be at least 2 characters</mat-error>
                 </mat-form-field>
 
+                <mat-form-field>
+                  <mat-label>School Abbreviation</mat-label>
+                  <input matInput formControlName="abbreviation" required>
+                  <mat-error *ngIf="addSchoolForm.get('abbreviation')?.hasError('required')">Abbreviation is required</mat-error>
+                  <mat-error *ngIf="addSchoolForm.get('abbreviation')?.hasError('minlength')">Abbreviation must be at least 2 characters</mat-error>
+                  <mat-error *ngIf="addSchoolForm.get('abbreviation')?.hasError('maxLength')">Abbreviation must be no more than 6 characters</mat-error>
+                </mat-form-field>
+
                 <button mat-raised-button color="primary" type="submit" [disabled]="!addSchoolForm.valid">
                   Add School
                 </button>
@@ -31,7 +39,7 @@
             <mat-list>
               @for (school of schools; track $index; let i = $index) {
                 <mat-list-item>
-                  <span matListItemTitle>{{ school.name }}</span>
+                  <span matListItemTitle>{{ school.name }} ({{ school.abbreviation }})</span>
                   <button matListItemMeta mat-icon-button color="warn"
                           (click)="removeSchool(i)"
                           [attr.aria-label]="'Remove ' + school.name">
