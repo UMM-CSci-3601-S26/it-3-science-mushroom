@@ -151,12 +151,14 @@ class FamilyControllerSpec {
           new Document()
             .append("name", "Sara")
             .append("grade", "7")
-            .append("school", "MAHS")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
             .append("teacher", "N/A"),
           new Document()
             .append("name", "Ronan")
             .append("grade", "4")
-            .append("school", "HHS")
+            .append("school", "Herman High School")
+            .append("schoolAbbreviation", "HHS")
             .append("teacher", "N/A")
         )));
     testFamilies.add(
