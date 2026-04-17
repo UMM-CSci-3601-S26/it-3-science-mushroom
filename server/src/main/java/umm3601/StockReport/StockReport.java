@@ -13,8 +13,8 @@ public class StockReport {
   @SuppressWarnings({"MemberName"})
   public String _id;
 
-  public String reportType; // Type of the report (e.g., "PDF", "CSV")
-  public byte[] stockReportData; // PDF/CSV file stored as byte array
+  public String reportType; // Type of the report (e.g., "PDF", "XLSX")
+  public byte[] stockReportData; // PDF/XLSX file stored as byte array
   public String reportName; // Name of the report
 
   @Override
