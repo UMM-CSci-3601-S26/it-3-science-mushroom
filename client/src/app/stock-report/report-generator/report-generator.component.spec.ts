@@ -99,37 +99,37 @@ describe('ReportGeneratorComponent', () => {
       it('should format AM times correctly', () => {
         const testDate = new Date(2026, 3, 5, 9, 30); // April 5, 2026 at 9:30 AM
         const result = component.formatDateTime(testDate)[1];
-        expect(result).toBe('4-5-2026_9-30 AM');
+        expect(result).toBe('4-5-2026_9-30_AM');
       });
 
       it('should format PM times correctly (not noon or midnight)', () => {
         const testDate = new Date(2026, 3, 5, 14, 45); // April 5, 2026 at 2:45 PM
         const result = component.formatDateTime(testDate)[1];
-        expect(result).toBe('4-5-2026_2-45 PM');
+        expect(result).toBe('4-5-2026_2-45_PM');
       });
 
       it('should format noon correctly', () => {
         const testDate = new Date(2026, 3, 5, 12, 0); // April 5, 2026 at 12:00 PM (noon)
         const result = component.formatDateTime(testDate)[1];
-        expect(result).toBe('4-5-2026_12-00 PM');
+        expect(result).toBe('4-5-2026_12-00_PM');
       });
 
       it('should format midnight correctly', () => {
         const testDate = new Date(2026, 3, 5, 0, 15); // April 5, 2026 at 12:15 AM (midnight)
         const result = component.formatDateTime(testDate)[1];
-        expect(result).toBe('4-5-2026_12-15 AM');
+        expect(result).toBe('4-5-2026_12-15_AM');
       });
 
       it('should add leading zero to minutes less than 10', () => {
         const testDate = new Date(2026, 3, 5, 3, 5); // April 5, 2026 at 3:05 AM
         const result = component.formatDateTime(testDate)[1];
-        expect(result).toBe('4-5-2026_3-05 AM');
+        expect(result).toBe('4-5-2026_3-05_AM');
       });
 
       it('should handle month correctly (accounting for zero-indexing)', () => {
         const testDate = new Date(2026, 0, 15, 10, 30); // January 15, 2026
         const result = component.formatDateTime(testDate)[1];
-        expect(result).toBe('1-15-2026_10-30 AM');
+        expect(result).toBe('1-15-2026_10-30_AM');
       });
     });
 
@@ -229,7 +229,7 @@ describe('ReportGeneratorComponent', () => {
   describe('Single Report Download', () => {
     it('should download single PDF report correctly', () => {
       const mockBlob = new Blob(['PDF content'], { type: 'application/pdf' });
-      const mockReport: StockReport = { _id: '1', reportName: 'Test Report.pdf', stockReportPDF: 'base64data' };
+      const mockReport: StockReport = { _id: '1', reportName: 'Test Report.pdf', reportType: 'PDF', reportData: 'base64data' };
 
       spyOn(stockReportService, 'downloadSingleReportBlob').and.returnValue(of(mockBlob));
       spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
@@ -243,7 +243,7 @@ describe('ReportGeneratorComponent', () => {
     });
 
     it('should show error snackbar when single report download fails', () => {
-      const mockReport: StockReport = { _id: '1', reportName: 'Test Report.pdf', stockReportPDF: 'base64data' };
+      const mockReport: StockReport = { _id: '1', reportName: 'Test Report.pdf', reportType: 'PDF', reportData: 'base64data' };
 
       spyOn(stockReportService, 'downloadSingleReportBlob').and.returnValue(
         throwError(() => new Error('Download error'))
@@ -253,7 +253,7 @@ describe('ReportGeneratorComponent', () => {
       component.downloadSinglePdfReport(mockReport);
 
       expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('Error downloading report'),
+        'Error downloading PDF report. Please try again.',
         'Okay',
         { duration: 2000 }
       );
@@ -274,7 +274,7 @@ describe('ReportGeneratorComponent', () => {
       expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalled();
       expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockZipBlob);
       expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('Downloaded all report'),
+        'Downloaded all PDF report(s) as ZIP file.',
         'Okay',
         { duration: 2000 }
       );
@@ -313,7 +313,7 @@ describe('ReportGeneratorComponent', () => {
 
   describe('Delete Operations', () => {
     it('should delete single PDF report successfully', () => {
-      const mockReport: StockReport = { _id: '1', reportName: 'Test Report', stockReportPDF: 'base64data' };
+      const mockReport: StockReport = { _id: '1', reportName: 'Test Report', reportType: 'PDF', reportData: 'base64data' };
       const deleteSpy = spyOn(stockReportService, 'deleteSingleReport').and.returnValue(of(void 0));
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
@@ -328,7 +328,7 @@ describe('ReportGeneratorComponent', () => {
     });
 
     it('should show error snackbar when single report deletion fails', () => {
-      const mockReport: StockReport = { _id: '1', reportName: 'Test Report', stockReportPDF: 'base64data' };
+      const mockReport: StockReport = { _id: '1', reportName: 'Test Report', reportType: 'PDF', reportData: 'base64data' };
 
       spyOn(stockReportService, 'deleteSingleReport').and.returnValue(
         throwError(() => new Error('Delete error'))
@@ -346,8 +346,8 @@ describe('ReportGeneratorComponent', () => {
 
     it('should delete all reports after user confirmation', () => {
       const mockReports: StockReport[] = [
-        { _id: '1', reportName: 'Report 1', stockReportPDF: 'base64data' },
-        { _id: '2', reportName: 'Report 2', stockReportPDF: 'base64data' }
+        { _id: '1', reportName: 'Report 1', reportType: 'PDF', reportData: 'base64data' },
+        { _id: '2', reportName: 'Report 2', reportType: 'PDF', reportData: 'base64data' }
       ];
 
       spyOn(stockReportService, 'getReports').and.returnValue(of(mockReports));
@@ -370,7 +370,7 @@ describe('ReportGeneratorComponent', () => {
 
     it('should not delete all reports if user cancels dialog', () => {
       const mockReports: StockReport[] = [
-        { _id: '1', reportName: 'Report 1', stockReportPDF: 'base64data' }
+        { _id: '1', reportName: 'Report 1', reportType: 'PDF', reportData: 'base64data' }
       ];
 
       spyOn(stockReportService, 'getReports').and.returnValue(of(mockReports));
@@ -399,7 +399,7 @@ describe('ReportGeneratorComponent', () => {
 
     it('should show error message when deleting all reports fails', () => {
       const mockReports: StockReport[] = [
-        { _id: '1', reportName: 'Report 1', stockReportPDF: 'base64data' }
+        { _id: '1', reportName: 'Report 1', reportType: 'PDF', reportData: 'base64data' }
       ];
 
       spyOn(stockReportService, 'getReports').and.returnValue(of(mockReports));

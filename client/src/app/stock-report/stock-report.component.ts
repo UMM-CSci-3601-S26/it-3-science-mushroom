@@ -94,13 +94,13 @@ export class StockReportComponent {
     )
   );
 
-  // Compute PDF and CSV reports separately for easier display
+  // Compute PDF and XLSX reports separately for easier display
   pdfReports = computed(() => {
     return this.reports()?.filter(report => report.reportType === 'PDF') ?? [];
   });
 
-  csvReports = computed(() => {
-    return this.reports()?.filter(report => report.reportType === 'CSV') ?? [];
+  xlsxReports = computed(() => {
+    return this.reports()?.filter(report => report.reportType === 'XLSX') ?? [];
   });
 
   constructor() {

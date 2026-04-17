@@ -89,7 +89,7 @@ export class StockReportService {
 
   /**
    * Call endpoint to add a new Stock Report
-   * @param formData Data of the new report to add, containing the report name, type, and data for the report (PDF or CSV)
+   * @param formData Data of the new report to add, containing the report name, type, and data for the report (PDF or XLSX)
    * @returns Response from the server, which should be the ID of the newly created report
    */
   addNewReport(formData: FormData): Observable<string> {

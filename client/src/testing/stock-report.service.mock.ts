@@ -12,12 +12,14 @@ export class MockStockReportService implements Pick<StockReportService, 'getRepo
   static testReports: StockReport[] = [
     {
       _id: 'john_id',
-      stockReportPDF: 'john_report.pdf',
+      reportType: 'PDF',
+      reportData: 'john_report.pdf',
       reportName: "John's Report"
     },
     {
       _id: 'jane_id',
-      stockReportPDF: 'jane_report.pdf',
+      reportType: 'PDF',
+      reportData: 'jane_report.pdf',
       reportName: "Jane's Report"
     },
   ];

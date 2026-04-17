@@ -35,13 +35,13 @@ export class StockReportPage {
     return cy.get('[data-cy="pdf-reports-list"]');
   }
 
-  getCSVReportsList() {
-    return cy.get('[data-cy="csv-reports-list"]');
+  getXLSXReportsList() {
+    return cy.get('[data-cy="xlsx-reports-list"]');
   }
 
   // Generate Buttons
-  getGenerateAndDownloadCSVButton() {
-    return cy.get('[data-cy="generate-and-download-csv"]');
+  getGenerateAndDownloadXLSXButton() {
+    return cy.get('[data-cy="generate-and-download-xlsx"]');
   }
 
   getGenerateAndDownloadPDFButton() {
@@ -74,8 +74,8 @@ export class StockReportPage {
     return cy.get('[data-cy="download-all-pdfs"]');
   }
 
-  getDownloadAllCSVsButton() {
-    return cy.get('[data-cy="download-all-csvs"]');
+  getDownloadAllXLSXsButton() {
+    return cy.get('[data-cy="download-all-xlsx"]');
   }
 
   getDeleteAllReportsButton() {
@@ -86,8 +86,8 @@ export class StockReportPage {
     return cy.get('[data-cy="delete-all-pdfs"]');
   }
 
-  getDeleteAllCSVsButton() {
-    return cy.get('[data-cy="delete-all-csvs"]');
+  getDeleteAllXLSXsButton() {
+    return cy.get('[data-cy="delete-all-xlsx"]');
   }
 
   // Download/Delete Single Buttons
@@ -99,11 +99,11 @@ export class StockReportPage {
     return cy.get(`[data-cy="delete-single-pdf"][data-report-name="${reportName}"]`);
   }
 
-  getDownloadSingleCSVButton(reportName: string) {
-    return cy.get(`[data-cy="download-single-csv"][data-report-name="${reportName}"]`);
+  getDownloadSingleXLSXButton(reportName: string) {
+    return cy.get(`[data-cy="download-single-xlsx"][data-report-name="${reportName}"]`);
   }
 
-  getDeleteSingleCSVButton(reportName: string) {
-    return cy.get(`[data-cy="delete-single-csv"][data-report-name="${reportName}"]`);
+  getDeleteSingleXLSXButton(reportName: string) {
+    return cy.get(`[data-cy="delete-single-xlsx"][data-report-name="${reportName}"]`);
   }
 }

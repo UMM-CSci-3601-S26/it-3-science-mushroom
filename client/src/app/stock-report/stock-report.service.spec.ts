@@ -15,13 +15,15 @@ describe('StockReportService', () => {
   const testReports: StockReport[] = [
     {
       _id: 'john_id',
-      stockReportPDF: 'SGVsbG8h', // Base64 for "Hello!"
-      reportName: "John's Report"
+      reportData: 'SGVsbG8h', // Base64 for "Hello!"
+      reportName: "John's Report",
+      reportType: 'PDF'
     },
     {
       _id: 'jane_id',
-      stockReportPDF: 'V29ybGQh', // Base64 for "World!"
-      reportName: "Jane's Report"
+      reportData: 'V29ybGQh', // Base64 for "World!"
+      reportName: "Jane's Report",
+      reportType: 'PDF'
     },
   ];
 
@@ -160,7 +162,7 @@ describe('StockReportService', () => {
     }));
 
     it('returns void and completes successfully', waitForAsync(() => {
-      const mockReport: StockReport = { _id: 'report_id', reportName: 'Report' };
+      const mockReport: StockReport = { _id: 'report_id', reportName: 'Report', reportType: 'PDF', reportData: 'SGVsbG8h' };
       spyOn(stockReportService, 'deleteReport').and.returnValue(of(void 0));
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
 
@@ -242,7 +244,7 @@ describe('StockReportService', () => {
         spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
 
         // Call the method and confirm it returns the expected blob
-        stockReportService.downloadSingleReportBlob({ _id: '1', reportName: 'Test Report' }).subscribe((blob) => {
+        stockReportService.downloadSingleReportBlob({ _id: '1', reportName: 'Test Report', reportType: 'PDF', reportData: 'SGVsbG8h' }).subscribe((blob) => {
           expect(blob).toEqual(mockBlob);
         });
       });
@@ -276,9 +278,9 @@ describe('StockReportService', () => {
 
       it('should append numbers to duplicate report names when downloading all reports as a zip', waitForAsync(() => {
         const duplicateNameReports: StockReport[] = [
-          { _id: '1', reportName: 'Report' },
-          { _id: '2', reportName: 'Report' },
-          { _id: '3', reportName: 'Report' },
+          { _id: '1', reportName: 'Report', reportType: 'PDF', reportData: 'SGVsbG8h' },
+          { _id: '2', reportName: 'Report', reportType: 'PDF', reportData: 'V29ybGQh' },
+          { _id: '3', reportName: 'Report', reportType: 'PDF', reportData: 'SGVsbG8h' },
         ];
 
         const mockBlob = new Blob(['PDF content'], { type: 'application/pdf' });

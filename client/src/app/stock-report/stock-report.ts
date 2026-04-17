@@ -4,5 +4,6 @@
 export interface StockReport {
   _id?: string;
   reportName: string;
-  reportType: 'PDF' | 'CSV';
+  reportType: 'PDF' | 'XLSX';
+  reportData: string;
 }
