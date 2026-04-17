@@ -1,0 +1,24 @@
+<div class="flex-row">
+  <div class="flex-1">
+    <mat-card class="pos-card">
+      <mat-card-header>
+        <mat-card-title class="pos-title">Point of Sale</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="filter-container">
+          <div class="filter-box">
+            FILTERS
+          </div>
+        </div>
+        <div class="family-card-container">
+          @for (family of families; track family._id) {
+            <app-point-of-sale-family-card
+              [family]="family"
+              (helpFamily)="openHelpFamilySession($event)">
+            </app-point-of-sale-family-card>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

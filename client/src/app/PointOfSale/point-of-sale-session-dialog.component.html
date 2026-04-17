@@ -1,0 +1,28 @@
+<div class="session-shell">
+  <div class="session-header">
+    <div>
+      <h2 class="session-title">Help Family Session</h2>
+      <p class="session-subtitle">{{ data.family.guardianName }}</p>
+    </div>
+    <button mat-stroked-button type="button" (click)="dialogRef.close()">
+      Close
+    </button>
+  </div>
+
+  <mat-card class="session-summary">
+    <p><strong>Time Slot:</strong> {{ data.family.timeSlot }}</p>
+    <p><strong>Address:</strong> {{ data.family.address }}</p>
+    <p><strong>Students:</strong> {{ data.family.students.length }}</p>
+  </mat-card>
+
+  <div class="session-students">
+    @for (student of data.family.students; track [student.name, student.school, student.grade, student.teacher]) {
+      <mat-card class="student-session-card">
+        <h3>{{ student.name }}</h3>
+        <p>{{ student.school }} · {{ student.grade }}</p>
+        <p>{{ student.teacher }}</p>
+        <p class="placeholder-text">Checklist content will load here from the backend later.</p>
+      </mat-card>
+    }
+  </div>
+</div>

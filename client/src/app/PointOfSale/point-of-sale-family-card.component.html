@@ -1,0 +1,18 @@
+<mat-card class="family-card">
+  <div class="family-card-top">
+    <div>
+      <h3 class="family-name">{{ family().guardianName }}</h3>
+      <p class="family-slot">{{ family().timeSlot }}</p>
+    </div>
+    <button mat-flat-button color="primary" class="help-family-button" (click)="helpFamily.emit(family())">
+      Help Family
+    </button>
+  </div>
+
+  <div class="family-details">
+    <p class="family-address">{{ family().address }}</p>
+    <p class="student-count">
+      {{ family().students?.length ?? 0 }} student{{ (family().students?.length ?? 0) === 1 ? '' : 's' }}
+    </p>
+  </div>
+</mat-card>
