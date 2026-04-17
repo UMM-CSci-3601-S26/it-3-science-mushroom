@@ -64,7 +64,7 @@
       {
         "name": "Timothy",
         "grade": "11",
-        "school": "MAHS",
+        "school": "CAHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
@@ -72,7 +72,7 @@
       {
         "name": "Sarah",
         "grade": "9",
-        "school": "MAHS",
+        "school": "CAHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -88,7 +88,7 @@
       {
         "name": "Alyssa",
         "grade": "8",
-        "school": "MMS",
+        "school": "MAMS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -104,7 +104,7 @@
       {
         "name": "Kevin",
         "grade": "10",
-        "school": "HHS",
+        "school": "HNHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
@@ -112,7 +112,7 @@
       {
         "name": "Lily",
         "grade": "7",
-        "school": "MMS",
+        "school": "HNMS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -144,7 +144,7 @@
       {
         "name": "Derek",
         "grade": "9",
-        "school": "HHS",
+        "school": "HNHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -152,7 +152,7 @@
       {
         "name": "Maya",
         "grade": "6",
-        "school": "MMS",
+        "school": "HNMS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
@@ -176,7 +176,7 @@
       {
         "name": "Lucas",
         "grade": "5",
-        "school": "MES",
+        "school": "MAMS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -208,7 +208,7 @@
       {
         "name": "Isabella",
         "grade": "8",
-        "school": "MMS",
+        "school": "MAMS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -216,7 +216,7 @@
       {
         "name": "Mateo",
         "grade": "6",
-        "school": "MMS",
+        "school": "MAMS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -224,7 +224,7 @@
       {
         "name": "Sofia",
         "grade": "3",
-        "school": "MES",
+        "school": "MAMS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true

@@ -70,7 +70,9 @@
 
                     <mat-form-field>
                       <mat-label>Grade</mat-label>
-                      <input matInput formControlName="grade" required [ngModel]="family().students[i]?.grade">
+                      <mat-select formControlName="grade" required [ngModel]="family().students[i]?.grade">
+                        <mat-option *ngFor="let g of grades" [value]="g">{{ g }}</mat-option>
+                      </mat-select>
                       @if (studentControlHasError(i, 'grade')) {
                         <mat-error data-test="gradeError">
                           {{getStudentErrorMessage(i, 'grade')}}
@@ -80,7 +82,11 @@
 
                     <mat-form-field>
                       <mat-label>School</mat-label>
-                      <input matInput formControlName="school" required [ngModel]="family().students[i]?.school">
+                      <mat-select formControlName="school" required [ngModel]="family().students[i]?.school">
+                        <mat-option *ngFor="let s of schools" [value]="s.abbreviation">
+                          {{ s.name }} ({{ s.abbreviation }})
+                        </mat-option>
+                      </mat-select>
                       @if (studentControlHasError(i, 'school')) {
                         <mat-error data-test="schoolError">
                           {{getStudentErrorMessage(i, 'school')}}

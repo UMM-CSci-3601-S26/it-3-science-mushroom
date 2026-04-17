@@ -1,5 +1,5 @@
 // Angular Imports
-import { ChangeDetectorRef, Component, effect, inject, Signal, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, inject, Signal, signal, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -13,6 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
+import { CommonModule } from '@angular/common';
 
 // Dialog Imports
 import { DialogService } from '../dialog/dialog.service';
@@ -20,6 +21,10 @@ import { DialogService } from '../dialog/dialog.service';
 // Family Imports
 import { Family } from './family';
 import { FamilyService } from './family.service';
+
+// Settings Imports
+import { SettingsService } from '../settings/settings.service';
+import { SchoolInfo, TimeAvailabilityLabels } from '../settings/settings';
 
 @Component({
   selector: 'app-edit-family',
@@ -34,20 +39,48 @@ import { FamilyService } from './family.service';
     MatButtonModule,
     RouterLink,
     MatRadioButton,
-    MatRadioGroup
+    MatRadioGroup,
+    CommonModule
   ],
   templateUrl: './edit-family.component.html',
   styleUrl: './edit-family.component.scss',
 })
 
-export class EditFamilyComponent {
+export class EditFamilyComponent implements OnInit {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private dialogService = inject(DialogService);
+  private settingsService = inject(SettingsService);
 
   error = signal({ help: '', httpResponse: '', message: '' });
+
+  // Schools loaded from settings — used to populate the school dropdown
+  schools: SchoolInfo[] = [];
+
+  // Time availability labels loaded from settings — used to label the checkboxes
+  timeAvailabilityLabels: TimeAvailabilityLabels = {
+    earlyMorning: '8:00–9:00 AM',
+    lateMorning: '9:00–10:00 AM',
+    earlyAfternoon: '12:00–1:00 PM',
+    lateAfternoon: '1:00–2:00 PM'
+  };
+
+  ngOnInit(): void {
+    this.settingsService.getSettings().subscribe(settings => {
+      this.schools = settings.schools ?? [];
+      if (settings.timeAvailability) {
+        this.timeAvailabilityLabels = settings.timeAvailability;
+      }
+    });
+  }
+
+  // For grade dropdown
+  grades: string[] = [
+    'PreK', 'Kindergarten', '1', '2', '3', '4', '5',
+    '6', '7', '8', '9', '10', '11', '12'
+  ];
 
   family: Signal<Family> = toSignal(
     this.route.paramMap.pipe(
