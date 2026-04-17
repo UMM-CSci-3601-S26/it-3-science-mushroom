@@ -303,8 +303,7 @@ public class FamilyController implements Controller {
       cleaned = cleaned.substring(1, cleaned.length() - 1);
     }
 
-    // Replace " with "" to escape CSV quotes
-    return cleaned.replace("\"", "\"\"");
+    return cleaned;
   }
 
   @Override
