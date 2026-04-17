@@ -271,15 +271,19 @@ public class FamilyController implements Controller {
     ctx.result(csv.toString());
   }
 
-  // This method cleans up the CSV to ensure the generated CSV is formatted properly
-  // and won't have issues with any spreadsheet software
+  /**
+   * Cleans up CSV values by handling nulls, flattening line breaks, escaping quotes,
+   * preventing formula injection, trimming whitespace, and removing outside quotes from values.
+   * @param value CSV value to clean up
+   * @return Cleaned up CSV value
+   */
   public static String cleanUpCSV(String value) {
     // Handle null values
     if (value == null) {
       return "";
     }
 
-    // Clean up line breaks (flatten them). Ensures each family always occupies a single CSV row
+    // Clean up line breaks (flatten them). Ensures each value always occupies a single CSV row
     String cleaned = value
       .replace("\r\n", " ")
       .replace("\n", " ")
@@ -289,6 +293,14 @@ public class FamilyController implements Controller {
     // There shouldn't ever be any data like this, but this is just in case
     if (cleaned.matches("^[\\t ]*[=+\\-@].*")) {
       cleaned = "'" + cleaned;
+    }
+
+    // Trim whitespace from beginning and end of value
+    cleaned = cleaned.trim();
+
+    // Remove outside quotes if they exist (but keep internal quotes, which should be escaped by doubling them)
+    if (cleaned.startsWith("\"") && cleaned.endsWith("\"")) {
+      cleaned = cleaned.substring(1, cleaned.length() - 1);
     }
 
     // Replace " with "" to escape CSV quotes
