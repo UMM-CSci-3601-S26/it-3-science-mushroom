@@ -78,17 +78,19 @@ describe('Edit family page', () => {
     cy.get('[data-test=nameError]').should('not.exist');
 
     // Test invalid grade
-    page.getStudentField(2, 'grade').type('99').blur();
+    page.getStudentField(2, 'grade').click().type('{esc}');
     cy.get('[data-test=gradeError]').should('exist').and('be.visible');
     // Entering a valid grade should remove the error
-    page.getStudentField(2, 'grade').clear().type('10').blur();
+    page.getStudentField(2, 'grade').click();
+    cy.get('mat-option').contains('10').click();
     cy.get('[data-test=gradeError]').should('not.exist');
 
     // Test invalid school
-    page.getStudentField(2, 'school').type('a').blur();
+    page.getStudentField(2, 'school').click().type('{esc}');
     cy.get('[data-test=schoolError]').should('exist').and('be.visible');
     // Entering a valid school should remove the error
-    page.getStudentField(2, 'school').clear().type('Morris Schools').blur();
+    page.getStudentField(2, 'school').click();
+    cy.get('mat-option').contains('Morris Area High School (MAHS)').click();
     cy.get('[data-test=schoolError]').should('not.exist');
   });
 
@@ -98,8 +100,10 @@ describe('Edit family page', () => {
 
     page.addStudentButton().click();
     page.getStudentField(2, 'name').type('Lisa');
-    page.getStudentField(2, 'grade').type('6');
-    page.getStudentField(2, 'school').type('Morris High School');
+    page.getStudentField(2, 'grade').click();
+    cy.get('mat-option').contains('10').click();
+    page.getStudentField(2, 'school').click();
+    cy.get('mat-option').contains('Morris Area High School (MAHS)').click();
 
     cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 3);
 
@@ -123,7 +127,8 @@ describe('Edit family page', () => {
           {
             name: 'Tim',
             grade: '12',
-            school: 'MAHS',
+            school: 'Morris Area High School',
+            schoolAbbreviation: 'MAHS',
             teacher: '',
             headphones: true,
             backpack: false
@@ -132,7 +137,8 @@ describe('Edit family page', () => {
           {
             name: 'Sara',
             grade: '11',
-            school: 'MAHS',
+            school: 'Morris Area High School',
+            schoolAbbreviation: 'MAHS',
             teacher: 'Mr. Test',
             headphones: true,
             backpack: false
@@ -151,6 +157,7 @@ describe('Edit family page', () => {
             name: '',
             grade: '',
             school: '',
+            schoolAbbreviation: '',
             teacher: '',
             headphones: true,
             backpack: false
@@ -159,6 +166,7 @@ describe('Edit family page', () => {
             name: '',
             grade: '',
             school: '',
+            schoolAbbreviation: '',
             teacher: 'Mr. Test',
             headphones: true,
             backpack: false

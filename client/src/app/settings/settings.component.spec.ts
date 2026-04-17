@@ -301,17 +301,17 @@ describe('SettingsComponent – drive order', () => {
 
   it('addSchool adds school to list and calls updateSchools', () => {
     settingsServiceSpy.updateSchools.and.returnValue(of(undefined));
-    component.addSchoolForm.setValue({ name: 'Test School' });
+    component.addSchoolForm.setValue({ name: 'Test School', abbreviation: 'TS' });
 
     component.addSchool();
 
-    expect(settingsServiceSpy.updateSchools).toHaveBeenCalledWith([{ name: 'Test School' }]);
+    expect(settingsServiceSpy.updateSchools).toHaveBeenCalledWith([{ name: 'Test School', abbreviation: 'TS' }]);
     expect(component.addSchoolForm.value.name).toBeNull(); // form is reset
   });
 
   it('addSchool does nothing when form is invalid', () => {
     settingsServiceSpy.updateSchools.and.returnValue(of(undefined));
-    component.addSchoolForm.setValue({ name: 'A' }); // too short — minLength(2) but 1 char fails
+    component.addSchoolForm.setValue({ name: 'A', abbreviation: 'A' }); // too short — minLength(2) but 1 char fails
 
     component.addSchool();
 
@@ -320,7 +320,7 @@ describe('SettingsComponent – drive order', () => {
 
   it('addSchool shows success snack bar on success', () => {
     settingsServiceSpy.updateSchools.and.returnValue(of(undefined));
-    component.addSchoolForm.setValue({ name: 'Test School' });
+    component.addSchoolForm.setValue({ name: 'Test School', abbreviation: 'TS' });
 
     component.addSchool();
 
@@ -329,7 +329,7 @@ describe('SettingsComponent – drive order', () => {
 
   it('addSchool shows error snack bar on failure', () => {
     settingsServiceSpy.updateSchools.and.returnValue(throwError(() => new Error('fail')));
-    component.addSchoolForm.setValue({ name: 'Test School' });
+    component.addSchoolForm.setValue({ name: 'Test School', abbreviation: 'TS' });
 
     component.addSchool();
 
@@ -338,17 +338,17 @@ describe('SettingsComponent – drive order', () => {
 
   it('removeSchool removes school at given index and calls updateSchools', () => {
     settingsServiceSpy.updateSchools.and.returnValue(of(undefined));
-    component.schools = [{ name: 'School A' }, { name: 'School B' }];
+    component.schools = [{ name: 'School A', abbreviation: 'A' }, { name: 'School B', abbreviation: 'B' }];
 
     component.removeSchool(0);
 
-    expect(component.schools).toEqual([{ name: 'School B' }]);
-    expect(settingsServiceSpy.updateSchools).toHaveBeenCalledWith([{ name: 'School B' }]);
+    expect(component.schools).toEqual([{ name: 'School B', abbreviation: 'B' }]);
+    expect(settingsServiceSpy.updateSchools).toHaveBeenCalledWith([{ name: 'School B', abbreviation: 'B' }]);
   });
 
   it('removeSchool shows error snack bar on failure', () => {
     settingsServiceSpy.updateSchools.and.returnValue(throwError(() => new Error('fail')));
-    component.schools = [{ name: 'School A' }];
+    component.schools = [{ name: 'School A', abbreviation: 'A' }];
 
     component.removeSchool(0);
 
