@@ -53,7 +53,7 @@ import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
-
+import umm3601.Family.Family.AvailabilityOptions;
 // Misc Imports
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
@@ -454,6 +454,11 @@ class FamilyControllerSpec {
     updatedFamily.email = "bob@email.com";
     updatedFamily.address = "789 7th Ave";
     updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.timeAvailability = new AvailabilityOptions();
+      updatedFamily.timeAvailability.earlyMorning = false;
+      updatedFamily.timeAvailability.lateMorning = true;
+      updatedFamily.timeAvailability.earlyAfternoon = false;
+      updatedFamily.timeAvailability.lateAfternoon = false;
     updatedFamily.students = new ArrayList<>();
 
     String json = javalinJackson.toJsonString(updatedFamily, Family.class);
