@@ -8,12 +8,20 @@ export interface StudentInfo {
   backpack: boolean;
 }
 
+export interface AvailabilityOptions {
+  earlyMorning: boolean;
+  lateMorning: boolean;
+  earlyAfternoon: boolean;
+  lateAfternoon: boolean;
+}
+
 export interface Family {
   _id?: string;
   guardianName: string;
   email: string;
   address: string;
   timeSlot: string;
+  timeAvailability: AvailabilityOptions;
   students: StudentInfo[];
 }
 

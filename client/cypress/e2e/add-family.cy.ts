@@ -116,6 +116,12 @@ describe('Add family page', () => {
         guardianName: 'Test Family',
         address: '123 Street',
         timeSlot: '7:00-8:00',
+        timeAvailability: {
+          earlyMorning: false,
+          lateMorning: true,
+          earlyAfternoon: false,
+          lateAfternoon: false
+        },
         email: 'test@email.com',
         students: [
           {

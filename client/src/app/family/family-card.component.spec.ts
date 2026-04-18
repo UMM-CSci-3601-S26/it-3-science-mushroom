@@ -45,6 +45,12 @@ describe('FamilyCardComponent', () => {
       address: '123 Street',
       email: 'chris@email.com',
       timeSlot: '9:00-10:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Chris Jr.',

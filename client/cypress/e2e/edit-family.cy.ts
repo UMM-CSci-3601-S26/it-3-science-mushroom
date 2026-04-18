@@ -122,7 +122,13 @@ describe('Edit family page', () => {
         guardianName: 'Jane Doe',
         email: 'jane@email.com',
         address: '467 8th Street NE',
-        timeSlot: '9:00-10:00',
+        timeSlot: 'TBD',
+        timeAvailability: {
+          earlyMorning: false,
+          lateMorning: true,
+          earlyAfternoon: false,
+          lateAfternoon: false
+        },
         students: [
           {
             name: 'Tim',
@@ -152,6 +158,12 @@ describe('Edit family page', () => {
         email: '',
         address: '467 8th Street NE',
         timeSlot: '',
+        timeAvailability: {
+          earlyMorning: null,
+          lateMorning: null,
+          earlyAfternoon: null,
+          lateAfternoon: null
+        },
         students: [
           {
             name: '',

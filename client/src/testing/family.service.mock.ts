@@ -18,6 +18,12 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'jjohnson@email.com',
       address: '713 Broadway',
       timeSlot: '8:00-9:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'John Jr.',
@@ -37,6 +43,12 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'janedoe@email.com',
       address: '123 Street',
       timeSlot: '10:00-11:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Jennifer',
@@ -65,6 +77,12 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
       timeSlot: '1:00-2:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Harold',
