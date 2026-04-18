@@ -40,16 +40,21 @@
               }
             </mat-form-field>
 
-            <mat-form-field>
-              <mat-label>Time Slot</mat-label>
-              <input matInput type="timeSlot"
-                formControlName="timeSlot" required [ngModel]="family().timeSlot">
-              @if (formControlHasError('timeSlot')) {
-                <mat-error data-test="timeSlotError">
-                  {{getFamilyErrorMessage('timeSlot')}}
-                </mat-error>
-              }
-            </mat-form-field>
+            <h3>Available Times</h3>
+            <div formGroupName="timeAvailability">
+              <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox" [ngModel]="family().timeAvailability?.earlyMorning">
+                {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)
+              </mat-checkbox><br>
+              <mat-checkbox formControlName="lateMorning" data-test="lateMorningCheckbox" [ngModel]="family().timeAvailability?.lateMorning">
+                {{ timeAvailabilityLabels.lateMorning }} (Late Morning)
+              </mat-checkbox><br>
+              <mat-checkbox formControlName="earlyAfternoon" data-test="earlyAfternoonCheckbox" [ngModel]="family().timeAvailability?.earlyAfternoon">
+                {{ timeAvailabilityLabels.earlyAfternoon }} (Early Afternoon)
+              </mat-checkbox><br>
+              <mat-checkbox formControlName="lateAfternoon" data-test="lateAfternoonCheckbox" [ngModel]="family().timeAvailability?.lateAfternoon">
+                {{ timeAvailabilityLabels.lateAfternoon }} (Late Afternoon)
+              </mat-checkbox>
+            </div>
 
             <h3>Students</h3>
 

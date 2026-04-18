@@ -14,6 +14,7 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { CommonModule } from '@angular/common';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 // Dialog Imports
 import { DialogService } from '../dialog/dialog.service';
@@ -40,7 +41,8 @@ import { SchoolInfo, TimeAvailabilityLabels } from '../settings/settings';
     RouterLink,
     MatRadioButton,
     MatRadioGroup,
-    CommonModule
+    CommonModule,
+    MatCheckboxModule
   ],
   templateUrl: './edit-family.component.html',
   styleUrl: './edit-family.component.scss',
@@ -131,10 +133,16 @@ export class EditFamilyComponent implements OnInit {
       Validators.minLength(2),
     ])),
 
-    timeSlot: new FormControl('', Validators.compose([
+    timeSlot: new FormControl('TBD', Validators.compose([
       Validators.required,
-      Validators.pattern(/^(?:1[0-2]|[1-9]):[0-5]\d-(?:1[0-2]|[1-9]):[0-5]\d$/) // Time slot must be HH:MM-HH:MM using 12-hour times
     ])),
+
+    timeAvailability: new FormGroup({
+      earlyMorning: new FormControl(undefined),
+      lateMorning: new FormControl(undefined),
+      earlyAfternoon: new FormControl(undefined),
+      lateAfternoon: new FormControl(undefined)
+    }),
 
     students: new FormArray([], Validators.required)
   });
@@ -184,8 +192,7 @@ export class EditFamilyComponent implements OnInit {
       { type: 'minlength', message: 'Address must be at least 2 characters long' }
     ],
     timeSlot: [
-      { type: 'required', message: 'Time slot is required' },
-      { type: 'pattern', message: 'Time slot must be in the format HH:MM-HH:MM using 12-hour times (No leading 0s in front of single-digit hours)' }
+      { type: 'required', message: 'Time slot is required' }
     ],
     students: {
       name: [
@@ -250,9 +257,47 @@ export class EditFamilyComponent implements OnInit {
     const familyId = this.route.snapshot.paramMap.get('id');
     const rawForm = this.editFamilyForm.value;
 
+    type RawStudent = {
+      name: string | null;
+      grade: string | null;
+      school: string | null;
+      schoolAbbreviation: string | null;
+      teacher: string | null;
+      headphones: boolean | null;
+      backpack: boolean | null;
+    };
+
+    const payload: Partial<import('./family').Family> = {
+      guardianName: rawForm.guardianName ?? undefined,
+      email: rawForm.email ?? undefined,
+      address: rawForm.address ?? undefined,
+      timeSlot: rawForm.timeSlot ?? undefined,
+      timeAvailability: {
+        earlyMorning: rawForm.timeAvailability?.earlyMorning ?? false,
+        lateMorning: rawForm.timeAvailability?.lateMorning ?? false,
+        earlyAfternoon: rawForm.timeAvailability?.earlyAfternoon ?? false,
+        lateAfternoon: rawForm.timeAvailability?.lateAfternoon ?? false,
+      },
+      students: (rawForm.students as RawStudent[])?.map(student => {
+        const schoolNameandAbbreviation = this.schools.find(
+          s => s.abbreviation === student.school
+        );
+
+        return {
+          name: student.name ?? '',
+          grade: student.grade ?? '',
+          school: schoolNameandAbbreviation?.name ?? '',
+          schoolAbbreviation: schoolNameandAbbreviation?.abbreviation ?? '',
+          teacher: student.teacher ?? '',
+          headphones: student.headphones ?? false,
+          backpack: student.backpack ?? false,
+        };
+      }) ?? []
+    };
+
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-    this.familyService.updateFamily(familyId, rawForm).subscribe({
+    this.familyService.updateFamily(familyId, payload).subscribe({
       next: () => {
         this.snackBar.open(
           `Updated family ${rawForm.guardianName}`,
