@@ -47,6 +47,14 @@
           <mat-divider [inset]="true"></mat-divider>
 
           <mat-list-item>
+            <mat-icon matListItemIcon>schedule</mat-icon>
+            <p matListItemTitle>Available Times</p>
+            <p matListItemLine>{{ getAvailableTimes() }}</p>
+          </mat-list-item>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <mat-list-item>
             <a href="mailto:{{family().email}}"  matListItemIcon><mat-icon>mail</mat-icon></a>
             <p matListItemTitle>Email</p>
             <a matListItemLine class="family-card-email" href="mailto:{{family().email}}">{{family().email}}</a>
