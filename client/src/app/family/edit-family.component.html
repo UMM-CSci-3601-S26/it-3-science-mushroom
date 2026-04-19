@@ -8,12 +8,23 @@
         <mat-card-content>
           <div class="flex-col">
             <mat-form-field>
-              <mat-label>Guardian Name</mat-label>
-              <input matInput formControlName="guardianName"
-                required [ngModel]="family().guardianName">
-              @if (formControlHasError('guardianName')) {
-                <mat-error data-test="guardianNameError">
-                  {{getFamilyErrorMessage('guardianName')}}
+              <mat-label>Guardian First Name</mat-label>
+              <input matInput formControlName="guardianFirstName"
+                required>
+              @if (formControlHasError('guardianFirstName')) {
+                <mat-error data-test="guardianFirstNameError">
+                  {{getFamilyErrorMessage('guardianFirstName')}}
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Guardian Last Name</mat-label>
+              <input matInput formControlName="guardianLastName"
+                required>
+              @if (formControlHasError('guardianLastName')) {
+                <mat-error data-test="guardianLastNameError">
+                  {{getFamilyErrorMessage('guardianLastName')}}
                 </mat-error>
               }
             </mat-form-field>

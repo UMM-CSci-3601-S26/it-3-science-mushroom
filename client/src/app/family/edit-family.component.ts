@@ -116,7 +116,13 @@ export class EditFamilyComponent implements OnInit {
   });
 
   editFamilyForm = new FormGroup({
-    guardianName: new FormControl('', Validators.compose([
+    guardianFirstName: new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.minLength(2),
+      Validators.maxLength(50),
+    ])),
+
+    guardianLastName: new FormControl('', Validators.compose([
       Validators.required,
       Validators.minLength(2),
       Validators.maxLength(50),
@@ -145,6 +151,20 @@ export class EditFamilyComponent implements OnInit {
     }),
 
     students: new FormArray([], Validators.required)
+  });
+
+  getGuardianFirstAndLastName = effect(() => {
+    const family = this.family();
+
+    const firstAndLastName = (family.guardianName ?? '').trim().split(/\s+/);
+
+    const firstName = firstAndLastName[0] ?? '';
+    const lastName = firstAndLastName.slice(1).join(' ') ?? '';
+
+    this.editFamilyForm.patchValue({
+      guardianFirstName: firstName,
+      guardianLastName: lastName,
+    });
   });
 
   get students(): FormArray {
@@ -177,10 +197,15 @@ export class EditFamilyComponent implements OnInit {
   }
 
   readonly editFamilyValidationMessages = {
-    guardianName: [
-      { type: 'required', message: 'Guardian name is required' },
-      { type: 'minlength', message: 'Name must be at least 2 characters long' },
-      { type: 'maxlength', message: 'Name cannot exceed 50 characters' }
+    guardianFirstName: [
+      { type: 'required', message: 'Guardian first name is required' },
+      { type: 'minlength', message: 'First name must be at least 2 characters long' },
+      { type: 'maxlength', message: 'First name cannot exceed 50 characters' }
+    ],
+    guardianLastName: [
+      { type: 'required', message: 'Guardian last name is required' },
+      { type: 'minlength', message: 'Last name must be at least 2 characters long' },
+      { type: 'maxlength', message: 'Last name cannot exceed 50 characters' }
     ],
     email: [
       { type: 'required', message: 'Email is required' },
@@ -267,8 +292,13 @@ export class EditFamilyComponent implements OnInit {
       backpack: boolean | null;
     };
 
+    const firstName = rawForm.guardianFirstName || '';
+    const lastName = rawForm.guardianLastName || '';
+
+    const guardianName = (firstName + ' ' + lastName).trim();
+
     const payload: Partial<import('./family').Family> = {
-      guardianName: rawForm.guardianName ?? undefined,
+      guardianName: guardianName ?? undefined,
       email: rawForm.email ?? undefined,
       address: rawForm.address ?? undefined,
       timeSlot: rawForm.timeSlot ?? undefined,
@@ -300,7 +330,7 @@ export class EditFamilyComponent implements OnInit {
     this.familyService.updateFamily(familyId, payload).subscribe({
       next: () => {
         this.snackBar.open(
-          `Updated family ${rawForm.guardianName}`,
+          `Updated family ${guardianName}`,
           null,
           { duration: 5000 }
         );
@@ -333,10 +363,16 @@ export class EditFamilyComponent implements OnInit {
   deleteForm() {
     const familyId = this.route.snapshot.paramMap.get('id');
     const rawForm = this.editFamilyForm.value;
+
+    const firstName = rawForm.guardianFirstName || '';
+    const lastName = rawForm.guardianLastName || '';
+
+    const guardianName = (firstName + ' ' + lastName).trim();
+
     const dialogRef = this.dialogService.openDialog({
       title: 'Confirm Delete',
-      familyName: rawForm.guardianName,
-      message: `Are you sure you want to delete the family ${rawForm.guardianName}?`,
+      familyName: guardianName,
+      message: `Are you sure you want to delete the family ${guardianName}?`,
       buttonOne: 'Cancel',
       buttonTwo: 'Confirm',
     }, '400px', '200px');
@@ -348,7 +384,7 @@ export class EditFamilyComponent implements OnInit {
         this.familyService.deleteFamily(familyId).subscribe({
           next: () => {
             this.snackBar.open(
-              `Deleted family ${rawForm.guardianName}`,
+              `Deleted family ${guardianName}`,
               null,
               { duration: 5000 }
             );
