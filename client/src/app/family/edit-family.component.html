@@ -96,7 +96,7 @@
                       }
                     </mat-form-field>
 
-                    <mat-form-field>
+                    <mat-form-field class="student-school">
                       <mat-label>School</mat-label>
                       <mat-select formControlName="school" required [ngModel]="family().students[i]?.schoolAbbreviation">
                         <mat-option *ngFor="let s of schools" [value]="s.abbreviation">
@@ -115,22 +115,27 @@
                       <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
                     </mat-form-field>
 
-                    <div class="radio-group">
-                      <h3>Backpack Needed?</h3>
-                      <mat-radio-group formControlName="backpack" [ngModel]="family().students[i]?.backpack">
-                        <mat-radio-button [value]="true">Yes</mat-radio-button>
-                        <mat-radio-button [value]="false">No</mat-radio-button>
-                      </mat-radio-group>
-
-                      <h3>Headphones Needed?</h3>
-                      <mat-radio-group formControlName="headphones" [ngModel]="family().students[i]?.headphones">
-                        <mat-radio-button [value]="true">Yes</mat-radio-button>
-                        <mat-radio-button [value]="false">No</mat-radio-button>
-                      </mat-radio-group>
-                    </div>
                     <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
-                    Remove Student
+                      Remove Student
                     </button>
+
+                    <div class="radio-group">
+                      <div class="radio-section">
+                        <h4 style="font-size: 15px;">Backpack Needed?</h4>
+                        <mat-radio-group formControlName="backpack" [ngModel]="family().students[i]?.backpack">
+                          <mat-radio-button [value]="true">Yes</mat-radio-button>
+                          <mat-radio-button [value]="false">No</mat-radio-button>
+                        </mat-radio-group>
+                      </div>
+
+                      <div class="radio-section">
+                        <h4 style="font-size: 15px;">Headphones Needed?</h4>
+                        <mat-radio-group formControlName="headphones" [ngModel]="family().students[i]?.headphones">
+                          <mat-radio-button [value]="true">Yes</mat-radio-button>
+                          <mat-radio-button [value]="false">No</mat-radio-button>
+                        </mat-radio-group>
+                      </div>
+                    </div>
                   </div>
                 </div>
               }
