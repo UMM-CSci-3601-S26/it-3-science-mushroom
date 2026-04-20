@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 // Family Imports
 import { FamilyService } from './family.service';
@@ -17,7 +17,7 @@ import { FamilyService } from './family.service';
   selector: 'app-add-family',
   templateUrl: './add-family.component.html',
   styleUrls: ['./add-family.component.scss'],
-  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatOptionModule, MatButtonModule]
+  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatOptionModule, MatButtonModule, RouterLink]
 })
 export class AddFamilyComponent {
   private familyService = inject(FamilyService);

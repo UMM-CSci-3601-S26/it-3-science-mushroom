@@ -124,6 +124,15 @@
           <button
             mat-button
             type="button"
+            color="primary"
+            data-test="BackFamilyButton"
+            routerLink="/family"
+            >
+            BACK
+          </button>
+          <button
+            mat-button
+            type="button"
             class="family-button"
             color="primary"
             [disabled]="!addFamilyForm.valid"
