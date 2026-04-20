@@ -18,25 +18,46 @@ describe('Edit family page', () => {
 
   it('Should show error messages for invalid inputs on the family form', () => {
     // Before doing anything there shouldn't be an error
-    cy.get('[data-test=guardianNameError]').should('not.exist');
+    cy.get('[data-test=guardianFirstNameError]').should('not.exist');
 
     // Deleting and then clicking the guardian name field without entering anything should cause an error message
-    page.getFormField('guardianName').click().clear().blur();
-    cy.get('[data-test=guardianNameError]').should('exist').and('be.visible');
+    page.getFormField('guardianFirstName').click().clear().blur();
+    cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
 
     // Some more tests for various invalid guardian name inputs
-    page.getFormField('guardianName').type('J').blur();
-    cy.get('[data-test=guardianNameError]').should('exist').and('be.visible');
+    page.getFormField('guardianFirstName').type('J').blur();
+    cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
     page
-      .getFormField('guardianName')
+      .getFormField('guardianFirstName')
       .clear()
       .type('This is a very long name that goes beyond the 50 character limit')
       .blur();
-    cy.get('[data-test=guardianNameError]').should('exist').and('be.visible');
+    cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
 
     // Entering a valid guardian name should remove the error.
-    page.getFormField('guardianName').clear().type('John Smith').blur();
-    cy.get('[data-test=guardianNameError]').should('not.exist');
+    page.getFormField('guardianFirstName').clear().type('John').blur();
+    cy.get('[data-test=guardianFirstNameError]').should('not.exist');
+
+    // Before doing anything there shouldn't be an error
+    cy.get('[data-test=guardianLastNameError]').should('not.exist');
+
+    // Deleting and then clicking the guardian name field without entering anything should cause an error message
+    page.getFormField('guardianLastName').click().clear().blur();
+    cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
+
+    // Some more tests for various invalid guardian name inputs
+    page.getFormField('guardianLastName').type('J').blur();
+    cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
+    page
+      .getFormField('guardianLastName')
+      .clear()
+      .type('This is a very long name that goes beyond the 50 character limit')
+      .blur();
+    cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
+
+    // Entering a valid guardian name should remove the error.
+    page.getFormField('guardianLastName').clear().type('Smith').blur();
+    cy.get('[data-test=guardianLastNameError]').should('not.exist');
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=addressError]').should('not.exist');
@@ -111,7 +132,7 @@ describe('Edit family page', () => {
     cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 2);
   });
 
-  describe('Updating a new family', () => {
+  describe('Updating a family', () => {
     beforeEach(() => {
       cy.task('seed:database');
       page.navigateTo();
@@ -146,7 +167,7 @@ describe('Edit family page', () => {
             school: 'Morris Area High School',
             schoolAbbreviation: 'MAHS',
             teacher: 'Mr. Test',
-            headphones: true,
+            headphones: false,
             backpack: false
 
           }
@@ -180,7 +201,7 @@ describe('Edit family page', () => {
             school: '',
             schoolAbbreviation: '',
             teacher: 'Mr. Test',
-            headphones: true,
+            headphones: false,
             backpack: false
 
           }
@@ -218,8 +239,30 @@ describe('Edit family page', () => {
         .contains(expectedFamily.timeSlot)
         .should('exist');
 
+      cy.get('.family-card-timeAvailability')
+        .contains('Late Morning')
+        .should('exist');
+
       // We should see the confirmation message at the bottom of the screen
       page.getSnackBar().should('contain', `Updated family ${expectedFamily.guardianName}`);
     });
   });
+
+  describe('deleting a family', () => {
+
+    it('Should be able to delete a family', () => {
+      cy.get('[data-test=deleteFamilyButton]').click();
+
+      cy.contains('button', 'Confirm').click();
+
+      page.getSnackBar().should('contain', `Deleted family Jane Doe`);
+      cy.url({ timeout: 3000 })
+        .should('match', /\/family$/);
+      cy.get('.family-card-guardianName')
+        .contains('Jane Doe')
+        .should('not.exist');
+
+      cy.task('seed:database');
+    })
+  })
 });
