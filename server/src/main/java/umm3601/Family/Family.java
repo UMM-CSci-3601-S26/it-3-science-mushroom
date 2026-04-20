@@ -24,17 +24,24 @@ public class Family {
   public FamilyChecklist checklist;
 
   public List<StudentInfo> students;
+
+  public AvailabilityOptions timeAvailability;
+
   public static class AvailabilityOptions {
     public boolean earlyMorning;
     public boolean lateMorning;
     public boolean earlyAfternoon;
     public boolean lateAfternoon;
   }
+
   public static class StudentInfo {
     public String name;
     public String grade;
     public String school;
+    public String schoolAbbreviation;
     public String teacher;
+    public Boolean backpack;
+    public Boolean headphones;
   }
 
   @SuppressWarnings({"VisibilityModifier"})
