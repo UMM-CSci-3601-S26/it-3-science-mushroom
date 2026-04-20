@@ -24,7 +24,12 @@ public class Family {
   public FamilyChecklist checklist;
 
   public List<StudentInfo> students;
-
+  public static class AvailabilityOptions {
+    public boolean earlyMorning;
+    public boolean lateMorning;
+    public boolean earlyAfternoon;
+    public boolean lateAfternoon;
+  }
   public static class StudentInfo {
     public String name;
     public String grade;
