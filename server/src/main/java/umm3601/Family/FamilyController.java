@@ -256,10 +256,10 @@ public class FamilyController implements Controller {
       int studentCount = family.students != null ? family.students.size() : 0;
 
       csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%d\n",
-        cleanUpCSV(family.guardianName),
-        cleanUpCSV(family.email),
-        cleanUpCSV(family.address),
-        cleanUpCSV(family.timeSlot),
+        cleanUpCSV(family.guardianName).replace("\"", "\"\""),
+        cleanUpCSV(family.email).replace("\"", "\"\""),
+        cleanUpCSV(family.address).replace("\"", "\"\""),
+        cleanUpCSV(family.timeSlot).replace("\"", "\"\""),
         studentCount
       ));
     }
@@ -272,7 +272,7 @@ public class FamilyController implements Controller {
   }
 
   /**
-   * Cleans up CSV values by handling nulls, flattening line breaks, escaping quotes,
+   * Cleans up CSV values by handling nulls, flattening line breaks,
    * preventing formula injection, trimming whitespace, and removing outside quotes from values.
    * @param value CSV value to clean up
    * @return Cleaned up CSV value
