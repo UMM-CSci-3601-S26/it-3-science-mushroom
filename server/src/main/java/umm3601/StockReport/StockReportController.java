@@ -280,7 +280,7 @@ public class StockReportController implements Controller {
    * @return a byte array containing the XLSX file data
    * @throws IOException if there is an error writing the workbook to the byte array output stream
    */
-  private byte[] convertWorkbookToByteArray(Workbook workbook) throws IOException {
+  protected byte[] convertWorkbookToByteArray(Workbook workbook) throws IOException {
     try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
         // Write the workbook content to the output stream
         workbook.write(bos);
@@ -299,7 +299,7 @@ public class StockReportController implements Controller {
    * @returns byte array containing the XLSX file data
    * @throws IOException if there is an error writing the XLSX file
    */
-  private byte[] createXLSXFile() throws IOException {
+  protected byte[] createXLSXFile() throws IOException {
     // Try to create workbook and file output stream
     try (
       XSSFWorkbook workbook = new XSSFWorkbook();
@@ -418,8 +418,7 @@ public class StockReportController implements Controller {
       }
 
     } catch (IOException e) {
-      ctx.result("Failed to generate stock report: " + e.getMessage());
-      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new BadRequestResponse("Failed to generate stock report: " + e.getMessage());
     }
   }
 
