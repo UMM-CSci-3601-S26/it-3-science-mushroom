@@ -45,18 +45,30 @@ describe('FamilyCardComponent', () => {
       address: '123 Street',
       email: 'chris@email.com',
       timeSlot: '9:00-10:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Chris Jr.',
           grade: '2',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Christy',
           grade: '2',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         }
       ]
     };
@@ -74,5 +86,83 @@ describe('FamilyCardComponent', () => {
 
   it('should be the family named Chris', () => {
     expect(component.family().guardianName).toEqual('Chris');
+  });
+
+  it('should return early morning only', () => {
+    spyOn(component, 'family').and.returnValue({
+      timeAvailability: {
+        earlyMorning: true,
+        lateMorning: false,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      }
+    } as Partial<Family> as Family);
+
+    expect(component.getAvailableTimes()).toBe('Early Morning');
+  });
+
+  it('should return late morning only', () => {
+    spyOn(component, 'family').and.returnValue({
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      }
+    } as Partial<Family> as Family);
+
+    expect(component.getAvailableTimes()).toBe('Late Morning');
+  });
+
+  it('should return early afternoon only', () => {
+    spyOn(component, 'family').and.returnValue({
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: false,
+        earlyAfternoon: true,
+        lateAfternoon: false
+      }
+    } as Partial<Family> as Family);
+
+    expect(component.getAvailableTimes()).toBe('Early Afternoon');
+  });
+
+  it('should return late afternoon only', () => {
+    spyOn(component, 'family').and.returnValue({
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: false,
+        earlyAfternoon: false,
+        lateAfternoon: true
+      }
+    } as Partial<Family> as Family);
+
+    expect(component.getAvailableTimes()).toBe('Late Afternoon');
+  });
+
+  it('should return none only', () => {
+    spyOn(component, 'family').and.returnValue({
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: false,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      }
+    } as Partial<Family> as Family);
+
+    expect(component.getAvailableTimes()).toBe('None');
+  });
+
+  it('should return multiple', () => {
+    spyOn(component, 'family').and.returnValue({
+      timeAvailability: {
+        earlyMorning: true,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: true
+      }
+    } as Partial<Family> as Family);
+
+    expect(component.getAvailableTimes()).toBe('Early Morning, Late Morning, Late Afternoon');
   });
 });
