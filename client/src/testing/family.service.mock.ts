@@ -18,12 +18,21 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'jjohnson@email.com',
       address: '713 Broadway',
       timeSlot: '8:00-9:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'John Jr.',
           grade: '1',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
@@ -34,18 +43,30 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'janedoe@email.com',
       address: '123 Street',
       timeSlot: '10:00-11:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Jennifer',
           grade: '6',
           school: "Hancock Middle School",
+          schoolAbbreviation: "HMS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
+          schoolAbbreviation: "HMS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
@@ -56,24 +77,39 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
       timeSlot: '1:00-2:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Harold',
           grade: '11',
           school: "Morris High School",
+          schoolAbbreviation: "MHS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
+          schoolAbbreviation: "MHS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },

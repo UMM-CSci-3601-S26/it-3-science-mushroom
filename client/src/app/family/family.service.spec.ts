@@ -19,12 +19,21 @@ describe('FamilyService', () => {
       email: 'jjohnson@email.com',
       address: '713 Broadway',
       timeSlot: '8:00-9:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'John Jr.',
           grade: '1',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
@@ -35,18 +44,30 @@ describe('FamilyService', () => {
       email: 'janedoe@email.com',
       address: '123 Street',
       timeSlot: '10:00-11:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Jennifer',
           grade: '6',
           school: "Hancock Middle School",
+          schoolAbbreviation: "HMS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Jake',
           grade: '8',
           school: "Hancock Middle School",
+          schoolAbbreviation: "HMS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
@@ -57,24 +78,39 @@ describe('FamilyService', () => {
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
       timeSlot: '1:00-2:00',
+      timeAvailability: {
+        earlyMorning: false,
+        lateMorning: true,
+        earlyAfternoon: false,
+        lateAfternoon: false
+      },
       students: [
         {
           name: 'Harold',
           grade: '11',
           school: "Morris High School",
+          schoolAbbreviation: "MHS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Thomas',
           grade: '6',
           school: "Morris High School",
+          schoolAbbreviation: "MHS",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
         {
           name: 'Emma',
           grade: '2',
           school: "Morris Elementary",
+          schoolAbbreviation: "ME",
           teacher: "N/A",
+          headphones: true,
+          backpack: false
         },
       ]
     },
@@ -263,7 +299,7 @@ describe('FamilyService', () => {
   });
 
   describe('Adding a family using `addFamily()`', () => {
-    it('talks to the right endpoint and is called once', waitForAsync(() => {
+    it('talks to the right endpoint', waitForAsync(() => {
       const family_id = 'john_id';
       const expected_http_response = { id: family_id } ;
 
@@ -289,49 +325,44 @@ describe('FamilyService', () => {
         expect(mockedMethod2)
           .withContext('two calls')
           .toHaveBeenCalledTimes(2);
-        expect(mockedMethod2)
-          .withContext('talks to the correct endpoint');
       });
     }));
   });
 
-  //FIX LATER
+  describe('Updating a family using `updateFamily()`', () => {
+    it('calls the correct endpoint and returns the id', waitForAsync(() => {
+      const family_id = 'john_id';
+      const expected_http_response = { id: family_id };
 
-  // describe('Updating a family using `updateFamily()`', () => {
-  //   it('calls the correct endpoint and returns the id', waitForAsync(() => {
-  //     const family_id = 'john_id';
-  //     const expected_http_response = { id: family_id };
+      const mockedMethod = spyOn(httpClient, 'put')
+        .and
+        .returnValue(of(expected_http_response));
+      const mockedMethod2 = spyOn(httpClient, 'get')
+        .and
+        .returnValue(of(expected_http_response));
 
-  //     const mockedMethod = spyOn(httpClient, 'post')
-  //       .and
-  //       .returnValue(of(expected_http_response));
-  //     const mockedMethod2 = spyOn(httpClient, 'get')
-  //       .and
-  //       .returnValue(of(expected_http_response));
-
-  //     familyService.updateFamily(family_id, testFamilies[1]).subscribe((returnedId) => {
-  //       expect(returnedId).toBe(family_id);
-  //       expect(mockedMethod)
-  //         .withContext('one call')
-  //         .toHaveBeenCalledTimes(1);
-  //       expect(mockedMethod)
-  //         .withContext('talks to the correct endpoint')
-  //         .toHaveBeenCalledWith(`${familyService.familyUrl}/${family_id}`, testFamilies[1]);
-  //     });
-  //     familyService.addFamily(testFamilies[1]).subscribe((new_family_id_2) => {
-  //       expect(new_family_id_2).toBe(family_id);
-  //       expect(mockedMethod2)
-  //         .withContext('one call')
-  //         .toHaveBeenCalledTimes(1);
-  //       expect(mockedMethod2)
-  //         .withContext('talks to the correct endpoint');
-  //     });
-  //   }));
-  // });
+      familyService.updateFamily(family_id, testFamilies[1]).subscribe((returnedId) => {
+        expect(returnedId).toBe(family_id);
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${familyService.familyUrl}/${family_id}`, testFamilies[1]);
+      });
+      familyService.updateFamily(family_id, testFamilies[1]).subscribe((new_family_id_2) => {
+        expect(new_family_id_2).toBe(family_id);
+        expect(mockedMethod2)
+          .withContext('two calls')
+          .toHaveBeenCalledTimes(2);
+      });
+    }));
+  });
 
   describe('Deleting a family using `deleteFamily()`', () => {
-    it('talks to the right endpoint and is called once', waitForAsync(() => {
+    it('talks to the right endpoint', waitForAsync(() => {
       const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
+      const mockedMethod2 = spyOn(httpClient, 'get').and.returnValue(of(void 0));
 
       familyService.deleteFamily('john_id').subscribe((res) => {
         expect(res).toBeUndefined();
@@ -342,6 +373,13 @@ describe('FamilyService', () => {
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')
           .toHaveBeenCalledWith(`${familyService.familyUrl}/john_id`);
+      });
+      familyService.deleteFamily('john_id').subscribe((res) => {
+        expect(res).toBeUndefined();
+
+        expect(mockedMethod2)
+          .withContext('two calls')
+          .toHaveBeenCalledTimes(2);
       });
     }));
   });
@@ -386,9 +424,42 @@ describe('FamilyService', () => {
   describe('optionBuilder', () => {
     it('should build unique options from Family data', () => {
       const mockFamily: Family[] = [
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []}
+        {
+          guardianName: 'Jack Jack',
+          email: 'jack@gmail.com',
+          address: '123 anywhere St.',
+          timeSlot: '9:00 - 10:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []},
+        {
+          guardianName: 'Jane Dawn',
+          email: 'dawn@gmail.com',
+          address: '456 anywhere St.',
+          timeSlot: '9:00 - 12:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []},
+        {
+          guardianName: 'Jack Jack',
+          email: 'jack@gmail.com',
+          address: '123 anywhere St.',
+          timeSlot: '9:00 - 10:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');
@@ -401,9 +472,42 @@ describe('FamilyService', () => {
 
     it('should filter out empty and null values', () => {
       const mockFamily: Family[] = [
-        { guardianName: '', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: 'Jane Dawn', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Connor Night', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+        {
+          guardianName: '',
+          email: 'jack@gmail.com',
+          address: '123 anywhere St.',
+          timeSlot: '9:00 - 10:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []},
+        {
+          guardianName: 'Jane Dawn',
+          email: 'dawn@gmail.com',
+          address: '456 anywhere St.',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          timeSlot: '9:00 - 12:00',
+          students: []},
+        {
+          guardianName: 'Connor Night',
+          email: 'night@gmail.com',
+          address: '789 anywhere St.',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          timeSlot: '9:00 - 11:00',
+          students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');
@@ -421,9 +525,42 @@ describe('FamilyService', () => {
 
     it('should filter out whitespace-only values', () => {
       const mockFamily: Family[] = [
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: '            ', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Connor Night', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+        {
+          guardianName: 'Jack Jack',
+          email: 'jack@gmail.com',
+          address: '123 anywhere St.',
+          timeSlot: '9:00 - 10:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []},
+        {
+          guardianName: '            ',
+          email: 'dawn@gmail.com',
+          address: '456 anywhere St.',
+          timeSlot: '9:00 - 12:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []},
+        {
+          guardianName: 'Connor Night',
+          email: 'night@gmail.com',
+          address: '789 anywhere St.',
+          timeSlot: '9:00 - 11:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');
@@ -436,9 +573,42 @@ describe('FamilyService', () => {
 
     it('should return a single option when all values are the same', () => {
       const mockFamily: Family[] = [
-        { guardianName: 'Jack Jack', email: 'jack@gmail.com', address: '123 anywhere St.', timeSlot: '9:00 - 10:00', students: []},
-        { guardianName: 'Jack Jack', email: 'dawn@gmail.com', address: '456 anywhere St.', timeSlot: '9:00 - 12:00', students: []},
-        { guardianName: 'Jack Jack', email: 'night@gmail.com', address: '789 anywhere St.', timeSlot: '9:00 - 11:00', students: []}
+        {
+          guardianName: 'Jack Jack',
+          email: 'jack@gmail.com',
+          address: '123 anywhere St.',
+          timeSlot: '9:00 - 10:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []},
+        {
+          guardianName: 'Jack Jack',
+          email: 'dawn@gmail.com',
+          address: '456 anywhere St.',
+          timeSlot: '9:00 - 12:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []},
+        {
+          guardianName: 'Jack Jack',
+          email: 'night@gmail.com',
+          address: '789 anywhere St.',
+          timeSlot: '9:00 - 11:00',
+          timeAvailability: {
+            earlyMorning: false,
+            lateMorning: true,
+            earlyAfternoon: false,
+            lateAfternoon: false
+          },
+          students: []}
       ];
 
       const result = familyService.optionBuilder(mockFamily, 'guardianName');
