@@ -5,4 +5,5 @@ export interface DialogData {
   reportName?: string; // reportName field for Stock Report dialog
   buttonOne?: string; // Left Button (usually Cancel, No, etc)
   buttonTwo?: string; // Right Button (usually Confirm, Yes, etc)
+  familyName?: string; // familyName field for Delete Family dialog
 }

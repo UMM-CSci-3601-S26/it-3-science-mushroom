@@ -12,6 +12,7 @@ export class AddFamilyPage {
   private readonly emailFieldName = 'email';
   private readonly formFieldSelector = 'mat-form-field';
   private readonly dropDownSelector = 'mat-option';
+  private readonly familyFilterSelector = '[data-cy="filter-family"]'
 
   navigateTo() {
     return cy.visit(this.url);
@@ -52,6 +53,9 @@ export class AddFamilyPage {
     return cy.contains('button', 'Add Student');
   }
 
+  getFilterFamily() {
+    return cy.get(this.familyFilterSelector)
+  }
 
   addFamily(newFamily: Family) {
     this.getFormField(this.guardianNameFieldName).type(newFamily.guardianName);

@@ -83,7 +83,16 @@ export class FamilyService {
   }
 
   deleteFamily(id: string): Observable<void> {
-    return this.httpClient.delete<void>(`${this.familyUrl}/${id}`);
+    return new Observable(observer => {
+      this.httpClient.delete<void>(`${this.familyUrl}/${id}`).subscribe({
+        next: (result) => {
+          this.loadFamilies();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
   }
 
   getDashboardStats(): Observable<DashboardStats> {

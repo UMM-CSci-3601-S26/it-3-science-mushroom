@@ -11,6 +11,7 @@ import umm3601.Inventory.InventoryController;
 import umm3601.StockReport.StockReportController;
 import umm3601.SupplyList.SupplyListController;
 import umm3601.terms.TermsController;
+import umm3601.settings.SettingsController;
 
 // Main
 public class Main {
@@ -72,7 +73,8 @@ public class Main {
       new SupplyListController(database),
       new FamilyController(database),
       new StockReportController(database),
-      new TermsController(database)
+      new TermsController(database),
+      new SettingsController(database)
     };
     return controllers;
   }
