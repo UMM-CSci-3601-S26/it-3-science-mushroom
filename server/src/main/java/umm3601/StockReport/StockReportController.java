@@ -6,9 +6,7 @@ import static com.mongodb.client.model.Filters.eq;
 
 // Java Imports
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 
@@ -39,7 +37,7 @@ import umm3601.Controller;
 import umm3601.Inventory.Inventory;
 import umm3601.Family.FamilyController;
 
-// Controller
+@SuppressWarnings({ "MagicNumber" })
 public class StockReportController implements Controller {
 
   private static final String API_STOCK_REPORT = "/api/stockreport";
@@ -298,15 +296,13 @@ public class StockReportController implements Controller {
   /**
    * Creates an XLSX file with a separate sheet for each Stock State report
    * Uses stockStateToCSV() to get the data for each sheet
-   * @param ctx the Javalin context containing necessary parameters for report generation
    * @returns byte array containing the XLSX file data
    * @throws IOException if there is an error writing the XLSX file
    */
-  private byte[] createXLSXFile(Context ctx) throws IOException {
+  private byte[] createXLSXFile() throws IOException {
     // Try to create workbook and file output stream
     try (
       XSSFWorkbook workbook = new XSSFWorkbook();
-      FileOutputStream fileOut = new FileOutputStream("StockReport.xlsx")
     ) {
       // Make separate sheets for each Stock State
       XSSFSheet stockedSheet = workbook.createSheet("Stocked Items");
@@ -325,11 +321,13 @@ public class StockReportController implements Controller {
       if (sections.length > 0) {
           String[] stockedRows = sections[0].split("\n"); // Split into rows
           for (int i = 1; i < stockedRows.length; i++) {  // Skip header row
-              if (stockedRows[i].trim().isEmpty()) continue; // Skip empty rows
+              if (stockedRows[i].trim().isEmpty()) {
+                continue;
+              } // Skip empty rows
               String[] cells = stockedRows[i].split(","); // Split into cells
-              XSSFRow row = stockedSheet.createRow(i - 1); // Create row in sheet (i-1 because of header)
+              XSSFRow row = stockedSheet.createRow(i - 1); // Create row (i-1 because of header)
               for (int j = 0; j < cells.length; j++) { // Fill cells in row
-                  row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j])); // Clean up CSV value and set cell value
+                row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j])); // Clean CSV and set cell value
               }
           }
       }
@@ -338,7 +336,9 @@ public class StockReportController implements Controller {
       if (sections.length > 1) {
           String[] outOfStockRows = sections[1].split("\n");
           for (int i = 1; i < outOfStockRows.length; i++) {
-              if (outOfStockRows[i].trim().isEmpty()) continue;
+              if (outOfStockRows[i].trim().isEmpty()) {
+                continue;
+              }
               String[] cells = outOfStockRows[i].split(",");
               XSSFRow row = outOfStockSheet.createRow(i - 1);
               for (int j = 0; j < cells.length; j++) {
@@ -351,7 +351,9 @@ public class StockReportController implements Controller {
       if (sections.length > 2) {
           String[] understockedRows = sections[2].split("\n");
           for (int i = 1; i < understockedRows.length; i++) {
-              if (understockedRows[i].trim().isEmpty()) continue;
+              if (understockedRows[i].trim().isEmpty()) {
+                continue;
+              }
               String[] cells = understockedRows[i].split(",");
               XSSFRow row = understockedSheet.createRow(i - 1);
               for (int j = 0; j < cells.length; j++) {
@@ -364,7 +366,9 @@ public class StockReportController implements Controller {
       if (sections.length > 3) {
           String[] overstockedRows = sections[3].split("\n");
           for (int i = 1; i < overstockedRows.length; i++) {
-              if (overstockedRows[i].trim().isEmpty()) continue;
+              if (overstockedRows[i].trim().isEmpty()) {
+                continue;
+              }
               String[] cells = overstockedRows[i].split(",");
               XSSFRow row = overstockedSheet.createRow(i - 1);
               for (int j = 0; j < cells.length; j++) {
@@ -383,18 +387,23 @@ public class StockReportController implements Controller {
   /**
    * Uses createXLSXFile() to generate an XLSX file of the current Stock Report
    * @param ctx Javlin context containing necessary parameters
-   * @param saveToDatabase Whether to save the report to the MongoDB database (true) or download it to the client machine (false)
+   * @param saveToDatabase Whether to save the report to the MongoDB database (true)
+   *  or download it to the client machine (false)
    * @throws IOException if there is an error generating the XLSX file
    */
   public void generateStockReport(Context ctx, boolean saveToDatabase) {
+    String timestamp = java.time.LocalDateTime.now()
+    .format(java.time.format.DateTimeFormatter
+      .ofPattern("yyyy-MM-dd_HH:mm"));
+
     try {
-      byte[] workbookBytes = createXLSXFile(ctx);
+      byte[] workbookBytes = createXLSXFile();
 
       // Save to database
       if (saveToDatabase) {
         // Convert workbook to byte array and save to MongoDB
         StockReport newReport = new StockReport();
-        newReport.reportName = "Stock Report - " + java.time.LocalDate.now();
+        newReport.reportName = "Stock Report - " + timestamp;
         newReport.reportType = "XLSX";
         newReport.stockReportData = workbookBytes;
 
@@ -403,10 +412,11 @@ public class StockReportController implements Controller {
       } else { // Download to client
         // Set response headers for CSV download
         ctx.contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        ctx.header("Content-Disposition", "attachment; filename=stock_report.xlsx");
+        ctx.header("Content-Disposition", "attachment; filename=Stock_Report_" + timestamp + ".xlsx");
         ctx.status(HttpStatus.OK);
         ctx.result(workbookBytes);
       }
+
     } catch (IOException e) {
       ctx.result("Failed to generate stock report: " + e.getMessage());
       ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -416,8 +426,10 @@ public class StockReportController implements Controller {
   @Override
   public void addRoutes(Javalin server) {
     // GET routes
-    server.get(API_GENERATE_REPORT, ctx -> generateStockReport(ctx, false)); // Generate report and download to client
-    server.get(API_GENERATE_REPORT_AND_SAVE, ctx -> generateStockReport(ctx, true)); // Generate report and save to database
+    // Generate report and download to client
+    server.get(API_GENERATE_REPORT, ctx -> generateStockReport(ctx, false));
+    // Generate report and save to database
+    server.get(API_GENERATE_REPORT_AND_SAVE, ctx -> generateStockReport(ctx, true));
     server.get(API_STOCK_REPORT, this::getReports); // All reports (only name and ID)
     server.get(API_REPORT_BY_ID, this::getReportById); // Report by ID (all fields)
     server.get(API_REPORT_BYTES_BY_ID, this::getReportBytesById); // Report bytes by ID (no name or ID returned)
