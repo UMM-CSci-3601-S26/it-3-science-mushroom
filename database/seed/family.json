@@ -3,7 +3,7 @@
     "guardianName": "Jane Doe",
     "email": "jane@email.com",
     "address": "123 Street",
-    "timeSlot": "TBD",
+    "timeSlot": "9:00-10:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": false,
@@ -14,30 +14,20 @@
       {
         "name": "Tim",
         "grade": "12",
-<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
-        "teacher": "N/A"
-=======
-        "school": "Morris Area High School",
-        "schoolAbbreviation": "MAHS",
+        "schoolAbbreviation": "HHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
->>>>>>> main
       },
       {
         "name": "Sara",
         "grade": "11",
-<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
-        "teacher": "N/A"
-=======
-        "school": "Morris Area High School",
-        "schoolAbbreviation": "MAHS",
+        "schoolAbbreviation": "HHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
->>>>>>> main
       }
     ]
   },
@@ -45,7 +35,7 @@
     "guardianName": "John Doe",
     "email": "john@email.com",
     "address": "1232 Street",
-    "timeSlot": "TBD",
+    "timeSlot": "9:00-10:00",
     "timeAvailability": {
       "earlyMorning": false,
       "lateMorning": true,
@@ -56,44 +46,29 @@
       {
         "name": "Johnny Jr.",
         "grade": "9",
-<<<<<<< 14-point-of-sale-frontend
         "school": "Herman-Norcross High School",
-        "teacher": "N/A"
-=======
-        "school": "Hancock High School",
-        "schoolAbbreviation": "HHS",
+        "schoolAbbreviation": "HNHS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": true
->>>>>>> main
       },
       {
         "name": "Burtrum",
         "grade": "10",
-<<<<<<< 14-point-of-sale-frontend
         "school": "Herman-Norcross High School",
-        "teacher": "N/A"
-=======
-        "school": "Hancock High School",
-        "schoolAbbreviation": "HHS",
+        "schoolAbbreviation": "HNHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
->>>>>>> main
       },
       {
         "name": "Harold",
         "grade": "11",
-<<<<<<< 14-point-of-sale-frontend
         "school": "Herman-Norcross High School",
-        "teacher": "N/A"
-=======
-        "school": "Hancock High School",
-        "schoolAbbreviation": "HHS",
+        "schoolAbbreviation": "HNHS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
->>>>>>> main
       }
     ]
   },
@@ -101,7 +76,7 @@
     "guardianName": "Janis Dorothy",
     "email": "jane@email.com",
     "address": "123 Street",
-    "timeSlot": "TBD",
+    "timeSlot": "9:00-10:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": true,
@@ -112,157 +87,17 @@
       {
         "name": "Timothy",
         "grade": "11",
-<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
-        "teacher": "N/A"
-=======
-        "school": "Chokio-Alberta High School",
-        "schoolAbbreviation": "CAHS",
+        "schoolAbbreviation": "HHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
->>>>>>> main
       },
       {
         "name": "Sarah",
         "grade": "9",
-<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
-        "teacher": "N/A"
-      }
-    ]
-  },
-  {
-  "guardianName": "Michael Carter",
-  "email": "michael.carter@email.com",
-  "address": "45 Oak Lane",
-  "timeSlot": "10:00-11:00",
-  "students": [
-    {
-      "name": "Alyssa",
-      "grade": "8",
-      "school": "Chokio-Alberta High School",
-      "teacher": "N/A"
-    }
-  ]
-},
-{
-  "guardianName": "Laura Nelson",
-  "email": "laura.nelson@email.com",
-  "address": "78 Pine Street",
-  "timeSlot": "11:00-12:00",
-  "students": [
-    {
-      "name": "Kevin",
-      "grade": "10",
-      "school": "Herman-Norcross High School",
-      "teacher": "N/A"
-    },
-    {
-      "name": "Lily",
-      "grade": "7",
-      "school": "Chokio-Alberta High School",
-      "teacher": "N/A"
-    }
-  ]
-},
-{
-  "guardianName": "Robert Fields",
-  "email": "rfields@email.com",
-  "address": "902 Maple Ave",
-  "timeSlot": "12:00-1:00",
-  "students": [
-    {
-      "name": "Chris",
-      "grade": "12",
-      "school": "Hancock High School",
-      "teacher": "N/A"
-    }
-  ]
-},
-{
-  "guardianName": "Angela Brooks",
-  "email": "angela.brooks@email.com",
-  "address": "311 Cedar Blvd",
-  "timeSlot": "1:00-2:00",
-  "students": [
-    {
-      "name": "Derek",
-      "grade": "9",
-      "school": "Herman-Norcross High School",
-      "teacher": "N/A"
-    },
-    {
-      "name": "Maya",
-      "grade": "6",
-      "school": "Herman-Norcross Elementary",
-      "teacher": "N/A"
-    }
-  ]
-},
-{
-  "guardianName": "Samuel Ortiz",
-  "email": "samuel.ortiz@email.com",
-  "address": "129 Birch Road",
-  "timeSlot": "2:00-3:00",
-  "students": [
-    {
-      "name": "Elena",
-      "grade": "11",
-      "school": "Hancock High School",
-      "teacher": "N/A"
-    },
-    {
-      "name": "Lucas",
-      "grade": "5",
-      "school": "Hancock Elementary",
-      "teacher": "N/A"
-    }
-  ]
-},
-{
-  "guardianName": "Danielle Kim",
-  "email": "danielle.kim@email.com",
-  "address": "555 Walnut St",
-  "timeSlot": "3:00-4:00",
-  "students": [
-    {
-      "name": "Ethan",
-      "grade": "10",
-      "school": "Herman-Norcross High School",
-      "teacher": "N/A"
-    }
-  ]
-},
-{
-  "guardianName": "Carlos Ramirez",
-  "email": "carlos.ramirez@email.com",
-  "address": "888 Spruce Drive",
-  "timeSlot": "4:00-5:00",
-  "students": [
-    {
-      "name": "Isabella",
-      "grade": "8",
-      "school": "Chokio-Alberta High School",
-      "teacher": "N/A"
-    },
-    {
-      "name": "Mateo",
-      "grade": "6",
-      "school": "Herman-Norcross Elementary",
-      "teacher": "N/A"
-    },
-    {
-      "name": "Sofia",
-      "grade": "3",
-      "school": "Hancock Elementary",
-      "teacher": "N/A"
-    }
-  ]
-}
-=======
-        "school": "Chokio-Alberta High School",
-        "schoolAbbreviation": "CAHS",
+        "schoolAbbreviation": "HHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -273,7 +108,7 @@
     "guardianName": "Michael Carter",
     "email": "michael.carter@email.com",
     "address": "45 Oak Lane",
-    "timeSlot": "TBD",
+    "timeSlot": "10:00-11:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": false,
@@ -284,8 +119,8 @@
       {
         "name": "Alyssa",
         "grade": "8",
-        "school": "Morris Area Middle School",
-        "schoolAbbreviation": "MAMS",
+        "school": "Chokio-Alberta High School",
+        "schoolAbbreviation": "CAHS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -296,7 +131,7 @@
     "guardianName": "Laura Nelson",
     "email": "laura.nelson@email.com",
     "address": "78 Pine Street",
-    "timeSlot": "TBD",
+    "timeSlot": "11:00-12:00",
     "timeAvailability": {
       "earlyMorning": false,
       "lateMorning": false,
@@ -316,8 +151,8 @@
       {
         "name": "Lily",
         "grade": "7",
-        "school": "Herman-Norcross Middle School",
-        "schoolAbbreviation": "HNMS",
+        "school": "Chokio-Alberta High School",
+        "schoolAbbreviation": "CAHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -328,7 +163,7 @@
     "guardianName": "Robert Fields",
     "email": "rfields@email.com",
     "address": "902 Maple Ave",
-    "timeSlot": "TBD",
+    "timeSlot": "12:00-1:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": true,
@@ -339,8 +174,8 @@
       {
         "name": "Chris",
         "grade": "12",
-        "school": "Morris Area High School",
-        "schoolAbbreviation": "MAHS",
+        "school": "Hancock High School",
+        "schoolAbbreviation": "HHS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": true
@@ -351,7 +186,7 @@
     "guardianName": "Angela Brooks",
     "email": "angela.brooks@email.com",
     "address": "311 Cedar Blvd",
-    "timeSlot": "TBD",
+    "timeSlot": "1:00-2:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": false,
@@ -371,8 +206,8 @@
       {
         "name": "Maya",
         "grade": "6",
-        "school": "Herman-Norcross Middle School",
-        "schoolAbbreviation": "HNMS",
+        "school": "Herman-Norcross Elementary",
+        "schoolAbbreviation": "HNE",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
@@ -383,7 +218,7 @@
     "guardianName": "Samuel Ortiz",
     "email": "samuel.ortiz@email.com",
     "address": "129 Birch Road",
-    "timeSlot": "TBD",
+    "timeSlot": "2:00-3:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": false,
@@ -394,8 +229,8 @@
       {
         "name": "Elena",
         "grade": "11",
-        "school": "Morris Area High School",
-        "schoolAbbreviation": "MAHS",
+        "school": "Hancock High School",
+        "schoolAbbreviation": "HHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -403,8 +238,8 @@
       {
         "name": "Lucas",
         "grade": "5",
-        "school": "Morris Area Elementary School",
-        "schoolAbbreviation": "MAES",
+        "school": "Hancock Elementary",
+        "schoolAbbreviation": "HE",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -415,7 +250,7 @@
     "guardianName": "Danielle Kim",
     "email": "danielle.kim@email.com",
     "address": "555 Walnut St",
-    "timeSlot": "TBD",
+    "timeSlot": "3:00-4:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": true,
@@ -426,8 +261,8 @@
       {
         "name": "Ethan",
         "grade": "10",
-        "school": "Hancock High School",
-        "schoolAbbreviation": "HHS",
+        "school": "Herman-Norcross High School",
+        "schoolAbbreviation": "HNHS",
         "teacher": "N/A",
         "backpack": true,
         "headphones": true
@@ -438,7 +273,7 @@
     "guardianName": "Carlos Ramirez",
     "email": "carlos.ramirez@email.com",
     "address": "888 Spruce Drive",
-    "timeSlot": "TBD",
+    "timeSlot": "4:00-5:00",
     "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": false,
@@ -449,8 +284,8 @@
       {
         "name": "Isabella",
         "grade": "8",
-        "school": "Morris Area Middle School",
-        "schoolAbbreviation": "MAMS",
+        "school": "Chokio-Alberta High School",
+        "schoolAbbreviation": "CAHS",
         "teacher": "N/A",
         "backpack": false,
         "headphones": false
@@ -458,8 +293,8 @@
       {
         "name": "Mateo",
         "grade": "6",
-        "school": "Morris Area Middle School",
-        "schoolAbbreviation": "MAMS",
+        "school": "Herman-Norcross Elementary",
+        "schoolAbbreviation": "HNE",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -467,13 +302,12 @@
       {
         "name": "Sofia",
         "grade": "3",
-        "school": "Morris Area Elementary School",
-        "schoolAbbreviation": "MAES",
+        "school": "Hancock Elementary",
+        "schoolAbbreviation": "HE",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
       }
     ]
   }
->>>>>>> main
 ]
