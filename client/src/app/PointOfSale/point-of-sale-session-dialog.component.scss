@@ -27,8 +27,16 @@
   padding: 0.5rem;
 }
 
-.session-summary p {
+.session-summary p,
+.session-error p {
   margin: 0.5rem 0;
+}
+
+.session-error {
+  padding: 0.5rem;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
 }
 
 .session-students {
@@ -43,6 +51,12 @@
   box-shadow: none;
 }
 
+.student-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .student-session-card h3 {
   margin: 0 0 0.5rem;
 }
@@ -55,4 +69,42 @@
   margin-top: 0.85rem;
   color: #475569;
   font-style: italic;
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.checklist-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #d9e1ea;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.checklist-item.unavailable {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.item-label {
+  font-weight: 600;
+}
+
+.item-meta {
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.item-status {
+  align-self: flex-start;
+  white-space: nowrap;
+  color: #334155;
+  font-size: 0.9rem;
 }

@@ -2,27 +2,64 @@
   <div class="session-header">
     <div>
       <h2 class="session-title">Help Family Session</h2>
-      <p class="session-subtitle">{{ data.family.guardianName }}</p>
+      <p class="session-subtitle">{{ sessionFamily?.guardianName ?? data.family.guardianName }}</p>
     </div>
     <button mat-stroked-button type="button" (click)="dialogRef.close()">
       Close
     </button>
   </div>
 
-  <mat-card class="session-summary">
-    <p><strong>Time Slot:</strong> {{ data.family.timeSlot }}</p>
-    <p><strong>Address:</strong> {{ data.family.address }}</p>
-    <p><strong>Students:</strong> {{ data.family.students.length }}</p>
-  </mat-card>
+  @if (loading) {
+    <mat-card class="session-summary">
+      <p>Starting help session and loading checklist...</p>
+    </mat-card>
+  } @else if (errorMessage) {
+    <mat-card class="session-error">
+      <p>{{ errorMessage }}</p>
+    </mat-card>
+  } @else if (sessionFamily) {
+    <mat-card class="session-summary">
+      <p><strong>Time Slot:</strong> {{ sessionFamily.timeSlot }}</p>
+      <p><strong>Address:</strong> {{ sessionFamily.address }}</p>
+      <p><strong>Students:</strong> {{ sessionFamily.students.length }}</p>
+    </mat-card>
 
-  <div class="session-students">
-    @for (student of data.family.students; track [student.name, student.school, student.grade, student.teacher]) {
-      <mat-card class="student-session-card">
-        <h3>{{ student.name }}</h3>
-        <p>{{ student.school }} · {{ student.grade }}</p>
-        <p>{{ student.teacher }}</p>
-        <p class="placeholder-text">Checklist content will load here from the backend later.</p>
-      </mat-card>
-    }
-  </div>
+    <div class="session-students">
+      @for (section of sessionFamily.checklist?.sections ?? []; track section.id) {
+        <mat-card class="student-session-card">
+          <div class="student-card-header">
+            <div>
+              <h3>{{ section.printableTitle || section.title }}</h3>
+              <p>{{ section.saved ? 'Saved' : 'In progress' }}</p>
+            </div>
+          </div>
+
+          @if (section.items.length > 0) {
+            <div class="checklist-items">
+              @for (item of section.items; track item.id) {
+                <div class="checklist-item" [class.unavailable]="!item.available">
+                  <div>
+                    <p class="item-label">{{ item.label || item.itemDescription }}</p>
+                    <p class="item-meta">
+                      Quantity: {{ item.requestedQuantity }}
+                      @if (!item.available) {
+                        <span> | Not currently available</span>
+                      }
+                    </p>
+                  </div>
+                  <span class="item-status">{{ item.selected ? 'Selected' : 'Not selected' }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="placeholder-text">No checklist items were generated for this student.</p>
+          }
+        </mat-card>
+      } @empty {
+        <mat-card class="student-session-card">
+          <p class="placeholder-text">No checklist sections were returned for this family.</p>
+        </mat-card>
+      }
+    </div>
+  }
 </div>
