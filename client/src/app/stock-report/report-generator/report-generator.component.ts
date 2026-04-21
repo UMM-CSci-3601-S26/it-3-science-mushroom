@@ -491,7 +491,7 @@ export class ReportGeneratorComponent {
 
         // Show success message
         this.snackBar.open(
-          `Downloaded all ${format} report(s) as ZIP file.`,
+          `Downloaded all "${format}" report(s) as ZIP file.`,
           `Okay`,
           { duration: 2000 }
         );
@@ -499,7 +499,7 @@ export class ReportGeneratorComponent {
       error: (error) => {
         console.error("Error downloading ZIP of report(s). ", error);
         this.snackBar.open(
-          `Failed to download ${format} report(s) as ZIP. Please try again.`,
+          `Failed to download "${format}" report(s) as ZIP. Please try again.`,
           `Okay`,
           { duration: 2000 }
         );
