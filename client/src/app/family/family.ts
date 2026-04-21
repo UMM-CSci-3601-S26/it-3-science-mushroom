@@ -55,13 +55,10 @@ export interface Family {
   email: string;
   address: string;
   timeSlot: string;
-<<<<<<< 14-point-of-sale-frontend
+  timeAvailability?: AvailabilityOptions;
   helped?: boolean;
   status?: string;
   checklist?: FamilyChecklist | null;
-=======
-  timeAvailability: AvailabilityOptions;
->>>>>>> main
   students: StudentInfo[];
 }
 
