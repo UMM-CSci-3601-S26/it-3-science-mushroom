@@ -1,22 +1,62 @@
 <div class="flex-row">
   <div class="flex-1">
     <mat-card class="pos-card">
-      <mat-card-header>
-        <mat-card-title class="pos-title">Point of Sale</mat-card-title>
+      <mat-card-header class="pos-header">
+        <div>
+          <mat-card-title class="pos-title">Point of Sale</mat-card-title>
+          <mat-card-subtitle class="pos-subtitle">
+            Find a family, start a help session, and work from the generated checklist.
+          </mat-card-subtitle>
+        </div>
+        <span class="family-count">
+          {{ families.length }} family{{ families.length === 1 ? '' : 'ies' }}
+        </span>
       </mat-card-header>
+
       <mat-card-content>
-        <div class="filter-container">
-          <div class="filter-box">
-            FILTERS
+        <div class="filter-card">
+          <div>
+            <p class="filter-label">Search Families</p>
+            <p class="filter-hint">Search by guardian or family name.</p>
           </div>
+
+          <mat-form-field appearance="outline" class="family-search-field">
+            <mat-label>Family name</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input
+              matInput
+              type="search"
+              [formControl]="familySearch"
+              placeholder="Jane Doe">
+            @if (familySearch.value) {
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                aria-label="Clear family search"
+                (click)="clearFamilySearch()">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
         </div>
 
         <div class="family-card-container">
-          @for (family of families; track family._id) {
+          @if (loadingFamilies) {
+            <div class="list-message">Loading families...</div>
+          } @else if (familyLoadError) {
+            <div class="list-message error-message">{{ familyLoadError }}</div>
+          } @else {
+            @for (family of families; track family._id) {
             <app-point-of-sale-family-card
               [family]="family"
               (helpFamily)="openHelpFamilySession($event)">
             </app-point-of-sale-family-card>
+            } @empty {
+              <div class="list-message">
+                No families match that search.
+              </div>
+            }
           }
         </div>
       </mat-card-content>

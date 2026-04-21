@@ -1400,6 +1400,69 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void privateGetSupplyListsForStudentMatchesSchoolAcronymsAndGradeFormats() throws Exception {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertMany(List.of(
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area High School")
+        .append("grade", "12th Grade")
+        .append("teacher", "N/A")
+        .append("item", List.of("Notebook"))
+        .append("quantity", 1),
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area High School")
+        .append("grade", "High School")
+        .append("teacher", "")
+        .append("item", List.of("Folder"))
+        .append("quantity", 1),
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area Middle School")
+        .append("grade", "Middle School")
+        .append("teacher", "")
+        .append("item", List.of("Pencil"))
+        .append("quantity", 1),
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area Elementary")
+        .append("grade", "Elementary")
+        .append("teacher", "")
+        .append("item", List.of("Crayon"))
+        .append("quantity", 1)));
+
+    Family.StudentInfo student = new Family.StudentInfo();
+    student.school = "MAHS";
+    student.grade = "12";
+    student.teacher = "N/A";
+
+    List<SupplyList> matches = invokeGetSupplyListsForStudent(student);
+
+    assertEquals(2, matches.size());
+    assertTrue(matches.stream().anyMatch(match -> List.of("Notebook").equals(match.item)));
+    assertTrue(matches.stream().anyMatch(match -> List.of("Folder").equals(match.item)));
+
+    Family.StudentInfo middleSchoolStudent = new Family.StudentInfo();
+    middleSchoolStudent.school = "MAMS";
+    middleSchoolStudent.grade = "7";
+    middleSchoolStudent.teacher = "N/A";
+
+    List<SupplyList> middleSchoolMatches = invokeGetSupplyListsForStudent(middleSchoolStudent);
+    assertEquals(1, middleSchoolMatches.size());
+    assertEquals(List.of("Pencil"), middleSchoolMatches.get(0).item);
+
+    Family.StudentInfo elementaryStudent = new Family.StudentInfo();
+    elementaryStudent.school = "MAE";
+    elementaryStudent.grade = "5";
+    elementaryStudent.teacher = "N/A";
+
+    List<SupplyList> elementaryMatches = invokeGetSupplyListsForStudent(elementaryStudent);
+    assertEquals(1, elementaryMatches.size());
+    assertEquals(List.of("Crayon"), elementaryMatches.get(0).item);
+  }
+
+  @Test
   void privateBuildChecklistItemSnapshotCoversUnavailableFallbackBranch() throws Exception {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Scissors");
@@ -1412,6 +1475,50 @@ class FamilyControllerSpec {
     assertFalse(item.available);
     assertFalse(item.selected);
     assertNull(item.matchedInventoryId);
+  }
+
+  @Test
+  void privateBuildChecklistItemSnapshotUsesHighestQuantitySimilarInventoryItem() throws Exception {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      new Document()
+        .append("item", "Yellow Pencil")
+        .append("description", "Yellow #2 pencil")
+        .append("quantity", 4)
+        .append("size", "Wide")
+        .append("type", "Mechanical")
+        .append("material", "Wood")
+        .append("internalID", "LOW-QTY-PENCIL")
+        .append("internalBarcode", "LOW-QTY-PENCIL"),
+      new Document()
+        .append("item", "Plastic Pencil")
+        .append("description", "Plastic writing pencil")
+        .append("quantity", 30)
+        .append("size", "Narrow")
+        .append("type", "Wooden")
+        .append("material", "Plastic")
+        .append("internalID", "HIGH-QTY-PENCIL")
+        .append("internalBarcode", "HIGH-QTY-PENCIL"),
+      new Document()
+        .append("item", "Pen")
+        .append("description", "Blue ink pen")
+        .append("quantity", 100)
+        .append("internalID", "NOT-A-PENCIL")
+        .append("internalBarcode", "NOT-A-PENCIL")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Pencil");
+    supplyList.size = new SupplyList.AttributeOptions();
+    supplyList.size.allOf = "Wide";
+    supplyList.type = new SupplyList.AttributeOptions();
+    supplyList.type.allOf = "Mechanical";
+    supplyList.quantity = 1;
+
+    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
+
+    assertTrue(item.available);
+    assertTrue(item.selected);
+    assertEquals("HIGH-QTY-PENCIL", item.matchedInventoryId);
   }
 
   @Test

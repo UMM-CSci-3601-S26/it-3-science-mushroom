@@ -4,7 +4,7 @@
       <h2 class="session-title">Help Family Session</h2>
       <p class="session-subtitle">{{ sessionFamily?.guardianName ?? data.family.guardianName }}</p>
     </div>
-    <button mat-stroked-button type="button" (click)="dialogRef.close()">
+    <button mat-stroked-button class="header-close" type="button" (click)="dialogRef.close()">
       Close
     </button>
   </div>
@@ -24,42 +24,85 @@
       <p><strong>Students:</strong> {{ sessionFamily.students.length }}</p>
     </mat-card>
 
-    <div class="session-students">
-      @for (section of sessionFamily.checklist?.sections ?? []; track section.id) {
-        <mat-card class="student-session-card">
-          <div class="student-card-header">
-            <div>
-              <h3>{{ section.printableTitle || section.title }}</h3>
-              <p>{{ section.saved ? 'Saved' : 'In progress' }}</p>
-            </div>
-          </div>
+    @if (sessionHasNoChecklistItems(sessionFamily)) {
+      <mat-card class="session-empty-checklist">
+        <div>
+          <p><strong>No checklist items were found yet.</strong></p>
+          <p>
+            Add matching supply-list rows for these students, then regenerate this session so the backend
+            rebuilds the snapshot.
+          </p>
+        </div>
+        <button mat-stroked-button type="button" (click)="restartSession()">
+          Regenerate Checklist
+        </button>
+      </mat-card>
+    }
 
-          @if (section.items.length > 0) {
-            <div class="checklist-items">
-              @for (item of section.items; track item.id) {
-                <div class="checklist-item" [class.unavailable]="!item.available">
-                  <div>
-                    <p class="item-label">{{ item.label || item.itemDescription }}</p>
-                    <p class="item-meta">
-                      Quantity: {{ item.requestedQuantity }}
-                      @if (!item.available) {
-                        <span> | Not currently available</span>
-                      }
-                    </p>
+    <div class="session-scroll">
+      <div class="session-students">
+        @for (section of sessionFamily.checklist?.sections ?? []; track section.id; let sectionIndex = $index) {
+          <mat-card class="student-session-card">
+            <div class="student-card-header">
+              <div>
+                <h3>{{ section.printableTitle || section.title }}</h3>
+                @if (studentForSection(sectionIndex); as student) {
+                  <div class="student-details">
+                    <span>School: {{ student.school || 'Unknown' }}</span>
+                    <span>Grade: {{ student.grade || 'Unknown' }}</span>
+                    <span>Teacher: {{ student.teacher || 'N/A' }}</span>
                   </div>
-                  <span class="item-status">{{ item.selected ? 'Selected' : 'Not selected' }}</span>
-                </div>
-              }
+                }
+                <p>{{ section.saved ? 'Saved' : 'In progress' }}</p>
+              </div>
             </div>
-          } @else {
-            <p class="placeholder-text">No checklist items were generated for this student.</p>
-          }
-        </mat-card>
-      } @empty {
-        <mat-card class="student-session-card">
-          <p class="placeholder-text">No checklist sections were returned for this family.</p>
-        </mat-card>
-      }
+
+            @if (section.items.length > 0) {
+              <div class="checklist-items">
+                @for (item of section.items; track item.id) {
+                  <div class="checklist-item" [class.not-in-inventory]="!item.available">
+                    <mat-checkbox
+                      [checked]="item.selected"
+                      [disabled]="!item.available"
+                      (change)="item.selected = $event.checked"
+                      aria-label="Select checklist item">
+                    </mat-checkbox>
+
+                    <div class="item-copy">
+                      <p class="item-label">{{ item.label || item.itemDescription }}</p>
+                      <p class="item-meta">
+                        Quantity: {{ item.requestedQuantity }}
+                        @if (!item.available) {
+                          <span> | Not found in inventory</span>
+                        } @else {
+                          <span> | Found in inventory</span>
+                        }
+                      </p>
+                    </div>
+
+                    <span class="item-status">{{ item.available ? 'Available' : 'Needs review' }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="placeholder-text">
+                No checklist items were generated for this student. Check that this student's school,
+                grade, and teacher match at least one supply-list row.
+              </p>
+            }
+          </mat-card>
+        } @empty {
+          <mat-card class="student-session-card">
+            <p class="placeholder-text">No checklist sections were returned for this family.</p>
+          </mat-card>
+        }
+      </div>
     </div>
   }
+
+  <div class="session-actions">
+    <button mat-stroked-button type="button" (click)="dialogRef.close()">
+      Close
+    </button>
+  </div>
 </div>

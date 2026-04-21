@@ -1,42 +1,60 @@
 .family-card {
-  border-radius: 14px;
-  border: 1px solid #d9e1ea;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid #dbe3ee;
   box-shadow: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.family-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
 }
 
 .family-card-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.family-main {
+  min-width: 0;
 }
 
 .family-name {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-.family-slot {
-  margin: 0.35rem 0 0;
+.family-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+}
+
+.family-meta span {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #f1f5f9;
   color: #475569;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .help-family-button {
   white-space: nowrap;
+  border-radius: 10px;
+  font-weight: 800;
 }
 
-.family-details {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+.family-address {
+  margin: 0.45rem 0 0;
   color: #334155;
-}
-
-.family-address,
-.student-count {
-  margin: 0;
+  font-size: 0.95rem;
 }

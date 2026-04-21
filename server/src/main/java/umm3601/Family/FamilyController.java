@@ -611,10 +611,10 @@ public class FamilyController implements Controller {
       if (!nameEquivalent(supplyList.school, student.school)) {
         continue;
       }
-      if (!nameEquivalent(supplyList.grade, student.grade)) {
+      if (!gradeEquivalent(supplyList.grade, student.grade)) {
         continue;
       }
-      if (hasText(supplyList.teacher) && !nameEquivalent(supplyList.teacher, student.teacher)) {
+      if (hasValue(supplyList.teacher) && !nameEquivalent(supplyList.teacher, student.teacher)) {
         continue;
       }
       matching.add(supplyList);
@@ -645,9 +645,95 @@ public class FamilyController implements Controller {
 
     return inventories.stream()
       .filter(inventory -> inventory.quantity > 0)
-      .filter(inventory -> inventoryMatchesSupplyList(inventory, supplyList))
-      .max(Comparator.comparingInt(this::inventorySpecificityScore))
+      .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
+      .max(Comparator
+        .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
+        .thenComparingInt(inventory -> inventory.quantity)
+        .thenComparingInt(this::inventorySpecificityScore))
       .orElse(null);
+  }
+
+  private int inventorySimilarityScore(Inventory inventory, SupplyList supplyList) {
+    int itemScore = itemSimilarityScore(inventory, supplyList);
+    if (itemScore == 0) {
+      return 0;
+    }
+
+    int score = itemScore;
+    score += attributeSimilarityScore(supplyList.brand, inventory.brand);
+    score += colorSimilarityScore(supplyList.color, inventory.color);
+    score += attributeSimilarityScore(supplyList.material, inventory.material);
+    return score;
+  }
+
+  private int itemSimilarityScore(Inventory inventory, SupplyList supplyList) {
+    if (supplyList.item == null || supplyList.item.isEmpty()) {
+      return 0;
+    }
+
+    String inventoryName = normalizeToken(inventory.item);
+    List<String> searchableTokens = searchableInventoryItemTokens(inventory);
+    int bestScore = 0;
+
+    for (String requestedItem : supplyList.item) {
+      String requestedName = normalizeToken(requestedItem);
+      if (requestedName.isBlank()) {
+        continue;
+      }
+      if (requestedName.equals(inventoryName)) {
+        bestScore = Math.max(bestScore, 100);
+        continue;
+      }
+      if (searchableTokens.contains(requestedName)) {
+        bestScore = Math.max(bestScore, 75);
+        continue;
+      }
+
+      for (String requestedToken : tokenParts(requestedItem)) {
+        if (requestedToken.length() >= 4 && searchableTokens.contains(requestedToken)) {
+          bestScore = Math.max(bestScore, 50);
+        }
+      }
+    }
+
+    return bestScore;
+  }
+
+  private List<String> searchableInventoryItemTokens(Inventory inventory) {
+    List<String> tokens = new ArrayList<>();
+    tokens.add(normalizeToken(inventory.item));
+    tokens.addAll(tokenParts(inventory.item));
+    tokens.addAll(tokenParts(inventory.description));
+    return tokens.stream()
+      .filter(token -> !token.isBlank())
+      .distinct()
+      .toList();
+  }
+
+  private int attributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue) {
+    if (options == null) {
+      return 0;
+    }
+    if (hasText(options.allOf) && nameEquivalent(options.allOf, inventoryValue)) {
+      return 5;
+    }
+    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+      return 3;
+    }
+    return 0;
+  }
+
+  private int colorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue) {
+    if (options == null) {
+      return 0;
+    }
+    if (options.allOf != null && options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+      return 5;
+    }
+    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+      return 3;
+    }
+    return 0;
   }
 
   private boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {
@@ -887,18 +973,94 @@ public class FamilyController implements Controller {
   }
 
   private boolean nameEquivalent(String left, String right) {
-    return normalizeToken(left).equals(normalizeToken(right));
+    String leftToken = normalizeToken(left);
+    String rightToken = normalizeToken(right);
+    String strictLeftToken = normalizeTokenWithoutPluralFold(left);
+    String strictRightToken = normalizeTokenWithoutPluralFold(right);
+    return leftToken.equals(rightToken)
+      || strictLeftToken.equals(acronymToken(right))
+      || strictRightToken.equals(acronymToken(left));
+  }
+
+  private boolean gradeEquivalent(String left, String right) {
+    String leftGrade = normalizeGradeToken(left);
+    String rightGrade = normalizeGradeToken(right);
+    return leftGrade.equals(rightGrade)
+      || "highschool".equals(leftGrade) && isHighSchoolGrade(rightGrade)
+      || "highschool".equals(rightGrade) && isHighSchoolGrade(leftGrade)
+      || "middleschool".equals(leftGrade) && isMiddleSchoolGrade(rightGrade)
+      || "middleschool".equals(rightGrade) && isMiddleSchoolGrade(leftGrade)
+      || "elementary".equals(leftGrade) && isElementaryGrade(rightGrade)
+      || "elementary".equals(rightGrade) && isElementaryGrade(leftGrade);
   }
 
   private String normalizeToken(String value) {
-    if (value == null) {
-      return "";
-    }
-    String normalized = value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
+    String normalized = normalizeTokenWithoutPluralFold(value);
     if (normalized.endsWith("s") && normalized.length() > 1) {
       return normalized.substring(0, normalized.length() - 1);
     }
     return normalized;
+  }
+
+  private String normalizeTokenWithoutPluralFold(String value) {
+    if (value == null) {
+      return "";
+    }
+    return value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
+  }
+
+  private List<String> tokenParts(String value) {
+    if (value == null) {
+      return List.of();
+    }
+    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
+    List<String> tokens = new ArrayList<>();
+    for (String part : parts) {
+      String normalized = normalizeToken(part);
+      if (!normalized.isBlank()) {
+        tokens.add(normalized);
+      }
+    }
+    return tokens;
+  }
+
+  private String normalizeGradeToken(String value) {
+    String normalized = normalizeToken(value);
+    if ("kindergarten".equals(normalized)) {
+      return "k";
+    }
+    if ("prekindergarten".equals(normalized) || "prekindergarden".equals(normalized)) {
+      return "prek";
+    }
+    String withoutGradeWord = normalized.replace("grade", "");
+    return withoutGradeWord.replaceAll("(\\d+)(st|nd|rd|th)$", "$1");
+  }
+
+  private boolean isHighSchoolGrade(String grade) {
+    return "9".equals(grade) || "10".equals(grade) || "11".equals(grade) || "12".equals(grade);
+  }
+
+  private boolean isMiddleSchoolGrade(String grade) {
+    return "6".equals(grade) || "7".equals(grade) || "8".equals(grade);
+  }
+
+  private boolean isElementaryGrade(String grade) {
+    return "prek".equals(grade) || "k".equals(grade)
+      || "1".equals(grade) || "2".equals(grade) || "3".equals(grade) || "4".equals(grade) || "5".equals(grade);
+  }
+
+  private String acronymToken(String value) {
+    if (value == null) {
+      return "";
+    }
+    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
+    StringBuilder acronym = new StringBuilder();
+    for (String part : parts) {
+      if (!part.isBlank()) {
+        acronym.append(part.charAt(0));
+      }
+    }
+    return acronym.length() > 1 ? acronym.toString() : "";
   }
 
   private boolean hasText(String value) {

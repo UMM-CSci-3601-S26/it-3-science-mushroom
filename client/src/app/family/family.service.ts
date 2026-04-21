@@ -60,6 +60,10 @@ export class FamilyService {
     return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/start`, {});
   }
 
+  clearFamilyHelpSession(id: string): Observable<Family> {
+    return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/clear`, {});
+  }
+
   addFamily(newFamily: Partial<Family>): Observable<string> {
     return new Observable(observer => {
       this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(map(response => response.id)).subscribe({
