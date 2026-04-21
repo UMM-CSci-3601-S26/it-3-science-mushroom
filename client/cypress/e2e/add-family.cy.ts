@@ -6,6 +6,7 @@ describe('Add family page', () => {
 
   beforeEach(() => {
     page.navigateTo();
+    cy.task('seed:database');
   });
 
   it('Should have the correct title', () => {
