@@ -3,19 +3,41 @@
     "guardianName": "Jane Doe",
     "email": "jane@email.com",
     "address": "123 Street",
-    "timeSlot": "9:00-10:00",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": false,
+      "earlyAfternoon": true,
+      "lateAfternoon": true
+    },
     "students": [
       {
         "name": "Tim",
         "grade": "12",
+<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
         "teacher": "N/A"
+=======
+        "school": "Morris Area High School",
+        "schoolAbbreviation": "MAHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": true
+>>>>>>> main
       },
       {
         "name": "Sara",
         "grade": "11",
+<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
         "teacher": "N/A"
+=======
+        "school": "Morris Area High School",
+        "schoolAbbreviation": "MAHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": false
+>>>>>>> main
       }
     ]
   },
@@ -23,25 +45,55 @@
     "guardianName": "John Doe",
     "email": "john@email.com",
     "address": "1232 Street",
-    "timeSlot": "9:00-10:00",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": false,
+      "lateMorning": true,
+      "earlyAfternoon": true,
+      "lateAfternoon": true
+    },
     "students": [
       {
         "name": "Johnny Jr.",
         "grade": "9",
+<<<<<<< 14-point-of-sale-frontend
         "school": "Herman-Norcross High School",
         "teacher": "N/A"
+=======
+        "school": "Hancock High School",
+        "schoolAbbreviation": "HHS",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": true
+>>>>>>> main
       },
       {
         "name": "Burtrum",
         "grade": "10",
+<<<<<<< 14-point-of-sale-frontend
         "school": "Herman-Norcross High School",
         "teacher": "N/A"
+=======
+        "school": "Hancock High School",
+        "schoolAbbreviation": "HHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": false
+>>>>>>> main
       },
       {
         "name": "Harold",
         "grade": "11",
+<<<<<<< 14-point-of-sale-frontend
         "school": "Herman-Norcross High School",
         "teacher": "N/A"
+=======
+        "school": "Hancock High School",
+        "schoolAbbreviation": "HHS",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": false
+>>>>>>> main
       }
     ]
   },
@@ -49,17 +101,32 @@
     "guardianName": "Janis Dorothy",
     "email": "jane@email.com",
     "address": "123 Street",
-    "timeSlot": "9:00-10:00",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": true,
+      "earlyAfternoon": false,
+      "lateAfternoon": false
+    },
     "students": [
       {
         "name": "Timothy",
         "grade": "11",
+<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
         "teacher": "N/A"
+=======
+        "school": "Chokio-Alberta High School",
+        "schoolAbbreviation": "CAHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": true
+>>>>>>> main
       },
       {
         "name": "Sarah",
         "grade": "9",
+<<<<<<< 14-point-of-sale-frontend
         "school": "Hancock High School",
         "teacher": "N/A"
       }
@@ -193,4 +260,220 @@
     }
   ]
 }
+=======
+        "school": "Chokio-Alberta High School",
+        "schoolAbbreviation": "CAHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": false
+      }
+    ]
+  },
+  {
+    "guardianName": "Michael Carter",
+    "email": "michael.carter@email.com",
+    "address": "45 Oak Lane",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": false,
+      "earlyAfternoon": true,
+      "lateAfternoon": true
+    },
+    "students": [
+      {
+        "name": "Alyssa",
+        "grade": "8",
+        "school": "Morris Area Middle School",
+        "schoolAbbreviation": "MAMS",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": false
+      }
+    ]
+  },
+  {
+    "guardianName": "Laura Nelson",
+    "email": "laura.nelson@email.com",
+    "address": "78 Pine Street",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": false,
+      "lateMorning": false,
+      "earlyAfternoon": true,
+      "lateAfternoon": true
+    },
+    "students": [
+      {
+        "name": "Kevin",
+        "grade": "10",
+        "school": "Herman-Norcross High School",
+        "schoolAbbreviation": "HNHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": true
+      },
+      {
+        "name": "Lily",
+        "grade": "7",
+        "school": "Herman-Norcross Middle School",
+        "schoolAbbreviation": "HNMS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": false
+      }
+    ]
+  },
+  {
+    "guardianName": "Robert Fields",
+    "email": "rfields@email.com",
+    "address": "902 Maple Ave",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": true,
+      "earlyAfternoon": true,
+      "lateAfternoon": true
+    },
+    "students": [
+      {
+        "name": "Chris",
+        "grade": "12",
+        "school": "Morris Area High School",
+        "schoolAbbreviation": "MAHS",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": true
+      }
+    ]
+  },
+  {
+    "guardianName": "Angela Brooks",
+    "email": "angela.brooks@email.com",
+    "address": "311 Cedar Blvd",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": false,
+      "earlyAfternoon": false,
+      "lateAfternoon": true
+    },
+    "students": [
+      {
+        "name": "Derek",
+        "grade": "9",
+        "school": "Herman-Norcross High School",
+        "schoolAbbreviation": "HNHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": false
+      },
+      {
+        "name": "Maya",
+        "grade": "6",
+        "school": "Herman-Norcross Middle School",
+        "schoolAbbreviation": "HNMS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": true
+      }
+    ]
+  },
+  {
+    "guardianName": "Samuel Ortiz",
+    "email": "samuel.ortiz@email.com",
+    "address": "129 Birch Road",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": false,
+      "earlyAfternoon": true,
+      "lateAfternoon": true
+    },
+    "students": [
+      {
+        "name": "Elena",
+        "grade": "11",
+        "school": "Morris Area High School",
+        "schoolAbbreviation": "MAHS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": false
+      },
+      {
+        "name": "Lucas",
+        "grade": "5",
+        "school": "Morris Area Elementary School",
+        "schoolAbbreviation": "MAES",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": false
+      }
+    ]
+  },
+  {
+    "guardianName": "Danielle Kim",
+    "email": "danielle.kim@email.com",
+    "address": "555 Walnut St",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": true,
+      "earlyAfternoon": true,
+      "lateAfternoon": false
+    },
+    "students": [
+      {
+        "name": "Ethan",
+        "grade": "10",
+        "school": "Hancock High School",
+        "schoolAbbreviation": "HHS",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": true
+      }
+    ]
+  },
+  {
+    "guardianName": "Carlos Ramirez",
+    "email": "carlos.ramirez@email.com",
+    "address": "888 Spruce Drive",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": true,
+      "lateMorning": false,
+      "earlyAfternoon": true,
+      "lateAfternoon": false
+    },
+    "students": [
+      {
+        "name": "Isabella",
+        "grade": "8",
+        "school": "Morris Area Middle School",
+        "schoolAbbreviation": "MAMS",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": false
+      },
+      {
+        "name": "Mateo",
+        "grade": "6",
+        "school": "Morris Area Middle School",
+        "schoolAbbreviation": "MAMS",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": false
+      },
+      {
+        "name": "Sofia",
+        "grade": "3",
+        "school": "Morris Area Elementary School",
+        "schoolAbbreviation": "MAES",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": true
+      }
+    ]
+  }
+>>>>>>> main
 ]

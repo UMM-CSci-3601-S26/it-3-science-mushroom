@@ -236,6 +236,12 @@ public class FamilyController implements Controller {
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
       .append("timeSlot", updatedFamily.timeSlot)
+      .append("timeAvailability", new Document()
+        .append("earlyMorning", updatedFamily.timeAvailability.earlyMorning)
+        .append("lateMorning", updatedFamily.timeAvailability.lateMorning)
+        .append("earlyAfternoon", updatedFamily.timeAvailability.earlyAfternoon)
+        .append("lateAfternoon", updatedFamily.timeAvailability.lateAfternoon)
+      )
       .append("students", studentInfoToDocuments(updatedFamily.students))
       .append("helped", updatedFamily.helped)
       .append("status", updatedFamily.status)
@@ -1254,7 +1260,10 @@ public class FamilyController implements Controller {
         .append("name", student.name)
         .append("grade", student.grade)
         .append("school", student.school)
-        .append("teacher", student.teacher);
+        .append("schoolAbbreviation", student.schoolAbbreviation)
+        .append("teacher", student.teacher)
+        .append("headphones", student.headphones)
+        .append("backpack", student.backpack);
       updatedStudentInfo.add(updatedStudent);
     }
 

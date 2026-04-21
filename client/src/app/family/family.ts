@@ -2,7 +2,17 @@ export interface StudentInfo {
   name: string;
   grade: string;
   school: string;
+  schoolAbbreviation: string;
   teacher: string;
+  headphones: boolean;
+  backpack: boolean;
+}
+
+export interface AvailabilityOptions {
+  earlyMorning: boolean;
+  lateMorning: boolean;
+  earlyAfternoon: boolean;
+  lateAfternoon: boolean;
 }
 
 export interface ChecklistItem {
@@ -45,9 +55,13 @@ export interface Family {
   email: string;
   address: string;
   timeSlot: string;
+<<<<<<< 14-point-of-sale-frontend
   helped?: boolean;
   status?: string;
   checklist?: FamilyChecklist | null;
+=======
+  timeAvailability: AvailabilityOptions;
+>>>>>>> main
   students: StudentInfo[];
 }
 

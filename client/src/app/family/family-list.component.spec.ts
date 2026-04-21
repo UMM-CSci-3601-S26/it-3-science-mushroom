@@ -6,6 +6,7 @@ import { provideRouter } from '@angular/router';
 import { throwError } from 'rxjs';
 import { signal, Signal } from '@angular/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { PageEvent } from '@angular/material/paginator';
 
 // RxJS Imports
 import { Observable, of } from 'rxjs';
@@ -214,4 +215,41 @@ describe('Filter Dropdown options', () => {
     fixture.detectChanges();
     expect(component.filteredFamilyOptions().length).toBe(0);
   });
+});
+
+describe('Paginator pageChange event', () => {
+  let component: FamilyListComponent;
+  let fixture: ComponentFixture<FamilyListComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [FamilyListComponent],
+      providers: [
+        { provide: FamilyService, useClass: MockFamilyService },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(FamilyListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should update pageNum and pageSize on pageChange', () => {
+    const event: PageEvent = {
+      pageIndex: 2,
+      pageSize: 25,
+      length: 100
+    };
+
+    component.pageChange(event);
+
+    expect(component.pageNum()).toBe(2);
+    expect(component.pageSize()).toBe(25);
+  });
+
 });
