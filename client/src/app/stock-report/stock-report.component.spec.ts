@@ -120,11 +120,18 @@ describe('StockReportComponent', () => {
       expect(component.reports()).toEqual(mockReports);
     });
 
-    it('should call downloadSingleReport with the correct report', () => {
+    it('should call downloadSingleReport with the correct report - PDF', () => {
       const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Report 1' };
-      spyOn(component.reportGenerator, 'downloadSinglePdfReport');
+      spyOn(component.reportGenerator, 'downloadSingleReport');
       component.downloadSingleReport(mockReport);
-      expect(component.reportGenerator.downloadSinglePdfReport).toHaveBeenCalledWith(mockReport);
+      expect(component.reportGenerator.downloadSingleReport).toHaveBeenCalledWith(mockReport);
+    });
+
+    it('should call downloadSingleReport with the correct report - XLSX', () => {
+      const mockReport: StockReport = { _id: '1', reportType: 'XLSX', reportData: 'xlsxdata', reportName: 'Report 1' };
+      spyOn(component.reportGenerator, 'downloadSingleReport');
+      component.downloadSingleReport(mockReport);
+      expect(component.reportGenerator.downloadSingleReport).toHaveBeenCalledWith(mockReport);
     });
   });
 
@@ -150,7 +157,7 @@ describe('StockReportComponent', () => {
 
     it('should delete report when user confirms in dialog', () => {
       const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Test Report' };
-      spyOn(component.reportGenerator, 'deleteSinglePdfReport');
+      spyOn(component.reportGenerator, 'deleteSingleReport');
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(true)
@@ -159,7 +166,7 @@ describe('StockReportComponent', () => {
 
       component.deleteSingleReport(mockReport);
 
-      expect(component.reportGenerator.deleteSinglePdfReport).toHaveBeenCalledWith(mockReport);
+      expect(component.reportGenerator.deleteSingleReport).toHaveBeenCalledWith(mockReport);
       expect(matSnackBar.open).toHaveBeenCalledWith(
         jasmine.stringContaining('Deleting report Test Report...'),
         'Okay',
@@ -169,7 +176,7 @@ describe('StockReportComponent', () => {
 
     it('should not delete report when user cancels dialog', () => {
       const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Test Report' };
-      spyOn(component.reportGenerator, 'deleteSinglePdfReport');
+      spyOn(component.reportGenerator, 'deleteSingleReport');
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(false)
@@ -178,7 +185,7 @@ describe('StockReportComponent', () => {
 
       component.deleteSingleReport(mockReport);
 
-      expect(component.reportGenerator.deleteSinglePdfReport).not.toHaveBeenCalled();
+      expect(component.reportGenerator.deleteSingleReport).not.toHaveBeenCalled();
       expect(stockReportService.refreshReports).not.toHaveBeenCalled();
       expect(matSnackBar.open).not.toHaveBeenCalled();
     });

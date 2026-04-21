@@ -172,57 +172,124 @@ describe('ReportGeneratorComponent', () => {
     });
   });
 
-  describe('PDF Generation', () => {
-    it('should download PDF when savePdf is false', () => {
-      spyOn(component, 'generatePDF').and.callThrough();
-      component.downloadNewPdfReport();
-      expect(component.generatePDF).toHaveBeenCalledWith(false);
+  describe('Report Generation', () => {
+    describe('PDF Generation', () => {
+      it('should download PDF when savePdf is false', () => {
+        spyOn(component, 'generatePDF').and.callThrough();
+        component.downloadNewPdfReport();
+        expect(component.generatePDF).toHaveBeenCalledWith(false);
+      });
+
+      it('should save PDF when savePdf is true', () => {
+        spyOn(component, 'generatePDF').and.callThrough();
+        component.savePdfReport();
+        expect(component.generatePDF).toHaveBeenCalledWith(true);
+      });
+
+      it('should call addNewPdfReport when saving PDF to server', () => {
+        const addNewReportSpy = spyOn(stockReportService, 'addNewPdfReport').and.returnValue(of('123'));
+        spyOn(matSnackBar, 'open');
+
+        component.savePdfReport();
+
+        expect(addNewReportSpy).toHaveBeenCalled();
+        expect(addNewReportSpy).toHaveBeenCalledWith(jasmine.any(FormData));
+      });
+
+      it('should show error snackbar when saving PDF to server fails', () => {
+        const addNewReportSpy = spyOn(stockReportService, 'addNewPdfReport').and.returnValue(
+          throwError(() => new Error('Server error'))
+        );
+        const snackBarSpy = spyOn(matSnackBar, 'open');
+
+        component.savePdfReport();
+
+        expect(addNewReportSpy).toHaveBeenCalled();
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          jasmine.stringContaining('Error generating / saving report'),
+          'Okay',
+          { duration: 2000 }
+        );
+      });
+
+      it('should show success snackbar when PDF is saved to server', () => {
+        spyOn(stockReportService, 'addNewPdfReport').and.returnValue(of('123'));
+        spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
+        const snackBarSpy = spyOn(matSnackBar, 'open');
+
+        component.savePdfReport();
+
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          jasmine.stringContaining('Generating and saving report'),
+          'Okay',
+          { duration: 2000 }
+        );
+      });
     });
 
-    it('should save PDF when savePdf is true', () => {
-      spyOn(component, 'generatePDF').and.callThrough();
-      component.savePdfReport();
-      expect(component.generatePDF).toHaveBeenCalledWith(true);
-    });
+    describe('XLSX Generation', () => {
+      it('should download XLSX when saveXlsx is false', () => {
+        spyOn(component, 'generateXlsx').and.callThrough();
+        component.downloadNewXlsxReport();
+        expect(component.generateXlsx).toHaveBeenCalledWith(false);
+      });
 
-    it('should call addNewReport when saving PDF to server', () => {
-      const addNewReportSpy = spyOn(stockReportService, 'addNewReport').and.returnValue(of('123'));
-      spyOn(matSnackBar, 'open');
+      it('should save XLSX when saveXlsx is true', () => {
+        spyOn(component, 'generateXlsx').and.callThrough();
+        component.saveXlsxReport();
+        expect(component.generateXlsx).toHaveBeenCalledWith(true);
+      });
 
-      component.savePdfReport();
+      it('should show success snackbar when XLSX is saved to server', () => {
+        spyOn(stockReportService, 'generateNewXlsxReport').and.returnValue(of('123'));
+        spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
+        const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      expect(addNewReportSpy).toHaveBeenCalled();
-      expect(addNewReportSpy).toHaveBeenCalledWith(jasmine.any(FormData));
-    });
+        component.saveXlsxReport();
 
-    it('should show error snackbar when saving PDF to server fails', () => {
-      const addNewReportSpy = spyOn(stockReportService, 'addNewReport').and.returnValue(
-        throwError(() => new Error('Server error'))
-      );
-      const snackBarSpy = spyOn(matSnackBar, 'open');
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          jasmine.stringContaining('Generating and saving report'),
+          'Okay',
+          { duration: 2000 }
+        );
+      });
 
-      component.savePdfReport();
+      it('should download XLSX report with correct filename', () => {
+        const mockBlob = new Blob(['XLSX content'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        spyOn(stockReportService, 'generateAndDownloadXlsxReport').and.returnValue(of(mockBlob));
+        spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
 
-      expect(addNewReportSpy).toHaveBeenCalled();
-      expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('Error generating / saving report'),
-        'Okay',
-        { duration: 2000 }
-      );
-    });
+        const mockAnchor = document.createElement('a');
+        const createElementSpy = spyOn(document, 'createElement').and.returnValue(mockAnchor);
+        spyOn(matSnackBar, 'open');
 
-    it('should show success snackbar when PDF is saved to server', () => {
-      spyOn(stockReportService, 'addNewReport').and.returnValue(of('123'));
-      spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
-      const snackBarSpy = spyOn(matSnackBar, 'open');
+        component.downloadNewXlsxReport();
 
-      component.savePdfReport();
+        expect(stockReportService.generateAndDownloadXlsxReport).toHaveBeenCalled();
+        expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
+        expect(createElementSpy).toHaveBeenCalledWith('a');
+        expect(mockAnchor.download).toContain('Stock_Report_');
+        expect(mockAnchor.download).toContain('.xlsx');
+      });
 
-      expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('Generating and saving report'),
-        'Okay',
-        { duration: 2000 }
-      );
+      it('should show success snackbar when XLSX is downloaded', () => {
+        const mockBlob = new Blob(['XLSX content'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        spyOn(stockReportService, 'generateAndDownloadXlsxReport').and.returnValue(of(mockBlob));
+        spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
+
+        const mockAnchor = document.createElement('a');
+        spyOn(document, 'createElement').and.returnValue(mockAnchor);
+        spyOn(mockAnchor, 'click');
+        const snackBarSpy = spyOn(matSnackBar, 'open');
+
+        component.downloadNewXlsxReport();
+
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          'Generating and downloading report as XLSX file...',
+          'Okay',
+          { duration: 2000 }
+        );
+      });
     });
   });
 
@@ -235,7 +302,22 @@ describe('ReportGeneratorComponent', () => {
       spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
       spyOn(window.URL, 'revokeObjectURL');
 
-      component.downloadSinglePdfReport(mockReport);
+      component.downloadSingleReport(mockReport);
+
+      expect(stockReportService.downloadSingleReportBlob).toHaveBeenCalledWith(mockReport);
+      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
+      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+    });
+
+    it('should download single XLSX report correctly', () => {
+      const mockBlob = new Blob(['XLSX content'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const mockReport: StockReport = { _id: '1', reportName: 'Test Report.xlsx', reportType: 'XLSX', reportData: 'base64data' };
+
+      spyOn(stockReportService, 'downloadSingleReportBlob').and.returnValue(of(mockBlob));
+      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
+      spyOn(window.URL, 'revokeObjectURL');
+
+      component.downloadSingleReport(mockReport);
 
       expect(stockReportService.downloadSingleReportBlob).toHaveBeenCalledWith(mockReport);
       expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
@@ -250,10 +332,10 @@ describe('ReportGeneratorComponent', () => {
       );
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.downloadSinglePdfReport(mockReport);
+      component.downloadSingleReport(mockReport);
 
       expect(snackBarSpy).toHaveBeenCalledWith(
-        'Error downloading PDF report. Please try again.',
+        'Error downloading report. Please try again.',
         'Okay',
         { duration: 2000 }
       );
@@ -261,6 +343,44 @@ describe('ReportGeneratorComponent', () => {
   });
 
   describe('All Reports Download', () => {
+    it('should download all PDF reports as ZIP correctly', () => {
+      const mockZipBlob = new Blob(['ZIP content'], { type: 'application/zip' });
+
+      spyOn(stockReportService, 'downloadAllReportsAsZip').and.returnValue(of(mockZipBlob));
+      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
+      spyOn(window.URL, 'revokeObjectURL');
+      const snackBarSpy = spyOn(matSnackBar, 'open');
+
+      component.downloadAllReports('PDF');
+
+      expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalledWith('PDF');
+      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockZipBlob);
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        'Downloaded all "PDF" report(s) as ZIP file.',
+        'Okay',
+        { duration: 2000 }
+      );
+    });
+
+    it('should download all XLSX reports as ZIP correctly', () => {
+      const mockZipBlob = new Blob(['ZIP content'], { type: 'application/zip' });
+
+      spyOn(stockReportService, 'downloadAllReportsAsZip').and.returnValue(of(mockZipBlob));
+      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
+      spyOn(window.URL, 'revokeObjectURL');
+      const snackBarSpy = spyOn(matSnackBar, 'open');
+
+      component.downloadAllReports('XLSX');
+
+      expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalledWith('XLSX');
+      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockZipBlob);
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        'Downloaded all "XLSX" report(s) as ZIP file.',
+        'Okay',
+        { duration: 2000 }
+      );
+    });
+
     it('should download all reports as ZIP correctly', () => {
       const mockZipBlob = new Blob(['ZIP content'], { type: 'application/zip' });
 
@@ -269,12 +389,12 @@ describe('ReportGeneratorComponent', () => {
       spyOn(window.URL, 'revokeObjectURL');
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.downloadAllPdfReports();
+      component.downloadAllReports('All');
 
-      expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalled();
+      expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalledWith('All');
       expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockZipBlob);
       expect(snackBarSpy).toHaveBeenCalledWith(
-        'Downloaded all PDF report(s) as ZIP file.',
+        'Downloaded all "All" report(s) as ZIP file.',
         'Okay',
         { duration: 2000 }
       );
@@ -286,7 +406,7 @@ describe('ReportGeneratorComponent', () => {
       spyOn(stockReportService, 'downloadAllReportsAsZip').and.returnValue(of(emptyBlob));
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.downloadAllPdfReports();
+      component.downloadAllReports('PDF');
 
       expect(snackBarSpy).toHaveBeenCalledWith(
         jasmine.stringContaining('No reports available'),
@@ -301,10 +421,10 @@ describe('ReportGeneratorComponent', () => {
       );
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.downloadAllPdfReports();
+      component.downloadAllReports('PDF');
 
       expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('Failed to download PDF'),
+        jasmine.stringContaining('Failed to download "PDF"'),
         'Okay',
         { duration: 2000 }
       );
@@ -312,12 +432,12 @@ describe('ReportGeneratorComponent', () => {
   });
 
   describe('Delete Operations', () => {
-    it('should delete single PDF report successfully', () => {
+    it('should delete single report successfully', () => {
       const mockReport: StockReport = { _id: '1', reportName: 'Test Report', reportType: 'PDF', reportData: 'base64data' };
       const deleteSpy = spyOn(stockReportService, 'deleteSingleReport').and.returnValue(of(void 0));
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.deleteSinglePdfReport(mockReport);
+      component.deleteSingleReport(mockReport);
 
       expect(deleteSpy).toHaveBeenCalledWith(mockReport);
       expect(snackBarSpy).toHaveBeenCalledWith(
@@ -335,7 +455,7 @@ describe('ReportGeneratorComponent', () => {
       );
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.deleteSinglePdfReport(mockReport);
+      component.deleteSingleReport(mockReport);
 
       expect(snackBarSpy).toHaveBeenCalledWith(
         jasmine.stringContaining('Error deleting report'),
@@ -344,7 +464,7 @@ describe('ReportGeneratorComponent', () => {
       );
     });
 
-    it('should delete all reports after user confirmation', () => {
+    it('should delete all PDF reports after user confirmation', () => {
       const mockReports: StockReport[] = [
         { _id: '1', reportName: 'Report 1', reportType: 'PDF', reportData: 'base64data' },
         { _id: '2', reportName: 'Report 2', reportType: 'PDF', reportData: 'base64data' }
@@ -357,12 +477,12 @@ describe('ReportGeneratorComponent', () => {
       } as MatDialogRef<unknown>);
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.deleteAllReports();
+      component.deleteAllReports('PDF');
 
       expect(dialogSpy).toHaveBeenCalled();
-      expect(deleteAllSpy).toHaveBeenCalledWith(mockReports);
+      expect(deleteAllSpy).toHaveBeenCalledWith('PDF');
       expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('2 report(s) deleted successfully'),
+        jasmine.stringContaining('2 PDF report(s) deleted successfully'),
         'Okay',
         { duration: 2000 }
       );
@@ -379,7 +499,7 @@ describe('ReportGeneratorComponent', () => {
         afterClosed: () => of(false)
       } as MatDialogRef<unknown>);
 
-      component.deleteAllReports();
+      component.deleteAllReports('PDF');
 
       expect(deleteAllSpy).not.toHaveBeenCalled();
     });
@@ -388,10 +508,10 @@ describe('ReportGeneratorComponent', () => {
       spyOn(stockReportService, 'getReports').and.returnValue(of([]));
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.deleteAllReports();
+      component.deleteAllReports('PDF');
 
       expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('no reports available'),
+        jasmine.stringContaining('no "PDF" report(s) available'),
         'Okay',
         { duration: 2000 }
       );
@@ -411,10 +531,10 @@ describe('ReportGeneratorComponent', () => {
       } as MatDialogRef<unknown>);
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.deleteAllReports();
+      component.deleteAllReports('PDF');
 
       expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringContaining('Error deleting reports'),
+        jasmine.stringContaining('Error deleting PDF report(s)'),
         'Okay',
         { duration: 2000 }
       );
@@ -426,7 +546,7 @@ describe('ReportGeneratorComponent', () => {
       );
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
-      component.deleteAllReports();
+      component.deleteAllReports('PDF');
 
       expect(snackBarSpy).toHaveBeenCalledWith(
         jasmine.stringContaining('Error fetching reports'),

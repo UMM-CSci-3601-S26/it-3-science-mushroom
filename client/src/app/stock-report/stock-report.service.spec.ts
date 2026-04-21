@@ -123,7 +123,7 @@ describe('StockReportService', () => {
     }));
   });
 
-  describe('Adding a stockReport using `addNewReport()`', () => {
+  describe('Adding a stockReport using `addNewPdfReport()`', () => {
     it('talks to the right endpoint and is called once', waitForAsync(() => {
       const stockReport_id = 'john_id';
       const expected_http_response = { id: stockReport_id } ;
@@ -133,7 +133,7 @@ describe('StockReportService', () => {
         .returnValue(of(expected_http_response));
 
       const formData = new FormData();
-      stockReportService.addNewReport(formData).subscribe((new_stockReport_id) => {
+      stockReportService.addNewPdfReport(formData).subscribe((new_stockReport_id) => {
         expect(new_stockReport_id).toBe(stockReport_id);
         expect(mockedMethod)
           .withContext('one call')
@@ -173,17 +173,18 @@ describe('StockReportService', () => {
   });
 
   describe('Deleting multiple stockReports using `deleteAllReports()`', () => {
-    it('returns void immediately when given an empty array', waitForAsync(() => {
-      stockReportService.deleteAllReports([]).subscribe((res) => {
+    it('returns void immediately when no reports match the format', waitForAsync(() => {
+      spyOn(httpClient, 'get').and.returnValue(of([]));
+      stockReportService.deleteAllReports('PDF').subscribe((res) => {
         expect(res).toBeUndefined();
       });
     }));
 
-    it('deletes all reports and refreshes the list', waitForAsync(() => {
+    it('deletes all reports of the specified format and refreshes the list', waitForAsync(() => {
       const mockedDelete = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
-      const mockedGet = spyOn(httpClient, 'get').and.returnValue(of([]));
+      const mockedGet = spyOn(httpClient, 'get').and.returnValue(of(testReports));
 
-      stockReportService.deleteAllReports(testReports).subscribe((res) => {
+      stockReportService.deleteAllReports('All').subscribe((res) => {
         expect(res).toBeUndefined();
 
         // Should call delete for each report
@@ -197,10 +198,10 @@ describe('StockReportService', () => {
           .withContext('deletes second report')
           .toHaveBeenCalledWith(`${stockReportService.stockReportUrl}/jane_id`);
 
-        // Should call get to refresh reports
+        // Should call get to fetch and refresh reports
         expect(mockedGet)
-          .withContext('refreshes reports list')
-          .toHaveBeenCalledWith(stockReportService.stockReportUrl, { params: new HttpParams() });
+          .withContext('fetches reports for filtering')
+          .toHaveBeenCalled();
       });
     }));
   });
@@ -257,7 +258,7 @@ describe('StockReportService', () => {
         spyOn(httpClient, 'get').and.returnValue(of(testReports));
 
         // Mock the convertBase64ToBlob method to return our mockBlob when called
-        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+        stockReportService.downloadAllReportsAsZip('All').subscribe((blob) => {
           expect(blob)
             .withContext('returns a Blob')
             .toBeInstanceOf(Blob);
@@ -270,7 +271,7 @@ describe('StockReportService', () => {
       it('should return an empty Blob when no reports are available', waitForAsync(() => {
         spyOn(httpClient, 'get').and.returnValue(of([]));
 
-        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+        stockReportService.downloadAllReportsAsZip('All').subscribe((blob) => {
           expect(blob).toBeInstanceOf(Blob);
           expect(blob.size).toBe(0);
         });
@@ -291,7 +292,7 @@ describe('StockReportService', () => {
         // Mock getReportBytesById to always return a blob
         const getBytesSpy = spyOn(stockReportService, 'getReportBytesById').and.returnValue(of(mockBlob));
 
-        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+        stockReportService.downloadAllReportsAsZip('All').subscribe((blob) => {
           // Verify that the zip was created successfully
           expect(blob).toBeInstanceOf(Blob);
           expect(blob.size).toBeGreaterThan(0);
