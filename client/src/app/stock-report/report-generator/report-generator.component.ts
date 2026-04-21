@@ -251,6 +251,7 @@ export class ReportGeneratorComponent {
   /**
    * Generate an XLSX report of the inventory, grouped by Stock State.
    * Server handles all generation, this is just for calling the service method and handling the response.
+   * @param saveXlsx boolean indicating whether to save XLSX to server (true) or download to client machine (false)
    */
   generateXlsx(saveXlsx: boolean) {
     if (saveXlsx) {

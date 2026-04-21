@@ -11,10 +11,10 @@
     <button mat-raised-button (click)="downloadNewPdfReport()" data-cy="generate-and-download-pdf">
       Generate & Download Report as PDF
     </button>
-    <button mat-raised-button disabled data-cy="generate-xlsx">
+    <button mat-raised-button (click)="saveXlsxReport()" data-cy="generate-xlsx">
       Generate Report as XLSX
     </button>
-    <button mat-raised-button disabled data-cy="generate-and-download-xlsx">
+    <button mat-raised-button (click)="downloadNewXlsxReport()" data-cy="generate-and-download-xlsx">
       Generate & Download Report as XLSX
     </button>
   </div>
@@ -25,13 +25,13 @@
       <h4 style="margin: 0;">Downloading Actions</h4>
       <mat-icon>folder_zip</mat-icon>
     </div>
-    <button mat-raised-button disabled data-cy="download-all-reports">
+    <button mat-raised-button (click)="downloadAllReports('All')" data-cy="download-all-reports">
       Download all Reports as ZIP
     </button>
-    <button mat-raised-button (click)="downloadAllPdfReports()" data-cy="download-all-pdfs">
+    <button mat-raised-button (click)="downloadAllReports('PDF')" data-cy="download-all-pdfs">
       Download all PDFs as ZIP
     </button>
-    <button mat-raised-button disabled data-cy="download-all-xlsx">
+    <button mat-raised-button (click)="downloadAllReports('XLSX')" data-cy="download-all-xlsx">
       Download all XLSXs as ZIP
     </button>
   </div>
@@ -42,13 +42,13 @@
       <h4 style="margin: 0;">Deletion Actions</h4>
       <mat-icon>delete_sweep</mat-icon>
     </div>
-    <button mat-raised-button (click)="deleteAllReports()" data-cy="delete-all-reports">
+    <button mat-raised-button (click)="deleteAllReports('All')" data-cy="delete-all-reports">
       Delete all Reports
     </button>
-    <button mat-raised-button disabled data-cy="delete-all-pdfs">
+    <button mat-raised-button (click)="deleteAllReports('PDF')" data-cy="delete-all-pdfs">
       Delete all PDF Reports
     </button>
-    <button mat-raised-button disabled data-cy="delete-all-xlsx">
+    <button mat-raised-button (click)="deleteAllReports('XLSX')" data-cy="delete-all-xlsx">
       Delete all XLSX Reports
     </button>
   </div>

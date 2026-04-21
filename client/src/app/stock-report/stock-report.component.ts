@@ -132,7 +132,7 @@ export class StockReportComponent {
   }
 
   /**
-   * Delete a single PDF report. Uses the Report Generator's method, passing along the report to delete
+   * Delete a single report. Uses the Report Generator's method, passing along the report to delete
    * @param report The report to delete
    */
   deleteSingleReport(report: StockReport) {
