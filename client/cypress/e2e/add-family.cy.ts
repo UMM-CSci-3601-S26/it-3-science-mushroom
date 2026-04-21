@@ -4,9 +4,10 @@ import { AddFamilyPage } from '../support/add-family.po';
 describe('Add family page', () => {
   const page = new AddFamilyPage();
 
+  cy.task('seed:database');
+
   beforeEach(() => {
     page.navigateTo();
-    cy.task('seed:database');
   });
 
   it('Should have the correct title', () => {
