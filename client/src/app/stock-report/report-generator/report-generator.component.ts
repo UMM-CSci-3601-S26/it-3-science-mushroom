@@ -218,7 +218,7 @@ export class ReportGeneratorComponent {
       formData.append("reportName", filename);
       formData.append("reportType", "PDF");
 
-      this.stockReportService.addNewReport(formData).subscribe({
+      this.stockReportService.addNewPdfReport(formData).subscribe({
         next: (response) => {
           console.log("PDF report saved to server with ID:", response);
           this.stockReportService.refreshReports().subscribe();
@@ -248,6 +248,60 @@ export class ReportGeneratorComponent {
     }
   }
 
+  /**
+   * Generate an XLSX report of the inventory, grouped by Stock State.
+   * Server handles all generation, this is just for calling the service method and handling the response.
+   */
+  generateXlsx(saveXlsx: boolean) {
+    if (saveXlsx) {
+      // Save to server
+      this.stockReportService.generateNewXlsxReport().subscribe({
+        next: (response) => {
+          console.log("XLSX report generated and saved to server with ID:", response);
+          this.stockReportService.refreshReports().subscribe();
+          this.snackBar.open(
+            `Generating and saving report as XLSX file to server...`,
+            `Okay`,
+            { duration: 2000 }
+          );
+        },
+        error: (error) => {
+          console.error("Error generating/saving XLSX report to server:", error);
+          this.snackBar.open(
+            `Error generating/saving report as XLSX file. Please try again.`,
+            `Okay`,
+            { duration: 2000 }
+          );
+        }
+      });
+    } else {
+      // Download to client machine
+      this.stockReportService.generateAndDownloadXlsxReport().subscribe({
+        next: (blob) => {
+          const fileName = `Stock_Report_${this.formatDateTime(this.dateTime)[1]}.xlsx`;
+          const a = document.createElement('a');
+          a.href = window.URL.createObjectURL(blob);
+          a.download = fileName;
+          a.click();
+          window.URL.revokeObjectURL(a.href);
+          this.snackBar.open(
+            `Generating and downloading report as XLSX file...`,
+            `Okay`,
+            { duration: 2000 }
+          );
+        },
+        error: (error) => {
+          console.error("Error generating XLSX report:", error);
+          this.snackBar.open(
+            `Error generating report as XLSX file. Please try again.`,
+            `Okay`,
+            { duration: 2000 }
+          );
+        }
+      });
+    }
+  }
+
   // Helper method for generating and downloading report as PDF to client
   downloadNewPdfReport() {
     this.generatePDF(false);
@@ -258,16 +312,26 @@ export class ReportGeneratorComponent {
     this.generatePDF(true);
   }
 
+  // Helper method for generating and downloading report as XLSX to client
+  downloadNewXlsxReport() {
+    this.generateXlsx(false);
+  }
+
+  // Helper method for generating and saving report as XLSX to server
+  saveXlsxReport() {
+    this.generateXlsx(true);
+  }
+
   /**
-   * Delete a single PDF report from the server. The actual logic is handled in the service.
+   * Delete a single report from the server. The actual logic is handled in the service.
    * @param report Report to delete from the server
    */
-  deleteSinglePdfReport(report: StockReport) {
+  deleteSingleReport(report: StockReport) {
     // Call deleteReport and handle response
     this.stockReportService.deleteSingleReport(report).subscribe({
       // If successful, show success message with report name
       next: () => {
-        console.log("PDF report deleted from server with ID:", report._id);
+        console.log("Report deleted from server with ID:", report._id);
         this.snackBar.open(
           `Report "${report.reportName}" deleted successfully.`,
           `Okay`,
@@ -276,7 +340,7 @@ export class ReportGeneratorComponent {
       },
       // If error, show error message
       error: (error) => {
-        console.error("Error deleting PDF report from server:", error);
+        console.error("Error deleting report from server:", error);
         this.snackBar.open(
           `Error deleting report. Please try again.`,
           `Okay`,
@@ -287,19 +351,28 @@ export class ReportGeneratorComponent {
   }
 
   /**
-   * Delete all reports from the server. The actual logic is handled in the service.
+   * Delete all reports of a specific format from the server. The actual logic is handled in the service.
+   * @param format The format of reports to delete ('PDF' | 'XLSX' | 'All')
    */
-  deleteAllReports() {
+  deleteAllReports(format: 'PDF' | 'XLSX' | 'All') {
     // Get all reports
     this.stockReportService.getReports().subscribe({
       next: (response) => {
-        const reportCount = response.length;
+        // Filter reports by format
+        const filteredReports = response.filter(report => {
+          if (format === 'All') {
+            return true;
+          }
+          return report.reportType === format;
+        });
+
+        const reportCount = filteredReports.length;
 
         // No reports available
         if (reportCount === 0) {
           console.log("No reports available to be deleted.");
           this.snackBar.open(
-            `There are no reports available for deletion.`,
+            `There are no "${format}" report(s) available for deletion.`,
             `Okay`,
             { duration: 2000 }
           );
@@ -311,7 +384,7 @@ export class ReportGeneratorComponent {
           data: {
             title: 'Confirm Delete All',
             numReports: reportCount,
-            message: `Are you sure you want to delete ${reportCount} report(s)?`,
+            message: `Are you sure you want to delete ${reportCount} ${format} report(s)?`,
             buttonOne: 'Cancel',
             buttonTwo: 'Confirm',
           }
@@ -320,12 +393,12 @@ export class ReportGeneratorComponent {
         // If confirmed, handle deleting
         dialogRef.afterClosed().subscribe(result => {
           if (result) {
-            this.stockReportService.deleteAllReports(response).subscribe({
+            this.stockReportService.deleteAllReports(format).subscribe({
               // If successful, show success message with number of reports deleted
               next: () => {
-                console.log("All reports deleted from server");
+                console.log(`All ${format} reports deleted from server`);
                 this.snackBar.open(
-                  `${reportCount} report(s) deleted successfully.`,
+                  `${reportCount} ${format} report(s) deleted successfully.`,
                   `Okay`,
                   { duration: 2000 }
                 );
@@ -334,7 +407,7 @@ export class ReportGeneratorComponent {
               error: (error) => {
                 console.error("Error deleting reports from server:", error);
                 this.snackBar.open(
-                  `Error deleting reports. Please try again.`,
+                  `Error deleting ${format} report(s). Please try again.`,
                   `Okay`,
                   { duration: 2000 }
                 );
@@ -356,11 +429,37 @@ export class ReportGeneratorComponent {
   }
 
   /**
-   * Downloads all PDFs from the server as a ZIP file. The actual logic is handled in the service.
-   * @note This needs to be updated to handle only downloading PDFs once CSV reports are added!
+   * Download a single report from the server.
+   * @param report The report to download
    */
-  downloadAllPdfReports() {
-    this.stockReportService.downloadAllReportsAsZip().subscribe({
+  downloadSingleReport(report: StockReport) {
+    const fileName = `Stock_Report_${this.formatDateTime(this.dateTime)[1]}.xlsx`;
+    this.stockReportService.downloadSingleReportBlob(report).subscribe({
+      next: (blob) => {
+        // Create object URL and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error("Error downloading report:", error);
+        this.snackBar.open(
+          `Error downloading report. Please try again.`,
+          `Okay`,
+          { duration: 2000 }
+        );
+      }
+    });
+  }
+
+  /**
+   * Downloads all reports from the server as a ZIP file. The actual logic is handled in the service.
+   */
+  downloadAllReports(format: 'PDF' | 'XLSX' | 'All') {
+    this.stockReportService.downloadAllReportsAsZip(format).subscribe({
       next: (zipBlob) => {
         // Handle case of no reports
         if (zipBlob.size === 0) {
@@ -377,13 +476,21 @@ export class ReportGeneratorComponent {
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `StockReports_${this.formatDateTime(this.dateTime)[1]}.zip`;
+        if (format === 'PDF') {
+          a.download = `StockReports_PDF_${this.formatDateTime(this.dateTime)[1]}.zip`;
+        } else if (format === 'XLSX') {
+          a.download = `StockReports_XLSX_${this.formatDateTime(this.dateTime)[1]}.zip`;
+        } else if (format === 'All') {
+          a.download = `StockReports_${this.formatDateTime(this.dateTime)[1]}.zip`;
+        } else {
+          a.download = `StockReports_UnknownTypes_${this.formatDateTime(this.dateTime)[1]}.zip`;
+        }
         a.click();
         URL.revokeObjectURL(url);
 
         // Show success message
         this.snackBar.open(
-          `Downloaded all PDF report(s) as ZIP file.`,
+          `Downloaded all ${format} report(s) as ZIP file.`,
           `Okay`,
           { duration: 2000 }
         );
@@ -391,33 +498,7 @@ export class ReportGeneratorComponent {
       error: (error) => {
         console.error("Error downloading ZIP of report(s). ", error);
         this.snackBar.open(
-          `Failed to download PDF report(s) as ZIP. Please try again.`,
-          `Okay`,
-          { duration: 2000 }
-        );
-      }
-    });
-  }
-
-  /**
-   * Download a single PDF report from the server. The actual logic is handled in the service.
-   * @note This also needs to be updated to account for only downloading PDFs!
-   */
-  downloadSinglePdfReport(report: StockReport) {
-    this.stockReportService.downloadSingleReportBlob(report).subscribe({
-      next: (blob) => {
-        // Create object URL and trigger download
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = report.reportName;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (error) => {
-        console.error("Error downloading PDF report:", error);
-        this.snackBar.open(
-          `Error downloading PDF report. Please try again.`,
+          `Failed to download ${format} report(s) as ZIP. Please try again.`,
           `Okay`,
           { duration: 2000 }
         );

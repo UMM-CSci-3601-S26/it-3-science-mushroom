@@ -107,18 +107,34 @@ export class StockReportComponent {
     this.reportService.refreshReports().subscribe();
   }
 
-  // Download single report as PDF. Uses the Report Generator's method, passing along the report to download
+  /**
+   * Download single report as PDF/XLSX. Uses the Report Generator's method, passing along the report to download
+   * @param report The report to download
+   */
   downloadSingleReport(report: StockReport) {
     if (!this.reportGenerator || !report) return;
-    this.reportGenerator.downloadSinglePdfReport(report);
-    this.snackBar.open(
-      `Downloading report ${report.reportName} as PDF file...`,
-      `Okay`,
-      { duration: 2000 }
-    );
+
+    if (report.reportType === 'PDF') {
+      this.reportGenerator.downloadSingleReport(report);
+      this.snackBar.open(
+        `Downloading report ${report.reportName} as PDF file...`,
+        `Okay`,
+        { duration: 2000 }
+      );
+    } else if (report.reportType === 'XLSX') {
+      this.reportGenerator.downloadSingleReport(report);
+      this.snackBar.open(
+        `Downloading report ${report.reportName} as XLSX file...`,
+        `Okay`,
+        { duration: 2000 }
+      );
+    }
   }
 
-  // Delete a single PDF report. Uses the Report Generator's method, passing along the report to delete
+  /**
+   * Delete a single PDF report. Uses the Report Generator's method, passing along the report to delete
+   * @param report The report to delete
+   */
   deleteSingleReport(report: StockReport) {
     const dialogRef = this.dialogService.openDialog({
       title: 'Confirm Delete Single',
@@ -131,7 +147,7 @@ export class StockReportComponent {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         if (!this.reportGenerator || !report) return;
-        this.reportGenerator.deleteSinglePdfReport(report);
+        this.reportGenerator.deleteSingleReport(report);
         this.snackBar.open(
           `Deleting report ${report.reportName}...`,
           `Okay`,
