@@ -70,6 +70,12 @@ public class FamilyController implements Controller {
   private static final String REASON_AVAILABLE_DIDNT_NEED = "available_didnt_need";
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
   private static final String REASON_SUBSTITUTED = "substituted";
+  private static final int EXACT_ITEM_MATCH_SCORE = 100;
+  private static final int SEARCHABLE_ITEM_MATCH_SCORE = 75;
+  private static final int PARTIAL_ITEM_MATCH_SCORE = 50;
+  private static final int REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH = 4;
+  private static final int REQUIRED_ATTRIBUTE_MATCH_SCORE = 5;
+  private static final int OPTIONAL_ATTRIBUTE_MATCH_SCORE = 3;
 
   // Regex
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -636,8 +642,17 @@ public class FamilyController implements Controller {
     checklistItem.available = match != null && match.quantity > 0;
     checklistItem.selected = checklistItem.available;
     checklistItem.matchedInventoryId = match != null ? match.internalID : null;
+    checklistItem.matchedInventoryItem = match != null ? match.item : null;
+    checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
 
     return checklistItem;
+  }
+
+  private String bestInventoryDescription(Inventory inventory) {
+    if (hasText(inventory.description)) {
+      return inventory.description;
+    }
+    return inventory.toString();
   }
 
   private Inventory findBestInventoryMatch(SupplyList supplyList) {
@@ -681,17 +696,18 @@ public class FamilyController implements Controller {
         continue;
       }
       if (requestedName.equals(inventoryName)) {
-        bestScore = Math.max(bestScore, 100);
+        bestScore = Math.max(bestScore, EXACT_ITEM_MATCH_SCORE);
         continue;
       }
       if (searchableTokens.contains(requestedName)) {
-        bestScore = Math.max(bestScore, 75);
+        bestScore = Math.max(bestScore, SEARCHABLE_ITEM_MATCH_SCORE);
         continue;
       }
 
       for (String requestedToken : tokenParts(requestedItem)) {
-        if (requestedToken.length() >= 4 && searchableTokens.contains(requestedToken)) {
-          bestScore = Math.max(bestScore, 50);
+        if (requestedToken.length() >= REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH
+            && searchableTokens.contains(requestedToken)) {
+          bestScore = Math.max(bestScore, PARTIAL_ITEM_MATCH_SCORE);
         }
       }
     }
@@ -715,10 +731,10 @@ public class FamilyController implements Controller {
       return 0;
     }
     if (hasText(options.allOf) && nameEquivalent(options.allOf, inventoryValue)) {
-      return 5;
+      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
     }
     if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return 3;
+      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
     }
     return 0;
   }
@@ -728,10 +744,10 @@ public class FamilyController implements Controller {
       return 0;
     }
     if (options.allOf != null && options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return 5;
+      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
     }
     if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return 3;
+      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
     }
     return 0;
   }
@@ -1264,6 +1280,8 @@ public class FamilyController implements Controller {
               .append("itemDescription", item.itemDescription)
               .append("supplyListId", item.supplyListId)
               .append("matchedInventoryId", item.matchedInventoryId)
+              .append("matchedInventoryItem", item.matchedInventoryItem)
+              .append("matchedInventoryDescription", item.matchedInventoryDescription)
               .append("requestedQuantity", item.requestedQuantity)
               .append("notPickedUpReason", item.notPickedUpReason)
               .append("substituteItem", item.substituteItem)

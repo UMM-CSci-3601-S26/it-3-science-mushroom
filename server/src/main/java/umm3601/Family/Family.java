@@ -58,6 +58,8 @@ public class Family {
     public String itemDescription;
     public String supplyListId;
     public String matchedInventoryId;
+    public String matchedInventoryItem;
+    public String matchedInventoryDescription;
     public Integer requestedQuantity = 1;
     public String notPickedUpReason;
     public String substituteItem;

@@ -485,6 +485,27 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void updateFamilyRejectsInvalidEmailForExistingFamily() {
+    Family updatedFamily = new Family();
+    updatedFamily.guardianName = "Bob Jones";
+    updatedFamily.email = "not-an-email";
+    updatedFamily.address = "456 Oak Ave";
+    updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.students = new ArrayList<>();
+
+    String json = javalinJackson.toJsonString(updatedFamily, Family.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+      .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> familyController.updateFamily(ctx));
+
+    assertTrue(exception.getMessage().contains("valid email"));
+  }
+
+  @Test
   void updateFamilyStatusMarksFamilyHelped() {
     String json = """
       {
@@ -504,6 +525,28 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertTrue(familyCaptor.getValue().helped);
     assertEquals("helped", familyCaptor.getValue().status);
+  }
+
+  @Test
+  void updateFamilyStatusSupportsStatusPayloadWithoutHelpedBoolean() {
+    String json = """
+      {
+        "status": "being_helped"
+      }
+      """;
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyStatusUpdateRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyStatusUpdateRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyStatusUpdateRequest.class)));
+
+    familyController.updateFamilyStatus(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    assertFalse(familyCaptor.getValue().helped);
+    assertEquals("being_helped", familyCaptor.getValue().status);
   }
 
   @Test
@@ -529,6 +572,21 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void updateFamilyStatusRejectsBadIdAndMissingFamily() {
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+
+    BadRequestResponse badId = assertThrows(BadRequestResponse.class,
+      () -> familyController.updateFamilyStatus(ctx));
+    assertTrue(badId.getMessage().contains("family id was not legal"));
+
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toString());
+
+    NotFoundResponse missing = assertThrows(NotFoundResponse.class,
+      () -> familyController.updateFamilyStatus(ctx));
+    assertTrue(missing.getMessage().contains("family was not found"));
+  }
+
+  @Test
   void updateFamilyStatusRejectsMissingPayload() {
     String json = "{}";
 
@@ -543,6 +601,21 @@ class FamilyControllerSpec {
        () -> familyController.updateFamilyStatus(ctx));
 
     assertTrue(exception.getMessage().contains("must include either helped or status"));
+  }
+
+  @Test
+  void updateFamilyChecklistRejectsBadIdAndMissingFamily() {
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+
+    BadRequestResponse badId = assertThrows(BadRequestResponse.class,
+      () -> familyController.updateFamilyChecklist(ctx));
+    assertTrue(badId.getMessage().contains("family id was not legal"));
+
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toString());
+
+    NotFoundResponse missing = assertThrows(NotFoundResponse.class,
+      () -> familyController.updateFamilyChecklist(ctx));
+    assertTrue(missing.getMessage().contains("family was not found"));
   }
 
   @Test
@@ -1239,6 +1312,23 @@ class FamilyControllerSpec {
 
     boolean materialMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedMaterial);
     assertFalse(materialMismatch);
+
+    SupplyList exactMatch = new SupplyList();
+    exactMatch.item = List.of("Notebook");
+    exactMatch.brand = new SupplyList.AttributeOptions();
+    exactMatch.brand.allOf = "Acme";
+    exactMatch.color = new SupplyList.ColorAttributeOptions();
+    exactMatch.color.allOf = List.of("Blue");
+    exactMatch.size = new SupplyList.AttributeOptions();
+    exactMatch.size.allOf = "Wide";
+    exactMatch.type = new SupplyList.AttributeOptions();
+    exactMatch.type.allOf = "Ruled";
+    exactMatch.material = new SupplyList.AttributeOptions();
+    exactMatch.material.allOf = "Paper";
+    exactMatch.packageSize = 2;
+
+    boolean exactMatchResult = invokeInventoryMatchesSupplyList(inventory, exactMatch);
+    assertTrue(exactMatchResult);
   }
 
   @Test
@@ -1269,6 +1359,94 @@ class FamilyControllerSpec {
     boolean colorAnyOfMiss = invokeMatchesColorAttribute(colorAnyOf, "Green");
     assertTrue(colorAnyOfMatch);
     assertFalse(colorAnyOfMiss);
+  }
+
+  @Test
+  void privateSimilarityHelpersCoverScoreBranches() throws Exception {
+    Inventory inventory = new Inventory();
+    inventory.item = "Yellow Pencil";
+    inventory.description = "Plastic writing pencil";
+    inventory.brand = "Ticonderoga";
+    inventory.color = "Yellow";
+    inventory.material = "Wood";
+
+    SupplyList exactItemSupplyList = new SupplyList();
+    exactItemSupplyList.item = List.of("Yellow Pencil");
+    assertEquals(100, invokeItemSimilarityScore(inventory, exactItemSupplyList));
+
+    SupplyList searchableItemSupplyList = new SupplyList();
+    searchableItemSupplyList.item = List.of("Plastic");
+    assertEquals(75, invokeItemSimilarityScore(inventory, searchableItemSupplyList));
+
+    SupplyList partialItemSupplyList = new SupplyList();
+    partialItemSupplyList.item = List.of("Classroom Pencil");
+    assertEquals(50, invokeItemSimilarityScore(inventory, partialItemSupplyList));
+
+    SupplyList blankItemSupplyList = new SupplyList();
+    blankItemSupplyList.item = List.of(" ");
+    assertEquals(0, invokeItemSimilarityScore(inventory, blankItemSupplyList));
+
+    SupplyList emptyItemSupplyList = new SupplyList();
+    emptyItemSupplyList.item = List.of();
+    assertEquals(0, invokeItemSimilarityScore(inventory, emptyItemSupplyList));
+
+    SupplyList nullItemSupplyList = new SupplyList();
+    nullItemSupplyList.item = null;
+    assertEquals(0, invokeItemSimilarityScore(inventory, nullItemSupplyList));
+
+    SupplyList shortPartialItemSupplyList = new SupplyList();
+    shortPartialItemSupplyList.item = List.of("No 2");
+    assertEquals(0, invokeItemSimilarityScore(inventory, shortPartialItemSupplyList));
+
+    SupplyList.AttributeOptions requiredBrand = new SupplyList.AttributeOptions();
+    requiredBrand.allOf = "Ticonderoga";
+    assertEquals(5, invokeAttributeSimilarityScore(requiredBrand, inventory.brand));
+
+    SupplyList.AttributeOptions requiredBrandMiss = new SupplyList.AttributeOptions();
+    requiredBrandMiss.allOf = "Crayola";
+    assertEquals(0, invokeAttributeSimilarityScore(requiredBrandMiss, inventory.brand));
+
+    SupplyList.AttributeOptions optionalBrand = new SupplyList.AttributeOptions();
+    optionalBrand.anyOf = List.of("Crayola", "Ticonderoga");
+    assertEquals(3, invokeAttributeSimilarityScore(optionalBrand, inventory.brand));
+
+    SupplyList.AttributeOptions missingBrand = new SupplyList.AttributeOptions();
+    missingBrand.allOf = "";
+    missingBrand.anyOf = List.of("Crayola");
+    assertEquals(0, invokeAttributeSimilarityScore(missingBrand, inventory.brand));
+    assertEquals(0, invokeAttributeSimilarityScore(null, inventory.brand));
+
+    SupplyList.ColorAttributeOptions requiredColor = new SupplyList.ColorAttributeOptions();
+    requiredColor.allOf = List.of("Yellow");
+    assertEquals(5, invokeColorSimilarityScore(requiredColor, inventory.color));
+
+    SupplyList.ColorAttributeOptions requiredColorMiss = new SupplyList.ColorAttributeOptions();
+    requiredColorMiss.allOf = List.of("Blue");
+    assertEquals(0, invokeColorSimilarityScore(requiredColorMiss, inventory.color));
+
+    SupplyList.ColorAttributeOptions optionalColor = new SupplyList.ColorAttributeOptions();
+    optionalColor.anyOf = List.of("Blue", "Yellow");
+    assertEquals(3, invokeColorSimilarityScore(optionalColor, inventory.color));
+
+    SupplyList.ColorAttributeOptions missingColor = new SupplyList.ColorAttributeOptions();
+    missingColor.allOf = List.of("Blue");
+    missingColor.anyOf = List.of("Red");
+    assertEquals(0, invokeColorSimilarityScore(missingColor, inventory.color));
+    assertEquals(0, invokeColorSimilarityScore(null, inventory.color));
+  }
+
+  @Test
+  void privateBestInventoryDescriptionFallsBackToItemString() throws Exception {
+    Inventory inventoryWithDescription = new Inventory();
+    inventoryWithDescription.item = "Backpack";
+    inventoryWithDescription.description = "Blue student backpack";
+
+    Inventory inventoryWithoutDescription = new Inventory();
+    inventoryWithoutDescription.item = "Notebook";
+    inventoryWithoutDescription.description = "";
+
+    assertEquals("Blue student backpack", invokeBestInventoryDescription(inventoryWithDescription));
+    assertEquals("Notebook", invokeBestInventoryDescription(inventoryWithoutDescription));
   }
 
   @Test
@@ -1591,6 +1769,27 @@ class FamilyControllerSpec {
       throws Exception {
     return invokePrivate("matchesColorAttribute",
       new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private int invokeAttributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
+      throws Exception {
+    return invokePrivate("attributeSimilarityScore",
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private int invokeColorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue)
+      throws Exception {
+    return invokePrivate("colorSimilarityScore",
+      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private int invokeItemSimilarityScore(Inventory inventory, SupplyList supplyList) throws Exception {
+    return invokePrivate("itemSimilarityScore", new Class<?>[] {Inventory.class, SupplyList.class},
+      inventory, supplyList);
+  }
+
+  private String invokeBestInventoryDescription(Inventory inventory) throws Exception {
+    return invokePrivate("bestInventoryDescription", new Class<?>[] {Inventory.class}, inventory);
   }
 
   private void invokeValidateChecklistItemForSave(Family.ChecklistItem item) throws Exception {

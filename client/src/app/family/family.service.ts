@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 
 // Family Imports
 import { environment } from '../../environments/environment';
-import { Family, DashboardStats, SelectOption } from './family';
+import { Family, DashboardStats, FamilyChecklist, SelectOption } from './family';
 
 @Injectable({
   providedIn: 'root'
@@ -62,6 +62,14 @@ export class FamilyService {
 
   clearFamilyHelpSession(id: string): Observable<Family> {
     return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/clear`, {});
+  }
+
+  updateFamilyChecklist(id: string, checklist: FamilyChecklist): Observable<Family> {
+    return this.httpClient.patch<Family>(`${this.familyUrl}/${id}/checklist`, { checklist });
+  }
+
+  saveFamilyHelpSessionAll(id: string, checklist: FamilyChecklist): Observable<Family> {
+    return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/save-all`, { checklist });
   }
 
   addFamily(newFamily: Partial<Family>): Observable<string> {

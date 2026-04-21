@@ -27,6 +27,10 @@
   color: #475569;
 }
 
+.header-clear {
+  flex: 0 0 auto;
+}
+
 .session-summary {
   padding: 0.35rem 0.5rem;
 }
@@ -156,6 +160,17 @@
   font-size: 0.86rem;
 }
 
+.inventory-match {
+  display: inline-flex;
+  margin-top: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  background: #ecfeff;
+  color: #155e75;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .item-status {
   align-self: flex-start;
   white-space: nowrap;
@@ -174,6 +189,7 @@
 
 .session-actions {
   display: flex;
+  gap: 0.75rem;
   justify-content: flex-end;
   padding-top: 0.65rem;
   border-top: 1px solid #e2e8f0;
@@ -185,7 +201,7 @@
     width: 86vw;
   }
 
-  .header-close {
+  .header-clear {
     display: none;
   }
 

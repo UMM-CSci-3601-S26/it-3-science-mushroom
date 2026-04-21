@@ -4,8 +4,14 @@
       <h2 class="session-title">Help Family Session</h2>
       <p class="session-subtitle">{{ sessionFamily?.guardianName ?? data.family.guardianName }}</p>
     </div>
-    <button mat-stroked-button class="header-close" type="button" (click)="dialogRef.close()">
-      Close
+    <button
+      mat-icon-button
+      class="header-clear"
+      type="button"
+      aria-label="Clear session and close"
+      [disabled]="saving"
+      (click)="clearSessionAndClose()">
+      <mat-icon>close</mat-icon>
     </button>
   </div>
 
@@ -78,6 +84,11 @@
                           <span> | Found in inventory</span>
                         }
                       </p>
+                      @if (shouldShowMatchedInventory(item)) {
+                        <p class="inventory-match">
+                          Will remove: {{ matchedInventoryDisplay(item) }}
+                        </p>
+                      }
                     </div>
 
                     <span class="item-status">{{ item.available ? 'Available' : 'Needs review' }}</span>
@@ -101,8 +112,16 @@
   }
 
   <div class="session-actions">
-    <button mat-stroked-button type="button" (click)="dialogRef.close()">
+    <button mat-stroked-button type="button" [disabled]="saving" (click)="closeAndSaveDraft()">
       Close
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      [disabled]="saving || loading || !sessionFamily?.checklist"
+      (click)="saveCompletedSession()">
+      Save
     </button>
   </div>
 </div>

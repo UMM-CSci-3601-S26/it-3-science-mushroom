@@ -13,6 +13,8 @@ export interface ChecklistItem {
   itemDescription?: string;
   supplyListId?: string;
   matchedInventoryId?: string;
+  matchedInventoryItem?: string;
+  matchedInventoryDescription?: string;
   requestedQuantity: number;
   notPickedUpReason?: string;
   substituteItem?: string;
