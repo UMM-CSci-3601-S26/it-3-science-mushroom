@@ -53,7 +53,7 @@ import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
-
+import umm3601.Family.Family.AvailabilityOptions;
 // Misc Imports
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
@@ -127,12 +127,16 @@ class FamilyControllerSpec {
           new Document()
             .append("name", "Alice")
             .append("grade", "3")
-            .append("school", "MAHS")
-            .append("teacher", "N/A"),
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false),
           new Document()
             .append("name", "Timmy")
             .append("grade", "5")
-            .append("school", "MAHS")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
             .append("teacher", "N/A")
         )));
     testFamilies.add(
@@ -147,12 +151,14 @@ class FamilyControllerSpec {
           new Document()
             .append("name", "Sara")
             .append("grade", "7")
-            .append("school", "MAHS")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
             .append("teacher", "N/A"),
           new Document()
             .append("name", "Ronan")
             .append("grade", "4")
-            .append("school", "HHS")
+            .append("school", "Herman High School")
+            .append("schoolAbbreviation", "HHS")
             .append("teacher", "N/A")
         )));
     testFamilies.add(
@@ -167,7 +173,8 @@ class FamilyControllerSpec {
           new Document()
             .append("name", "Lilian")
             .append("grade", "1")
-            .append("school", "HHS")
+            .append("school", "Herman High School")
+            .append("schoolAbbreviation", "HHS")
             .append("teacher", "N/A")
         )));
 
@@ -186,7 +193,11 @@ class FamilyControllerSpec {
           .append("name", "Sara")
           .append("grade", "5")
           .append("school", "Roosevelt")
+          .append("schoolAbbreviation", "R")
           .append("teacher", "N/A")
+          .append("backpack", true)
+          .append("headphones", false)
+
       ));
 
     familyDocuments.insertMany(testFamilies);
@@ -443,6 +454,11 @@ class FamilyControllerSpec {
     updatedFamily.email = "bob@email.com";
     updatedFamily.address = "789 7th Ave";
     updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.timeAvailability = new AvailabilityOptions();
+      updatedFamily.timeAvailability.earlyMorning = false;
+      updatedFamily.timeAvailability.lateMorning = true;
+      updatedFamily.timeAvailability.earlyAfternoon = false;
+      updatedFamily.timeAvailability.lateAfternoon = false;
     updatedFamily.students = new ArrayList<>();
 
     String json = javalinJackson.toJsonString(updatedFamily, Family.class);

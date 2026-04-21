@@ -56,6 +56,11 @@ export class SettingsComponent implements OnInit {
       Validators.required,
       Validators.minLength(2),
       Validators.maxLength(100),
+    ])),
+    abbreviation: new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.minLength(2),
+      Validators.maxLength(6),
     ]))
   });
 
@@ -158,7 +163,7 @@ export class SettingsComponent implements OnInit {
   // Adds a school to the list and immediately persists to the server
   addSchool(): void {
     if (this.addSchoolForm.valid) {
-      this.schools = [...this.schools, { name: this.addSchoolForm.value.name! }];
+      this.schools = [...this.schools, { name: this.addSchoolForm.value.name!, abbreviation: this.addSchoolForm.value.abbreviation! }];
       this.saveSchools();
       this.addSchoolForm.reset();
     }
