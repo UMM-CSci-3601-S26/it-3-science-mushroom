@@ -39,6 +39,7 @@ import io.javalin.http.HttpStatus;
 import umm3601.Controller;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
+// import umm3601.settings.Settings;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -53,6 +54,7 @@ import umm3601.SupplyList.SupplyList;
 public class FamilyController implements Controller {
   // API Endpoints
   private static final String API_FAMILY = "/api/family";
+  private static final String API_SCHEDULE_FAMILIES = "/api/family/schedule";
   private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
   private static final String API_FAMILY_EXPORT = "/api/family/export";
@@ -132,6 +134,68 @@ public class FamilyController implements Controller {
       ctx.json(family);
       ctx.status(HttpStatus.OK);
     }
+  }
+
+  // takes the list of families and goes through them one by one sorting them into the first available time slot
+  // NEED TO FIX - REFERENCE UPDATE FAMILY
+  public void scheduleFamilies(Context ctx) {
+      Bson filter = constructDatabaseFilter(ctx);
+
+      int capacity = 10;
+
+      ArrayList<Family> families = familyCollection
+      .find(filter)
+      .into(new ArrayList<>());
+
+    int earlyMorningCapacity = 0; // current number of people in a timeslot
+    int lateMorningCapacity = 0;
+    int earlyAfternoonCapacity = 0;
+    int lateAfternoonCapacity = 0;
+
+    for (int j = 0; j <= families.size(); j++) {
+      // goes through for each item in the array
+      if(families.get(j).timeAvailability.earlyMorning) // checks if earlyMorning availability is marked true
+      {
+        if (earlyMorningCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        {
+          families.get(j).timeSlot = "NEED TO CHANGE early morning"; // should correspond with set timeslot in settings
+          earlyMorningCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+        }
+        break;
+      }
+
+      if(families.get(j).timeAvailability.lateMorning) // checks if lateMorning availability is marked true
+      {
+        if (lateMorningCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        {
+          families.get(j).timeSlot = "NEED TO CHANGE late morning"; //should correspond with set timeslot in settings
+          lateMorningCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+        }
+        break;
+      }
+
+      if(families.get(j).timeAvailability.earlyAfternoon) // checks if earlyAfternoon availability is marked true
+      {
+        if (earlyAfternoonCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        {
+          families.get(j).timeSlot = "NEED TO CHANGE early afternoon"; //should correspond with set timeslot in settings
+          earlyAfternoonCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+        }
+        break;
+      }
+
+      if(families.get(j).timeAvailability.lateAfternoon) // checks if lateAfternoon availability is marked true
+      {
+        if (lateAfternoonCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        {
+          families.get(j).timeSlot = "NEED TO CHANGE late afternoon"; //should correspond with set timeslot in settings
+          lateAfternoonCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+        }
+        break;
+      }
+    }
+    ctx.json(families);
+    ctx.status(HttpStatus.OK);
   }
 
   // Filter for families
@@ -1146,6 +1210,7 @@ public class FamilyController implements Controller {
     server.get(API_FAMILY_HELP_SESSION, this::getFamilyHelpSession);
 
     server.put(API_FAMILY_BY_ID, this::updateFamily);
+    server.patch(API_SCHEDULE_FAMILIES, this::scheduleFamilies);
     server.patch(API_FAMILY_HELPED, this::updateFamilyHelped);
     server.patch(API_FAMILY_STATUS, this::updateFamilyStatus);
     server.patch(API_FAMILY_CHECKLIST, this::updateFamilyChecklist);
