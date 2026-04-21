@@ -15,4 +15,26 @@ import { Family } from '../family/family';
 export class PointOfSaleFamilyCardComponent {
   family = input.required<Family>();
   helpFamily = output<Family>();
+
+  statusLabel(): string {
+    switch (this.family().status) {
+      case 'helped':
+        return 'Helped';
+      case 'being_helped':
+        return 'In progress';
+      default:
+        return 'Not helped';
+    }
+  }
+
+  statusClass(): string {
+    switch (this.family().status) {
+      case 'helped':
+        return 'status-helped';
+      case 'being_helped':
+        return 'status-in-progress';
+      default:
+        return 'status-not-helped';
+    }
+  }
 }

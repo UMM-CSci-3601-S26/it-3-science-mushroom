@@ -1,7 +1,10 @@
 <mat-card class="family-card">
   <div class="family-card-top">
     <div class="family-main">
-      <h3 class="family-name">{{ family().guardianName }}</h3>
+      <div class="family-heading">
+        <h3 class="family-name">{{ family().guardianName }}</h3>
+        <span class="status-pill" [ngClass]="statusClass()">{{ statusLabel() }}</span>
+      </div>
       <div class="family-meta">
         <span>{{ family().timeSlot }}</span>
         <span>{{ family().students?.length ?? 0 }} student{{ (family().students?.length ?? 0) === 1 ? '' : 's' }}</span>

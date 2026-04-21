@@ -25,9 +25,18 @@
     </mat-card>
   } @else if (sessionFamily) {
     <mat-card class="session-summary">
-      <p><strong>Time Slot:</strong> {{ sessionFamily.timeSlot }}</p>
-      <p><strong>Address:</strong> {{ sessionFamily.address }}</p>
-      <p><strong>Students:</strong> {{ sessionFamily.students.length }}</p>
+      <div>
+        <span>Time Slot</span>
+        <strong>{{ sessionFamily.timeSlot }}</strong>
+      </div>
+      <div>
+        <span>Address</span>
+        <strong>{{ sessionFamily.address }}</strong>
+      </div>
+      <div>
+        <span>Students</span>
+        <strong>{{ sessionFamily.students.length }}</strong>
+      </div>
     </mat-card>
 
     @if (sessionHasNoChecklistItems(sessionFamily)) {
@@ -59,8 +68,8 @@
                     <span>Teacher: {{ student.teacher || 'N/A' }}</span>
                   </div>
                 }
-                <p>{{ section.saved ? 'Saved' : 'In progress' }}</p>
               </div>
+              <span class="section-status">{{ section.saved ? 'Saved' : 'In progress' }}</span>
             </div>
 
             @if (section.items.length > 0) {
@@ -77,11 +86,11 @@
                     <div class="item-copy">
                       <p class="item-label">{{ item.label || item.itemDescription }}</p>
                       <p class="item-meta">
-                        Quantity: {{ item.requestedQuantity }}
+                        <span>Quantity: {{ item.requestedQuantity }}</span>
                         @if (!item.available) {
-                          <span> | Not found in inventory</span>
+                          <span>Not found in inventory</span>
                         } @else {
-                          <span> | Found in inventory</span>
+                          <span>Found in inventory</span>
                         }
                       </p>
                       @if (shouldShowMatchedInventory(item)) {

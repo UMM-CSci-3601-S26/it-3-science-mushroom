@@ -38,12 +38,15 @@ export class FamilyService {
     this.optionBuilder(this.family(), 'guardianName')
   );
 
-  getFamilies(filters?: { guardianName?: string }): Observable<Family[]> {
+  getFamilies(filters?: { guardianName?: string; status?: string }): Observable<Family[]> {
     let httpParams: HttpParams = new HttpParams();
 
     if (filters) {
       if (filters.guardianName) {
         httpParams = httpParams.set(this.familyKey, filters.guardianName);
+      }
+      if (filters.status) {
+        httpParams = httpParams.set('status', filters.status);
       }
     }
 

@@ -1,48 +1,86 @@
 .session-shell {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  width: min(700px, 88vw);
-  max-height: 82vh;
+  gap: 1rem;
+  width: min(820px, 88vw);
+  max-height: 86vh;
   overflow: hidden;
+  box-sizing: border-box;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 18rem),
+    #ffffff;
 }
 
 .session-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 0.65rem;
+  padding-bottom: 0.9rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .session-title {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
 }
 
 .session-subtitle {
-  margin: 0.35rem 0 0;
+  margin: 0.3rem 0 0;
   color: #475569;
+  font-weight: 600;
 }
 
 .header-clear {
   flex: 0 0 auto;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .session-summary {
-  padding: 0.35rem 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: none;
 }
 
-.session-summary p {
-  font-size: 0.95rem;
+.session-summary div {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: 13px;
+  background: #f8fafc;
 }
 
-.session-summary p,
 .session-error p,
 .session-empty-checklist p {
   margin: 0.5rem 0;
+}
+
+.session-summary span {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.session-summary strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.98rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .session-error {
@@ -66,9 +104,9 @@
 
 .session-scroll {
   min-height: 0;
-  max-height: min(50vh, 430px);
+  max-height: min(52vh, 470px);
   overflow-y: auto;
-  padding-right: 0.75rem;
+  padding: 0.1rem 0.85rem 0.1rem 0.1rem;
   scrollbar-gutter: stable;
 }
 
@@ -79,31 +117,35 @@
 }
 
 .student-session-card {
-  border-radius: 14px;
+  border-radius: 18px;
   border: 1px solid #d9e1ea;
+  background: #ffffff;
   box-shadow: none;
-  padding: 0.6rem;
+  padding: 0.85rem;
 }
 
 .student-card-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 1rem;
 }
 
 .student-session-card h3 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.55rem;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 900;
 }
 
 .student-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.35rem;
+  gap: 0.45rem;
 }
 
 .student-details span {
-  padding: 0.18rem 0.45rem;
+  padding: 0.24rem 0.55rem;
   border-radius: 999px;
   background: #eef2ff;
   color: #3730a3;
@@ -115,6 +157,16 @@
   margin: 0.35rem 0;
 }
 
+.section-status {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
 .placeholder-text {
   margin-top: 0.85rem;
   color: #475569;
@@ -124,18 +176,19 @@
 .checklist-items {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  margin-top: 0.75rem;
+  gap: 0.7rem;
+  margin-top: 0.95rem;
 }
 
 .checklist-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 2rem minmax(0, 1fr) max-content;
   align-items: flex-start;
-  gap: 0.65rem;
-  padding: 0.65rem;
+  column-gap: 0.9rem;
+  row-gap: 0.45rem;
+  padding: 0.8rem 0.9rem;
   border: 1px solid #d9e1ea;
-  border-radius: 12px;
+  border-radius: 16px;
   background: #f8fafc;
 }
 
@@ -146,8 +199,11 @@
 }
 
 .item-label {
-  font-weight: 600;
-  line-height: 1.3;
+  margin: 0;
+  color: #0f172a;
+  font-weight: 850;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .item-copy {
@@ -156,19 +212,29 @@
 }
 
 .item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.55rem;
   color: #475569;
   font-size: 0.86rem;
 }
 
+.item-meta span {
+  white-space: nowrap;
+}
+
 .inventory-match {
   display: inline-flex;
-  margin-top: 0.35rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 10px;
+  max-width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.32rem 0.6rem;
+  border-radius: 999px;
   background: #ecfeff;
   color: #155e75;
   font-size: 0.82rem;
   font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .item-status {
@@ -191,18 +257,19 @@
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
-  padding-top: 0.65rem;
+  padding-top: 0.9rem;
   border-top: 1px solid #e2e8f0;
   background: #fff;
 }
 
 @media (max-width: 640px) {
   .session-shell {
-    width: 86vw;
+    width: 90vw;
+    padding: 1rem;
   }
 
-  .header-clear {
-    display: none;
+  .session-summary {
+    grid-template-columns: 1fr;
   }
 
   .checklist-item {
@@ -211,5 +278,13 @@
 
   .item-status {
     grid-column: 2;
+  }
+
+  .student-card-header {
+    flex-direction: column;
+  }
+
+  .section-status {
+    align-self: flex-start;
   }
 }

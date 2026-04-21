@@ -8,7 +8,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { catchError, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
+import { MatSelectModule } from '@angular/material/select';
+import { catchError, combineLatest, debounceTime, distinctUntilChanged, of, startWith, switchMap, tap } from 'rxjs';
 
 import { Family } from '../family/family';
 import { FamilyService } from '../family/family.service';
@@ -26,6 +27,7 @@ import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialo
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatSelectModule,
     ReactiveFormsModule,
     PointOfSaleFamilyCardComponent
   ],
@@ -39,19 +41,32 @@ export class PointOfSaleComponent implements OnInit {
 
   families: Family[] = [];
   familySearch = new FormControl('', { nonNullable: true });
+  statusFilter = new FormControl('', { nonNullable: true });
   loadingFamilies = true;
   familyLoadError = '';
 
+  readonly statusOptions = [
+    { label: 'All statuses', value: '' },
+    { label: 'Not helped', value: 'not_helped' },
+    { label: 'In progress', value: 'being_helped' },
+    { label: 'Helped', value: 'helped' }
+  ];
+
   ngOnInit(): void {
-    this.familySearch.valueChanges.pipe(
+    combineLatest([
+      this.familySearch.valueChanges.pipe(startWith(this.familySearch.value)),
+      this.statusFilter.valueChanges.pipe(startWith(this.statusFilter.value))
+    ]).pipe(
       debounceTime(250),
-      distinctUntilChanged(),
+      distinctUntilChanged((previous, current) =>
+        previous[0] === current[0] && previous[1] === current[1]),
       tap(() => {
         this.loadingFamilies = true;
         this.familyLoadError = '';
       }),
-      switchMap(searchTerm => this.familyService.getFamilies({
-        guardianName: searchTerm.trim()
+      switchMap(([searchTerm, status]) => this.familyService.getFamilies({
+        guardianName: searchTerm.trim(),
+        status
       }).pipe(
         catchError(err => {
           console.error('Failed to load families', err);
@@ -65,35 +80,23 @@ export class PointOfSaleComponent implements OnInit {
       this.loadingFamilies = false;
     });
 
-    this.loadFamilies();
   }
 
   clearFamilySearch(): void {
     this.familySearch.setValue('');
   }
 
-  private loadFamilies(): void {
-    this.loadingFamilies = true;
-    this.familyLoadError = '';
-    this.familyService.getFamilies().subscribe({
-      next: families => {
-        this.families = families;
-        this.loadingFamilies = false;
-      },
-      error: err => {
-        console.error('Failed to load families', err);
-        this.familyLoadError = 'Unable to load families right now.';
-        this.loadingFamilies = false;
-      }
-    });
+  clearFilters(): void {
+    this.familySearch.setValue('');
+    this.statusFilter.setValue('');
   }
 
   openHelpFamilySession(family: Family): void {
     this.dialog.open(PointOfSaleSessionDialogComponent, {
       data: { family },
-      width: '760px',
+      width: '860px',
       maxWidth: '92vw',
-      maxHeight: '88vh'
+      maxHeight: '90vh'
     });
   }
 }
