@@ -121,6 +121,10 @@ class FamilyControllerSpec {
         .append("email", "jane@email.com")
         .append("address", "123 Street")
         .append("timeSlot", "10:00-11:00")
+        .append("earlyMorning", false)
+        .append("lateMorning", false)
+        .append("earlyAfternoon", false)
+        .append("lateAfternoon", true)
         .append("helped", false)
         .append("status", "not_helped")
         .append("students", List.of(
@@ -145,6 +149,10 @@ class FamilyControllerSpec {
         .append("email", "jchristensen@email.com")
         .append("address", "713 Broadway")
         .append("timeSlot", "8:00-9:00")
+        .append("earlyMorning", false)
+        .append("lateMorning", false)
+        .append("earlyAfternoon", false)
+        .append("lateAfternoon", true)
         .append("helped", true)
         .append("status", "helped")
         .append("students", List.of(
@@ -167,6 +175,10 @@ class FamilyControllerSpec {
         .append("email", "jjohnson@email.com")
         .append("address", "456 Avenue")
         .append("timeSlot", "2:00-3:00")
+        .append("earlyMorning", false)
+        .append("lateMorning", false)
+        .append("earlyAfternoon", false)
+        .append("lateAfternoon", true)
         .append("helped", false)
         .append("status", "being_helped")
         .append("students", List.of(
