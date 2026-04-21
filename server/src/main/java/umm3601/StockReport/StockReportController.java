@@ -403,15 +403,17 @@ public class StockReportController implements Controller {
       if (saveToDatabase) {
         // Convert workbook to byte array and save to MongoDB
         StockReport newReport = new StockReport();
-        newReport.reportName = "Stock Report - " + timestamp;
+        newReport.reportName = "Stock_Report_" + timestamp + ".xlsx";
         newReport.reportType = "XLSX";
         newReport.stockReportData = workbookBytes;
 
         stockReportCollection.insertOne(newReport);
+        ctx.json(Map.of("id", newReport._id));
         ctx.status(HttpStatus.CREATED);
       } else { // Download to client
-        // Set response headers for CSV download
+        // Set response headers for XLSX download
         ctx.contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        // File name in case client doesn't properly override it
         ctx.header("Content-Disposition", "attachment; filename=Stock_Report_" + timestamp + ".xlsx");
         ctx.status(HttpStatus.OK);
         ctx.result(workbookBytes);
