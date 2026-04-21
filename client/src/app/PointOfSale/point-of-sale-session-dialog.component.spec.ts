@@ -169,7 +169,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
         })
       ]
     }));
-    expect(dialogRef.close).toHaveBeenCalled();
+    expect(dialogRef.close).toHaveBeenCalledWith({ draftSaved: true });
   });
 
   it('closes without saving a draft if the family id or checklist is missing', () => {
@@ -187,7 +187,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     component.clearSessionAndClose();
 
     expect(familyService.clearFamilyHelpSession).toHaveBeenCalledWith('family-1');
-    expect(dialogRef.close).toHaveBeenCalled();
+    expect(dialogRef.close).toHaveBeenCalledWith({ cleared: true });
   });
 
   it('does not clear a session when the user cancels the x action', () => {

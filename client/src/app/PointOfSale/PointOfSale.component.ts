@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { catchError, combineLatest, debounceTime, distinctUntilChanged, of, startWith, switchMap, tap } from 'rxjs';
+import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, of, startWith, switchMap, tap } from 'rxjs';
 
 import { Family } from '../family/family';
 import { FamilyService } from '../family/family.service';
@@ -38,6 +38,7 @@ export class PointOfSaleComponent implements OnInit {
   private familyService = inject(FamilyService);
   private dialog = inject(MatDialog);
   private destroyRef = inject(DestroyRef);
+  private familyRefresh = new Subject<number>();
 
   families: Family[] = [];
   familySearch = new FormControl('', { nonNullable: true });
@@ -55,11 +56,12 @@ export class PointOfSaleComponent implements OnInit {
   ngOnInit(): void {
     combineLatest([
       this.familySearch.valueChanges.pipe(startWith(this.familySearch.value)),
-      this.statusFilter.valueChanges.pipe(startWith(this.statusFilter.value))
+      this.statusFilter.valueChanges.pipe(startWith(this.statusFilter.value)),
+      this.familyRefresh.pipe(startWith(0))
     ]).pipe(
       debounceTime(250),
       distinctUntilChanged((previous, current) =>
-        previous[0] === current[0] && previous[1] === current[1]),
+        previous[0] === current[0] && previous[1] === current[1] && previous[2] === current[2]),
       tap(() => {
         this.loadingFamilies = true;
         this.familyLoadError = '';
@@ -92,11 +94,19 @@ export class PointOfSaleComponent implements OnInit {
   }
 
   openHelpFamilySession(family: Family): void {
-    this.dialog.open(PointOfSaleSessionDialogComponent, {
+    const dialogRef = this.dialog.open(PointOfSaleSessionDialogComponent, {
       data: { family },
       width: '860px',
       maxWidth: '92vw',
       maxHeight: '90vh'
+    });
+
+    dialogRef.afterClosed().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(result => {
+      if (result?.cleared || result?.draftSaved) {
+        this.familyRefresh.next(Date.now());
+      }
     });
   }
 }

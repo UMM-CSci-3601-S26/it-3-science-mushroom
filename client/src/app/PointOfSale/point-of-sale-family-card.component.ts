@@ -18,23 +18,23 @@ export class PointOfSaleFamilyCardComponent {
 
   statusLabel(): string {
     switch (this.family().status) {
-      case 'helped':
-        return 'Helped';
-      case 'being_helped':
-        return 'In progress';
-      default:
-        return 'Not helped';
+    case 'helped':
+      return 'Helped';
+    case 'being_helped':
+      return 'In progress';
+    default:
+      return 'Not helped';
     }
   }
 
   statusClass(): string {
     switch (this.family().status) {
-      case 'helped':
-        return 'status-helped';
-      case 'being_helped':
-        return 'status-in-progress';
-      default:
-        return 'status-not-helped';
+    case 'helped':
+      return 'status-helped';
+    case 'being_helped':
+      return 'status-in-progress';
+    default:
+      return 'status-not-helped';
     }
   }
 }

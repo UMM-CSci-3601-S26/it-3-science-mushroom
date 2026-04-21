@@ -69,7 +69,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     this.saving = true;
     this.errorMessage = '';
     this.familyService.updateFamilyChecklist(familyId, this.prepareChecklistForSave(checklist)).subscribe({
-      next: () => this.dialogRef.close(),
+      next: () => this.dialogRef.close({ draftSaved: true }),
       error: (err) => {
         this.saving = false;
         this.errorMessage = `Failed to save session draft: ${err.message}`;
@@ -90,7 +90,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     this.saving = true;
     this.errorMessage = '';
     this.familyService.clearFamilyHelpSession(familyId).subscribe({
-      next: () => this.dialogRef.close(),
+      next: () => this.dialogRef.close({ cleared: true }),
       error: (err) => {
         this.saving = false;
         this.errorMessage = `Failed to clear session: ${err.message}`;
