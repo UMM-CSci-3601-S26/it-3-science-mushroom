@@ -146,17 +146,22 @@ public class FamilyController implements Controller {
     int lateMorningCapacity = 0;
     int earlyAfternoonCapacity = 0;
     int lateAfternoonCapacity = 0;
+
+    families.sort(Comparator.comparingInt(f -> f.timeAvailability.countTrue()));
+
     Settings.TimeAvailabilityLabels currentSettings = new Settings.TimeAvailabilityLabels();
 
     for (int j = 0; j < families.size(); j++) {
+      int famSize = families.get(j).students.size() + 1;
+
       // goes through for each item in the array
       if (families.get(j).timeAvailability.earlyMorning) {
         // checks if earlyMorning availability is marked true
-        if (earlyMorningCapacity + families.get(j).students.size() + 1 <= capacity) {
+        if (earlyMorningCapacity + famSize <= capacity) {
           // checks if the family fits within the capacity restraints of the bin
           families.get(j).timeSlot = currentSettings.earlyMorning;
           // should correspond with set timeslot in settings
-          earlyMorningCapacity += families.get(j).students.size() + 1;
+          earlyMorningCapacity += famSize;
           // adds the number of people in the family to the capacity
           continue;
         }
@@ -164,11 +169,11 @@ public class FamilyController implements Controller {
 
       if (families.get(j).timeAvailability.lateMorning) {
         // checks if lateMorning availability is marked true
-        if (lateMorningCapacity + families.get(j).students.size() + 1 <= capacity) {
+        if (lateMorningCapacity + famSize <= capacity) {
           // checks if the family fits within the capacity restraints of the bin
           families.get(j).timeSlot = currentSettings.lateMorning;
           //should correspond with set timeslot in settings
-          lateMorningCapacity += families.get(j).students.size() + 1;
+          lateMorningCapacity += famSize;
           // adds the number of people in the family to the capacity
           continue;
         }
@@ -176,11 +181,11 @@ public class FamilyController implements Controller {
 
       if (families.get(j).timeAvailability.earlyAfternoon) {
         // checks if earlyAfternoon availability is marked true
-        if (earlyAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) {
+        if (earlyAfternoonCapacity + famSize <= capacity) {
           // checks if the family fits within the capacity restraints of the bin
           families.get(j).timeSlot = currentSettings.earlyAfternoon;
           //should correspond with set timeslot in settings
-          earlyAfternoonCapacity += families.get(j).students.size() + 1;
+          earlyAfternoonCapacity += famSize;
           // adds the number of people in the family to the capacity
           continue;
         }
@@ -188,11 +193,11 @@ public class FamilyController implements Controller {
 
       if (families.get(j).timeAvailability.lateAfternoon) {
         // checks if lateAfternoon availability is marked true
-        if (lateAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) {
-          // checks if the family fits within the capacity restraints of the bin
+        if (lateAfternoonCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints
           families.get(j).timeSlot = currentSettings.lateAfternoon;
           //should correspond with set timeslot in settings
-          lateAfternoonCapacity += families.get(j).students.size() + 1;
+          lateAfternoonCapacity += famSize;
           // adds the number of people in the family to the capacity
           continue;
         }
