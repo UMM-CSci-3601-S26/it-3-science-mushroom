@@ -36,10 +36,18 @@ public class Family {
     // helper function for sorting
     public int countTrue() {
       int count = 0;
-      if (earlyMorning) count++;
-      if (lateMorning) count++;
-      if (earlyAfternoon) count++;
-      if (lateAfternoon) count++;
+      if (earlyMorning) {
+        count++;
+      }
+      if (lateMorning) {
+        count++;
+      }
+      if (earlyAfternoon) {
+        count++;
+      }
+      if (lateAfternoon) {
+        count++;
+      }
       return count;
     }
   }
