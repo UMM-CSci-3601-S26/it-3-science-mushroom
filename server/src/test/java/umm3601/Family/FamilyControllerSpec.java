@@ -57,7 +57,7 @@ import umm3601.Family.Family.AvailabilityOptions;
 // Misc Imports
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
-
+import umm3601.settings.Settings;
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength" })
 class FamilyControllerSpec {
   private FamilyController familyController;
@@ -121,10 +121,12 @@ class FamilyControllerSpec {
         .append("email", "jane@email.com")
         .append("address", "123 Street")
         .append("timeSlot", "10:00-11:00")
-        .append("earlyMorning", false)
-        .append("lateMorning", false)
-        .append("earlyAfternoon", false)
-        .append("lateAfternoon", true)
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", false)
+          .append("earlyAfternoon", false)
+          .append("lateAfternoon", true)
+        )
         .append("helped", false)
         .append("status", "not_helped")
         .append("students", List.of(
@@ -149,10 +151,12 @@ class FamilyControllerSpec {
         .append("email", "jchristensen@email.com")
         .append("address", "713 Broadway")
         .append("timeSlot", "8:00-9:00")
-        .append("earlyMorning", false)
-        .append("lateMorning", false)
-        .append("earlyAfternoon", false)
-        .append("lateAfternoon", true)
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", false)
+          .append("earlyAfternoon", true)
+          .append("lateAfternoon", true)
+        )
         .append("helped", true)
         .append("status", "helped")
         .append("students", List.of(
@@ -175,10 +179,12 @@ class FamilyControllerSpec {
         .append("email", "jjohnson@email.com")
         .append("address", "456 Avenue")
         .append("timeSlot", "2:00-3:00")
-        .append("earlyMorning", false)
-        .append("lateMorning", false)
-        .append("earlyAfternoon", false)
-        .append("lateAfternoon", true)
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", true)
+          .append("earlyAfternoon", false)
+          .append("lateAfternoon", true)
+        )
         .append("helped", false)
         .append("status", "being_helped")
         .append("students", List.of(
@@ -198,6 +204,12 @@ class FamilyControllerSpec {
       .append("email", "bob@email.com")
       .append("address", "456 Oak Ave")
       .append("timeSlot", "2:00-3:00")
+      .append("timeAvailability", new Document()
+        .append("earlyMorning", true)
+        .append("lateMorning", false)
+        .append("earlyAfternoon", false)
+        .append("lateAfternoon", true)
+      )
       .append("helped", false)
       .append("status", "not_helped")
       .append("students", List.of(
@@ -1560,4 +1572,22 @@ class FamilyControllerSpec {
       throw exception;
     }
   }
+
+  @Test
+  public void familySchedulingTest() {
+    Settings.TimeAvailabilityLabels currentSettings = new Settings.TimeAvailabilityLabels();
+
+    familyController.scheduleFamilies(ctx);
+
+    verify(ctx).json(familyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    ArrayList<Family> families = familyArrayListCaptor.getValue();
+
+    assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
+
+    assertEquals(currentSettings.lateAfternoon, families.get(0).timeSlot);
+    assertEquals(currentSettings.earlyAfternoon, families.get(1).timeSlot);
+
+}
 }
