@@ -9,11 +9,22 @@ import { switchMap } from 'rxjs';
 
 import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
 import { FamilyService } from '../family/family.service';
+import { Inventory } from '../inventory/inventory';
+import { InventoryService } from '../inventory/inventory.service';
+import { ScannerComponent } from '../scanner/scanner.component';
 
 @Component({
   selector: 'app-point-of-sale-session-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatCheckboxModule, MatDialogModule, MatIconModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatDialogModule,
+    MatIconModule,
+    ScannerComponent
+  ],
   templateUrl: './point-of-sale-session-dialog.component.html',
   styleUrls: ['./point-of-sale-session-dialog.component.scss']
 })
@@ -21,10 +32,13 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<PointOfSaleSessionDialogComponent>);
   readonly data = inject<{ family: Family }>(MAT_DIALOG_DATA);
   private readonly familyService = inject(FamilyService);
+  private readonly inventoryService = inject(InventoryService);
 
   sessionFamily: Family | undefined;
   loading = true;
   errorMessage = '';
+  substituteErrorMessage = '';
+  activeSubstitutionItemId = '';
   saving = false;
 
   ngOnInit(): void {
@@ -48,6 +62,10 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     return item.matchedInventoryDescription || item.matchedInventoryItem || 'Unknown inventory item';
   }
 
+  substituteDisplay(item: ChecklistItem): string {
+    return item.substituteDescription || item.substituteItem || item.substituteBarcode || 'Unknown substitute item';
+  }
+
   shouldShowMatchedInventory(item: ChecklistItem): boolean {
     if (!item.available || (!item.matchedInventoryDescription && !item.matchedInventoryItem)) {
       return false;
@@ -56,6 +74,56 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     const matchedDescription = this.normalizeDisplayText(item.matchedInventoryDescription || '');
     const matchedItem = this.normalizeDisplayText(item.matchedInventoryItem || '');
     return requested !== matchedDescription && requested !== matchedItem;
+  }
+
+  hasSubstitute(item: ChecklistItem): boolean {
+    return !!(item.substituteBarcode || item.substituteInventoryId || item.substituteItem || item.substituteDescription);
+  }
+
+  needsReason(item: ChecklistItem): boolean {
+    return item.available && !item.selected && !this.hasSubstitute(item);
+  }
+
+  setItemSelected(item: ChecklistItem, selected: boolean): void {
+    item.selected = selected;
+    if (selected) {
+      item.notPickedUpReason = undefined;
+      this.clearSubstitution(item);
+    }
+  }
+
+  setNotPickedUpReason(item: ChecklistItem, reason: string): void {
+    item.notPickedUpReason = reason || undefined;
+  }
+
+  toggleSubstitutionScanner(item: ChecklistItem): void {
+    this.activeSubstitutionItemId = this.activeSubstitutionItemId === item.id ? '' : item.id;
+    this.substituteErrorMessage = '';
+  }
+
+  applySubstituteBarcode(item: ChecklistItem, barcode: string): void {
+    const normalizedBarcode = barcode.trim();
+    if (!normalizedBarcode) {
+      return;
+    }
+
+    this.substituteErrorMessage = '';
+    this.inventoryService.lookUpByBarcode(normalizedBarcode).subscribe({
+      next: (inventory) => this.applySubstituteInventory(item, normalizedBarcode, inventory),
+      error: (err) => {
+        this.substituteErrorMessage = `No inventory item was found for barcode ${normalizedBarcode}: ${err.message}`;
+      }
+    });
+  }
+
+  clearSubstitution(item: ChecklistItem): void {
+    item.substituteBarcode = undefined;
+    item.substituteInventoryId = undefined;
+    item.substituteItem = undefined;
+    item.substituteDescription = undefined;
+    if (item.notPickedUpReason === 'substituted') {
+      item.notPickedUpReason = undefined;
+    }
   }
 
   closeAndSaveDraft(): void {
@@ -104,6 +172,11 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     if (!familyId || !checklist) {
       return;
     }
+    const validationMessage = this.validateReadyToFinalize(checklist);
+    if (validationMessage) {
+      this.errorMessage = validationMessage;
+      return;
+    }
     if (!window.confirm('Are you sure you are done helping this family? This will remove selected item quantities from inventory.')) {
       return;
     }
@@ -125,13 +198,32 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
       sections: checklist.sections.map(section => ({
         ...section,
         items: section.items.map(item => ({
-          ...item,
-          notPickedUpReason: !item.selected && item.available
-            ? 'available_didnt_need'
-            : item.notPickedUpReason
+          ...item
         }))
       }))
     };
+  }
+
+  private applySubstituteInventory(item: ChecklistItem, barcode: string, inventory: Inventory): void {
+    item.selected = false;
+    item.substituteBarcode = barcode;
+    item.substituteInventoryId = inventory.internalID;
+    item.substituteItem = inventory.item;
+    item.substituteDescription = inventory.description;
+    item.notPickedUpReason = 'substituted';
+    this.activeSubstitutionItemId = '';
+  }
+
+  private validateReadyToFinalize(checklist: FamilyChecklist): string {
+    for (const section of checklist.sections) {
+      for (const item of section.items) {
+        if (this.needsReason(item) && !item.notPickedUpReason) {
+          return `Choose why "${item.label || item.itemDescription}" was not given before finalizing.`;
+        }
+      }
+    }
+
+    return '';
   }
 
   private normalizeDisplayText(value: string): string {

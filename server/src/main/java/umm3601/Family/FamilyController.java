@@ -59,6 +59,7 @@ public class FamilyController implements Controller {
   private static final String API_FAMILY_HELPED = "/api/family/{id}/helped";
   private static final String API_FAMILY_STATUS = "/api/family/{id}/status";
   private static final String API_FAMILY_CHECKLIST = "/api/family/{id}/checklist";
+  private static final String API_FAMILY_FINALIZED_CHECKLIST = "/api/family/{id}/finalized-checklist";
   private static final String API_FAMILY_HELP_SESSION = "/api/family/{id}/help-session";
   private static final String API_FAMILY_HELP_SESSION_START = "/api/family/{id}/help-session/start";
   private static final String API_FAMILY_HELP_SESSION_SAVE_CHILD = "/api/family/{id}/help-session/save-child";
@@ -68,6 +69,7 @@ public class FamilyController implements Controller {
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
   private static final String REASON_AVAILABLE_DIDNT_NEED = "available_didnt_need";
+  private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
   private static final String REASON_SUBSTITUTED = "substituted";
   private static final int EXACT_ITEM_MATCH_SCORE = 100;
@@ -138,6 +140,17 @@ public class FamilyController implements Controller {
       ctx.json(family);
       ctx.status(HttpStatus.OK);
     }
+  }
+
+  public void getFinalizedFamilyChecklist(Context ctx) {
+    Family family = requireFamily(ctx.pathParam("id"));
+
+    if (family.checklist == null || family.checklist.snapshot || !STATUS_HELPED.equals(determineStatus(family))) {
+      throw new NotFoundResponse("The finalized checklist for this family was not found");
+    }
+
+    ctx.json(family.checklist);
+    ctx.status(HttpStatus.OK);
   }
 
   // Filter for families
@@ -416,7 +429,7 @@ public class FamilyController implements Controller {
     family.status = areAllSectionsSaved(family.checklist) ? STATUS_HELPED : STATUS_BEING_HELPED;
     family.helped = STATUS_HELPED.equals(family.status);
     if (family.helped) {
-      family.checklist = null;
+      family.checklist.snapshot = false;
     }
     persistFamilyChecklistAndStatus(family);
 
@@ -446,7 +459,7 @@ public class FamilyController implements Controller {
 
     family.status = STATUS_HELPED;
     family.helped = true;
-    family.checklist = null;
+    family.checklist.snapshot = false;
     persistFamilyChecklistAndStatus(family);
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
@@ -941,7 +954,7 @@ public class FamilyController implements Controller {
 
       if (hasReason && !isValidNotPickedUpReason(item.notPickedUpReason)) {
         throw new BadRequestResponse(
-          "Checklist reason must be available_didnt_need, not_available_didnt_receive, or substituted.");
+          "Checklist reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
       }
     }
   }
@@ -949,6 +962,7 @@ public class FamilyController implements Controller {
   private boolean isValidNotPickedUpReason(String reason) {
     String normalizedReason = normalizeReason(reason);
     return REASON_AVAILABLE_DIDNT_NEED.equals(normalizedReason)
+      || REASON_ITEM_NOT_AVALIABLE.equals(normalizedReason)
       || REASON_NOT_AVAILABLE_DIDNT_RECEIVE.equals(normalizedReason)
       || REASON_SUBSTITUTED.equals(normalizedReason);
   }
@@ -1323,6 +1337,7 @@ public class FamilyController implements Controller {
     server.get(API_FAMILY, this::getFamilies);
     server.get(API_FAMILY_BY_ID, this::getFamily);
     server.get(API_DASHBOARD, this::getDashboardStats);
+    server.get(API_FAMILY_FINALIZED_CHECKLIST, this::getFinalizedFamilyChecklist);
     server.get(API_FAMILY_HELP_SESSION, this::getFamilyHelpSession);
 
     server.put(API_FAMILY_BY_ID, this::updateFamily);

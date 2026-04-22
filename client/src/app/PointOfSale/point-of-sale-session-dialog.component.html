@@ -4,15 +4,6 @@
       <h2 class="session-title">Help Family Session</h2>
       <p class="session-subtitle">{{ sessionFamily?.guardianName ?? data.family.guardianName }}</p>
     </div>
-    <button
-      mat-icon-button
-      class="header-clear"
-      type="button"
-      aria-label="Clear session and close"
-      [disabled]="saving"
-      (click)="clearSessionAndClose()">
-      <mat-icon>close</mat-icon>
-    </button>
   </div>
 
   @if (loading) {
@@ -79,7 +70,7 @@
                     <mat-checkbox
                       [checked]="item.selected"
                       [disabled]="!item.available"
-                      (change)="item.selected = $event.checked"
+                      (change)="setItemSelected(item, $event.checked)"
                       aria-label="Select checklist item">
                     </mat-checkbox>
 
@@ -98,9 +89,62 @@
                           Will remove: {{ matchedInventoryDisplay(item) }}
                         </p>
                       }
+                      @if (hasSubstitute(item)) {
+                        <p class="substitute-match">
+                          Replacing with: {{ substituteDisplay(item) }}
+                        </p>
+                      }
+                      @if (needsReason(item)) {
+                        <label class="reason-field">
+                          <span>Why not given?</span>
+                          <select
+                            [value]="item.notPickedUpReason || ''"
+                            (change)="setNotPickedUpReason(item, $any($event.target).value)">
+                            <option value="">Choose a reason</option>
+                            <option value="available_didnt_need">Family did not need this item</option>
+                            <option value="item_not_avaliable">Item not avaliable</option>
+                          </select>
+                        </label>
+                      }
                     </div>
 
-                    <span class="item-status">{{ item.available ? 'Available' : 'Needs review' }}</span>
+                    <div class="item-actions">
+                      <span class="item-status">{{ item.available ? 'Available' : 'Needs review' }}</span>
+                      @if (item.available) {
+                        <button
+                          mat-stroked-button
+                          type="button"
+                          class="substitute-button"
+                          (click)="toggleSubstitutionScanner(item)">
+                          Substitute
+                        </button>
+                      }
+                      @if (hasSubstitute(item)) {
+                        <button
+                          mat-button
+                          type="button"
+                          class="clear-substitute-button"
+                          (click)="clearSubstitution(item)">
+                          Clear Substitute
+                        </button>
+                      }
+                    </div>
+
+                    @if (activeSubstitutionItemId === item.id) {
+                      <div class="substitution-panel">
+                        <div>
+                          <strong>Scan substitute item</strong>
+                          <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
+                        </div>
+                        @if (substituteErrorMessage) {
+                          <p class="substitute-error">{{ substituteErrorMessage }}</p>
+                        }
+                        <app-scanner
+                          [processOnDone]="false"
+                          (scanned)="applySubstituteBarcode(item, $event)">
+                        </app-scanner>
+                      </div>
+                    }
                   </div>
                 }
               </div>
@@ -121,8 +165,16 @@
   }
 
   <div class="session-actions">
+    <button
+      mat-stroked-button
+      type="button"
+      class="clear-session-button"
+      [disabled]="saving"
+      (click)="clearSessionAndClose()">
+      Clear Session
+    </button>
     <button mat-stroked-button type="button" [disabled]="saving" (click)="closeAndSaveDraft()">
-      Close
+      Draft Session
     </button>
     <button
       mat-flat-button
@@ -130,7 +182,7 @@
       type="button"
       [disabled]="saving || loading || !sessionFamily?.checklist"
       (click)="saveCompletedSession()">
-      Save
+      Finalize Family Session
     </button>
   </div>
 </div>

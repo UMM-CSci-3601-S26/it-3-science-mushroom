@@ -11,8 +11,13 @@
       </div>
       <p class="family-address">{{ family().address }}</p>
     </div>
-    <button mat-flat-button color="primary" class="help-family-button" (click)="helpFamily.emit(family())">
-      Help Family
+    <button
+      mat-flat-button
+      color="primary"
+      class="help-family-button"
+      [disabled]="family().status === 'helped' || family().helped"
+      (click)="helpFamily.emit(family())">
+      {{ family().status === 'helped' || family().helped ? 'Completed' : 'Help Family' }}
     </button>
   </div>
 </mat-card>

@@ -7,7 +7,7 @@ import { TestBed, waitForAsync } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 // Family Imports
-import { Family } from './family';
+import { Family, FamilyChecklist } from './family';
 import { FamilyService } from './family.service';
 
 describe('FamilyService', () => {
@@ -294,6 +294,28 @@ describe('FamilyService', () => {
         expect(mockedMethod)
           .withContext('talks to the correct endpoint')
           .toHaveBeenCalledWith(`${familyService.familyUrl}/${targetId}`);
+      });
+    }));
+  });
+
+  describe('When getFinalizedFamilyChecklist() is given an ID', () => {
+    it('calls api/family/id/finalized-checklist with the correct ID', waitForAsync(() => {
+      const targetId = 'family_id';
+      const finalizedChecklist: FamilyChecklist = {
+        templateId: 'family-checklist-v1',
+        printableTitle: 'Checklist',
+        snapshot: false,
+        sections: []
+      };
+      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(finalizedChecklist));
+
+      familyService.getFinalizedFamilyChecklist(targetId).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${familyService.familyUrl}/${targetId}/finalized-checklist`);
       });
     }));
   });

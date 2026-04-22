@@ -79,6 +79,9 @@ class FamilyControllerSpec {
   private ArgumentCaptor<Family> familyCaptor;
 
   @Captor
+  private ArgumentCaptor<Family.FamilyChecklist> checklistCaptor;
+
+  @Captor
   private ArgumentCaptor<Map<String, String>> mapCaptor;
 
   @Captor
@@ -372,6 +375,47 @@ class FamilyControllerSpec {
     Throwable exception = assertThrows(NotFoundResponse.class, () -> familyController.getFamily(ctx));
 
     assertEquals("The requested family was not found", exception.getMessage());
+  }
+
+  @Test
+  void getFinalizedFamilyChecklistReturnsCompletedChecklist() {
+    Family family = startHelpSessionAndGetFamily();
+    family.checklist.sections.get(0).items.get(1).selected = false;
+    family.checklist.sections.get(0).items.get(1).substituteBarcode = "SUB-10001";
+
+    FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
+    request.setChecklist(family.checklist);
+    String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyHelpSessionSaveAllRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyHelpSessionSaveAllRequest.class)));
+
+    familyController.saveFamilyHelpSessionAll(ctx);
+    Mockito.clearInvocations(ctx);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.getFinalizedFamilyChecklist(ctx);
+
+    verify(ctx).json(checklistCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertFalse(checklistCaptor.getValue().snapshot);
+    assertTrue(checklistCaptor.getValue().sections.get(0).saved);
+  }
+
+  @Test
+  void getFinalizedFamilyChecklistRejectsActiveSnapshot() {
+    startHelpSessionAndGetFamily();
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    Throwable exception = assertThrows(NotFoundResponse.class,
+      () -> familyController.getFinalizedFamilyChecklist(ctx));
+
+    assertEquals("The finalized checklist for this family was not found", exception.getMessage());
   }
 
   @Test
@@ -783,10 +827,14 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertEquals("helped", familyCaptor.getValue().status);
     assertTrue(familyCaptor.getValue().helped);
-    assertNull(familyCaptor.getValue().checklist);
+    assertNotNull(familyCaptor.getValue().checklist);
+    assertFalse(familyCaptor.getValue().checklist.snapshot);
+    assertTrue(familyCaptor.getValue().checklist.sections.get(0).saved);
 
     Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
-    assertNull(updatedFamily.get("checklist"));
+    Document updatedChecklist = updatedFamily.get("checklist", Document.class);
+    assertNotNull(updatedChecklist);
+    assertFalse(updatedChecklist.getBoolean("snapshot"));
 
     Document substituteInventory = db.getCollection("inventory")
       .find(eq("internalID", "ID-10001"))
@@ -817,14 +865,18 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertEquals("helped", familyCaptor.getValue().status);
     assertTrue(familyCaptor.getValue().helped);
-    assertNull(familyCaptor.getValue().checklist);
+    assertNotNull(familyCaptor.getValue().checklist);
+    assertFalse(familyCaptor.getValue().checklist.snapshot);
+    assertTrue(familyCaptor.getValue().checklist.sections.get(0).saved);
 
     Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
-    assertNull(updatedFamily.get("checklist"));
+    Document updatedChecklist = updatedFamily.get("checklist", Document.class);
+    assertNotNull(updatedChecklist);
+    assertFalse(updatedChecklist.getBoolean("snapshot"));
   }
 
   @Test
-  void saveFamilyHelpSessionChildClearsSnapshotWhenLastSectionIsSaved() {
+  void saveFamilyHelpSessionChildKeepsCompletedChecklistWhenLastSectionIsSaved() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     section.items.get(1).selected = false;
@@ -847,10 +899,14 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertEquals("helped", familyCaptor.getValue().status);
     assertTrue(familyCaptor.getValue().helped);
-    assertNull(familyCaptor.getValue().checklist);
+    assertNotNull(familyCaptor.getValue().checklist);
+    assertFalse(familyCaptor.getValue().checklist.snapshot);
+    assertTrue(familyCaptor.getValue().checklist.sections.get(0).saved);
 
     Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
-    assertNull(updatedFamily.get("checklist"));
+    Document updatedChecklist = updatedFamily.get("checklist", Document.class);
+    assertNotNull(updatedChecklist);
+    assertFalse(updatedChecklist.getBoolean("snapshot"));
   }
 
   @Test
@@ -1487,6 +1543,12 @@ class FamilyControllerSpec {
     BadRequestResponse invalidReasonException = assertThrows(BadRequestResponse.class,
       () -> invokeValidateChecklistItemForSave(invalidReason));
     assertTrue(invalidReasonException.getMessage().contains("Checklist reason must be"));
+
+    Family.ChecklistItem itemNotAvaliableReason = new Family.ChecklistItem();
+    itemNotAvaliableReason.selected = false;
+    itemNotAvaliableReason.available = true;
+    itemNotAvaliableReason.notPickedUpReason = "item_not_avaliable";
+    invokeValidateChecklistItemForSave(itemNotAvaliableReason);
 
     Family.ChecklistItem unavailableUnchecked = new Family.ChecklistItem();
     unavailableUnchecked.selected = false;

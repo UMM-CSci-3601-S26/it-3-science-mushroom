@@ -59,6 +59,10 @@ export class FamilyService {
     return this.httpClient.get<Family>(`${this.familyUrl}/${id}`);
   }
 
+  getFinalizedFamilyChecklist(id: string): Observable<FamilyChecklist> {
+    return this.httpClient.get<FamilyChecklist>(`${this.familyUrl}/${id}/finalized-checklist`);
+  }
+
   startFamilyHelpSession(id: string): Observable<Family> {
     return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/start`, {});
   }

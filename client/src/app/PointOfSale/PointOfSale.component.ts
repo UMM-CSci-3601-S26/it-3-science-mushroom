@@ -104,7 +104,7 @@ export class PointOfSaleComponent implements OnInit {
     dialogRef.afterClosed().pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(result => {
-      if (result?.cleared || result?.draftSaved) {
+      if (result?.cleared || result?.draftSaved || result?.completed) {
         this.familyRefresh.next(Date.now());
       }
     });
