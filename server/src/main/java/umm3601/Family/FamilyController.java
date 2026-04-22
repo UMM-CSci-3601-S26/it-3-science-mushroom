@@ -229,6 +229,7 @@ public class FamilyController implements Controller {
       .append("guardianName", updatedFamily.guardianName)
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
+      .append("accommodations", updatedFamily.accommodations)
       .append("timeSlot", updatedFamily.timeSlot)
       .append("timeAvailability", new Document()
         .append("earlyMorning", updatedFamily.timeAvailability.earlyMorning)
