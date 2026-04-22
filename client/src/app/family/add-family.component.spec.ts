@@ -451,6 +451,26 @@ describe('AddFamilyComponent', () => {
       const snackBar = TestBed.inject(MatSnackBar);
       const snackBarSpy = spyOn(snackBar, 'open');
 
+      addFamilyComponent.addStudent();
+      (addFamilyComponent.addFamilyForm as unknown as UntypedFormGroup).setValue({
+        guardianFirstName: 'Chris',
+        guardianLastName: 'Smith',
+        address: '123 Avenue',
+        email: 'csmith@email.com',
+        students: [
+          {
+            name: 'Jimmy',
+            grade: '3',
+            school: 'Morris Elementary',
+            teacher: 'N/A',
+            backpack: true,
+            headphones: false
+          }
+        ],
+        timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
+        timeSlot: null
+      });
+
       addFamilyComponent.submitForm();
 
       expect(snackBarSpy).toHaveBeenCalledWith(
@@ -466,6 +486,26 @@ describe('AddFamilyComponent', () => {
       const snackBar = TestBed.inject(MatSnackBar);
       const snackBarSpy = spyOn(snackBar, 'open');
 
+      addFamilyComponent.addStudent();
+      (addFamilyComponent.addFamilyForm as unknown as UntypedFormGroup).setValue({
+        guardianFirstName: 'Chris',
+        guardianLastName: 'Smith',
+        address: '123 Avenue',
+        email: 'csmith@email.com',
+        students: [
+          {
+            name: 'Jimmy',
+            grade: '3',
+            school: 'Morris Elementary',
+            teacher: 'N/A',
+            backpack: true,
+            headphones: false
+          }
+        ],
+        timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
+        timeSlot: null
+      });
+
       addFamilyComponent.submitForm();
 
       expect(snackBarSpy).toHaveBeenCalledWith(
@@ -480,6 +520,26 @@ describe('AddFamilyComponent', () => {
       spyOn(familyService, 'addFamily').and.returnValue(throwError(() => ({ status: 409, message: 'Conflict' })));
       const snackBar = TestBed.inject(MatSnackBar);
       const snackBarSpy = spyOn(snackBar, 'open');
+
+      addFamilyComponent.addStudent();
+      (addFamilyComponent.addFamilyForm as unknown as UntypedFormGroup).setValue({
+        guardianFirstName: 'Chris',
+        guardianLastName: 'Smith',
+        address: '123 Avenue',
+        email: 'csmith@email.com',
+        students: [
+          {
+            name: 'Jimmy',
+            grade: '3',
+            school: 'Morris Elementary',
+            teacher: 'N/A',
+            backpack: true,
+            headphones: false
+          }
+        ],
+        timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
+        timeSlot: null
+      });
 
       addFamilyComponent.submitForm();
 
@@ -505,12 +565,16 @@ describe('AddFamilyComponent', () => {
       setNull('students.0.grade');
       setNull('students.0.school');
 
+      // If statement in the submit form method checks for an invalid form and returns early,
+      // so we need to mock the form as valid to test the nullish coalescing behavior.
+      spyOnProperty(addFamilyComponent.addFamilyForm, 'invalid', 'get').and.returnValue(false);
+
       addFamilyComponent.submitForm();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const call = addFamilySpy.calls.mostRecent().args[0] as any;
       expect(call.guardianFirstName).toBeUndefined();
-      expect(call.guardianLastName);
+      expect(call.guardianLastName).toBeUndefined();
       expect(call.email).toBeUndefined();
       expect(call.address).toBeUndefined();
     });

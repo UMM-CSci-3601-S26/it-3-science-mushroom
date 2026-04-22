@@ -140,7 +140,6 @@ export class EditFamilyComponent implements OnInit {
     ])),
 
     timeSlot: new FormControl('TBD', Validators.compose([
-      Validators.required,
     ])),
 
     timeAvailability: new FormGroup({
@@ -215,9 +214,6 @@ export class EditFamilyComponent implements OnInit {
     address: [
       { type: 'required', message: 'Address is required' },
       { type: 'minlength', message: 'Address must be at least 2 characters long' }
-    ],
-    timeSlot: [
-      { type: 'required', message: 'Time slot is required' }
     ],
     students: {
       name: [
