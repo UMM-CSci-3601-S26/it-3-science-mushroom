@@ -25,7 +25,10 @@ import org.mongojack.JacksonMongoCollection;
 
 // Com Imports
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
@@ -138,62 +141,80 @@ public class FamilyController implements Controller {
 
   // takes the list of families and goes through them one by one sorting them into the first available time slot
   // NEED TO FIX - REFERENCE UPDATE FAMILY
-  public void scheduleFamilies(Context ctx) {
-      Bson filter = constructDatabaseFilter(ctx);
-
-      int capacity = 10;
-
-      ArrayList<Family> families = familyCollection
-      .find(filter)
-      .into(new ArrayList<>());
-
+  public ArrayList<Family> schedulingAlgorithm(ArrayList<Family> families, int capacity) {
     int earlyMorningCapacity = 0; // current number of people in a timeslot
     int lateMorningCapacity = 0;
     int earlyAfternoonCapacity = 0;
     int lateAfternoonCapacity = 0;
 
-    for (int j = 0; j <= families.size(); j++) {
+    for (int j = 0; j < families.size(); j++) {
       // goes through for each item in the array
       if(families.get(j).timeAvailability.earlyMorning) // checks if earlyMorning availability is marked true
       {
-        if (earlyMorningCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        if (earlyMorningCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
           families.get(j).timeSlot = "NEED TO CHANGE early morning"; // should correspond with set timeslot in settings
-          earlyMorningCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+          earlyMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
-        break;
+        continue;
       }
 
       if(families.get(j).timeAvailability.lateMorning) // checks if lateMorning availability is marked true
       {
-        if (lateMorningCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        if (lateMorningCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
           families.get(j).timeSlot = "NEED TO CHANGE late morning"; //should correspond with set timeslot in settings
-          lateMorningCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+          lateMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
-        break;
+        continue;
       }
 
       if(families.get(j).timeAvailability.earlyAfternoon) // checks if earlyAfternoon availability is marked true
       {
-        if (earlyAfternoonCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        if (earlyAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
           families.get(j).timeSlot = "NEED TO CHANGE early afternoon"; //should correspond with set timeslot in settings
-          earlyAfternoonCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+          earlyAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
-        break;
+        continue;
       }
 
       if(families.get(j).timeAvailability.lateAfternoon) // checks if lateAfternoon availability is marked true
       {
-        if (lateAfternoonCapacity + families.get(j).students.size() <= capacity) // checks if the family fits within the capacity restraints of the bin
+        if (lateAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
           families.get(j).timeSlot = "NEED TO CHANGE late afternoon"; //should correspond with set timeslot in settings
-          lateAfternoonCapacity += families.get(j).students.size(); // adds the number of people in the family to the capacity
+          lateAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
-        break;
+        continue;
       }
     }
+    return families;
+  }
+
+  public void scheduleFamilies(Context ctx) {
+    Bson filter = constructDatabaseFilter(ctx);
+    int capacity = 10;
+
+    ArrayList<Family> families = familyCollection
+        .find(filter)
+        .into(new ArrayList<>()); //loading families
+
+    schedulingAlgorithm(families, capacity); // scheduling families
+
+    List<WriteModel<Family>> updates = new ArrayList<>();
+
+    for (Family fam : families) {
+        updates.add(
+            new UpdateOneModel<>(
+                Filters.eq("_id", fam._id),
+                Updates.set("timeSlot", fam.timeSlot)
+            )
+        );
+    }
+
+    familyCollection.bulkWrite(updates);
+
     ctx.json(families);
     ctx.status(HttpStatus.OK);
   }
@@ -1210,12 +1231,12 @@ public class FamilyController implements Controller {
     server.get(API_FAMILY_HELP_SESSION, this::getFamilyHelpSession);
 
     server.put(API_FAMILY_BY_ID, this::updateFamily);
-    server.patch(API_SCHEDULE_FAMILIES, this::scheduleFamilies);
     server.patch(API_FAMILY_HELPED, this::updateFamilyHelped);
     server.patch(API_FAMILY_STATUS, this::updateFamilyStatus);
     server.patch(API_FAMILY_CHECKLIST, this::updateFamilyChecklist);
 
     server.post(API_FAMILY, this::addNewFamily);
+    server.post(API_SCHEDULE_FAMILIES, this::scheduleFamilies);
     server.post(API_FAMILY_HELP_SESSION_START, this::startFamilyHelpSession);
     server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
     server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);
