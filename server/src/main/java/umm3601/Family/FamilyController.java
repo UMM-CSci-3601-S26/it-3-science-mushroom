@@ -43,6 +43,7 @@ import umm3601.Controller;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 // import umm3601.settings.Settings;
+import umm3601.settings.Settings;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -140,12 +141,12 @@ public class FamilyController implements Controller {
   }
 
   // takes the list of families and goes through them one by one sorting them into the first available time slot
-  // NEED TO FIX - REFERENCE UPDATE FAMILY
   public ArrayList<Family> schedulingAlgorithm(ArrayList<Family> families, int capacity) {
     int earlyMorningCapacity = 0; // current number of people in a timeslot
     int lateMorningCapacity = 0;
     int earlyAfternoonCapacity = 0;
     int lateAfternoonCapacity = 0;
+    Settings.TimeAvailabilityLabels currentSettings = new Settings.TimeAvailabilityLabels();
 
     for (int j = 0; j < families.size(); j++) {
       // goes through for each item in the array
@@ -153,7 +154,7 @@ public class FamilyController implements Controller {
       {
         if (earlyMorningCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
-          families.get(j).timeSlot = "NEED TO CHANGE early morning"; // should correspond with set timeslot in settings
+          families.get(j).timeSlot = currentSettings.earlyMorning; // should correspond with set timeslot in settings
           earlyMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
         continue;
@@ -163,7 +164,7 @@ public class FamilyController implements Controller {
       {
         if (lateMorningCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
-          families.get(j).timeSlot = "NEED TO CHANGE late morning"; //should correspond with set timeslot in settings
+          families.get(j).timeSlot = currentSettings.lateMorning; //should correspond with set timeslot in settings
           lateMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
         continue;
@@ -173,7 +174,7 @@ public class FamilyController implements Controller {
       {
         if (earlyAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
-          families.get(j).timeSlot = "NEED TO CHANGE early afternoon"; //should correspond with set timeslot in settings
+          families.get(j).timeSlot = currentSettings.earlyAfternoon; //should correspond with set timeslot in settings
           earlyAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
         continue;
@@ -183,7 +184,7 @@ public class FamilyController implements Controller {
       {
         if (lateAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
         {
-          families.get(j).timeSlot = "NEED TO CHANGE late afternoon"; //should correspond with set timeslot in settings
+          families.get(j).timeSlot = currentSettings.lateAfternoon; //should correspond with set timeslot in settings
           lateAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
         }
         continue;
@@ -194,7 +195,7 @@ public class FamilyController implements Controller {
 
   public void scheduleFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
-    int capacity = 10;
+    int capacity = 5;
 
     ArrayList<Family> families = familyCollection
         .find(filter)
