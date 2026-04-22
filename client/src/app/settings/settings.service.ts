@@ -36,4 +36,9 @@ export class SettingsService {
   updateSupplyOrder(order: SupplyItemOrder[]): Observable<void> {
     return this.httpClient.patch<void>(`${this.settingsUrl}/supplyOrder`, { supplyOrder: order });
   }
+
+  // Replaces the availableSpots setting with a new number
+  updateAvailableSpots(availableSpots: number): Observable<void> {
+    return this.httpClient.patch<void>(`${this.settingsUrl}/availableSpots`, { availableSpots } )
+  }
 }

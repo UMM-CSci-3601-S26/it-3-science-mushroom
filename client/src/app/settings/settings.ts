@@ -15,6 +15,8 @@ export interface TimeAvailabilityLabels {
   lateAfternoon: string;
 }
 
+export type availableSpots= number;
+
 export interface AppSettings {
   _id?: string;
   schools: SchoolInfo[];
