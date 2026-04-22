@@ -954,7 +954,7 @@ public class FamilyController implements Controller {
 
       if (hasReason && !isValidNotPickedUpReason(item.notPickedUpReason)) {
         throw new BadRequestResponse(
-          "Checklist reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
+          "reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
       }
     }
   }

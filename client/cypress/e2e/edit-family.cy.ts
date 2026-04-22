@@ -208,13 +208,12 @@ describe('Edit family page', () => {
         ]
       };
 
-      cy.intercept('/api/family').as('updateFamily');
+      cy.intercept('PUT', '/api/family/*').as('updateFamily');
       page.updateFamily(formInfo);
       cy.wait('@updateFamily');
       cy.log('API intercepted, checking URL...');
 
       // New URL should go right back to the family list page (/family)
-      cy.wait('@updateFamily');
       cy.url({ timeout: 3000 })
         .should('match', /\/family$/);
 
