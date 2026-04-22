@@ -11,6 +11,7 @@ export class AddFamilyPage {
   private readonly addressFieldName = 'address';
   private readonly timeSlotFieldName = 'timeSlot';
   private readonly emailFieldName = 'email';
+  private readonly accommodationsFieldName = 'accommodations';
   private readonly formFieldSelector = 'mat-form-field';
   private readonly dropDownSelector = 'mat-option';
   private readonly familyFilterSelector = '[data-cy="filter-family"]'
@@ -77,6 +78,7 @@ export class AddFamilyPage {
     this.getFormField(this.guardianLastNameFieldName).type(lastName);
     this.getFormField(this.addressFieldName).type(newFamily.address.toString());
     this.getFormField(this.emailFieldName).type(newFamily.email);
+    this.getFormField(this.accommodationsFieldName).type(newFamily.accommodations);
 
     if (availability.earlyMorning) {
       cy.get('[formcontrolname="earlyMorning"]').click();
