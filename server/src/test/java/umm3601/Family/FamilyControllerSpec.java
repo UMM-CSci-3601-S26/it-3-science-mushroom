@@ -122,9 +122,9 @@ class FamilyControllerSpec {
         .append("address", "123 Street")
         .append("timeSlot", "10:00-11:00")
         .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", false)
-          .append("earlyAfternoon", false)
+          .append("earlyMorning", true)
+          .append("lateMorning", true)
+          .append("earlyAfternoon", true)
           .append("lateAfternoon", true)
         )
         .append("helped", false)
@@ -152,8 +152,8 @@ class FamilyControllerSpec {
         .append("address", "713 Broadway")
         .append("timeSlot", "8:00-9:00")
         .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", false)
+          .append("earlyMorning", true)
+          .append("lateMorning", true)
           .append("earlyAfternoon", true)
           .append("lateAfternoon", true)
         )
@@ -180,9 +180,9 @@ class FamilyControllerSpec {
         .append("address", "456 Avenue")
         .append("timeSlot", "2:00-3:00")
         .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
+          .append("earlyMorning", true)
           .append("lateMorning", true)
-          .append("earlyAfternoon", false)
+          .append("earlyAfternoon", true)
           .append("lateAfternoon", true)
         )
         .append("helped", false)
@@ -193,6 +193,66 @@ class FamilyControllerSpec {
             .append("grade", "1")
             .append("school", "Herman High School")
             .append("schoolAbbreviation", "HHS")
+            .append("teacher", "N/A")
+        )));
+    testFamilies.add(
+      new Document()
+        .append("guardianName", "Melina Brim")
+        .append("email", "melina@email.com")
+        .append("address", "125 Street")
+        .append("timeSlot", "10:00-11:00")
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", false)
+          .append("earlyAfternoon", true)
+          .append("lateAfternoon", true)
+        )
+        .append("helped", false)
+        .append("status", "not_helped")
+        .append("students", List.of(
+          new Document()
+            .append("name", "Tricia")
+            .append("grade", "3")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false),
+          new Document()
+            .append("name", "Bernice")
+            .append("grade", "5")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+        )));
+    testFamilies.add(
+      new Document()
+        .append("guardianName", "Bob Dylan")
+        .append("email", "therealbobdylan@email.com")
+        .append("address", "Nowhere")
+        .append("timeSlot", "10:00-11:00")
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", true)
+          .append("earlyAfternoon", true)
+          .append("lateAfternoon", true)
+        )
+        .append("helped", false)
+        .append("status", "not_helped")
+        .append("students", List.of(
+          new Document()
+            .append("name", "Jeanie")
+            .append("grade", "3")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false),
+          new Document()
+            .append("name", "Fred")
+            .append("grade", "5")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
             .append("teacher", "N/A")
         )));
 
@@ -206,8 +266,8 @@ class FamilyControllerSpec {
       .append("timeSlot", "2:00-3:00")
       .append("timeAvailability", new Document()
         .append("earlyMorning", true)
-        .append("lateMorning", false)
-        .append("earlyAfternoon", false)
+        .append("lateMorning", true)
+        .append("earlyAfternoon", true)
         .append("lateAfternoon", true)
       )
       .append("helped", false)
@@ -365,7 +425,7 @@ class FamilyControllerSpec {
     familyController.getFamilies(ctx);
 
     verify(ctx).json(familyArrayListCaptor.capture());
-    assertEquals(3, familyArrayListCaptor.getValue().size());
+    assertEquals(5, familyArrayListCaptor.getValue().size());
   }
 
   @Test
@@ -1005,7 +1065,7 @@ class FamilyControllerSpec {
     assertTrue(result.containsKey("totalFamilies"));
     assertTrue(result.containsKey("totalStudents"));
     assertEquals((int) db.getCollection("family").countDocuments(), result.get("totalFamilies"));
-    assertEquals(6, result.get("totalStudents"));
+    assertEquals(10, result.get("totalStudents"));
   }
 
   @SuppressWarnings("unchecked")
@@ -1586,8 +1646,11 @@ class FamilyControllerSpec {
 
     assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
 
-    assertEquals(currentSettings.lateAfternoon, families.get(0).timeSlot);
-    assertEquals(currentSettings.earlyAfternoon, families.get(1).timeSlot);
-
+    assertEquals(currentSettings.earlyMorning, families.get(0).timeSlot);
+    assertEquals(currentSettings.lateMorning, families.get(1).timeSlot);
+    assertEquals(currentSettings.earlyMorning, families.get(2).timeSlot);
+    assertEquals(currentSettings.earlyAfternoon, families.get(3).timeSlot);
+    assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
+    assertEquals(currentSettings.lateMorning, families.get(5).timeSlot);
 }
 }
