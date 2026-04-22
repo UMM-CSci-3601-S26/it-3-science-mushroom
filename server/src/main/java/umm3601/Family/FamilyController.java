@@ -156,8 +156,8 @@ public class FamilyController implements Controller {
         {
           families.get(j).timeSlot = currentSettings.earlyMorning; // should correspond with set timeslot in settings
           earlyMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+          continue;
         }
-        continue;
       }
 
       if(families.get(j).timeAvailability.lateMorning) // checks if lateMorning availability is marked true
@@ -166,8 +166,8 @@ public class FamilyController implements Controller {
         {
           families.get(j).timeSlot = currentSettings.lateMorning; //should correspond with set timeslot in settings
           lateMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+          continue;
         }
-        continue;
       }
 
       if(families.get(j).timeAvailability.earlyAfternoon) // checks if earlyAfternoon availability is marked true
@@ -176,8 +176,8 @@ public class FamilyController implements Controller {
         {
           families.get(j).timeSlot = currentSettings.earlyAfternoon; //should correspond with set timeslot in settings
           earlyAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+          continue;
         }
-        continue;
       }
 
       if(families.get(j).timeAvailability.lateAfternoon) // checks if lateAfternoon availability is marked true
@@ -186,8 +186,8 @@ public class FamilyController implements Controller {
         {
           families.get(j).timeSlot = currentSettings.lateAfternoon; //should correspond with set timeslot in settings
           lateAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+          continue;
         }
-        continue;
       }
     }
     return families;
