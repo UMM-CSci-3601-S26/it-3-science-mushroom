@@ -150,42 +150,50 @@ public class FamilyController implements Controller {
 
     for (int j = 0; j < families.size(); j++) {
       // goes through for each item in the array
-      if(families.get(j).timeAvailability.earlyMorning) // checks if earlyMorning availability is marked true
-      {
-        if (earlyMorningCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
-        {
-          families.get(j).timeSlot = currentSettings.earlyMorning; // should correspond with set timeslot in settings
-          earlyMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+      if (families.get(j).timeAvailability.earlyMorning) {
+        // checks if earlyMorning availability is marked true
+        if (earlyMorningCapacity + families.get(j).students.size() + 1 <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.earlyMorning;
+          // should correspond with set timeslot in settings
+          earlyMorningCapacity += families.get(j).students.size() + 1;
+          // adds the number of people in the family to the capacity
           continue;
         }
       }
 
-      if(families.get(j).timeAvailability.lateMorning) // checks if lateMorning availability is marked true
-      {
-        if (lateMorningCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
-        {
-          families.get(j).timeSlot = currentSettings.lateMorning; //should correspond with set timeslot in settings
-          lateMorningCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+      if (families.get(j).timeAvailability.lateMorning) {
+        // checks if lateMorning availability is marked true
+        if (lateMorningCapacity + families.get(j).students.size() + 1 <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.lateMorning;
+          //should correspond with set timeslot in settings
+          lateMorningCapacity += families.get(j).students.size() + 1;
+          // adds the number of people in the family to the capacity
           continue;
         }
       }
 
-      if(families.get(j).timeAvailability.earlyAfternoon) // checks if earlyAfternoon availability is marked true
-      {
-        if (earlyAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
-        {
-          families.get(j).timeSlot = currentSettings.earlyAfternoon; //should correspond with set timeslot in settings
-          earlyAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+      if (families.get(j).timeAvailability.earlyAfternoon) {
+        // checks if earlyAfternoon availability is marked true
+        if (earlyAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.earlyAfternoon;
+          //should correspond with set timeslot in settings
+          earlyAfternoonCapacity += families.get(j).students.size() + 1;
+          // adds the number of people in the family to the capacity
           continue;
         }
       }
 
-      if(families.get(j).timeAvailability.lateAfternoon) // checks if lateAfternoon availability is marked true
-      {
-        if (lateAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) // checks if the family fits within the capacity restraints of the bin
-        {
-          families.get(j).timeSlot = currentSettings.lateAfternoon; //should correspond with set timeslot in settings
-          lateAfternoonCapacity += families.get(j).students.size() + 1; // adds the number of people in the family to the capacity
+      if (families.get(j).timeAvailability.lateAfternoon) {
+        // checks if lateAfternoon availability is marked true
+        if (lateAfternoonCapacity + families.get(j).students.size() + 1 <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.lateAfternoon;
+          //should correspond with set timeslot in settings
+          lateAfternoonCapacity += families.get(j).students.size() + 1;
+          // adds the number of people in the family to the capacity
           continue;
         }
       }
@@ -195,11 +203,12 @@ public class FamilyController implements Controller {
 
   public void scheduleFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
-    int capacity = 5;
 
     ArrayList<Family> families = familyCollection
         .find(filter)
         .into(new ArrayList<>()); //loading families
+
+    int capacity = families.size();
 
     schedulingAlgorithm(families, capacity); // scheduling families
 

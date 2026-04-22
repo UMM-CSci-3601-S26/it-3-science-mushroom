@@ -1647,10 +1647,10 @@ class FamilyControllerSpec {
     assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
 
     assertEquals(currentSettings.earlyMorning, families.get(0).timeSlot);
-    assertEquals(currentSettings.lateMorning, families.get(1).timeSlot);
-    assertEquals(currentSettings.earlyMorning, families.get(2).timeSlot);
+    assertEquals(currentSettings.earlyMorning, families.get(1).timeSlot);
+    assertEquals(currentSettings.lateMorning, families.get(2).timeSlot);
     assertEquals(currentSettings.earlyAfternoon, families.get(3).timeSlot);
-    assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
-    assertEquals(currentSettings.lateMorning, families.get(5).timeSlot);
+    assertEquals(currentSettings.lateMorning, families.get(4).timeSlot);
+    assertEquals(currentSettings.earlyAfternoon, families.get(5).timeSlot);
 }
 }
