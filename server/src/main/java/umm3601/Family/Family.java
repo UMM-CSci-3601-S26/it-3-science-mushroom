@@ -32,6 +32,16 @@ public class Family {
     public boolean lateMorning;
     public boolean earlyAfternoon;
     public boolean lateAfternoon;
+
+    // helper function for sorting
+    public int countTrue() {
+      int count = 0;
+      if (earlyMorning) count++;
+      if (lateMorning) count++;
+      if (earlyAfternoon) count++;
+      if (lateAfternoon) count++;
+      return count;
+    }
   }
 
   public static class StudentInfo {
