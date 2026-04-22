@@ -202,6 +202,9 @@ public class FamilyController implements Controller {
           continue;
         }
       }
+
+      throw new NotFoundResponse ("Not all families were able to be sorted, your event capacity may be too low");
+
     }
     return families;
   }
@@ -213,7 +216,7 @@ public class FamilyController implements Controller {
         .find(filter)
         .into(new ArrayList<>()); //loading families
 
-    int capacity = families.size();
+    int capacity = 5;
 
     schedulingAlgorithm(families, capacity); // scheduling families
 
