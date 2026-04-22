@@ -132,4 +132,17 @@ describe('SettingsService', () => {
       req.flush(null);
     });
   });
+
+  describe('updateAvailableSpots()', () => {
+    it('sends PATCH to /api/settings/availableSpots', () => {
+      const updatedValue = 28;
+
+      service.updateAvailableSpots(updatedValue).subscribe();
+
+      const req = httpTestingController.expectOne(`${settingsUrl}/availableSpots`);
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual(updatedValue);
+      req.flush(null);
+    });
+  });
 });
