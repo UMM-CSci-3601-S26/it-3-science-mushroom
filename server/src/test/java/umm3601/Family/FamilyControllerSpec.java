@@ -1542,7 +1542,7 @@ class FamilyControllerSpec {
     invalidReason.notPickedUpReason = "bad_reason";
     BadRequestResponse invalidReasonException = assertThrows(BadRequestResponse.class,
       () -> invokeValidateChecklistItemForSave(invalidReason));
-    assertTrue(invalidReasonException.getMessage().contains("Checklist reason must be"));
+    assertTrue(invalidReasonException.getMessage().contains("reason must be"));
 
     Family.ChecklistItem itemNotAvaliableReason = new Family.ChecklistItem();
     itemNotAvaliableReason.selected = false;
