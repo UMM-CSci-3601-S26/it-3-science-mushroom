@@ -222,9 +222,14 @@ export class AddFamilyComponent implements OnInit {
   }
 
   submitForm() {
+    if (this.addFamilyForm.invalid) {
+      this.addFamilyForm.markAllAsTouched();
+      return;
+    }
+
     const rawForm = this.addFamilyForm.value;
 
-   type RawStudent = {
+    type RawStudent = {
       name: string | null;
       grade: string | null;
       school: string | null;
@@ -234,71 +239,71 @@ export class AddFamilyComponent implements OnInit {
       backpack: boolean | null;
     };
 
-   const firstName = rawForm.guardianFirstName || '';
-   const lastName = rawForm.guardianLastName || '';
+    const firstName = rawForm.guardianFirstName || '';
+    const lastName = rawForm.guardianLastName || '';
 
-   const guardianName = (firstName + ' ' + lastName).trim();
+    const guardianName = (firstName + ' ' + lastName).trim();
 
-   const payload: Partial<import('./family').Family> = {
-     guardianName: guardianName ?? undefined,
-     email: rawForm.email ?? undefined,
-     address: rawForm.address ?? undefined,
-     timeSlot: rawForm.timeSlot ?? undefined,
-     timeAvailability: {
-       earlyMorning: rawForm.timeAvailability?.earlyMorning ?? false,
-       lateMorning: rawForm.timeAvailability?.lateMorning ?? false,
-       earlyAfternoon: rawForm.timeAvailability?.earlyAfternoon ?? false,
-       lateAfternoon: rawForm.timeAvailability?.lateAfternoon ?? false,
-     },
-     students: (rawForm.students as RawStudent[])?.map(student => {
-       const schoolNameandAbbreviation = this.schools.find(
-         s => s.abbreviation === student.school
-       );
+    const payload: Partial<import('./family').Family> = {
+      guardianName: guardianName ?? undefined,
+      email: rawForm.email ?? undefined,
+      address: rawForm.address ?? undefined,
+      timeSlot: rawForm.timeSlot ?? undefined,
+      timeAvailability: {
+        earlyMorning: rawForm.timeAvailability?.earlyMorning ?? false,
+        lateMorning: rawForm.timeAvailability?.lateMorning ?? false,
+        earlyAfternoon: rawForm.timeAvailability?.earlyAfternoon ?? false,
+        lateAfternoon: rawForm.timeAvailability?.lateAfternoon ?? false,
+      },
+      students: (rawForm.students as RawStudent[])?.map(student => {
+        const schoolNameandAbbreviation = this.schools.find(
+          s => s.abbreviation === student.school || s.name === student.school
+        );
 
-       return {
-         name: student.name ?? '',
-         grade: student.grade ?? '',
-         school: schoolNameandAbbreviation?.name ?? '',
-         schoolAbbreviation: schoolNameandAbbreviation?.abbreviation ?? '',
-         teacher: student.teacher ?? '',
-         headphones: student.headphones ?? false,
-         backpack: student.backpack ?? false,
-       };
-     }) ?? []
-   };
+        return {
+          name: student.name ?? '',
+          grade: student.grade ?? '',
+          school: schoolNameandAbbreviation?.name ?? '',
+          schoolAbbreviation: schoolNameandAbbreviation?.abbreviation ?? '',
+          teacher: student.teacher ?? '',
+          headphones: student.headphones ?? false,
+          backpack: student.backpack ?? false,
+        };
+      }) ?? []
+    };
 
-   //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
+    //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-   this.familyService.addFamily(payload).subscribe({
-     next: () => {
-       this.snackBar.open(
-         `Added family ${guardianName}`,
-         null,
-         { duration: 2000 }
-       );
-       this.router.navigate(['/family']);
-     },
-     error: err => {
-       if (err.status === 400) {
-         this.snackBar.open(
-           `Tried to add an illegal new family – Error Code: ${err.status}\nMessage: ${err.message}`,
-           'OK',
-           { duration: 5000 }
-         );
-       } else if (err.status === 500) {
-         this.snackBar.open(
-           `The server failed to process your request to add a new family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
-           'OK',
-           { duration: 5000 }
-         );
-       } else {
-         this.snackBar.open(
-           `An unexpected error occurred – Error Code: ${err.status}\nMessage: ${err.message}`,
-           'OK',
-           { duration: 5000 }
-         );
-       }
-     },
-   });
+    this.familyService.addFamily(payload).subscribe({
+      next: () => {
+        this.snackBar.open(
+          `Added family ${guardianName}`,
+          null,
+          { duration: 2000 }
+        );
+        this.router.navigate(['/family']);
+      },
+      error: err => {
+        if (err.status === 400) {
+          this.snackBar.open(
+            `Tried to add an illegal new family – Error Code: ${err.status}\nMessage: ${err.message}`,
+            'OK',
+            { duration: 5000 }
+          );
+        } else if (err.status === 500) {
+          this.snackBar.open(
+            `The server failed to process your request to add a new family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
+            'OK',
+            { duration: 5000 }
+          );
+        } else {
+          this.snackBar.open(
+            `An unexpected error occurred – Error Code: ${err.status}\nMessage: ${err.message}`,
+            'OK',
+            { duration: 5000 }
+          );
+        }
+      },
+    });
   }
 }
