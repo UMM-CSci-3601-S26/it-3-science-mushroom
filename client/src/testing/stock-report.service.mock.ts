@@ -12,12 +12,6 @@ export class MockStockReportService implements Pick<StockReportService,
  'getReportById' | 'getReports' | 'addNewPdfReport' | 'deleteReport' |
  'getReportBytesById' | 'generateAndDownloadXlsxReport' | 'generateNewXlsxReport'> {
 
-  generateAndDownloadXlsxReport(): Observable<Blob> {
-    throw new Error('Method not implemented.');
-  }
-  generateNewXlsxReport(): Observable<string> {
-    throw new Error('Method not implemented.');
-  }
   static testReports: StockReport[] = [
     {
       _id: 'john_id',
@@ -64,5 +58,15 @@ export class MockStockReportService implements Pick<StockReportService,
   deleteReport(id: string): Observable<void> {
     console.log('deleteReport called with', id);
     return of(void 0);
+  }
+
+  generateAndDownloadXlsxReport(): Observable<Blob> {
+    console.log('generateAndDownloadXlsxReport called');
+    return of(new Blob(['mock xlsx content'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  }
+
+  generateNewXlsxReport(): Observable<string> {
+    console.log('generateNewXlsxReport called');
+    return of('1');
   }
 }
