@@ -1,7 +1,7 @@
 <div class="settings-container">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>Settings</mat-card-title>
+      <mat-card-title class="settings-title">Settings</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
@@ -121,7 +121,7 @@
                   </mat-form-field>
 
                   <div class="save-button">
-                    <button mat-raised-button color="primary" type="submit" [disabled]="!availableSpotsForm.valid">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="!availableSpotsForm.valid" data-test="saveButton">
                       Save Available Spots
                     </button>
                   </div>
