@@ -140,7 +140,6 @@ export class EditFamilyComponent implements OnInit {
     ])),
 
     timeSlot: new FormControl('TBD', Validators.compose([
-      Validators.required,
     ])),
 
     timeAvailability: new FormGroup({
@@ -216,9 +215,6 @@ export class EditFamilyComponent implements OnInit {
       { type: 'required', message: 'Address is required' },
       { type: 'minlength', message: 'Address must be at least 2 characters long' }
     ],
-    timeSlot: [
-      { type: 'required', message: 'Time slot is required' }
-    ],
     students: {
       name: [
         { type: 'required', message: 'Student name is required' },
@@ -279,6 +275,11 @@ export class EditFamilyComponent implements OnInit {
   }
 
   submitForm() {
+    if (this.editFamilyForm.invalid) {
+      this.editFamilyForm.markAllAsTouched();
+      return;
+    }
+
     const familyId = this.route.snapshot.paramMap.get('id');
     const rawForm = this.editFamilyForm.value;
 
@@ -310,7 +311,7 @@ export class EditFamilyComponent implements OnInit {
       },
       students: (rawForm.students as RawStudent[])?.map(student => {
         const schoolNameandAbbreviation = this.schools.find(
-          s => s.abbreviation === student.school
+          s => s.abbreviation === student.school || s.name === student.school
         );
 
         return {
