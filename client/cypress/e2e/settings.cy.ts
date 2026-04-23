@@ -26,24 +26,24 @@ describe('Settings', () => {
     it('Should allow typing in the Available Spots Form', () => {
       cy.contains('#mat-tab-group-0-label-2', 'Available Spots').click();
       page.getFormField('availableSpots').type('{backspace}{backspace}')
-      page.getFormField('availableSpots').type('84');
+      page.getFormField('availableSpots').type('84', {force: true});
     });
 
     it('Should disable the save button if the form is invalid', () => {
       cy.contains('#mat-tab-group-0-label-2', 'Available Spots').click();
 
-      page.getFormField('availableSpots').type('{backspace}{backspace}')
+      page.getFormField('availableSpots').type('{backspace}{backspace}', {force: true})
       page.getSaveButton().should('be.disabled');
-      page.getFormField('availableSpots').type('84');
+      page.getFormField('availableSpots').type('84', {force: true});
       page.getSaveButton().should('be.enabled');
     });
 
     it('Should save Available Spots input', () => {
       cy.contains('#mat-tab-group-0-label-2', 'Available Spots').click();
 
-      page.getFormField('availableSpots').type('{backspace}{backspace}')
+      page.getFormField('availableSpots').type('{backspace}{backspace}', {force: true})
 
-      page.getFormField('availableSpots').type('84');
+      page.getFormField('availableSpots').type('84', {force: true});
       cy.get('[data-test="saveButton"]').click();
 
       cy.get('.mat-mdc-simple-snack-bar')
