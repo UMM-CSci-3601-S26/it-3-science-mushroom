@@ -18,25 +18,46 @@ describe('Edit family page', () => {
 
   it('Should show error messages for invalid inputs on the family form', () => {
     // Before doing anything there shouldn't be an error
-    cy.get('[data-test=guardianNameError]').should('not.exist');
+    cy.get('[data-test=guardianFirstNameError]').should('not.exist');
 
     // Deleting and then clicking the guardian name field without entering anything should cause an error message
-    page.getFormField('guardianName').click().clear().blur();
-    cy.get('[data-test=guardianNameError]').should('exist').and('be.visible');
+    page.getFormField('guardianFirstName').click().clear().blur();
+    cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
 
     // Some more tests for various invalid guardian name inputs
-    page.getFormField('guardianName').type('J').blur();
-    cy.get('[data-test=guardianNameError]').should('exist').and('be.visible');
+    page.getFormField('guardianFirstName').type('J').blur();
+    cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
     page
-      .getFormField('guardianName')
+      .getFormField('guardianFirstName')
       .clear()
       .type('This is a very long name that goes beyond the 50 character limit')
       .blur();
-    cy.get('[data-test=guardianNameError]').should('exist').and('be.visible');
+    cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
 
     // Entering a valid guardian name should remove the error.
-    page.getFormField('guardianName').clear().type('John Smith').blur();
-    cy.get('[data-test=guardianNameError]').should('not.exist');
+    page.getFormField('guardianFirstName').clear().type('John').blur();
+    cy.get('[data-test=guardianFirstNameError]').should('not.exist');
+
+    // Before doing anything there shouldn't be an error
+    cy.get('[data-test=guardianLastNameError]').should('not.exist');
+
+    // Deleting and then clicking the guardian name field without entering anything should cause an error message
+    page.getFormField('guardianLastName').click().clear().blur();
+    cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
+
+    // Some more tests for various invalid guardian name inputs
+    page.getFormField('guardianLastName').type('J').blur();
+    cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
+    page
+      .getFormField('guardianLastName')
+      .clear()
+      .type('This is a very long name that goes beyond the 50 character limit')
+      .blur();
+    cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
+
+    // Entering a valid guardian name should remove the error.
+    page.getFormField('guardianLastName').clear().type('Smith').blur();
+    cy.get('[data-test=guardianLastNameError]').should('not.exist');
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=addressError]').should('not.exist');
@@ -78,17 +99,19 @@ describe('Edit family page', () => {
     cy.get('[data-test=nameError]').should('not.exist');
 
     // Test invalid grade
-    page.getStudentField(2, 'grade').type('99').blur();
+    page.getStudentField(2, 'grade').click().type('{esc}');
     cy.get('[data-test=gradeError]').should('exist').and('be.visible');
     // Entering a valid grade should remove the error
-    page.getStudentField(2, 'grade').clear().type('10').blur();
+    page.getStudentField(2, 'grade').click();
+    cy.get('mat-option').contains('10').click();
     cy.get('[data-test=gradeError]').should('not.exist');
 
     // Test invalid school
-    page.getStudentField(2, 'school').type('a').blur();
+    page.getStudentField(2, 'school').click().type('{esc}');
     cy.get('[data-test=schoolError]').should('exist').and('be.visible');
     // Entering a valid school should remove the error
-    page.getStudentField(2, 'school').clear().type('Morris Schools').blur();
+    page.getStudentField(2, 'school').click();
+    cy.get('mat-option').contains('Morris Area High School (MAHS)').click();
     cy.get('[data-test=schoolError]').should('not.exist');
   });
 
@@ -98,8 +121,10 @@ describe('Edit family page', () => {
 
     page.addStudentButton().click();
     page.getStudentField(2, 'name').type('Lisa');
-    page.getStudentField(2, 'grade').type('6');
-    page.getStudentField(2, 'school').type('Morris High School');
+    page.getStudentField(2, 'grade').click();
+    cy.get('mat-option').contains('10').click();
+    page.getStudentField(2, 'school').click();
+    cy.get('mat-option').contains('Morris Area High School (MAHS)').click();
 
     cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 3);
 
@@ -107,7 +132,7 @@ describe('Edit family page', () => {
     cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 2);
   });
 
-  describe('Updating a new family', () => {
+  describe('Updating a family', () => {
     beforeEach(() => {
       cy.task('seed:database');
       page.navigateTo();
@@ -118,19 +143,33 @@ describe('Edit family page', () => {
         guardianName: 'Jane Doe',
         email: 'jane@email.com',
         address: '467 8th Street NE',
-        timeSlot: '9:00-10:00',
+        timeSlot: 'TBD',
+        timeAvailability: {
+          earlyMorning: false,
+          lateMorning: true,
+          earlyAfternoon: false,
+          lateAfternoon: false
+        },
         students: [
           {
             name: 'Tim',
             grade: '12',
-            school: 'MAHS',
+            school: 'Morris Area High School',
+            schoolAbbreviation: 'MAHS',
             teacher: '',
+            headphones: true,
+            backpack: false
+
           },
           {
             name: 'Sara',
             grade: '11',
-            school: 'MAHS',
+            school: 'Morris Area High School',
+            schoolAbbreviation: 'MAHS',
             teacher: 'Mr. Test',
+            headphones: false,
+            backpack: false
+
           }
         ]
       };
@@ -140,18 +179,31 @@ describe('Edit family page', () => {
         email: '',
         address: '467 8th Street NE',
         timeSlot: '',
+        timeAvailability: {
+          earlyMorning: null,
+          lateMorning: null,
+          earlyAfternoon: null,
+          lateAfternoon: null
+        },
         students: [
           {
             name: '',
             grade: '',
             school: '',
+            schoolAbbreviation: '',
             teacher: '',
+            headphones: true,
+            backpack: false
           },
           {
             name: '',
             grade: '',
             school: '',
+            schoolAbbreviation: '',
             teacher: 'Mr. Test',
+            headphones: false,
+            backpack: false
+
           }
         ]
       };
@@ -187,8 +239,30 @@ describe('Edit family page', () => {
         .contains(expectedFamily.timeSlot)
         .should('exist');
 
+      cy.get('.family-card-timeAvailability')
+        .contains('Late Morning')
+        .should('exist');
+
       // We should see the confirmation message at the bottom of the screen
       page.getSnackBar().should('contain', `Updated family ${expectedFamily.guardianName}`);
     });
   });
+
+  describe('deleting a family', () => {
+
+    it('Should be able to delete a family', () => {
+      cy.get('[data-test=deleteFamilyButton]').click();
+
+      cy.contains('button', 'Confirm').click();
+
+      page.getSnackBar().should('contain', `Deleted family Jane Doe`);
+      cy.url({ timeout: 3000 })
+        .should('match', /\/family$/);
+      cy.get('.family-card-guardianName')
+        .contains('Jane Doe')
+        .should('not.exist');
+
+      cy.task('seed:database');
+    })
+  })
 });

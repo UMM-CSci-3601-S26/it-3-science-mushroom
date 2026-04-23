@@ -1,15 +1,15 @@
 // Angular Imports
-import { Location } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AbstractControl, FormGroup } from '@angular/forms';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { AbstractControl, FormGroup, UntypedFormGroup } from '@angular/forms';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 // RxJS Imports
-import { throwError } from 'rxjs'; //of
+import { throwError, of } from 'rxjs'; //of
 
 // Family Imports
 import { MockFamilyService } from 'src/testing/family.service.mock';
@@ -17,6 +17,12 @@ import { EditFamilyComponent } from './edit-family.component';
 import { FamilyService } from './family.service';
 
 import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
+
+// Settings Imports
+import { SettingsService } from '../settings/settings.service';
+import { AppSettings } from '../settings/settings';
+
+// Dialog import
 
 describe('editFamilyComponent', () => {
   let editFamilyComponent: EditFamilyComponent;
@@ -36,7 +42,8 @@ describe('editFamilyComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: FamilyService, useClass: MockFamilyService },
-        { provide: ActivatedRoute, useValue: activatedRoute }
+        { provide: ActivatedRoute, useValue: activatedRoute },
+        { provide: SettingsService, useValue: { getSettings: () => of({ schools: [{ name: 'Test School', abbreviation: 'TS' }] } as unknown as AppSettings) }}
       ]
     }).compileComponents().catch(error => {
       expect(error).toBeNull();
@@ -58,37 +65,103 @@ describe('editFamilyComponent', () => {
     expect(editFamilyForm).toBeTruthy();
   });
 
-  describe('The guardian name field', () => {
-    let guardianNameControl: AbstractControl;
+  // Tests that a loaded form is valid
+  it('form should be invalid when empty', () => {
+    expect(editFamilyForm.valid).toBeTruthy();
+  });
+
+  describe('Guardian first and last name fields', () => {
+    let guardianFirstNameControl: AbstractControl;
+    let guardianLastNameControl: AbstractControl;
 
     beforeEach(() => {
-      guardianNameControl = editFamilyComponent.editFamilyForm.controls.guardianName;
+      guardianFirstNameControl = editFamilyComponent.editFamilyForm.controls.guardianFirstName;
+      guardianLastNameControl = editFamilyComponent.editFamilyForm.controls.guardianLastName;
     });
 
     it('should not allow empty guardian names', () => {
-      guardianNameControl.setValue('');
-      expect(guardianNameControl.valid).toBeFalsy();
+      guardianFirstNameControl.setValue('');
+      expect(guardianFirstNameControl.valid).toBeFalsy();
+      guardianLastNameControl.setValue('');
+      expect(guardianLastNameControl.valid).toBeFalsy();
     });
 
     it('should be fine with "Chris Smith"', () => {
-      guardianNameControl.setValue('Chris Smith');
-      expect(guardianNameControl.valid).toBeTruthy();
+      guardianFirstNameControl.setValue('Chris');
+      expect(guardianFirstNameControl.valid).toBeTruthy();
+      guardianLastNameControl.setValue('Smith');
+      expect(guardianLastNameControl.valid).toBeTruthy();
     });
 
     it('should fail on single character guardian names', () => {
-      guardianNameControl.setValue('x');
-      expect(guardianNameControl.valid).toBeFalsy();
-      expect(guardianNameControl.hasError('minlength')).toBeTruthy();
+      guardianFirstNameControl.setValue('x');
+      expect(guardianFirstNameControl.valid).toBeFalsy();
+      expect(guardianFirstNameControl.hasError('minlength')).toBeTruthy();
+      guardianLastNameControl.setValue('y');
+      expect(guardianLastNameControl.valid).toBeFalsy();
+      expect(guardianLastNameControl.hasError('minlength')).toBeTruthy();
     });
 
     it('should fail on really long guardian names', () => {
-      guardianNameControl.setValue('x'.repeat(100));
-      expect(guardianNameControl.valid).toBeFalsy();
-      expect(guardianNameControl.hasError('maxlength')).toBeTruthy();
+      guardianFirstNameControl.setValue('x'.repeat(100));
+      expect(guardianFirstNameControl.valid).toBeFalsy();
+      expect(guardianFirstNameControl.hasError('maxlength')).toBeTruthy();
+      guardianLastNameControl.setValue('y'.repeat(100));
+      expect(guardianLastNameControl.valid).toBeFalsy();
+      expect(guardianLastNameControl.hasError('maxlength')).toBeTruthy();
+    });
+  });
+
+  describe('The address field', () => {
+    let addressControl: AbstractControl;
+
+    beforeEach(() => {
+      addressControl = editFamilyComponent.editFamilyForm.controls.address;
+    });
+
+    it('should not allow empty addresses', () => {
+      addressControl.setValue('');
+      expect(addressControl.valid).toBeFalsy();
+    });
+
+    it('should allow numbers and letters to input', () => {
+      addressControl.setValue('123 Avenue');
+      expect(addressControl.valid).toBeTruthy();
+    });
+  });
+
+  describe('The email field', () => {
+    let emailControl: AbstractControl;
+
+    beforeEach(() => {
+      emailControl = editFamilyComponent.editFamilyForm.controls.email;
+    });
+
+    it('should not allow empty values', () => {
+      emailControl.setValue(null);
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('required')).toBeTruthy();
+    });
+
+    it('should accept legal emails', () => {
+      emailControl.setValue('conniestewart@ohmnet.com');
+      expect(emailControl.valid).toBeTruthy();
+    });
+
+    it('should fail without @', () => {
+      emailControl.setValue('conniestewart');
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('email')).toBeTruthy();
     });
   });
 
   describe('Students FormArray', () => {
+
+    it('should start with students in the students array', () => {
+      const students = editFamilyComponent.students;
+      expect(students).toBeDefined();
+      expect(students.length).toBeGreaterThan(0);
+    });
 
     it('should add a student when addStudent() is called', () => {
       editFamilyComponent.addStudent();
@@ -212,58 +285,23 @@ describe('editFamilyComponent', () => {
     });
   });
 
-  describe('The address field', () => {
-    let addressControl: AbstractControl;
-
-    beforeEach(() => {
-      addressControl = editFamilyComponent.editFamilyForm.controls.address;
-    });
-
-    it('should not allow empty addresses', () => {
-      addressControl.setValue('');
-      expect(addressControl.valid).toBeFalsy();
-    });
-
-    it('should allow numbers and letters to input', () => {
-      addressControl.setValue('123 Avenue');
-      expect(addressControl.valid).toBeTruthy();
-    });
-  });
-
-  describe('The email field', () => {
-    let emailControl: AbstractControl;
-
-    beforeEach(() => {
-      emailControl = editFamilyComponent.editFamilyForm.controls.email;
-    });
-
-    it('should not allow empty values', () => {
-      emailControl.setValue(null);
-      expect(emailControl.valid).toBeFalsy();
-      expect(emailControl.hasError('required')).toBeTruthy();
-    });
-
-    it('should fail without @', () => {
-      emailControl.setValue('conniestewart');
-      expect(emailControl.valid).toBeFalsy();
-      expect(emailControl.hasError('pattern')).toBeTruthy();
-    });
-
-    it('should accept legal emails', () => {
-      emailControl.setValue('conniestewart@ohmnet.com');
-      expect(emailControl.valid).toBeTruthy();
-    });
-  });
-
   describe('control error helper methods', () => {
     it('formControlHasError should return true for invalid touched family control', () => {
-      const controlName = 'guardianName';
-      const control = editFamilyComponent.editFamilyForm.get(controlName);
+      const controlFirstName = 'guardianFirstName';
+      const control1 = editFamilyComponent.editFamilyForm.get(controlFirstName);
 
-      control?.setValue('');
-      control?.markAsTouched();
+      control1?.setValue('');
+      control1?.markAsTouched();
 
-      expect(editFamilyComponent.formControlHasError(controlName)).toBeTrue();
+      expect(editFamilyComponent.formControlHasError(controlFirstName)).toBeTrue();
+
+      const controlLastName = 'guardianLastName';
+      const control2 = editFamilyComponent.editFamilyForm.get(controlLastName);
+
+      control2?.setValue('');
+      control2?.markAsTouched();
+
+      expect(editFamilyComponent.formControlHasError(controlLastName)).toBeTrue();
     });
 
     it('studentControlHasError should return true for invalid touched student control', () => {
@@ -295,12 +333,16 @@ describe('editFamilyComponent', () => {
       // The type statement is needed to ensure that `controlName` isn't just any
       // random string, but rather one of the keys of the `addFamilyValidationMessages`
       // map in the component.
-      let controlName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianName';
-      editFamilyComponent.editFamilyForm.get(controlName).setErrors({'required': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Guardian name is required');
+      const controlFirstName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianFirstName';
+      editFamilyComponent.editFamilyForm.get(controlFirstName).setErrors({'required': true});
+      expect(editFamilyComponent.getFamilyErrorMessage(controlFirstName)).toEqual('Guardian first name is required');
+
+      const controlLastName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianLastName';
+      editFamilyComponent.editFamilyForm.get(controlLastName).setErrors({'required': true});
+      expect(editFamilyComponent.getFamilyErrorMessage(controlLastName)).toEqual('Guardian last name is required');
 
       // Email field should display correct messages
-      controlName = 'email';
+      const controlName = 'email';
       editFamilyComponent.editFamilyForm.get(controlName).setErrors({'required': true});
       expect(editFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Email is required');
 
@@ -330,9 +372,13 @@ describe('editFamilyComponent', () => {
       // The type statement is needed to ensure that `controlName` isn't just any
       // random string, but rather one of the keys of the `addFamilyValidationMessages`
       // map in the component.
-      const controlName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianName';
-      editFamilyComponent.editFamilyForm.get(controlName).setErrors({'unknown': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Unknown error. Please check your form input.');
+      const controlFirstName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianFirstName';
+      editFamilyComponent.editFamilyForm.get(controlFirstName).setErrors({'unknown': true});
+      expect(editFamilyComponent.getFamilyErrorMessage(controlFirstName)).toEqual('Unknown error. Please check your form input.');
+
+      const controlLastName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianLastName';
+      editFamilyComponent.editFamilyForm.get(controlLastName).setErrors({'unknown': true});
+      expect(editFamilyComponent.getFamilyErrorMessage(controlLastName)).toEqual('Unknown error. Please check your form input.');
     });
 
     // Student form
@@ -355,115 +401,244 @@ describe('editFamilyComponent', () => {
       expect(result).toBe('');
     })
   });
-});
 
-// A lot of these tests mock the service using an approach like this doc example
-// https://angular.dev/guide/testing/components-scenarios#more-async-tests
-// The same way that the following allows the mock to be used:
-//
-// TestBed.configureTestingModule({
-//   providers: [{provide: TwainQuotes, useClass: MockTwainQuotes}], // A (more-async-tests) - provide + use class of the mock
-// });
-// const twainQuotes = TestBed.inject(TwainQuotes) as MockTwainQuotes; // B (more-async-tests) - inject the service as the mock
-//
-// Is how these tests work with the mock then being injected in
+  describe('Submit behavior', () => {
+    it('should call updateFamily and navigate to the family list on successful submission', () => {
+      const familyService = TestBed.inject(FamilyService);
+      const editFamilySpy = spyOn(familyService, 'updateFamily').and.returnValue(of('1'));
+      const router = TestBed.inject(Router);
+      const navigateSpy = spyOn(router, 'navigate');
 
-describe('EditFamilyComponent#submitForm()', () => {
-  let component: EditFamilyComponent;
-  let fixture: ComponentFixture<EditFamilyComponent>;
-  let familyService: FamilyService;
-  let location: Location;
-  const activatedRoute: ActivatedRouteStub = new ActivatedRouteStub({
-    id: 'john_id',
-  });
+      editFamilyComponent.addStudent();
+      (editFamilyComponent.editFamilyForm as unknown as UntypedFormGroup).setValue({
+        guardianFirstName: 'Chris',
+        guardianLastName: 'Smith',
+        address: '123 Avenue',
+        email: 'csmith@email.com',
+        students: [
+          {
+            name: 'Jimmy',
+            grade: '3',
+            school: 'Morris Elementary',
+            teacher: 'N/A',
+            backpack: true,
+            headphones: false
+          },
+          {
+            name: 'abby',
+            grade: '7',
+            school: 'Morris Middle School',
+            teacher: 'N/A',
+            backpack: true,
+            headphones: false
+          }
+        ],
+        timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
+        timeSlot: 'TBD'
+      });
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        EditFamilyComponent,
-        MatSnackBarModule
-      ],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        {provide: FamilyService, useClass: MockFamilyService },
-        {provide: ActivatedRoute, useValue: activatedRoute},
-      ]
-    }).compileComponents().catch(error => {
-      expect(error).toBeNull();
+      editFamilyComponent.submitForm();
+
+      expect(editFamilySpy).toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalledWith(['/family']);
+    });
+
+    it('should show snackBar on 400 error', () => {
+      const familyService = TestBed.inject(FamilyService);
+      spyOn(familyService, 'updateFamily').and.returnValue(throwError(() => ({ status: 400 })));
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackBarSpy = spyOn(snackBar, 'open');
+
+      editFamilyComponent.submitForm();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/illegal family/i),
+        'OK',
+        { duration: 5000 }
+      );
+    });
+
+    it('should show snackBar on 500 error', () => {
+      const familyService = TestBed.inject(FamilyService);
+      spyOn(familyService, 'updateFamily').and.returnValue(throwError(() => ({ status: 500 })));
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackBarSpy = spyOn(snackBar, 'open');
+
+      editFamilyComponent.submitForm();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/server failed to process/i),
+        'OK',
+        { duration: 5000 }
+      );
+    });
+
+    it('should show snackBar on unexpected error status', () => {
+      const familyService = TestBed.inject(FamilyService);
+      spyOn(familyService, 'updateFamily').and.returnValue(throwError(() => ({ status: 409, message: 'Conflict' })));
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackBarSpy = spyOn(snackBar, 'open');
+
+      editFamilyComponent.submitForm();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/unexpected error/i),
+        'OK',
+        { duration: 5000 }
+      );
+    });
+
+    it('should use undefined for null form fields via nullish coalescing', () => {
+      const familyService = TestBed.inject(FamilyService);
+      const editFamilySpy = spyOn(familyService, 'updateFamily').and.returnValue(of('1'));
+
+      editFamilyComponent.addStudent();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const setNull = (path: string) => (editFamilyComponent.editFamilyForm.get(path) as any).setValue(null);
+      setNull('guardianFirstName');
+      setNull('guardianLastName');
+      setNull('email');
+      setNull('address');
+      setNull('students.0.name');
+      setNull('students.0.grade');
+      setNull('students.0.school');
+
+      // If statement in the submit form method checks for an invalid form and returns early,
+      // so we need to mock the form as valid to test the nullish coalescing behavior.
+      spyOnProperty(editFamilyComponent.editFamilyForm, 'invalid', 'get').and.returnValue(false);
+
+      editFamilyComponent.submitForm();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const call = editFamilySpy.calls.mostRecent().args[0] as any;
+      expect(call.guardianFirstName).toBeUndefined();
+      expect(call.guardianLastName).toBeUndefined();
+      expect(call.email).toBeUndefined();
+      expect(call.address).toBeUndefined();
     });
   });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(EditFamilyComponent);
-    component = fixture.componentInstance;
-    familyService = TestBed.inject(FamilyService);
-    location = TestBed.inject(Location);
-    // We need to inject the router and the HttpTestingController, but
-    // never need to use them. So, we can just inject them into the TestBed
-    // and ignore the returned values.
-    TestBed.inject(Router);
-    TestBed.inject(HttpTestingController);
-    fixture.detectChanges();
+  describe('formControlHasError edge cases', () => {
+    it('should return false for a non-existent control name', () => {
+      expect(editFamilyComponent.formControlHasError('nonExistentControl')).toBeFalse();
+    });
+
+    it('should return true if control is invalid and dirty (not touched)', () => {
+      const firstNameControl = editFamilyForm.controls.guardianFirstName;
+      firstNameControl.setValue('');
+      firstNameControl.markAsDirty();
+      firstNameControl.markAsUntouched();
+
+      expect(editFamilyComponent.formControlHasError('guardianFirstName')).toBeTrue();
+
+      const lastNameControl = editFamilyForm.controls.guardianLastName;
+      lastNameControl.setValue('');
+      lastNameControl.markAsDirty();
+      lastNameControl.markAsUntouched();
+
+      expect(editFamilyComponent.formControlHasError('guardianLastName')).toBeTrue();
+    });
   });
 
-  it('should call updateFamily() and handle error response', () => {
-    // Save the original path so we can check that it doesn't change.
-    const path = location.path();
-    // A canned error response to be returned by the spy.
-    const errorResponse = { status: 500, message: 'Server error' };
-    // "Spy" on the `.updateFamily()` method in the family service. Here we basically
-    // intercept any calls to that method and return the error response
-    // defined above.
-    const updateFamilySpy = spyOn(familyService, 'updateFamily')
-      .and
-      .returnValue(throwError(() => errorResponse));
-    component.submitForm();
-    // Check that `.updateFamily()` was called with the form's values which we set
-    // up above.
-    const familyID = 'john_id';
-    expect(updateFamilySpy).toHaveBeenCalledWith(familyID, component.editFamilyForm.value);
-    // Confirm that we're still at the same path.
-    expect(location.path()).toBe(path);
+  describe('ngOnInit with settings', () => {
+    it('should use empty array when settings.schools is null', () => {
+      const settingsService = TestBed.inject(SettingsService);
+      spyOn(settingsService, 'getSettings').and.returnValue(of({ schools: undefined } as unknown as AppSettings));
+
+      editFamilyComponent.ngOnInit();
+
+      expect(editFamilyComponent.schools).toEqual([]);
+    });
+
+    it('should populate schools from settings', () => {
+      const settingsService = TestBed.inject(SettingsService);
+      spyOn(settingsService, 'getSettings').and.returnValue(
+        of({ schools: [{ name: 'Test School', abbreviation: 'TS' }] } as unknown as AppSettings)
+      );
+
+      editFamilyComponent.ngOnInit();
+
+      expect(editFamilyComponent.schools.length).toBe(1);
+      expect(editFamilyComponent.schools[0].name).toBe('Test School');
+    });
   });
 
-  it('should call updateFamily() and handle error response for illegal family', () => {
-    // Save the original path so we can check that it doesn't change.
-    const path = location.path();
-    // A canned error response to be returned by the spy.
-    const errorResponse = { status: 400, message: 'Illegal family error' };
-    // "Spy" on the `.updateFamily()` method in the family service. Here we basically
-    // intercept any calls to that method and return the error response
-    // defined above.
-    const updateFamilySpy = spyOn(familyService, 'updateFamily')
-      .and
-      .returnValue(throwError(() => errorResponse));
-    component.submitForm();
-    // Check that `.updateFamily()` was called with the form's values which we set
-    // up above.
-    const familyID = 'john_id';
-    expect(updateFamilySpy).toHaveBeenCalledWith(familyID, component.editFamilyForm.value);
-    // Confirm that we're still at the same path.
-    expect(location.path()).toBe(path);
-  });
+  describe('Delete behavior', () => {
+    it('should call deleteFamily and navigate to the family list on successful deletion', () => {
+      const familyService = TestBed.inject(FamilyService);
+      const deleteSpy = spyOn(familyService, 'deleteFamily').and.returnValue(of(void 0));
+      const router = TestBed.inject(Router);
+      const navigateSpy = spyOn(router, 'navigate');
+      const matDialog = TestBed.inject(MatDialog);
 
-  it('should call updateFamily() and handle unexpected error response if it arises', () => {
-    // Save the original path so we can check that it doesn't change.
-    const path = location.path();
-    // A canned error response to be returned by the spy.
-    const errorResponse = { status: 404, message: 'Not found' };
-    // "Spy" on the `.updateFamily()` method in the family service. Here we basically
-    // intercept any calls to that method and return the error response
-    // defined above.
-    const updateFamilySpy = spyOn(familyService, 'updateFamily')
-      .and
-      .returnValue(throwError(() => errorResponse));
-    component.submitForm();
-    // Check that `.updateFamily()` was called with the form's values which we set
-    // up above.
-    const familyID = 'john_id';
-    expect(updateFamilySpy).toHaveBeenCalledWith(familyID,component.editFamilyForm.value);
-    // Confirm that we're still at the same path.
-    expect(location.path()).toBe(path);
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(true)
+      } as MatDialogRef<unknown>);
+
+      editFamilyComponent.deleteForm();
+
+      expect(deleteSpy).toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalledWith(['/family']);
+    });
+
+    it('should show snackBar on 400 error', () => {
+      const familyService = TestBed.inject(FamilyService);
+      spyOn(familyService, 'deleteFamily').and.returnValue(throwError(() => ({ status: 400 })));
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackBarSpy = spyOn(snackBar, 'open');
+      const matDialog = TestBed.inject(MatDialog);
+
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(true)
+      } as MatDialogRef<unknown>);
+
+      editFamilyComponent.deleteForm();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/illegal family/i),
+        'OK',
+        { duration: 5000 }
+      );
+    });
+
+    it('should show snackBar on 500 error', () => {
+      const familyService = TestBed.inject(FamilyService);
+      spyOn(familyService, 'deleteFamily').and.returnValue(throwError(() => ({ status: 500 })));
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackBarSpy = spyOn(snackBar, 'open');
+      const matDialog = TestBed.inject(MatDialog);
+
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(true)
+      } as MatDialogRef<unknown>);
+
+      editFamilyComponent.deleteForm();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/server failed to process/i),
+        'OK',
+        { duration: 5000 }
+      );
+    });
+
+    it('should show snackBar on unexpected error status', () => {
+      const familyService = TestBed.inject(FamilyService);
+      spyOn(familyService, 'deleteFamily').and.returnValue(throwError(() => ({ status: 409, message: 'Conflict' })));
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackBarSpy = spyOn(snackBar, 'open');
+      const matDialog = TestBed.inject(MatDialog);
+
+      spyOn(matDialog, 'open').and.returnValue({
+        afterClosed: () => of(true)
+      } as MatDialogRef<unknown>);
+
+      editFamilyComponent.deleteForm();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        jasmine.stringMatching(/unexpected error/i),
+        'OK',
+        { duration: 5000 }
+      );
+    });
   });
 });

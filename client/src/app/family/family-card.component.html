@@ -20,10 +20,10 @@
 
           <!-- card for the student inside of the family-->
           <div class="student-card-container">
-            @for (student of family().students ?? []; track [student.name, student.school, student.grade, student.teacher]) {
+            @for (student of family().students ?? []; track [student.name, student.schoolAbbreviation, student.grade, student.teacher]) {
               <mat-card class="student-cards">
                 <p class="student-name">Name: {{ student.name }}</p>
-                <p class="student-school">School: {{ student.school }}</p>
+                <p class="student-school">School: {{ student.schoolAbbreviation }}</p>
                 <p class="student-grade">Grade: {{ student.grade }}</p>
                 <p class="student-teacher">Teacher: {{ student.teacher }}</p>
               </mat-card>
@@ -42,6 +42,14 @@
             <mat-icon matListItemIcon>schedule</mat-icon>
             <p matListItemTitle>Time Slot</p>
             <p matListItemLine class="family-card-timeSlot">{{ family().timeSlot }}</p>
+          </mat-list-item>
+
+          <mat-divider [inset]="true"></mat-divider>
+
+          <mat-list-item>
+            <mat-icon matListItemIcon>schedule</mat-icon>
+            <p matListItemTitle>Available Times</p>
+            <p matListItemLine class="family-card-timeAvailability">{{ getAvailableTimes() }}</p>
           </mat-list-item>
 
           <mat-divider [inset]="true"></mat-divider>
