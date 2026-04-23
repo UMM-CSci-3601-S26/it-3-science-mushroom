@@ -28,15 +28,15 @@ describe('StockReportComponent', () => {
   // Mock Inventory
   const mockInventory: Inventory[] = [
     { internalID: "1", internalBarcode: "ITEM-00001", item: 'Shirt', description: 'Stocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, maxQuantity: 10, minQuantity: 0, stockState: "Stocked", notes: '' },
-    { internalID: "2", internalBarcode: "ITEM-00002", item: 'Pants', description: 'Understocked Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, maxQuantity: 10, minQuantity: 7, stockState: "Under-Stocked", notes: '' },
-    { internalID: "3", internalBarcode: "ITEM-00003", item: 'Shirt', description: 'Overstocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 12, maxQuantity: 10, minQuantity: 0, stockState: "Over-Stocked", notes: '' },
+    { internalID: "2", internalBarcode: "ITEM-00002", item: 'Pants', description: 'Understocked Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, maxQuantity: 10, minQuantity: 7, stockState: "Understocked", notes: '' },
+    { internalID: "3", internalBarcode: "ITEM-00003", item: 'Shirt', description: 'Overstocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 12, maxQuantity: 10, minQuantity: 0, stockState: "Overstocked", notes: '' },
     { internalID: "4", internalBarcode: "ITEM-00004", item: 'Pants', description: 'Out of Stock Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 0, maxQuantity: 10, minQuantity: 7, stockState: "Out of Stock", notes: '' },
   ];
 
   // Mock Reports
   const mockReports: StockReport[] = [
-    { _id: '1', stockReportPDF: 'pdfdata1', reportName: 'Report 1' },
-    { _id: '2', stockReportPDF: 'pdfdata2', reportName: 'Report 2' },
+    { _id: '1', reportType: 'PDF', reportData: 'pdfdata1', reportName: 'Report 1' },
+    { _id: '2', reportType: 'PDF', reportData: 'pdfdata2', reportName: 'Report 2' },
   ];
 
   beforeEach(async () => {
@@ -120,17 +120,24 @@ describe('StockReportComponent', () => {
       expect(component.reports()).toEqual(mockReports);
     });
 
-    it('should call downloadSingleReport with the correct report', () => {
-      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Report 1' };
-      spyOn(component.reportGenerator, 'downloadSinglePdfReport');
+    it('should call downloadSingleReport with the correct report - PDF', () => {
+      const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Report 1' };
+      spyOn(component.reportGenerator, 'downloadSingleReport');
       component.downloadSingleReport(mockReport);
-      expect(component.reportGenerator.downloadSinglePdfReport).toHaveBeenCalledWith(mockReport);
+      expect(component.reportGenerator.downloadSingleReport).toHaveBeenCalledWith(mockReport);
+    });
+
+    it('should call downloadSingleReport with the correct report - XLSX', () => {
+      const mockReport: StockReport = { _id: '1', reportType: 'XLSX', reportData: 'xlsxdata', reportName: 'Report 1' };
+      spyOn(component.reportGenerator, 'downloadSingleReport');
+      component.downloadSingleReport(mockReport);
+      expect(component.reportGenerator.downloadSingleReport).toHaveBeenCalledWith(mockReport);
     });
   });
 
   describe('Delete Single Report', () => {
     it('should open dialog with correct data when deleting a report', () => {
-      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
+      const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Test Report' };
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(false)
       } as MatDialogRef<unknown>);
@@ -149,8 +156,8 @@ describe('StockReportComponent', () => {
     });
 
     it('should delete report when user confirms in dialog', () => {
-      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
-      spyOn(component.reportGenerator, 'deleteSinglePdfReport');
+      const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Test Report' };
+      spyOn(component.reportGenerator, 'deleteSingleReport');
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(true)
@@ -159,7 +166,7 @@ describe('StockReportComponent', () => {
 
       component.deleteSingleReport(mockReport);
 
-      expect(component.reportGenerator.deleteSinglePdfReport).toHaveBeenCalledWith(mockReport);
+      expect(component.reportGenerator.deleteSingleReport).toHaveBeenCalledWith(mockReport);
       expect(matSnackBar.open).toHaveBeenCalledWith(
         jasmine.stringContaining('Deleting report Test Report...'),
         'Okay',
@@ -168,8 +175,8 @@ describe('StockReportComponent', () => {
     });
 
     it('should not delete report when user cancels dialog', () => {
-      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
-      spyOn(component.reportGenerator, 'deleteSinglePdfReport');
+      const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Test Report' };
+      spyOn(component.reportGenerator, 'deleteSingleReport');
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
         afterClosed: () => of(false)
@@ -178,13 +185,13 @@ describe('StockReportComponent', () => {
 
       component.deleteSingleReport(mockReport);
 
-      expect(component.reportGenerator.deleteSinglePdfReport).not.toHaveBeenCalled();
+      expect(component.reportGenerator.deleteSingleReport).not.toHaveBeenCalled();
       expect(stockReportService.refreshReports).not.toHaveBeenCalled();
       expect(matSnackBar.open).not.toHaveBeenCalled();
     });
 
     it('should return early if reportGenerator is not defined', () => {
-      const mockReport: StockReport = { _id: '1', stockReportPDF: 'pdfdata', reportName: 'Test Report' };
+      const mockReport: StockReport = { _id: '1', reportType: 'PDF', reportData: 'pdfdata', reportName: 'Test Report' };
       component.reportGenerator = undefined;
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
       spyOn(matDialog, 'open').and.returnValue({
