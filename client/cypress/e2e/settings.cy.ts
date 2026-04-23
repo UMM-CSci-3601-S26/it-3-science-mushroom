@@ -15,6 +15,7 @@ describe('Settings', () => {
 
     it('Should have Available Spots tab', () => {
       cy.contains('#mat-tab-group-0-label-2', 'Available Spots').click();
+      //used cypress recording lab to figure out what the tab label was
       cy.contains('Set the number of available spots').should('be.visible');
     });
 
