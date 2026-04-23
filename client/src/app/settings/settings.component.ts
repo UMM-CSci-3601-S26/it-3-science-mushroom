@@ -72,6 +72,10 @@ export class SettingsComponent implements OnInit {
     lateAfternoon: new FormControl('', Validators.required),
   });
 
+  availableSpotsForm = new FormGroup({
+    availableSpots: new FormControl<number>(null, Validators.required)
+  })
+
   // Drive Order: three buckets of item terms (e.g. "notebook", "folder")
   stagedTerms: string[] = [];    // included in the drive, checklist order matches this list
   unstagedTerms: string[] = []; // included in the drive, appended after staged items
@@ -203,6 +207,17 @@ export class SettingsComponent implements OnInit {
       ).subscribe({
         next: () => this.snackBar.open('Time availability saved', 'OK', { duration: 2000 }),
         error: () => this.snackBar.open('Failed to save time availability', 'OK', { duration: 3000 })
+      });
+    }
+  }
+
+  saveAvailableSpots(): void {
+    if (this.availableSpotsForm.valid) {
+      this.settingsService.updateAvailableSpots(
+        this.availableSpotsForm.value as number
+      ).subscribe({
+        next: () => this.snackBar.open('Available spots saved', 'OK', { duration: 2000 }),
+        error: () => this.snackBar.open('Failed to save available spots', 'OK', { duration: 3000 })
       });
     }
   }
