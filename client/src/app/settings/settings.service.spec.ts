@@ -26,6 +26,7 @@ describe('SettingsService', () => {
       { itemTerm: 'folder', status: 'unstaged' },
       { itemTerm: 'pencil', status: 'notGiven' },
     ],
+    availableSpots: 5,
   };
 
   beforeEach(() => {

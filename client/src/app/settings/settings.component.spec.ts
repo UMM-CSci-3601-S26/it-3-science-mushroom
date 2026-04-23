@@ -37,6 +37,7 @@ describe('SettingsComponent – drive order', () => {
       lateAfternoon: '',
     },
     supplyOrder: [],
+    availableSpots: 5,
   };
 
   beforeEach(async () => {

@@ -15,13 +15,14 @@ export interface TimeAvailabilityLabels {
   lateAfternoon: string;
 }
 
-export type availableSpots= number;
+// export type availableSpots= number;
 
 export interface AppSettings {
   _id?: string;
   schools: SchoolInfo[];
   timeAvailability: TimeAvailabilityLabels;
   supplyOrder: SupplyItemOrder[];
+  availableSpots: number;
 }
 
 // Service for managing application settings, including schools, time availability labels, and supply order.
