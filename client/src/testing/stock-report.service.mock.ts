@@ -8,7 +8,16 @@ import { StockReportService } from 'src/app/stock-report/stock-report.service';
 @Injectable({
   providedIn: AppComponent
 })
-export class MockStockReportService implements Pick<StockReportService, 'getReportById' | 'getReports' | 'addNewReport' | 'deleteReport' | 'getReportBytesById'> {
+export class MockStockReportService implements Pick<StockReportService,
+ 'getReportById' | 'getReports' | 'addNewPdfReport' | 'deleteReport' |
+ 'getReportBytesById' | 'generateAndDownloadXlsxReport' | 'generateNewXlsxReport'> {
+
+  generateAndDownloadXlsxReport(): Observable<Blob> {
+    throw new Error('Method not implemented.');
+  }
+  generateNewXlsxReport(): Observable<string> {
+    throw new Error('Method not implemented.');
+  }
   static testReports: StockReport[] = [
     {
       _id: 'john_id',
@@ -47,8 +56,8 @@ export class MockStockReportService implements Pick<StockReportService, 'getRepo
     }
   }
 
-  addNewReport(formData: FormData): Observable<string> {
-    console.log('addNewReport called with', formData);
+  addNewPdfReport(formData: FormData): Observable<string> {
+    console.log('addNewPdfReport called with', formData);
     return of('1');
   }
 
