@@ -48,6 +48,14 @@ export class StockReportPage {
     return cy.get('[data-cy="generate-and-download-pdf"]');
   }
 
+  getGenerateAndSavePDFButton() {
+    return cy.get('[data-cy="generate-pdf"]');
+  }
+
+  getGenerateAndSaveXLSXButton() {
+    return cy.get('[data-cy="generate-xlsx"]');
+  }
+
   // Stock Report Tree
   getStockedItemsCard() {
     return cy.get('[data-cy="stocked-items-card"]');

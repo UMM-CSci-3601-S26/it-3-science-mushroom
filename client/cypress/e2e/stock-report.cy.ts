@@ -13,16 +13,14 @@ describe('Stock Report', () => {
     // Create test reports for download/delete tests
     cy.intercept('POST', '/api/stockreport*').as('saveReport');
 
-    // Create first report
-    page.getReportCard().first().within(() => {
-      cy.get('button').contains('Generate Report as PDF').click();
-    });
+    // Create first reports
+    page.getGenerateAndSavePDFButton().click();
+    page.getGenerateAndSaveXLSXButton().click();
     cy.wait('@saveReport');
 
-    // Create second report for delete all tests
-    page.getReportCard().first().within(() => {
-      cy.get('button').contains('Generate Report as PDF').click();
-    });
+    // Create second reports
+    page.getGenerateAndSavePDFButton().click();
+    page.getGenerateAndSaveXLSXButton().click();
     cy.wait('@saveReport');
   });
 
@@ -82,16 +80,29 @@ describe('Stock Report', () => {
     cy.get('.mdc-snackbar').should('contain', 'Generating and downloading report');
   });
 
+  it('Should be able to generate and download an XLSX report', () => {
+    page.getGenerateAndDownloadXLSXButton().click();
+    // Verify snackbar message appears
+    cy.get('.mdc-snackbar').should('contain', 'Generating and downloading report');
+  });
+
   it('Should be able to generate and save a PDF report to server', () => {
     cy.intercept('POST', '/api/stockreport*').as('saveReport');
-    page.getReportCard().first().within(() => {
-      cy.get('button').contains('Generate Report as PDF').click();
-    });
+    page.getGenerateAndSavePDFButton().click();
+
     cy.wait('@saveReport');
     cy.get('.mdc-snackbar').should('contain', 'Generating and saving report');
   });
 
-  it('Should be able to download a single report from the server', () => {
+  it('Should be able to generate and save an XLSX report to server', () => {
+    cy.intercept('GET', '/api/stockreport*').as('saveReport');
+    page.getGenerateAndSaveXLSXButton().click();
+
+    cy.wait('@saveReport');
+    cy.get('.mdc-snackbar').should('contain', 'Generating and saving report');
+  });
+
+  it('Should be able to download a single PDF report from the server', () => {
     // Reports created in beforeEach
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
     cy.get('[data-cy="pdf-report-item"]').first().within(() => {
@@ -102,20 +113,65 @@ describe('Stock Report', () => {
     cy.get('.mdc-snackbar').should('contain', 'Downloading report');
   });
 
+  it('Should be able to download a single XLSX report from the server', () => {
+    // Reports created in beforeEach
+    cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
+    cy.get('[data-cy="xlsx-report-item"]').first().within(() => {
+      cy.get('[data-cy="download-xlsx-button"]').click();
+    });
+
+    // Verify snackbar shows download message
+    cy.get('.mdc-snackbar').should('contain', 'Downloading report');
+  });
+
   it('Should be able to download all reports as a ZIP from the server', () => {
+    // Reports created in beforeEach
+    cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
+    cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
+    page.getDownloadAllReportsButton().click();
+
+    // Verify snackbar shows download message
+    cy.get('.mdc-snackbar').should('contain', 'Downloaded all "All" report(s)');
+  });
+
+  it('Should be able to download all PDF reports as a ZIP from the server', () => {
     // Reports created in beforeEach
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
     page.getDownloadAllPDFsButton().click();
 
     // Verify snackbar shows download message
-    cy.get('.mdc-snackbar').should('contain', 'Downloaded all report');
+    cy.get('.mdc-snackbar').should('contain', 'Downloaded all "PDF" report(s)');
   });
 
-  it('Should be able to delete a single report from the server', () => {
+  it('Should be able to download all XLSX reports as a ZIP from the server', () => {
+    // Reports created in beforeEach
+    cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
+    page.getDownloadAllXLSXsButton().click();
+
+    // Verify snackbar shows download message
+    cy.get('.mdc-snackbar').should('contain', 'Downloaded all "XLSX" report(s)');
+  });
+
+  it('Should be able to delete a single PDF report from the server', () => {
     // Reports created in beforeEach
     cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
     cy.get('[data-cy="pdf-report-item"]').first().within(() => {
       cy.get('[data-cy="delete-pdf-button"]').click();
+    });
+
+    // Confirm deletion in dialog
+    cy.contains('button', 'Confirm').click();
+
+    // Verify snackbar shows deletion confirmation
+    cy.get('.mdc-snackbar').should('contain', 'deleted successfully');
+  });
+
+
+  it('Should be able to delete a single XLSX report from the server', () => {
+    // Reports created in beforeEach
+    cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
+    cy.get('[data-cy="xlsx-report-item"]').first().within(() => {
+      cy.get('[data-cy="delete-xlsx-button"]').click();
     });
 
     // Confirm deletion in dialog
@@ -137,6 +193,30 @@ describe('Stock Report', () => {
     cy.get('.mdc-snackbar').should('contain', 'deleted successfully');
   });
 
+  it('Should be able to delete all PDF reports from the server', () => {
+    page.getGenerateAndSavePDFButton().click(); // Add a new PDF report to delete
+    cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
+    page.getDeleteAllPDFsButton().click();
+
+    // Confirm deletion in dialog
+    cy.contains('button', 'Confirm').click();
+
+    // Verify snackbar shows deletion confirmation
+    cy.get('.mdc-snackbar').should('contain', 'deleted successfully');
+  });
+
+  it('Should be able to delete all XLSX reports from the server', () => {
+    page.getGenerateAndSaveXLSXButton().click(); // Add a new XLSX report to delete
+    cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
+    page.getDeleteAllXLSXsButton().click();
+
+    // Confirm deletion in dialog
+    cy.contains('button', 'Confirm').click();
+
+    // Verify snackbar shows deletion confirmation
+    cy.get('.mdc-snackbar').should('contain', 'deleted successfully');
+  });
+
   it('Should show message when no reports available for download', () => {
     // Delete all reports first to test empty state
     page.getDeleteAllReportsButton().click();
@@ -146,7 +226,7 @@ describe('Stock Report', () => {
     cy.get('.mdc-snackbar').should('contain', 'deleted successfully');
 
     // Try to download when empty
-    page.getDownloadAllPDFsButton().click();
+    page.getDownloadAllReportsButton().click();
 
     // Should show no reports message
     cy.get('.mdc-snackbar').should('contain', 'No reports available');
