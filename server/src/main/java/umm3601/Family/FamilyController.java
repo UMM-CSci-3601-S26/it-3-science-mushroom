@@ -42,7 +42,6 @@ import io.javalin.http.HttpStatus;
 import umm3601.Controller;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
-// import umm3601.settings.Settings;
 import umm3601.settings.Settings;
 
 /* FamilyController Contains the Following:
@@ -203,7 +202,7 @@ public class FamilyController implements Controller {
         }
       }
 
-      throw new NotFoundResponse ("Not all families were able to be sorted, your event capacity may be too low");
+      throw new NotFoundResponse("Not all families were able to be sorted, your event capacity may be too low");
 
     }
     return families;
@@ -216,7 +215,7 @@ public class FamilyController implements Controller {
         .find(filter)
         .into(new ArrayList<>()); //loading families
 
-    int capacity = 5;
+    int capacity = Settings.availableSpots;
 
     schedulingAlgorithm(families, capacity); // scheduling families
 

@@ -54,7 +54,7 @@ public class Settings {
    * Spots available per time slot at the drive
    * Used to schedule families between the different time slots based on their preferences
    */
-  public int availableSpots = 5;
+  public static int availableSpots = 5;
 
   /**
    * Records how a single supply list entry should be treated on drive day.
