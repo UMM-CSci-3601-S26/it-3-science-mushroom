@@ -59,6 +59,7 @@ import umm3601.Family.Family.StudentInfo;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 import umm3601.settings.Settings;
+import umm3601.settings.Settings.TimeAvailabilityLabels;
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength" })
 class FamilyControllerSpec {
   private FamilyController familyController;
@@ -109,10 +110,12 @@ class FamilyControllerSpec {
     MongoCollection<Document> familyDocuments = db.getCollection("family");
     MongoCollection<Document> supplyListDocuments = db.getCollection("supplylist");
     MongoCollection<Document> inventoryDocuments = db.getCollection("inventory");
+    MongoCollection<Document> settingsDocuments = db.getCollection("settings");
 
     familyDocuments.drop();
     supplyListDocuments.drop();
     inventoryDocuments.drop();
+    settingsDocuments.drop();
 
     List<Document> testFamilies = new ArrayList<>();
 
@@ -326,6 +329,11 @@ class FamilyControllerSpec {
         .append("internalID", "ID-10002")
         .append("internalBarcode", "ITEM-10002")
         .append("externalBarcode", List.of("EXT-10002"))));
+
+    Document settings = new Document()
+      .append("availableSpots", 5);
+
+    settingsDocuments.insertOne(settings);
 
     familyController = new FamilyController(db);
   }
@@ -1636,7 +1644,7 @@ class FamilyControllerSpec {
 
   @Test
   public void familySchedulingTest() {
-    Settings.TimeAvailabilityLabels currentSettings = new Settings.TimeAvailabilityLabels();
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
 
     familyController.scheduleFamilies(ctx);
 

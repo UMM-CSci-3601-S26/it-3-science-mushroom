@@ -90,6 +90,8 @@ public class FamilyController implements Controller {
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
+  private final JacksonMongoCollection<Settings> settingsCollection;
+
 
   // Database Constructor
   public FamilyController(MongoDatabase database) {
@@ -108,6 +110,11 @@ public class FamilyController implements Controller {
         "inventory",
         Inventory.class,
         UuidRepresentation.STANDARD);
+    settingsCollection = JacksonMongoCollection.builder().build(
+      database,
+      "settings",
+      Settings.class,
+      UuidRepresentation.STANDARD);
   }
 
   // GET all families
@@ -211,11 +218,13 @@ public class FamilyController implements Controller {
   public void scheduleFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
 
+    Settings settings = settingsCollection.find().first();
+
     ArrayList<Family> families = familyCollection
         .find(filter)
         .into(new ArrayList<>()); //loading families
 
-    int capacity = Settings.availableSpots;
+    int capacity = settings.availableSpots;
 
     schedulingAlgorithm(families, capacity); // scheduling families
 
