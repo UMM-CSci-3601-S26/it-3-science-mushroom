@@ -72,17 +72,23 @@ export class SettingsComponent implements OnInit {
     lateAfternoon: new FormControl('', Validators.required),
   });
 
+  availableSpotsForm = new FormGroup({
+    availableSpots: new FormControl<number>(5, [Validators.required, Validators.min(1)])
+  })
+
   // Drive Order: three buckets of item terms (e.g. "notebook", "folder")
   stagedTerms: string[] = [];    // included in the drive, checklist order matches this list
   unstagedTerms: string[] = []; // included in the drive, appended after staged items
   notGivenTerms: string[] = []; // excluded from checklists entirely
 
+  //loads values from backend
   ngOnInit(): void {
     this.settingsService.getSettings().subscribe(settings => {
       this.schools = settings.schools ?? [];
       if (settings.timeAvailability) {
         this.timeAvailabilityForm.patchValue(settings.timeAvailability);
       }
+      this.availableSpotsForm.patchValue({ availableSpots: settings.availableSpots});
     });
 
     this.loadDriveOrder();
@@ -203,6 +209,21 @@ export class SettingsComponent implements OnInit {
       ).subscribe({
         next: () => this.snackBar.open('Time availability saved', 'OK', { duration: 2000 }),
         error: () => this.snackBar.open('Failed to save time availability', 'OK', { duration: 3000 })
+      });
+    }
+  }
+
+  saveAvailableSpots(): void {
+    if (this.availableSpotsForm.valid) {
+      this.settingsService.updateAvailableSpots(
+        this.availableSpotsForm.value as number
+      ).subscribe({
+        next: () => {
+          const availableSpots = this.availableSpotsForm.value.availableSpots;
+          console.log('Updated spots:', availableSpots);
+          this.snackBar.open(`Available spots setting saved: ${availableSpots}`, 'OK', { duration: 2000 });
+        },
+        error: () => this.snackBar.open('Failed to save available spots', 'OK', { duration: 3000 })
       });
     }
   }
