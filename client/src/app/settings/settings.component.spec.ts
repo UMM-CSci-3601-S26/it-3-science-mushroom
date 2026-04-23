@@ -12,7 +12,7 @@ import { TermsService } from '../terms/terms.service';
 import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
 
-describe('SettingsComponent – drive order', () => {
+describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
@@ -46,6 +46,7 @@ describe('SettingsComponent – drive order', () => {
       'updateSchools',
       'updateTimeAvailability',
       'updateSupplyOrder',
+      'updateAvailableSpots'
     ]);
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
@@ -404,5 +405,25 @@ describe('SettingsComponent – drive order', () => {
     component.saveTimeAvailability();
 
     expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
+  });
+
+  it('Should call updateAvailableSpots and show success snack bar', () => {
+    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
+    component.availableSpotsForm.setValue({ availableSpots: 28 });
+
+    component.saveAvailableSpots();
+
+    const availableSpots = component.availableSpotsForm.get('availableSpots').value;
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith(`Available spots setting saved: ${availableSpots}`, 'OK', { duration: 2000 });
+  });
+
+  it('Should call updateAvailableSpots and show failure snack bar', () => {
+    settingsServiceSpy.updateAvailableSpots.and.returnValue(throwError(() => new Error('fail')));
+    component.availableSpotsForm.setValue({ availableSpots: 28 });
+
+    component.saveAvailableSpots();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
   });
 });
