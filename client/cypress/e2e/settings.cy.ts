@@ -3,6 +3,10 @@ import { SettingsPage } from 'cypress/support/settings.po';
 describe('Settings', () => {
   const page = new SettingsPage();
 
+  before(() => {
+    cy.task('seed:database');
+  });
+
   beforeEach(() => {
     page.navigateTo();
   });
