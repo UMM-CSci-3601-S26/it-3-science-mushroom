@@ -29,7 +29,7 @@ repositories {
 // External dependencies that our application utilizes
 dependencies {
   // Javalin, a simple web framework for Java
-  implementation 'io.javalin:javalin:6.7.0'
+  implementation 'io.javalin:javalin:7.2.0'
 
   // Mongo DB Driver for Java
   implementation 'org.mongodb:mongodb-driver-sync:5.6.4'
