@@ -51,7 +51,13 @@
               }
             </mat-form-field>
 
-             <h3>Available Times</h3>
+            <mat-form-field>
+              <mat-label>Any Accommodations Needed?</mat-label>
+              <input matInput type="text"
+                formControlName="accommodations">
+            </mat-form-field>
+
+            <h3>Available Times</h3>
             <div formGroupName="timeAvailability">
               <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox">
                 {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)

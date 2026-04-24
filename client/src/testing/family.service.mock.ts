@@ -17,6 +17,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       guardianName: 'John Johnson',
       email: 'jjohnson@email.com',
       address: '713 Broadway',
+      accommodations: 'None',
       timeSlot: '8:00-9:00',
       timeAvailability: {
         earlyMorning: false,
@@ -42,6 +43,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       guardianName: 'Jane Doe',
       email: 'janedoe@email.com',
       address: '123 Street',
+      accommodations: 'None',
       timeSlot: '10:00-11:00',
       timeAvailability: {
         earlyMorning: false,
@@ -76,6 +78,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       guardianName: 'George Peterson',
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
+      accommodations: 'None',
       timeSlot: '1:00-2:00',
       timeAvailability: {
         earlyMorning: false,

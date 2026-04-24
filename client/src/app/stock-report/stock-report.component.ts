@@ -94,31 +94,47 @@ export class StockReportComponent {
     )
   );
 
-  // Compute PDF and CSV reports separately for easier display
+  // Compute PDF and XLSX reports separately for easier display
   pdfReports = computed(() => {
-    return this.reports();
+    return this.reports()?.filter(report => report.reportType === 'PDF') ?? [];
   });
 
-  csvReports = computed(() => {
-    return []; // CSV reports aren't implemented, so we'll just always return an empty array :)
+  xlsxReports = computed(() => {
+    return this.reports()?.filter(report => report.reportType === 'XLSX') ?? [];
   });
 
   constructor() {
     this.reportService.refreshReports().subscribe();
   }
 
-  // Download single report as PDF. Uses the Report Generator's method, passing along the report to download
+  /**
+   * Download single report as PDF/XLSX. Uses the Report Generator's method, passing along the report to download
+   * @param report The report to download
+   */
   downloadSingleReport(report: StockReport) {
     if (!this.reportGenerator || !report) return;
-    this.reportGenerator.downloadSinglePdfReport(report);
-    this.snackBar.open(
-      `Downloading report ${report.reportName} as PDF file...`,
-      `Okay`,
-      { duration: 2000 }
-    );
+
+    if (report.reportType === 'PDF') {
+      this.reportGenerator.downloadSingleReport(report);
+      this.snackBar.open(
+        `Downloading report ${report.reportName} as PDF file...`,
+        `Okay`,
+        { duration: 2000 }
+      );
+    } else if (report.reportType === 'XLSX') {
+      this.reportGenerator.downloadSingleReport(report);
+      this.snackBar.open(
+        `Downloading report ${report.reportName} as XLSX file...`,
+        `Okay`,
+        { duration: 2000 }
+      );
+    }
   }
 
-  // Delete a single PDF report. Uses the Report Generator's method, passing along the report to delete
+  /**
+   * Delete a single report. Uses the Report Generator's method, passing along the report to delete
+   * @param report The report to delete
+   */
   deleteSingleReport(report: StockReport) {
     const dialogRef = this.dialogService.openDialog({
       title: 'Confirm Delete Single',
@@ -131,7 +147,7 @@ export class StockReportComponent {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         if (!this.reportGenerator || !report) return;
-        this.reportGenerator.deleteSinglePdfReport(report);
+        this.reportGenerator.deleteSingleReport(report);
         this.snackBar.open(
           `Deleting report ${report.reportName}...`,
           `Okay`,
@@ -190,13 +206,13 @@ export class StockReportComponent {
 
   underStockedItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Under-Stocked') ?? [];
+      ?.filter(item => item.stockState === 'Understocked') ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
   overStockedItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Over-Stocked') ?? [];
+      ?.filter(item => item.stockState === 'Overstocked') ?? [];
     return this.groupInventoryByItem(filtered);
   });
 }

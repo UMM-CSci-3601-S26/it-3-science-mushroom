@@ -139,6 +139,8 @@ export class EditFamilyComponent implements OnInit {
       Validators.minLength(2),
     ])),
 
+    accommodations: new FormControl<string>(''),
+
     timeSlot: new FormControl('TBD', Validators.compose([
     ])),
 
@@ -302,6 +304,7 @@ export class EditFamilyComponent implements OnInit {
       guardianName: guardianName ?? undefined,
       email: rawForm.email ?? undefined,
       address: rawForm.address ?? undefined,
+      accommodations: rawForm.accommodations ?? undefined,
       timeSlot: rawForm.timeSlot ?? undefined,
       timeAvailability: {
         earlyMorning: rawForm.timeAvailability?.earlyMorning ?? false,
