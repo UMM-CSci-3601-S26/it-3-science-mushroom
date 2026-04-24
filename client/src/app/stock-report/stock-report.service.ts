@@ -10,9 +10,11 @@ import { BehaviorSubject } from 'rxjs';
 // JS Imports
 import JSZip from 'jszip';
 
-// Family Imports
-import { environment } from '../../environments/environment';
+// Stock Report Imports
 import { StockReport } from './stock-report';
+
+// Misc Imports
+import { environment } from '../../environments/environment';
 
 /**
  * StockReportService is responsible for handling logic related to Stock Reports, including fetching reports from the server, deleting reports, and downloading reports as PDFs or ZIPs.
@@ -81,17 +83,38 @@ export class StockReportService {
     return this.httpClient.get<StockReport>(`${this.stockReportUrl}/${id}`);
   }
 
+  /**
+   * Call the endpoint to get a single Stock Report's byte data by ID
+   * @param id ID of report to get
+   * @returns StockReport byte data with the given ID, as returned by the server
+   */
   getReportBytesById(id: string): Observable<Blob> {
     return this.httpClient.get(`${this.stockReportUrl}/${id}/bytes`, { responseType: 'blob' });
   }
 
   /**
    * Call endpoint to add a new Stock Report
-   * @param formData Data of the new report to add, containing the report name and data for the report file (PDF or CSV)
+   * @param formData Data of the new report to add, containing the report name, type, and data for the report (PDF or XLSX)
    * @returns Response from the server, which should be the ID of the newly created report
    */
-  addNewReport(formData: FormData): Observable<string> {
+  addNewPdfReport(formData: FormData): Observable<string> {
     return this.httpClient.post<{id: string}>(this.stockReportUrl, formData).pipe(map(response => response.id));
+  }
+
+  /**
+   * Call endpoint to generate a new XLSX report and save it to the server
+   * @returns Response from the server, which should be the ID of the newly generated and saved report
+   */
+  generateNewXlsxReport(): Observable<string> {
+    return this.httpClient.get<{id: string}>(`${this.stockReportUrl}/generate-and-save`).pipe(map(response => response.id));
+  }
+
+  /**
+   * Call endpoint to generate a new XLSX report w/o saving it to the server
+   * @returns Response from the server as a Blob (the XLSX file bytes)
+   */
+  generateAndDownloadXlsxReport(): Observable<Blob> {
+    return this.httpClient.get(`${this.stockReportUrl}/generate`, { responseType: 'blob' });
   }
 
   /**
@@ -116,49 +139,74 @@ export class StockReportService {
   }
 
   /**
-   * Delete multiple reports and refresh the reports list.
-   * @param reports The reports to delete
+   * Delete multiple reports by format and refresh the reports list.
+   * @param format The format of reports to delete ('PDF' | 'XLSX' | 'All')
    * @returns Observable that completes when all deletes and refresh are done
    */
-  deleteAllReports(reports: StockReport[]): Observable<void> {
-    if (reports.length === 0) {
-      return of(void 0);
-    }
+  deleteAllReports(format: 'PDF' | 'XLSX' | 'All'): Observable<void> {
+    return this.getReports().pipe(
+      switchMap(reports => {
+        // Filter reports by format
+        const filteredReports = reports.filter(report => {
+          if (format === 'All') {
+            return true;
+          }
+          return report.reportType === format;
+        });
 
-    // Create an observable for each delete
-    const deleteObservables = reports.map(report =>
-      this.deleteReport(report._id!)
-    );
+        if (filteredReports.length === 0) {
+          return of(void 0);
+        }
 
-    // Execute all deletes in parallel, then refresh once, return void
-    return forkJoin(deleteObservables).pipe(
-      switchMap(() => this.refreshReports()),
-      switchMap(() => of(void 0))
+        // Create an observable for each delete
+        const deleteObservables = filteredReports.map(report =>
+          this.deleteReport(report._id!)
+        );
+
+        // Execute all deletes in parallel, then refresh once, return void
+        return forkJoin(deleteObservables).pipe(
+          switchMap(() => this.refreshReports()),
+          switchMap(() => of(void 0))
+        );
+      })
     );
   }
 
   /**
-   * Get blob for a single PDF report.
+   * Get blob for a single report
    * @param report The report to download
-   * @returns Observable of the PDF blob
+   * @returns Observable of the blob
    */
   downloadSingleReportBlob(report: StockReport): Observable<Blob> {
     return this.getReportBytesById(report._id!);
   }
 
   /**
-   * Get ZIP blob containing all PDF reports.
+   * Get ZIP blob containing all reports.
+   * @param format The format of reports to include in the ZIP ('PDF' or 'XLSX')
    * @returns Observable of the ZIP blob containing all reports
    */
-  downloadAllReportsAsZip(): Observable<Blob> {
+  downloadAllReportsAsZip(format: 'PDF' | 'XLSX' | 'All'): Observable<Blob> {
     return this.getReports().pipe(
       switchMap(reports => {
         if (reports.length === 0) {
           return of(new Blob()); // Return empty blob if no reports
         }
 
+        // Filter reports by format first
+        const filteredReports = reports.filter(report => {
+          if (format === 'All') {
+            return true;
+          }
+          return report.reportType === format;
+        });
+
+        if (filteredReports.length === 0) {
+          return of(new Blob()); // Return empty blob if no reports match the format
+        }
+
         // Observable for each report's byte data
-        const byteObservables = reports.map(report =>
+        const byteObservables = filteredReports.map(report =>
           this.getReportBytesById(report._id!).pipe(
             map(blob => ({ name: report.reportName, blob }))
           )

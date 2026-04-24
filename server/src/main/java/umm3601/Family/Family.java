@@ -19,6 +19,7 @@ public class Family {
   public String email;
   public String address;
   public String timeSlot;
+  public String accommodations;
   public boolean helped;
   public String status;
   public FamilyChecklist checklist;

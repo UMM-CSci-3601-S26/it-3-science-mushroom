@@ -8,16 +8,21 @@ import { StockReportService } from 'src/app/stock-report/stock-report.service';
 @Injectable({
   providedIn: AppComponent
 })
-export class MockStockReportService implements Pick<StockReportService, 'getReportById' | 'getReports' | 'addNewReport' | 'deleteReport' | 'getReportBytesById'> {
+export class MockStockReportService implements Pick<StockReportService,
+ 'getReportById' | 'getReports' | 'addNewPdfReport' | 'deleteReport' |
+ 'getReportBytesById' | 'generateAndDownloadXlsxReport' | 'generateNewXlsxReport'> {
+
   static testReports: StockReport[] = [
     {
       _id: 'john_id',
-      stockReportPDF: 'john_report.pdf',
+      reportType: 'PDF',
+      reportData: 'john_report.pdf',
       reportName: "John's Report"
     },
     {
       _id: 'jane_id',
-      stockReportPDF: 'jane_report.pdf',
+      reportType: 'PDF',
+      reportData: 'jane_report.pdf',
       reportName: "Jane's Report"
     },
   ];
@@ -45,13 +50,23 @@ export class MockStockReportService implements Pick<StockReportService, 'getRepo
     }
   }
 
-  addNewReport(formData: FormData): Observable<string> {
-    console.log('addNewReport called with', formData);
+  addNewPdfReport(formData: FormData): Observable<string> {
+    console.log('addNewPdfReport called with', formData);
     return of('1');
   }
 
   deleteReport(id: string): Observable<void> {
     console.log('deleteReport called with', id);
     return of(void 0);
+  }
+
+  generateAndDownloadXlsxReport(): Observable<Blob> {
+    console.log('generateAndDownloadXlsxReport called');
+    return of(new Blob(['mock xlsx content'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  }
+
+  generateNewXlsxReport(): Observable<string> {
+    console.log('generateNewXlsxReport called');
+    return of('1');
   }
 }
