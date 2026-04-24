@@ -414,6 +414,7 @@ describe('editFamilyComponent', () => {
         guardianFirstName: 'Chris',
         guardianLastName: 'Smith',
         address: '123 Avenue',
+        accommodations: 'None',
         email: 'csmith@email.com',
         students: [
           {
@@ -434,7 +435,7 @@ describe('editFamilyComponent', () => {
           }
         ],
         timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
-        timeSlot: null
+        timeSlot: 'TBD'
       });
 
       editFamilyComponent.submitForm();
@@ -502,6 +503,10 @@ describe('editFamilyComponent', () => {
       setNull('students.0.name');
       setNull('students.0.grade');
       setNull('students.0.school');
+
+      // If statement in the submit form method checks for an invalid form and returns early,
+      // so we need to mock the form as valid to test the nullish coalescing behavior.
+      spyOnProperty(editFamilyComponent.editFamilyForm, 'invalid', 'get').and.returnValue(false);
 
       editFamilyComponent.submitForm();
 

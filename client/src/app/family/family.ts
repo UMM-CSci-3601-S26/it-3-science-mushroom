@@ -54,6 +54,7 @@ export interface Family {
   guardianName: string;
   email: string;
   address: string;
+  accommodations: string;
   timeSlot: string;
   timeAvailability?: AvailabilityOptions;
   helped?: boolean;

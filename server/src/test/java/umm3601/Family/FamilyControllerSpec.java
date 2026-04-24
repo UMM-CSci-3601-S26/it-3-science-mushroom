@@ -54,10 +54,12 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import umm3601.Family.Family.AvailabilityOptions;
+import umm3601.Family.Family.StudentInfo;
 // Misc Imports
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
-
+import umm3601.settings.Settings;
+import umm3601.settings.Settings.TimeAvailabilityLabels;
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength" })
 class FamilyControllerSpec {
   private FamilyController familyController;
@@ -111,10 +113,12 @@ class FamilyControllerSpec {
     MongoCollection<Document> familyDocuments = db.getCollection("family");
     MongoCollection<Document> supplyListDocuments = db.getCollection("supplylist");
     MongoCollection<Document> inventoryDocuments = db.getCollection("inventory");
+    MongoCollection<Document> settingsDocuments = db.getCollection("settings");
 
     familyDocuments.drop();
     supplyListDocuments.drop();
     inventoryDocuments.drop();
+    settingsDocuments.drop();
 
     List<Document> testFamilies = new ArrayList<>();
 
@@ -123,7 +127,14 @@ class FamilyControllerSpec {
         .append("guardianName", "Jane Doe")
         .append("email", "jane@email.com")
         .append("address", "123 Street")
+        .append("accommodations", "None")
         .append("timeSlot", "10:00-11:00")
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", true)
+          .append("lateMorning", true)
+          .append("earlyAfternoon", true)
+          .append("lateAfternoon", true)
+        )
         .append("helped", false)
         .append("status", "not_helped")
         .append("students", List.of(
@@ -147,7 +158,14 @@ class FamilyControllerSpec {
         .append("guardianName", "John Christensen")
         .append("email", "jchristensen@email.com")
         .append("address", "713 Broadway")
+        .append("accommodations", "None")
         .append("timeSlot", "8:00-9:00")
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", true)
+          .append("earlyAfternoon", false)
+          .append("lateAfternoon", false)
+        )
         .append("helped", true)
         .append("status", "helped")
         .append("students", List.of(
@@ -169,7 +187,14 @@ class FamilyControllerSpec {
         .append("guardianName", "John Johnson")
         .append("email", "jjohnson@email.com")
         .append("address", "456 Avenue")
+        .append("accommodations", "None")
         .append("timeSlot", "2:00-3:00")
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", false)
+          .append("earlyAfternoon", false)
+          .append("lateAfternoon", true)
+        )
         .append("helped", false)
         .append("status", "being_helped")
         .append("students", List.of(
@@ -180,6 +205,66 @@ class FamilyControllerSpec {
             .append("schoolAbbreviation", "HHS")
             .append("teacher", "N/A")
         )));
+    testFamilies.add(
+      new Document()
+        .append("guardianName", "Melina Brim")
+        .append("email", "melina@email.com")
+        .append("address", "125 Street")
+        .append("timeSlot", "10:00-11:00")
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", false)
+          .append("earlyAfternoon", true)
+          .append("lateAfternoon", true)
+        )
+        .append("helped", false)
+        .append("status", "not_helped")
+        .append("students", List.of(
+          new Document()
+            .append("name", "Tricia")
+            .append("grade", "3")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false),
+          new Document()
+            .append("name", "Bernice")
+            .append("grade", "5")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+        )));
+    testFamilies.add(
+      new Document()
+        .append("guardianName", "Bob Dylan")
+        .append("email", "therealbobdylan@email.com")
+        .append("address", "Nowhere")
+        .append("timeSlot", "10:00-11:00")
+        .append("timeAvailability", new Document()
+          .append("earlyMorning", false)
+          .append("lateMorning", true)
+          .append("earlyAfternoon", true)
+          .append("lateAfternoon", true)
+        )
+        .append("helped", false)
+        .append("status", "not_helped")
+        .append("students", List.of(
+          new Document()
+            .append("name", "Jeanie")
+            .append("grade", "3")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+            .append("backpack", true)
+            .append("headphones", false),
+          new Document()
+            .append("name", "Fred")
+            .append("grade", "5")
+            .append("school", "Morris Area High School")
+            .append("schoolAbbreviation", "MAHS")
+            .append("teacher", "N/A")
+        )));
 
     testFamilyId = new ObjectId();
 
@@ -188,7 +273,14 @@ class FamilyControllerSpec {
       .append("guardianName", "Bob Jones")
       .append("email", "bob@email.com")
       .append("address", "456 Oak Ave")
+      .append("accommodations", "None")
       .append("timeSlot", "2:00-3:00")
+      .append("timeAvailability", new Document()
+        .append("earlyMorning", false)
+        .append("lateMorning", true)
+        .append("earlyAfternoon", false)
+        .append("lateAfternoon", true)
+      )
       .append("helped", false)
       .append("status", "not_helped")
       .append("students", List.of(
@@ -244,6 +336,11 @@ class FamilyControllerSpec {
         .append("internalID", "ID-10002")
         .append("internalBarcode", "ITEM-10002")
         .append("externalBarcode", List.of("EXT-10002"))));
+
+    Document settings = new Document()
+      .append("availableSpots", 5);
+
+    settingsDocuments.insertOne(settings);
 
     familyController = new FamilyController(db);
   }
@@ -344,7 +441,7 @@ class FamilyControllerSpec {
     familyController.getFamilies(ctx);
 
     verify(ctx).json(familyArrayListCaptor.capture());
-    assertEquals(3, familyArrayListCaptor.getValue().size());
+    assertEquals(5, familyArrayListCaptor.getValue().size());
   }
 
   @Test
@@ -1110,7 +1207,7 @@ class FamilyControllerSpec {
     assertTrue(result.containsKey("totalFamilies"));
     assertTrue(result.containsKey("totalStudents"));
     assertEquals((int) db.getCollection("family").countDocuments(), result.get("totalFamilies"));
-    assertEquals(6, result.get("totalStudents"));
+    assertEquals(10, result.get("totalStudents"));
   }
 
   @SuppressWarnings("unchecked")
@@ -1915,5 +2012,102 @@ class FamilyControllerSpec {
       }
       throw exception;
     }
+  }
+
+  @Test
+  public void familySchedulingTest() {
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
+
+    familyController.scheduleFamilies(ctx);
+
+    verify(ctx).json(familyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    ArrayList<Family> families = familyArrayListCaptor.getValue();
+
+    assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
+
+    // families are now ordered by how many availabilities are true
+
+    assertEquals("John Christensen", families.get(0).guardianName);
+    assertEquals(currentSettings.lateMorning, families.get(0).timeSlot);
+
+    assertEquals("John Johnson", families.get(1).guardianName);
+    assertEquals(currentSettings.lateAfternoon, families.get(1).timeSlot);
+
+    assertEquals("Melina Brim", families.get(2).guardianName);
+    assertEquals(currentSettings.earlyAfternoon, families.get(2).timeSlot);
+
+    assertEquals("Bob Jones", families.get(3).guardianName);
+    assertEquals(currentSettings.lateMorning, families.get(3).timeSlot);
+
+    assertEquals("Bob Dylan", families.get(4).guardianName);
+    assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
+
+    assertEquals("Jane Doe", families.get(5).guardianName);
+    assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
+}
+
+  @Test
+  public void familySchedulingAtCapacity() {
+    // adding another family to the mix (too big for current capacity)
+    AvailabilityOptions availability = new AvailabilityOptions();
+    availability.earlyMorning = true;
+    availability.lateMorning = true;
+    availability.earlyAfternoon = true;
+    availability.lateAfternoon = true;
+
+    Family newFamily = new Family();
+    newFamily.guardianName = "Charlie Brown";
+    newFamily.email = "charlie@email.com";
+    newFamily.address = "789 Pine St";
+    newFamily.timeAvailability = availability;
+    newFamily.students = new ArrayList<>();
+
+    StudentInfo student1 = new StudentInfo();
+    student1.name = "Janie";
+    student1.grade = "4";
+    student1.school = "Morris Area Elementary School";
+    student1.schoolAbbreviation = "MAES";
+    student1.teacher = "N/A";
+    student1.backpack = true;
+    student1.headphones = true;
+
+    StudentInfo student2 = new StudentInfo();
+    student2.name = "Susie";
+    student2.grade = "4";
+    student2.school = "Morris Area Elementary School";
+    student2.schoolAbbreviation = "MAES";
+    student2.teacher = "N/A";
+    student2.backpack = true;
+    student2.headphones = true;
+
+    StudentInfo student3 = new StudentInfo();
+    student3.name = "Paul";
+    student3.grade = "2";
+    student3.school = "Morris Area Elementary School";
+    student3.schoolAbbreviation = "MAES";
+    student3.teacher = "N/A";
+    student3.backpack = true;
+    student3.headphones = true;
+
+    newFamily.students.add(student1);
+    newFamily.students.add(student2);
+    newFamily.students.add(student3);
+
+
+    String json = javalinJackson.toJsonString(newFamily, Family.class);
+
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+      .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
+
+    familyController.addNewFamily(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.CREATED);
+
+    assertThrows(NotFoundResponse.class,
+    () -> familyController.scheduleFamilies(ctx));
   }
 }

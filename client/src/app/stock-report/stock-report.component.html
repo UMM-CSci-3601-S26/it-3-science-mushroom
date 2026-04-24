@@ -11,7 +11,7 @@
           Welcome to the Stock Reports page! Here, you can view the current stock levels of all items in the inventory, as well as save and export reports.
         </p>
         <p class="page-description">
-          Below, you can choose to Generate or Generate & Download the current report by clicking the appropriate button in the "Generation Actions" section. Generating will create a PDF/CSV of the report and upload it to the server, while Generating & Downloading will create a PDF/CSV and save it to your computer.
+          Below, you can choose to Generate or Generate & Download the current report by clicking the appropriate button in the "Generation Actions" section. Generating will create a PDF/XLSX of the report and upload it to the server, while Generating & Downloading will create a PDF/XLSX and save it to your computer, and not the server.
         </p>
         <p class="page-description">
           Once you have generated a report, it will appear in the "Saved Reports" section, where you can then Save or Delete the report.
@@ -50,22 +50,22 @@
         }
       </div>
     } @else {
-      <p>No PDF reports are available. If you have generated any but they are not here, there may be issues with fetching the saved reports. Please try again later.</p>
+      <p>No PDF reports are available. Try generating one!</p>
     }
 
   <br>
 
-  <mat-card-subtitle>CSV Reports</mat-card-subtitle>
-    @if (csvReports() && csvReports().length > 0) {
-      <div class="reports-list" data-cy="csv-reports-list">
-        @for (report of csvReports(); track report._id) {
-          <div class="reports-container" data-cy="csv-report-item">
+  <mat-card-subtitle>XLSX Reports</mat-card-subtitle>
+    @if (xlsxReports() && xlsxReports().length > 0) {
+      <div class="reports-list" data-cy="xlsx-reports-list">
+        @for (report of xlsxReports(); track report._id) {
+          <div class="reports-container" data-cy="xlsx-report-item">
             <div style="display: flex; gap: 8px; flex-direction: row; align-items: center;">
               <span>{{ report.reportName }}</span>
-              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-csv-button">
+              <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-xlsx-button">
                 <mat-icon>download</mat-icon>
               </button>
-              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-csv-button">
+              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-xlsx-button">
                 <mat-icon>delete_forever</mat-icon>
               </button>
             </div>
@@ -73,7 +73,7 @@
         }
       </div>
     } @else {
-      <p>No CSV reports are available. If you have generated any but they are not here, there may be issues with fetching the saved reports. Please try again later.</p>
+      <p>No XLSX reports are available. Try generating one!</p>
     }
 
   <!--Actions-->

@@ -43,6 +43,7 @@ describe('FamilyCardComponent', () => {
       _id: 'chris_id',
       guardianName: 'Chris',
       address: '123 Street',
+      accommodations: 'None',
       email: 'chris@email.com',
       timeSlot: '9:00-10:00',
       timeAvailability: {

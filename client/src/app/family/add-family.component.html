@@ -8,12 +8,23 @@
         <mat-card-content>
           <div class="flex-col">
             <mat-form-field>
-              <mat-label>Guardian Name</mat-label>
-              <input matInput formControlName="guardianName"
+              <mat-label>Guardian First Name</mat-label>
+              <input matInput formControlName="guardianFirstName"
                 required>
-              @if (formControlHasError('guardianName')) {
-                <mat-error data-test="guardianNameError">
-                  {{getFamilyErrorMessage('guardianName')}}
+              @if (formControlHasError('guardianFirstName')) {
+                <mat-error data-test="guardianFirstNameError">
+                  {{getFamilyErrorMessage('guardianFirstName')}}
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Guardian Last Name</mat-label>
+              <input matInput formControlName="guardianLastName"
+                required>
+              @if (formControlHasError('guardianLastName')) {
+                <mat-error data-test="guardianLastNameError">
+                  {{getFamilyErrorMessage('guardianLastName')}}
                 </mat-error>
               }
             </mat-form-field>
@@ -41,15 +52,26 @@
             </mat-form-field>
 
             <mat-form-field>
-              <mat-label>Time Slot</mat-label>
-              <input matInput type="timeSlot"
-                formControlName="timeSlot" required>
-              @if (formControlHasError('timeSlot')) {
-                <mat-error data-test="timeSlotError">
-                  {{getFamilyErrorMessage('timeSlot')}}
-                </mat-error>
-              }
+              <mat-label>Any Accommodations Needed?</mat-label>
+              <input matInput type="text"
+                formControlName="accommodations">
             </mat-form-field>
+
+            <h3>Available Times</h3>
+            <div formGroupName="timeAvailability">
+              <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox">
+                {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)
+              </mat-checkbox><br>
+              <mat-checkbox formControlName="lateMorning" data-test="lateMorningCheckbox">
+                {{ timeAvailabilityLabels.lateMorning }} (Late Morning)
+              </mat-checkbox><br>
+              <mat-checkbox formControlName="earlyAfternoon" data-test="earlyAfternoonCheckbox">
+                {{ timeAvailabilityLabels.earlyAfternoon }} (Early Afternoon)
+              </mat-checkbox><br>
+              <mat-checkbox formControlName="lateAfternoon" data-test="lateAfternoonCheckbox">
+                {{ timeAvailabilityLabels.lateAfternoon }} (Late Afternoon)
+              </mat-checkbox>
+            </div>
 
             <h3>Students</h3>
 
@@ -70,7 +92,9 @@
 
                     <mat-form-field>
                       <mat-label>Grade</mat-label>
-                      <input matInput formControlName="grade" required>
+                      <mat-select formControlName="grade" required>
+                        <mat-option *ngFor="let g of grades" [value]="g">{{ g }}</mat-option>
+                      </mat-select>
                       @if (studentControlHasError(i, 'grade')) {
                         <mat-error data-test="gradeError">
                           {{getStudentErrorMessage(i, 'grade')}}
@@ -78,9 +102,13 @@
                       }
                     </mat-form-field>
 
-                    <mat-form-field>
+                    <mat-form-field class="student-school">
                       <mat-label>School</mat-label>
-                      <input matInput formControlName="school" required>
+                      <mat-select formControlName="school" required>
+                        <mat-option *ngFor="let s of schools" [value]="s.abbreviation">
+                          {{ s.name }} ({{ s.abbreviation }})
+                        </mat-option>
+                      </mat-select>
                       @if (studentControlHasError(i, 'school')) {
                         <mat-error data-test="schoolError">
                           {{getStudentErrorMessage(i, 'school')}}
@@ -106,6 +134,24 @@
                     (click)="removeStudent(i)">
                       Remove Student
                     </button>
+
+                    <div class="radio-group">
+                      <div class="radio-section">
+                        <h4 style="font-size: 15px;">Backpack Needed?</h4>
+                        <mat-radio-group formControlName="backpack">
+                          <mat-radio-button [value]="true">Yes</mat-radio-button>
+                          <mat-radio-button [value]="false">No</mat-radio-button>
+                        </mat-radio-group>
+                      </div>
+
+                      <div class="radio-section">
+                        <h4 style="font-size: 15px;">Headphones Needed?</h4>
+                        <mat-radio-group formControlName="headphones">
+                          <mat-radio-button [value]="true">Yes</mat-radio-button>
+                          <mat-radio-button [value]="false">No</mat-radio-button>
+                        </mat-radio-group>
+                      </div>
+                    </div>
                   </div>
                 </div>
               }
@@ -121,6 +167,15 @@
 
         </mat-card-content>
         <mat-card-actions align="end">
+          <button
+            mat-button
+            type="button"
+            color="primary"
+            data-test="BackFamilyButton"
+            routerLink="/family"
+            >
+            BACK
+          </button>
           <button
             mat-button
             type="button"

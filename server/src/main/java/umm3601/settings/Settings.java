@@ -16,7 +16,7 @@ import org.mongojack.Id;
  *
  * Only one document ever exists, identified by _id = "app-settings".
  */
-@SuppressWarnings({"VisibilityModifier"})
+@SuppressWarnings({"VisibilityModifier", "MagicNumber"})
 public class Settings {
 
   @Id
@@ -44,11 +44,17 @@ public class Settings {
    * Family documents store boolean flags against these same keys.
    */
   public static class TimeAvailabilityLabels {
-    public String earlyMorning;
-    public String lateMorning;
-    public String earlyAfternoon;
-    public String lateAfternoon;
+    public String earlyMorning = "early morning";
+    public String lateMorning = "late morning";
+    public String earlyAfternoon = "early afternoon";
+    public String lateAfternoon = "late afternoon";
   }
+
+    /**
+   * Spots available per time slot at the drive
+   * Used to schedule families between the different time slots based on their preferences
+   */
+  public int availableSpots = 5;
 
   /**
    * Records how a single supply list entry should be treated on drive day.

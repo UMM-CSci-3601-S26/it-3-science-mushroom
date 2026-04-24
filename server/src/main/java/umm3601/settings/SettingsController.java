@@ -34,6 +34,7 @@ import umm3601.Controller;
  *  - GET  /api/settings                     → returns the full settings document
  *  - PATCH /api/settings/schools            → replaces the schools list
  *  - PATCH /api/settings/timeAvailability   → replaces the time availability labels
+ *  - PATCH /api/settings/availableSpots     → replaces the availableSpots integer
  *
  * Patching by section prevents one tab from overwriting another's changes.
  * All patch operations use upsert so the document is created on first write.
@@ -47,6 +48,9 @@ public class SettingsController implements Controller {
   private static final String API_SETTINGS_SCHOOLS = "/api/settings/schools";
   private static final String API_SETTINGS_TIME = "/api/settings/timeAvailability";
   private static final String API_SETTINGS_SUPPLY_ORDER = "/api/settings/supplyOrder";
+  private static final String API_SETTINGS_AVAILABLE_SPOTS = "/api/settings/availableSpots";
+
+  private static final int DEFAULT_AVAILABLE_SPOTS = 5;
 
   private final JacksonMongoCollection<Settings> settingsCollection;
 
@@ -69,6 +73,7 @@ public class SettingsController implements Controller {
       settings._id = SETTINGS_ID;
       settings.schools = new ArrayList<>();
       settings.timeAvailability = new Settings.TimeAvailabilityLabels();
+      settings.availableSpots = DEFAULT_AVAILABLE_SPOTS;
       settings.supplyOrder = new ArrayList<>();
     } else if (settings.supplyOrder == null) {
       settings.supplyOrder = new ArrayList<>();
@@ -150,11 +155,23 @@ public class SettingsController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  public void updateSpotAvailability(Context ctx) {
+    Settings body = ctx.bodyAsClass(Settings.class);
+
+    settingsCollection.updateOne(
+        eq("_id", SETTINGS_ID),
+        new Document("$set", new Document("availableSpots", body.availableSpots)),
+        new UpdateOptions().upsert(true));
+
+    ctx.status(HttpStatus.OK);
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_SETTINGS, this::getSettings);
     server.patch(API_SETTINGS_SCHOOLS, this::updateSchools);
     server.patch(API_SETTINGS_TIME, this::updateTimeAvailability);
+    server.patch(API_SETTINGS_AVAILABLE_SPOTS, this::updateSpotAvailability);
     server.patch(API_SETTINGS_SUPPLY_ORDER, this::updateSupplyOrder);
   }
 }

@@ -3,6 +3,20 @@
   font-size: 16px;
 }
 
+.student-school{
+  width: 390px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 2rem;
+}
+
+.radio-section {
+  display: flex;
+  flex-direction: column;
+}
+
 .remove-button{
   margin-bottom: 1.25rem;
   margin-left: .75rem;

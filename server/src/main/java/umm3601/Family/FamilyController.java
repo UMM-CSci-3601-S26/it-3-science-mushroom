@@ -25,7 +25,10 @@ import org.mongojack.JacksonMongoCollection;
 
 // Com Imports
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
@@ -39,6 +42,7 @@ import io.javalin.http.HttpStatus;
 import umm3601.Controller;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
+import umm3601.settings.Settings;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -53,6 +57,7 @@ import umm3601.SupplyList.SupplyList;
 public class FamilyController implements Controller {
   // API Endpoints
   private static final String API_FAMILY = "/api/family";
+  private static final String API_SCHEDULE_FAMILIES = "/api/family/schedule";
   private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
   private static final String API_FAMILY_EXPORT = "/api/family/export";
@@ -93,6 +98,8 @@ public class FamilyController implements Controller {
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
+  private final JacksonMongoCollection<Settings> settingsCollection;
+
 
   // Database Constructor
   public FamilyController(MongoDatabase database) {
@@ -111,6 +118,11 @@ public class FamilyController implements Controller {
         "inventory",
         Inventory.class,
         UuidRepresentation.STANDARD);
+    settingsCollection = JacksonMongoCollection.builder().build(
+      database,
+      "settings",
+      Settings.class,
+      UuidRepresentation.STANDARD);
   }
 
   // GET all families
@@ -150,6 +162,102 @@ public class FamilyController implements Controller {
     }
 
     ctx.json(family.checklist);
+  // takes the list of families and goes through them one by one sorting them into the first available time slot
+  public ArrayList<Family> schedulingAlgorithm(ArrayList<Family> families, int capacity) {
+    int earlyMorningCapacity = 0; // current number of people in a timeslot
+    int lateMorningCapacity = 0;
+    int earlyAfternoonCapacity = 0;
+    int lateAfternoonCapacity = 0;
+
+    families.sort(Comparator.comparingInt(f -> f.timeAvailability.countTrue()));
+
+    Settings.TimeAvailabilityLabels currentSettings = new Settings.TimeAvailabilityLabels();
+
+    for (int j = 0; j < families.size(); j++) {
+      int famSize = families.get(j).students.size() + 1;
+
+      // goes through for each item in the array
+      if (families.get(j).timeAvailability.earlyMorning) {
+        // checks if earlyMorning availability is marked true
+        if (earlyMorningCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.earlyMorning;
+          // should correspond with set timeslot in settings
+          earlyMorningCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      if (families.get(j).timeAvailability.lateMorning) {
+        // checks if lateMorning availability is marked true
+        if (lateMorningCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.lateMorning;
+          //should correspond with set timeslot in settings
+          lateMorningCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      if (families.get(j).timeAvailability.earlyAfternoon) {
+        // checks if earlyAfternoon availability is marked true
+        if (earlyAfternoonCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.earlyAfternoon;
+          //should correspond with set timeslot in settings
+          earlyAfternoonCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      if (families.get(j).timeAvailability.lateAfternoon) {
+        // checks if lateAfternoon availability is marked true
+        if (lateAfternoonCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints
+          families.get(j).timeSlot = currentSettings.lateAfternoon;
+          //should correspond with set timeslot in settings
+          lateAfternoonCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      throw new NotFoundResponse("Not all families were able to be sorted, your event capacity may be too low");
+
+    }
+    return families;
+  }
+
+  public void scheduleFamilies(Context ctx) {
+    Bson filter = constructDatabaseFilter(ctx);
+
+    Settings settings = settingsCollection.find().first();
+
+    ArrayList<Family> families = familyCollection
+        .find(filter)
+        .into(new ArrayList<>()); //loading families
+
+    int capacity = settings.availableSpots;
+
+    schedulingAlgorithm(families, capacity); // scheduling families
+
+    List<WriteModel<Family>> updates = new ArrayList<>();
+
+    for (Family fam : families) {
+        updates.add(
+            new UpdateOneModel<>(
+                Filters.eq("_id", fam._id),
+                Updates.set("timeSlot", fam.timeSlot)
+            )
+        );
+    }
+
+    familyCollection.bulkWrite(updates);
+
+    ctx.json(families);
     ctx.status(HttpStatus.OK);
   }
 
@@ -248,6 +356,7 @@ public class FamilyController implements Controller {
       .append("guardianName", updatedFamily.guardianName)
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
+      .append("accommodations", updatedFamily.accommodations)
       .append("timeSlot", updatedFamily.timeSlot)
       .append("timeAvailability", new Document()
         .append("earlyMorning", updatedFamily.timeAvailability.earlyMorning)
@@ -534,10 +643,10 @@ public class FamilyController implements Controller {
       int studentCount = family.students != null ? family.students.size() : 0;
 
       csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",%d\n",
-        cleanUpCSV(family.guardianName),
-        cleanUpCSV(family.email),
-        cleanUpCSV(family.address),
-        cleanUpCSV(family.timeSlot),
+        cleanUpCSV(family.guardianName).replace("\"", "\"\""),
+        cleanUpCSV(family.email).replace("\"", "\"\""),
+        cleanUpCSV(family.address).replace("\"", "\"\""),
+        cleanUpCSV(family.timeSlot).replace("\"", "\"\""),
         studentCount
       ));
     }
@@ -549,15 +658,19 @@ public class FamilyController implements Controller {
     ctx.result(csv.toString());
   }
 
-  // This method cleans up the CSV to ensure the generated CSV is formatted properly
-  // and won't have issues with any spreadsheet software
+  /**
+   * Cleans up CSV values by handling nulls, flattening line breaks,
+   * preventing formula injection, trimming whitespace, and removing outside quotes from values.
+   * @param value CSV value to clean up
+   * @return Cleaned up CSV value
+   */
   public static String cleanUpCSV(String value) {
     // Handle null values
     if (value == null) {
       return "";
     }
 
-    // Clean up line breaks (flatten them). Ensures each family always occupies a single CSV row
+    // Clean up line breaks (flatten them). Ensures each value always occupies a single CSV row
     String cleaned = value
       .replace("\r\n", " ")
       .replace("\n", " ")
@@ -569,8 +682,15 @@ public class FamilyController implements Controller {
       cleaned = "'" + cleaned;
     }
 
-    // Replace " with "" to escape CSV quotes
-    return cleaned.replace("\"", "\"\"");
+    // Trim whitespace from beginning and end of value
+    cleaned = cleaned.trim();
+
+    // Remove outside quotes if they exist (but keep internal quotes, which should be escaped by doubling them)
+    if (cleaned.startsWith("\"") && cleaned.endsWith("\"")) {
+      cleaned = cleaned.substring(1, cleaned.length() - 1);
+    }
+
+    return cleaned;
   }
 
   private Family requireFamily(String id) {
@@ -1346,6 +1466,7 @@ public class FamilyController implements Controller {
     server.patch(API_FAMILY_CHECKLIST, this::updateFamilyChecklist);
 
     server.post(API_FAMILY, this::addNewFamily);
+    server.post(API_SCHEDULE_FAMILIES, this::scheduleFamilies);
     server.post(API_FAMILY_HELP_SESSION_START, this::startFamilyHelpSession);
     server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
     server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);

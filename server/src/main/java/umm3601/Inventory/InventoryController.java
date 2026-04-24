@@ -415,9 +415,9 @@ public class InventoryController implements Controller {
       if (inv.quantity == 0) {
         inv.stockState = "Out of Stock";
       } else if (inv.quantity < inv.minQuantity) {
-        inv.stockState = "Under-Stocked";
+        inv.stockState = "Understocked";
       } else if (inv.quantity > inv.maxQuantity) {
-        inv.stockState = "Over-Stocked";
+        inv.stockState = "Overstocked";
       } else {
         inv.stockState = "Stocked";
       }

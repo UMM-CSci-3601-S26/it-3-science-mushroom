@@ -403,4 +403,18 @@ class SettingsControllerSpec {
     assertNotNull(settingsCaptor.getValue().supplyOrder);
     assertEquals(0, settingsCaptor.getValue().supplyOrder.size());
   }
+
+  @Test
+  void updateSpotAvailabilityTest() {
+    Settings body = new Settings();
+    // body.availableSpots = 5;
+
+    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
+
+    settingsController.updateSpotAvailability(ctx);
+
+    assertEquals(body.availableSpots, 5);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
 }
