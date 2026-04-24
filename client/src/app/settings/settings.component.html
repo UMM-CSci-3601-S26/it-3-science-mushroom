@@ -120,12 +120,16 @@
                     <mat-error *ngIf="availableSpotsForm.get('availableSpots')?.hasError('required')">Required</mat-error>
                   </mat-form-field>
 
-                  <div class="save-button">
+                  <div class="save-button" style="margin-bottom: 16px">
                     <button mat-raised-button color="primary" type="submit" [disabled]="!availableSpotsForm.valid" data-test="saveButton">
                       Save Available Spots
                     </button>
+                    <!-- (click)="scheduleFamilies()" -->
+                    <button mat-raised-button color="accent">
+                      <mat-icon>playlist_add_check</mat-icon>
+                        Schedule Families
+                    </button>
                   </div>
-
                 </form>
               </div>
           </div>
