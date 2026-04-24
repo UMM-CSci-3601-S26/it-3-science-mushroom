@@ -148,6 +148,7 @@ describe('Add family page', () => {
         _id: null,
         guardianName: 'Test Family',
         address: '123 Street',
+        accommodations: 'None',
         timeSlot: 'TBD',
         timeAvailability: {
           earlyMorning: false,
