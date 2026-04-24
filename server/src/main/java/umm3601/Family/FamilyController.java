@@ -25,7 +25,10 @@ import org.mongojack.JacksonMongoCollection;
 
 // Com Imports
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
@@ -39,6 +42,7 @@ import io.javalin.http.HttpStatus;
 import umm3601.Controller;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
+import umm3601.settings.Settings;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -53,6 +57,7 @@ import umm3601.SupplyList.SupplyList;
 public class FamilyController implements Controller {
   // API Endpoints
   private static final String API_FAMILY = "/api/family";
+  private static final String API_SCHEDULE_FAMILIES = "/api/family/schedule";
   private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
   private static final String API_FAMILY_EXPORT = "/api/family/export";
@@ -85,6 +90,8 @@ public class FamilyController implements Controller {
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
+  private final JacksonMongoCollection<Settings> settingsCollection;
+
 
   // Database Constructor
   public FamilyController(MongoDatabase database) {
@@ -103,6 +110,11 @@ public class FamilyController implements Controller {
         "inventory",
         Inventory.class,
         UuidRepresentation.STANDARD);
+    settingsCollection = JacksonMongoCollection.builder().build(
+      database,
+      "settings",
+      Settings.class,
+      UuidRepresentation.STANDARD);
   }
 
   // GET all families
@@ -132,6 +144,105 @@ public class FamilyController implements Controller {
       ctx.json(family);
       ctx.status(HttpStatus.OK);
     }
+  }
+
+  // takes the list of families and goes through them one by one sorting them into the first available time slot
+  public ArrayList<Family> schedulingAlgorithm(ArrayList<Family> families, int capacity) {
+    int earlyMorningCapacity = 0; // current number of people in a timeslot
+    int lateMorningCapacity = 0;
+    int earlyAfternoonCapacity = 0;
+    int lateAfternoonCapacity = 0;
+
+    families.sort(Comparator.comparingInt(f -> f.timeAvailability.countTrue()));
+
+    Settings.TimeAvailabilityLabels currentSettings = new Settings.TimeAvailabilityLabels();
+
+    for (int j = 0; j < families.size(); j++) {
+      int famSize = families.get(j).students.size() + 1;
+
+      // goes through for each item in the array
+      if (families.get(j).timeAvailability.earlyMorning) {
+        // checks if earlyMorning availability is marked true
+        if (earlyMorningCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.earlyMorning;
+          // should correspond with set timeslot in settings
+          earlyMorningCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      if (families.get(j).timeAvailability.lateMorning) {
+        // checks if lateMorning availability is marked true
+        if (lateMorningCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.lateMorning;
+          //should correspond with set timeslot in settings
+          lateMorningCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      if (families.get(j).timeAvailability.earlyAfternoon) {
+        // checks if earlyAfternoon availability is marked true
+        if (earlyAfternoonCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints of the bin
+          families.get(j).timeSlot = currentSettings.earlyAfternoon;
+          //should correspond with set timeslot in settings
+          earlyAfternoonCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      if (families.get(j).timeAvailability.lateAfternoon) {
+        // checks if lateAfternoon availability is marked true
+        if (lateAfternoonCapacity + famSize <= capacity) {
+          // checks if the family fits within the capacity restraints
+          families.get(j).timeSlot = currentSettings.lateAfternoon;
+          //should correspond with set timeslot in settings
+          lateAfternoonCapacity += famSize;
+          // adds the number of people in the family to the capacity
+          continue;
+        }
+      }
+
+      throw new NotFoundResponse("Not all families were able to be sorted, your event capacity may be too low");
+
+    }
+    return families;
+  }
+
+  public void scheduleFamilies(Context ctx) {
+    Bson filter = constructDatabaseFilter(ctx);
+
+    Settings settings = settingsCollection.find().first();
+
+    ArrayList<Family> families = familyCollection
+        .find(filter)
+        .into(new ArrayList<>()); //loading families
+
+    int capacity = settings.availableSpots;
+
+    schedulingAlgorithm(families, capacity); // scheduling families
+
+    List<WriteModel<Family>> updates = new ArrayList<>();
+
+    for (Family fam : families) {
+        updates.add(
+            new UpdateOneModel<>(
+                Filters.eq("_id", fam._id),
+                Updates.set("timeSlot", fam.timeSlot)
+            )
+        );
+    }
+
+    familyCollection.bulkWrite(updates);
+
+    ctx.json(families);
+    ctx.status(HttpStatus.OK);
   }
 
   // Filter for families
@@ -1163,6 +1274,7 @@ public class FamilyController implements Controller {
     server.patch(API_FAMILY_CHECKLIST, this::updateFamilyChecklist);
 
     server.post(API_FAMILY, this::addNewFamily);
+    server.post(API_SCHEDULE_FAMILIES, this::scheduleFamilies);
     server.post(API_FAMILY_HELP_SESSION_START, this::startFamilyHelpSession);
     server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
     server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);

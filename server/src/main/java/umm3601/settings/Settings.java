@@ -44,10 +44,10 @@ public class Settings {
    * Family documents store boolean flags against these same keys.
    */
   public static class TimeAvailabilityLabels {
-    public String earlyMorning;
-    public String lateMorning;
-    public String earlyAfternoon;
-    public String lateAfternoon;
+    public String earlyMorning = "early morning";
+    public String lateMorning = "late morning";
+    public String earlyAfternoon = "early afternoon";
+    public String lateAfternoon = "late afternoon";
   }
 
     /**
