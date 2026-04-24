@@ -36,7 +36,7 @@
     "guardianName": "John Doe",
     "email": "john@email.com",
     "address": "1232 Street",
-    "accommodations": "None",
+    "accommodations": "",
     "timeSlot": "TBD",
     "timeAvailability": {
       "earlyMorning": false,
@@ -111,7 +111,7 @@
     "guardianName": "Michael Carter",
     "email": "michael.carter@email.com",
     "address": "45 Oak Lane",
-    "accommodations": "None",
+    "accommodations": "My child is hard of hearing",
     "timeSlot": "TBD",
     "timeAvailability": {
       "earlyMorning": true,
@@ -135,7 +135,7 @@
     "guardianName": "Laura Nelson",
     "email": "laura.nelson@email.com",
     "address": "78 Pine Street",
-    "accommodations": "None",
+    "accommodations": "",
     "timeSlot": "TBD",
     "timeAvailability": {
       "earlyMorning": false,
@@ -168,7 +168,7 @@
     "guardianName": "Robert Fields",
     "email": "rfields@email.com",
     "address": "902 Maple Ave",
-    "accommodations": "None",
+    "accommodations": "My child is red-green color blind",
     "timeSlot": "TBD",
     "timeAvailability": {
       "earlyMorning": true,
@@ -225,7 +225,7 @@
     "guardianName": "Samuel Ortiz",
     "email": "samuel.ortiz@email.com",
     "address": "129 Birch Road",
-    "accommodations": "None",
+    "accommodations": "My children have allergies",
     "timeSlot": "TBD",
     "timeAvailability": {
       "earlyMorning": true,
@@ -258,7 +258,7 @@
     "guardianName": "Danielle Kim",
     "email": "danielle.kim@email.com",
     "address": "555 Walnut St",
-    "accommodations": "None",
+    "accommodations": "",
     "timeSlot": "TBD",
     "timeAvailability": {
       "earlyMorning": true,
