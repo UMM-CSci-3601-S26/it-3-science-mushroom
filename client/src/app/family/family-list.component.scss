@@ -73,6 +73,12 @@
   font-style: italic;
 }
 
+.page-description,
+.filters-description {
+  color: var(--inventory-muted-text);
+  line-height: 1.5;
+}
+
 .filter-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

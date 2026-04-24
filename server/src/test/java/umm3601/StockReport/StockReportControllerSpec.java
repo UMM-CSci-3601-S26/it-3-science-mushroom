@@ -4,6 +4,7 @@ package umm3601.StockReport;
 // Static Imports
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -100,29 +101,72 @@ public class StockReportControllerSpec {
     List<Document> testStockReport = new ArrayList<>();
     testStockReport.add(
         new Document()
-            .append("stockReportPDF",  new byte[]{0x25, 0x50, 0x44, 0x46})
+            .append("stockReportData",  new byte[]{0x25, 0x50, 0x44, 0x46})
             .append("reportName",  "Report 1"));
     testStockReport.add(
         new Document()
-            .append("stockReportPDF",  new byte[]{0x25, 0x50, 0x44, 0x46})
+            .append("stockReportData",  new byte[]{0x25, 0x50, 0x44, 0x46})
             .append("reportName",  "Report 2"));
     testStockReport.add(
         new Document()
-            .append("stockReportPDF",  new byte[]{0x25, 0x50, 0x44, 0x46})
+            .append("stockReportData",  new byte[]{0x25, 0x50, 0x44, 0x46})
             .append("reportName",  "Report 3"));
     testStockReport.add(
         new Document()
-            .append("stockReportPDF",  new byte[]{0x25, 0x50, 0x44, 0x46})
+            .append("stockReportData",  new byte[]{0x25, 0x50, 0x44, 0x46})
             .append("reportName",  "Report 4"));
 
     testReportId = new ObjectId();
     Document testReport = new Document()
         .append("_id", testReportId)
-        .append("stockReportPDF",  new byte[]{0x25, 0x50, 0x44, 0x46})
+        .append("stockReportData",  new byte[]{0x25, 0x50, 0x44, 0x46})
         .append("reportName",  "Test Report");
 
     stockReportDocuments.insertMany(testStockReport);
     stockReportDocuments.insertOne(testReport);
+
+    // Setup inventory for XLSX generation tests
+    MongoCollection<Document> inventoryDocuments = db.getCollection("inventory");
+    inventoryDocuments.drop();
+
+    List<Document> testInventory = new ArrayList<>();
+    testInventory.add(new Document()
+      .append("description", "Stocked Item 1")
+      .append("quantity", 10)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 5)
+      .append("stockState", "Stocked")
+      .append("notes", ""));
+    testInventory.add(new Document()
+      .append("description", "Stocked Item 2")
+      .append("quantity", 8)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 5)
+      .append("stockState", "Stocked")
+      .append("notes", ""));
+    testInventory.add(new Document()
+      .append("description", "Out of Stock Item")
+      .append("quantity", 0)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 5)
+      .append("stockState", "Out of Stock")
+      .append("notes", "Needs reorder"));
+    testInventory.add(new Document()
+      .append("description", "Understocked Item")
+      .append("quantity", 3)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 5)
+      .append("stockState", "Understocked")
+      .append("notes", ""));
+    testInventory.add(new Document()
+      .append("description", "Overstocked Item")
+      .append("quantity", 15)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 5)
+      .append("stockState", "Overstocked")
+      .append("notes", ""));
+
+    inventoryDocuments.insertMany(testInventory);
 
     stockReportController = new StockReportController(db);
   }
@@ -149,9 +193,9 @@ public class StockReportControllerSpec {
         db.getCollection("stockReport").countDocuments(),
         stockReportArrayListCaptor.getValue().size());
 
-    // Make sure PDF bytes aren't in the response
+    // Make sure report data bytes aren't in the response
     for (StockReport report : stockReportArrayListCaptor.getValue()) {
-      assertEquals(null, report.stockReportPDF, "PDF bytes should not be included in list response");
+      assertEquals(null, report.stockReportData, "Report data bytes should not be included in list response");
     }
   }
 
@@ -193,7 +237,7 @@ public class StockReportControllerSpec {
 
     stockReportController.getReportBytesById(ctx);
 
-    verify(ctx).contentType("application/pdf");
+    verify(ctx).contentType("application/octet-stream");
     verify(ctx).result(new byte[]{0x25, 0x50, 0x44, 0x46});
     verify(ctx).status(HttpStatus.OK);
   }
@@ -224,12 +268,13 @@ public class StockReportControllerSpec {
   void addNewReport() throws IOException {
     byte[] pdfBytes = new byte[] {0x25, 0x50, 0x44, 0x46}; // PDF file header bytes
     String reportName = "Charlie Brown's Report";
+    String reportType = "PDF";
 
     UploadedFile mockFile = mock(UploadedFile.class);
     when(mockFile.content()).thenReturn(new java.io.ByteArrayInputStream(pdfBytes));
-    when(ctx.uploadedFile("uploadedPDF")).thenReturn(mockFile);
-
+    when(ctx.uploadedFile("uploadedReport")).thenReturn(mockFile);
     when(ctx.formParam("reportName")).thenReturn(reportName);
+    when(ctx.formParam("reportType")).thenReturn(reportType);
 
     stockReportController.addNewReport(ctx);
 
@@ -241,9 +286,10 @@ public class StockReportControllerSpec {
       .first();
 
     // MongoDB stores byte arrays as Binary objects, so we need to extract the data
-    org.bson.types.Binary binary = (org.bson.types.Binary) added.get("stockReportPDF");
+    org.bson.types.Binary binary = (org.bson.types.Binary) added.get("stockReportData");
     assertArrayEquals(pdfBytes, binary.getData());
     assertEquals(reportName, added.get("reportName"));
+    assertEquals(reportType, added.get("reportType"));
   }
 
   @Test
@@ -252,7 +298,7 @@ public class StockReportControllerSpec {
     java.io.InputStream mockStream = mock(java.io.InputStream.class);
     when(mockStream.readAllBytes()).thenThrow(new IOException("File read error"));
     when(mockFile.content()).thenReturn(mockStream);
-    when(ctx.uploadedFile("uploadedPDF")).thenReturn(mockFile);
+    when(ctx.uploadedFile("uploadedReport")).thenReturn(mockFile);
     when(ctx.formParam("reportName")).thenReturn("Invalid Report");
 
     BadRequestResponse exception =
@@ -265,7 +311,7 @@ public class StockReportControllerSpec {
 
   @Test
   void addNullReportData() {
-    when(ctx.uploadedFile("uploadedPDF")).thenReturn(null);
+    when(ctx.uploadedFile("uploadedReport")).thenReturn(null);
     when(ctx.formParam("reportName")).thenReturn("Invalid Report");
 
     BadRequestResponse exception =
@@ -273,7 +319,7 @@ public class StockReportControllerSpec {
         stockReportController.addNewReport(ctx);
       });
 
-    assertTrue(exception.getMessage().contains("No file uploaded with key 'uploadedPDF'"));
+    assertTrue(exception.getMessage().contains("No file uploaded with key 'uploadedReport'"));
   }
 
   @Test
@@ -282,7 +328,7 @@ public class StockReportControllerSpec {
 
     UploadedFile mockFile = mock(UploadedFile.class);
     when(mockFile.content()).thenReturn(new java.io.ByteArrayInputStream(pdfBytes));
-    when(ctx.uploadedFile("uploadedPDF")).thenReturn(mockFile);
+    when(ctx.uploadedFile("uploadedReport")).thenReturn(mockFile);
 
     when(ctx.formParam("reportName")).thenReturn(null);
 
@@ -292,6 +338,25 @@ public class StockReportControllerSpec {
       });
 
     assertTrue(exception.getMessage().contains("Report name is required"));
+  }
+
+  @Test
+  void addReportMissingType() throws IOException {
+    byte[] pdfBytes = new byte[] {0x25, 0x50, 0x44, 0x46};
+
+    UploadedFile mockFile = mock(UploadedFile.class);
+    when(mockFile.content()).thenReturn(new java.io.ByteArrayInputStream(pdfBytes));
+    when(ctx.uploadedFile("uploadedReport")).thenReturn(mockFile);
+
+    when(ctx.formParam("reportName")).thenReturn("Test Report");
+    when(ctx.formParam("reportType")).thenReturn(null);
+
+    BadRequestResponse exception =
+      assertThrows(BadRequestResponse.class, () -> {
+        stockReportController.addNewReport(ctx);
+      });
+
+    assertTrue(exception.getMessage().contains("Report type is required"));
   }
 
   // -- Stock Report DELETE Tests -- \\
@@ -339,5 +404,102 @@ public class StockReportControllerSpec {
       "The requested report id wasn't a legal Mongo Object ID.",
       exception.getMessage());
   }
+
+  // -- XLSX Generation Tests -- \\
+
+  @Test
+  void generateStockReportCreatesValidXLSXFile() throws IOException {
+    ArgumentCaptor<byte[]> resultCaptor = ArgumentCaptor.forClass(byte[].class);
+
+    stockReportController.generateStockReport(ctx, false);
+
+    verify(ctx).contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    verify(ctx).result(resultCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    byte[] xlsxBytes = resultCaptor.getValue();
+    assertTrue(xlsxBytes.length > 0, "XLSX file should not be empty");
+  }
+
+  @Test
+  void generateStockReportDatabaseCreatesValidFile() throws IOException {
+    stockReportController.generateStockReport(ctx, true);
+
+    verify(ctx).status(HttpStatus.CREATED);
+
+    // Check that report was saved to database
+    MongoCollection<Document> stockReportDocuments = db.getCollection("stockReport");
+    long reportCount = stockReportDocuments.countDocuments();
+
+    assertTrue(reportCount > 0, "Report should be saved to database");
+
+    // Get the saved report and verify it has valid XLSX data
+    Document savedReport = stockReportDocuments.find().sort(new Document("_id", -1)).first();
+    assertNotNull(savedReport, "Saved report should exist");
+
+    org.bson.types.Binary binData = (org.bson.types.Binary) savedReport.get("stockReportData");
+    assertNotNull(binData, "Report data should not be null");
+
+    byte[] xlsxBytes = binData.getData();
+    assertTrue(xlsxBytes.length > 0, "XLSX data should not be empty");
+  }
+
+  @Test
+  void generateStockReportWithEmptyInventory() throws IOException {
+    // Ensure inventory is empty
+    MongoCollection<Document> inventoryDocuments = db.getCollection("inventory");
+    inventoryDocuments.drop();
+
+    ArgumentCaptor<byte[]> resultCaptor = ArgumentCaptor.forClass(byte[].class);
+
+    stockReportController.generateStockReport(ctx, false);
+
+    verify(ctx).contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    verify(ctx).result(resultCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    byte[] xlsxBytes = resultCaptor.getValue();
+    assertTrue(xlsxBytes.length > 0, "XLSX file should still be created even with empty inventory");
+  }
+
+  @Test
+  void generateStockReportWithMockInventory() throws IOException {
+    ArgumentCaptor<byte[]> resultCaptor = ArgumentCaptor.forClass(byte[].class);
+
+    stockReportController.generateStockReport(ctx, false);
+    verify(ctx).result(resultCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    byte[] xlsxBytes = resultCaptor.getValue();
+    assertTrue(xlsxBytes.length > 0, "XLSX file should contain multiple items");
+  }
+
+  @Test
+  void generateStockReportHasAllStockStates() throws IOException {
+    ArgumentCaptor<byte[]> resultCaptor = ArgumentCaptor.forClass(byte[].class);
+
+    stockReportController.generateStockReport(ctx, false);
+
+    verify(ctx).result(resultCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    byte[] xlsxBytes = resultCaptor.getValue();
+    assertTrue(xlsxBytes.length > 0, "XLSX file should contain all stock states");
+  }
+
+  @Test
+  void generateStockReportHandlesIOException() throws IOException {
+    StockReportController spyController = Mockito.spy(stockReportController);
+    Mockito.doThrow(new IOException("Test IO Exception")).when(spyController).createXLSXFile();
+
+    BadRequestResponse exception =
+      assertThrows(BadRequestResponse.class, () -> {
+        spyController.generateStockReport(ctx, false);
+      });
+
+    assertTrue(exception.getMessage().contains("Failed to generate stock report:"));
+  }
+
+
 }
 

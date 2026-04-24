@@ -18,6 +18,7 @@ describe('FamilyService', () => {
       guardianName: 'John Johnson',
       email: 'jjohnson@email.com',
       address: '713 Broadway',
+      accommodations: 'None',
       timeSlot: '8:00-9:00',
       timeAvailability: {
         earlyMorning: false,
@@ -43,6 +44,7 @@ describe('FamilyService', () => {
       guardianName: 'Jane Doe',
       email: 'janedoe@email.com',
       address: '123 Street',
+      accommodations: 'None',
       timeSlot: '10:00-11:00',
       timeAvailability: {
         earlyMorning: false,
@@ -77,6 +79,7 @@ describe('FamilyService', () => {
       guardianName: 'George Peterson',
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
+      accommodations: 'None',
       timeSlot: '1:00-2:00',
       timeAvailability: {
         earlyMorning: false,
@@ -428,6 +431,7 @@ describe('FamilyService', () => {
           guardianName: 'Jack Jack',
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -440,6 +444,7 @@ describe('FamilyService', () => {
           guardianName: 'Jane Dawn',
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 12:00',
           timeAvailability: {
             earlyMorning: false,
@@ -452,6 +457,7 @@ describe('FamilyService', () => {
           guardianName: 'Jack Jack',
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -476,6 +482,7 @@ describe('FamilyService', () => {
           guardianName: '',
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -488,6 +495,7 @@ describe('FamilyService', () => {
           guardianName: 'Jane Dawn',
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
+          accommodations: 'None',
           timeAvailability: {
             earlyMorning: false,
             lateMorning: true,
@@ -500,6 +508,7 @@ describe('FamilyService', () => {
           guardianName: 'Connor Night',
           email: 'night@gmail.com',
           address: '789 anywhere St.',
+          accommodations: 'None',
           timeAvailability: {
             earlyMorning: false,
             lateMorning: true,
@@ -529,6 +538,7 @@ describe('FamilyService', () => {
           guardianName: 'Jack Jack',
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -541,6 +551,7 @@ describe('FamilyService', () => {
           guardianName: '            ',
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 12:00',
           timeAvailability: {
             earlyMorning: false,
@@ -553,6 +564,7 @@ describe('FamilyService', () => {
           guardianName: 'Connor Night',
           email: 'night@gmail.com',
           address: '789 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 11:00',
           timeAvailability: {
             earlyMorning: false,
@@ -577,6 +589,7 @@ describe('FamilyService', () => {
           guardianName: 'Jack Jack',
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -589,6 +602,7 @@ describe('FamilyService', () => {
           guardianName: 'Jack Jack',
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 12:00',
           timeAvailability: {
             earlyMorning: false,
@@ -601,6 +615,7 @@ describe('FamilyService', () => {
           guardianName: 'Jack Jack',
           email: 'night@gmail.com',
           address: '789 anywhere St.',
+          accommodations: 'None',
           timeSlot: '9:00 - 11:00',
           timeAvailability: {
             earlyMorning: false,

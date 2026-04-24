@@ -15,13 +15,15 @@ describe('StockReportService', () => {
   const testReports: StockReport[] = [
     {
       _id: 'john_id',
-      stockReportPDF: 'SGVsbG8h', // Base64 for "Hello!"
-      reportName: "John's Report"
+      reportData: 'SGVsbG8h', // Base64 for "Hello!"
+      reportName: "John's Report",
+      reportType: 'PDF'
     },
     {
       _id: 'jane_id',
-      stockReportPDF: 'V29ybGQh', // Base64 for "World!"
-      reportName: "Jane's Report"
+      reportData: 'V29ybGQh', // Base64 for "World!"
+      reportName: "Jane's Report",
+      reportType: 'PDF'
     },
   ];
 
@@ -121,7 +123,7 @@ describe('StockReportService', () => {
     }));
   });
 
-  describe('Adding a stockReport using `addNewReport()`', () => {
+  describe('Adding a stockReport using `addNewPdfReport()`', () => {
     it('talks to the right endpoint and is called once', waitForAsync(() => {
       const stockReport_id = 'john_id';
       const expected_http_response = { id: stockReport_id } ;
@@ -131,7 +133,7 @@ describe('StockReportService', () => {
         .returnValue(of(expected_http_response));
 
       const formData = new FormData();
-      stockReportService.addNewReport(formData).subscribe((new_stockReport_id) => {
+      stockReportService.addNewPdfReport(formData).subscribe((new_stockReport_id) => {
         expect(new_stockReport_id).toBe(stockReport_id);
         expect(mockedMethod)
           .withContext('one call')
@@ -160,7 +162,7 @@ describe('StockReportService', () => {
     }));
 
     it('returns void and completes successfully', waitForAsync(() => {
-      const mockReport: StockReport = { _id: 'report_id', reportName: 'Report' };
+      const mockReport: StockReport = { _id: 'report_id', reportName: 'Report', reportType: 'PDF', reportData: 'SGVsbG8h' };
       spyOn(stockReportService, 'deleteReport').and.returnValue(of(void 0));
       spyOn(stockReportService, 'refreshReports').and.returnValue(of([]));
 
@@ -171,17 +173,18 @@ describe('StockReportService', () => {
   });
 
   describe('Deleting multiple stockReports using `deleteAllReports()`', () => {
-    it('returns void immediately when given an empty array', waitForAsync(() => {
-      stockReportService.deleteAllReports([]).subscribe((res) => {
+    it('returns void immediately when no reports match the format', waitForAsync(() => {
+      spyOn(httpClient, 'get').and.returnValue(of([]));
+      stockReportService.deleteAllReports('PDF').subscribe((res) => {
         expect(res).toBeUndefined();
       });
     }));
 
-    it('deletes all reports and refreshes the list', waitForAsync(() => {
+    it('deletes all reports of the specified format and refreshes the list', waitForAsync(() => {
       const mockedDelete = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
-      const mockedGet = spyOn(httpClient, 'get').and.returnValue(of([]));
+      const mockedGet = spyOn(httpClient, 'get').and.returnValue(of(testReports));
 
-      stockReportService.deleteAllReports(testReports).subscribe((res) => {
+      stockReportService.deleteAllReports('All').subscribe((res) => {
         expect(res).toBeUndefined();
 
         // Should call delete for each report
@@ -195,10 +198,10 @@ describe('StockReportService', () => {
           .withContext('deletes second report')
           .toHaveBeenCalledWith(`${stockReportService.stockReportUrl}/jane_id`);
 
-        // Should call get to refresh reports
+        // Should call get to fetch and refresh reports
         expect(mockedGet)
-          .withContext('refreshes reports list')
-          .toHaveBeenCalledWith(stockReportService.stockReportUrl, { params: new HttpParams() });
+          .withContext('fetches reports for filtering')
+          .toHaveBeenCalled();
       });
     }));
   });
@@ -242,7 +245,7 @@ describe('StockReportService', () => {
         spyOn(httpClient, 'get').and.returnValue(of(mockBlob));
 
         // Call the method and confirm it returns the expected blob
-        stockReportService.downloadSingleReportBlob({ _id: '1', reportName: 'Test Report' }).subscribe((blob) => {
+        stockReportService.downloadSingleReportBlob({ _id: '1', reportName: 'Test Report', reportType: 'PDF', reportData: 'SGVsbG8h' }).subscribe((blob) => {
           expect(blob).toEqual(mockBlob);
         });
       });
@@ -255,7 +258,7 @@ describe('StockReportService', () => {
         spyOn(httpClient, 'get').and.returnValue(of(testReports));
 
         // Mock the convertBase64ToBlob method to return our mockBlob when called
-        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+        stockReportService.downloadAllReportsAsZip('All').subscribe((blob) => {
           expect(blob)
             .withContext('returns a Blob')
             .toBeInstanceOf(Blob);
@@ -268,7 +271,7 @@ describe('StockReportService', () => {
       it('should return an empty Blob when no reports are available', waitForAsync(() => {
         spyOn(httpClient, 'get').and.returnValue(of([]));
 
-        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+        stockReportService.downloadAllReportsAsZip('All').subscribe((blob) => {
           expect(blob).toBeInstanceOf(Blob);
           expect(blob.size).toBe(0);
         });
@@ -276,9 +279,9 @@ describe('StockReportService', () => {
 
       it('should append numbers to duplicate report names when downloading all reports as a zip', waitForAsync(() => {
         const duplicateNameReports: StockReport[] = [
-          { _id: '1', reportName: 'Report' },
-          { _id: '2', reportName: 'Report' },
-          { _id: '3', reportName: 'Report' },
+          { _id: '1', reportName: 'Report', reportType: 'PDF', reportData: 'SGVsbG8h' },
+          { _id: '2', reportName: 'Report', reportType: 'PDF', reportData: 'V29ybGQh' },
+          { _id: '3', reportName: 'Report', reportType: 'PDF', reportData: 'SGVsbG8h' },
         ];
 
         const mockBlob = new Blob(['PDF content'], { type: 'application/pdf' });
@@ -289,7 +292,7 @@ describe('StockReportService', () => {
         // Mock getReportBytesById to always return a blob
         const getBytesSpy = spyOn(stockReportService, 'getReportBytesById').and.returnValue(of(mockBlob));
 
-        stockReportService.downloadAllReportsAsZip().subscribe((blob) => {
+        stockReportService.downloadAllReportsAsZip('All').subscribe((blob) => {
           // Verify that the zip was created successfully
           expect(blob).toBeInstanceOf(Blob);
           expect(blob.size).toBeGreaterThan(0);

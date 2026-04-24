@@ -1,7 +1,7 @@
 <div class="settings-container">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>Settings</mat-card-title>
+      <mat-card-title class="settings-title">Settings</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
@@ -99,6 +99,35 @@
 
               </div>
             </form>
+          </div>
+        </mat-tab>
+
+
+               <!-- ── Available Spots Tab ── -->
+        <mat-tab label="Available Spots">
+          <div class="tab-content">
+            <p class="tab-description">
+              Set the number of available spots for each time slot of the event.
+              This will be the maximum number of people allowed at the event for each time slot.
+            </p>
+
+              <div class="flex-col">
+
+                <form [formGroup]="availableSpotsForm" (ngSubmit)="saveAvailableSpots()">
+                  <mat-form-field>
+                    <mat-label>Available Spots</mat-label>
+                    <input matInput formControlName="availableSpots" placeholder="e.g. 5">
+                    <mat-error *ngIf="availableSpotsForm.get('availableSpots')?.hasError('required')">Required</mat-error>
+                  </mat-form-field>
+
+                  <div class="save-button">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="!availableSpotsForm.valid" data-test="saveButton">
+                      Save Available Spots
+                    </button>
+                  </div>
+
+                </form>
+              </div>
           </div>
         </mat-tab>
 
