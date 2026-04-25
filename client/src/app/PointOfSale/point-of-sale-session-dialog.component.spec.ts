@@ -60,6 +60,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     guardianName: 'Test Family',
     email: 'test@example.com',
     address: '123 Test Street',
+    accommodations: 'None',
     timeSlot: '9:00-10:00',
     students: [
       {
@@ -76,6 +77,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
   };
 
   beforeEach(async () => {
+    family._id = 'family-1';
     familyService = jasmine.createSpyObj<FamilyService>('FamilyService', [
       'startFamilyHelpSession',
       'clearFamilyHelpSession',
@@ -178,6 +180,35 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(component.matchedInventoryDisplay(unknown)).toBe('Unknown inventory item');
   });
 
+  it('uses substitute and matched inventory display fallbacks', () => {
+    expect(component.substituteDisplay({
+      ...checklist.sections[0].items[0],
+      substituteDescription: undefined,
+      substituteItem: 'Crayons',
+      substituteBarcode: 'UPC-CRAYON'
+    })).toBe('Crayons');
+    expect(component.substituteDisplay({
+      ...checklist.sections[0].items[0],
+      substituteDescription: undefined,
+      substituteItem: undefined,
+      substituteBarcode: 'UPC-CRAYON'
+    })).toBe('UPC-CRAYON');
+    expect(component.substituteDisplay({
+      ...checklist.sections[0].items[0],
+      substituteDescription: undefined,
+      substituteItem: undefined,
+      substituteBarcode: undefined
+    })).toBe('Unknown substitute item');
+
+    expect(component.shouldShowMatchedInventory({
+      ...checklist.sections[0].items[0],
+      label: '',
+      itemDescription: 'Pencil',
+      matchedInventoryDescription: '',
+      matchedInventoryItem: 'Pencil'
+    })).toBeFalse();
+  });
+
   it('saves the current checklist as a draft when closing', () => {
     component.closeAndSaveDraft();
 
@@ -197,6 +228,24 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(dialogRef.close).toHaveBeenCalled();
   });
 
+  it('closes without saving a draft if the family id is missing', () => {
+    component.data.family._id = undefined;
+
+    component.closeAndSaveDraft();
+
+    expect(familyService.updateFamilyChecklist).toHaveBeenCalledTimes(0);
+    expect(dialogRef.close).toHaveBeenCalled();
+  });
+
+  it('shows a useful error when saving a draft fails', () => {
+    familyService.updateFamilyChecklist.and.returnValue(throwError(() => new Error('draft failed')));
+
+    component.closeAndSaveDraft();
+
+    expect(component.saving).toBeFalse();
+    expect(component.errorMessage).toContain('Failed to save session draft');
+  });
+
   it('clears a session when the user confirms the x action', () => {
     spyOn(window, 'confirm').and.returnValue(true);
 
@@ -212,6 +261,25 @@ describe('PointOfSaleSessionDialogComponent', () => {
     component.clearSessionAndClose();
 
     expect(familyService.clearFamilyHelpSession).toHaveBeenCalledTimes(0);
+  });
+
+  it('closes without clearing if the family id is missing', () => {
+    component.data.family._id = undefined;
+
+    component.clearSessionAndClose();
+
+    expect(familyService.clearFamilyHelpSession).toHaveBeenCalledTimes(0);
+    expect(dialogRef.close).toHaveBeenCalled();
+  });
+
+  it('shows a useful error when clearing a session fails', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    familyService.clearFamilyHelpSession.and.returnValue(throwError(() => new Error('clear failed')));
+
+    component.clearSessionAndClose();
+
+    expect(component.saving).toBeFalse();
+    expect(component.errorMessage).toContain('Failed to clear session');
   });
 
   it('saves a completed session when the user confirms', () => {
@@ -238,6 +306,27 @@ describe('PointOfSaleSessionDialogComponent', () => {
     component.saveCompletedSession();
 
     expect(familyService.saveFamilyHelpSessionAll).toHaveBeenCalledTimes(0);
+  });
+
+  it('does not save a completed session if the family id or checklist is missing', () => {
+    component.data.family._id = undefined;
+    component.saveCompletedSession();
+    component.data.family._id = 'family-1';
+    component.sessionFamily = { ...family, checklist: undefined };
+    component.saveCompletedSession();
+
+    expect(familyService.saveFamilyHelpSessionAll).toHaveBeenCalledTimes(0);
+  });
+
+  it('shows a useful error when saving a completed session fails', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    familyService.saveFamilyHelpSessionAll.and.returnValue(throwError(() => new Error('save failed')));
+    checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
+
+    component.saveCompletedSession();
+
+    expect(component.saving).toBeFalse();
+    expect(component.errorMessage).toContain('Failed to save completed session');
   });
 
   it('applies a scanned substitute item and marks the checklist item as substituted', () => {
@@ -289,11 +378,37 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(item.notPickedUpReason).toBeUndefined();
   });
 
+  it('clears substitution data directly', () => {
+    const item = checklist.sections[0].items[0];
+    item.notPickedUpReason = 'substituted';
+    item.substituteBarcode = 'UPC-2';
+    item.substituteInventoryId = 'INV-2';
+    item.substituteItem = 'Marker';
+    item.substituteDescription = 'Black Marker';
+
+    component.clearSubstitution(item);
+
+    expect(item.substituteBarcode).toBeUndefined();
+    expect(item.substituteInventoryId).toBeUndefined();
+    expect(item.substituteItem).toBeUndefined();
+    expect(item.substituteDescription).toBeUndefined();
+    expect(item.notPickedUpReason).toBeUndefined();
+  });
+
   it('regenerates a session by clearing before starting again', () => {
     component.restartSession();
 
     expect(familyService.clearFamilyHelpSession).toHaveBeenCalledWith('family-1');
     expect(familyService.startFamilyHelpSession).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows a useful error if regenerating a session fails', () => {
+    familyService.clearFamilyHelpSession.and.returnValue(throwError(() => new Error('regenerate failed')));
+
+    component.restartSession();
+
+    expect(component.loading).toBeFalse();
+    expect(component.errorMessage).toContain('Failed to regenerate help session');
   });
 
   it('shows a useful error if a session fails to start', () => {
