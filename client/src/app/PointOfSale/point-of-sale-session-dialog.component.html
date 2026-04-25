@@ -10,7 +10,7 @@
     <mat-card class="session-summary">
       <p>Starting help session and loading checklist...</p>
     </mat-card>
-  } @else if (errorMessage) {
+  } @else if (errorMessage && !sessionFamily) {
     <mat-card class="session-error">
       <p>{{ errorMessage }}</p>
     </mat-card>
@@ -29,6 +29,12 @@
         <strong>{{ sessionFamily.students.length }}</strong>
       </div>
     </mat-card>
+
+    @if (errorMessage) {
+      <mat-card class="session-error">
+        <p>{{ errorMessage }}</p>
+      </mat-card>
+    }
 
     @if (sessionHasNoChecklistItems(sessionFamily)) {
       <mat-card class="session-empty-checklist">

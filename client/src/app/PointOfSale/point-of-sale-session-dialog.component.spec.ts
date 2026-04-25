@@ -299,6 +299,27 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(familyService.saveFamilyHelpSessionAll).toHaveBeenCalledTimes(0);
   });
 
+  it('keeps reason controls visible after an unchecked item validation error', () => {
+    component.saveCompletedSession();
+    fixture.detectChanges();
+
+    const errorText = fixture.nativeElement.querySelector('.session-error')?.textContent;
+    const reasonSelect = fixture.nativeElement.querySelector('.reason-field select');
+
+    expect(errorText).toContain('Choose why');
+    expect(reasonSelect).not.toBeNull();
+  });
+
+  it('clears the validation message when the user picks a reason', () => {
+    const item = checklist.sections[0].items[1];
+    component.saveCompletedSession();
+
+    component.setNotPickedUpReason(item, 'available_didnt_need');
+
+    expect(component.errorMessage).toBe('');
+    expect(item.notPickedUpReason).toBe('available_didnt_need');
+  });
+
   it('does not save a completed session when the user cancels', () => {
     spyOn(window, 'confirm').and.returnValue(false);
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';

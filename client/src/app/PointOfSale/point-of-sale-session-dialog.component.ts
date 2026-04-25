@@ -86,6 +86,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
 
   setItemSelected(item: ChecklistItem, selected: boolean): void {
     item.selected = selected;
+    this.errorMessage = '';
     if (selected) {
       item.notPickedUpReason = undefined;
       this.clearSubstitution(item);
@@ -94,6 +95,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
 
   setNotPickedUpReason(item: ChecklistItem, reason: string): void {
     item.notPickedUpReason = reason || undefined;
+    this.errorMessage = '';
   }
 
   toggleSubstitutionScanner(item: ChecklistItem): void {
