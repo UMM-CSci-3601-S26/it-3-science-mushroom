@@ -162,6 +162,7 @@ public class FamilyController implements Controller {
     }
 
     ctx.json(family.checklist);
+  }
   // takes the list of families and goes through them one by one sorting them into the first available time slot
   public ArrayList<Family> schedulingAlgorithm(ArrayList<Family> families, int capacity) {
     int earlyMorningCapacity = 0; // current number of people in a timeslot
