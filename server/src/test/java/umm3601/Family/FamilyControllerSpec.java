@@ -36,7 +36,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 // Com Imports
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
@@ -44,7 +43,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-
 // IO Imports
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
@@ -60,7 +58,7 @@ import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 import umm3601.settings.Settings;
 import umm3601.settings.Settings.TimeAvailabilityLabels;
-@SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength" })
+@SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength", "checkstyle:ParameterNumber" })
 class FamilyControllerSpec {
   private FamilyController familyController;
 
@@ -120,229 +118,128 @@ class FamilyControllerSpec {
     inventoryDocuments.drop();
     settingsDocuments.drop();
 
-    List<Document> testFamilies = new ArrayList<>();
-
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "Jane Doe")
-        .append("email", "jane@email.com")
-        .append("address", "123 Street")
-        .append("accommodations", "None")
-        .append("timeSlot", "10:00-11:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", true)
-          .append("lateMorning", true)
-          .append("earlyAfternoon", true)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "not_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Alice")
-            .append("grade", "3")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-            .append("backpack", true)
-            .append("headphones", false),
-          new Document()
-            .append("name", "Timmy")
-            .append("grade", "5")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "John Christensen")
-        .append("email", "jchristensen@email.com")
-        .append("address", "713 Broadway")
-        .append("accommodations", "None")
-        .append("timeSlot", "8:00-9:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", true)
-          .append("earlyAfternoon", false)
-          .append("lateAfternoon", false)
-        )
-        .append("helped", true)
-        .append("status", "helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Sara")
-            .append("grade", "7")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A"),
-          new Document()
-            .append("name", "Ronan")
-            .append("grade", "4")
-            .append("school", "Herman High School")
-            .append("schoolAbbreviation", "HHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "John Johnson")
-        .append("email", "jjohnson@email.com")
-        .append("address", "456 Avenue")
-        .append("accommodations", "None")
-        .append("timeSlot", "2:00-3:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", false)
-          .append("earlyAfternoon", false)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "being_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Lilian")
-            .append("grade", "1")
-            .append("school", "Herman High School")
-            .append("schoolAbbreviation", "HHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "Melina Brim")
-        .append("email", "melina@email.com")
-        .append("address", "125 Street")
-        .append("timeSlot", "10:00-11:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", false)
-          .append("earlyAfternoon", true)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "not_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Tricia")
-            .append("grade", "3")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-            .append("backpack", true)
-            .append("headphones", false),
-          new Document()
-            .append("name", "Bernice")
-            .append("grade", "5")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "Bob Dylan")
-        .append("email", "therealbobdylan@email.com")
-        .append("address", "Nowhere")
-        .append("timeSlot", "10:00-11:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", true)
-          .append("earlyAfternoon", true)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "not_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Jeanie")
-            .append("grade", "3")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-            .append("backpack", true)
-            .append("headphones", false),
-          new Document()
-            .append("name", "Fred")
-            .append("grade", "5")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-        )));
+    List<Document> testFamilies = List.of(
+      familyDoc("Jane Doe", "jane@email.com", "123 Street", "None", "10:00-11:00",
+        true, true, true, true, false, "not_helped", List.of(
+          studentDoc("Alice", "3", "Morris Area High School", "MAHS", true, false),
+          studentDoc("Timmy", "5", "Morris Area High School", "MAHS"))),
+      familyDoc("John Christensen", "jchristensen@email.com", "713 Broadway", "None", "8:00-9:00",
+        false, true, false, false, true, "helped", List.of(
+          studentDoc("Sara", "7", "Morris Area High School", "MAHS"),
+          studentDoc("Ronan", "4", "Herman High School", "HHS"))),
+      familyDoc("John Johnson", "jjohnson@email.com", "456 Avenue", "None", "2:00-3:00",
+        false, false, false, true, false, "being_helped", List.of(
+          studentDoc("Lilian", "1", "Herman High School", "HHS"))),
+      familyDoc("Melina Brim", "melina@email.com", "125 Street", null, "10:00-11:00",
+        false, false, true, true, false, "not_helped", List.of(
+          studentDoc("Tricia", "3", "Morris Area High School", "MAHS", true, false),
+          studentDoc("Bernice", "5", "Morris Area High School", "MAHS"))),
+      familyDoc("Bob Dylan", "therealbobdylan@email.com", "Nowhere", null, "10:00-11:00",
+        false, true, true, true, false, "not_helped", List.of(
+          studentDoc("Jeanie", "3", "Morris Area High School", "MAHS", true, false),
+          studentDoc("Fred", "5", "Morris Area High School", "MAHS"))));
 
     testFamilyId = new ObjectId();
 
-    Document specialFamily = new Document()
-      .append("_id", testFamilyId)
-      .append("guardianName", "Bob Jones")
-      .append("email", "bob@email.com")
-      .append("address", "456 Oak Ave")
-      .append("accommodations", "None")
-      .append("timeSlot", "2:00-3:00")
-      .append("timeAvailability", new Document()
-        .append("earlyMorning", false)
-        .append("lateMorning", true)
-        .append("earlyAfternoon", false)
-        .append("lateAfternoon", true)
-      )
-      .append("helped", false)
-      .append("status", "not_helped")
-      .append("students", List.of(
-        new Document()
-          .append("name", "Sara")
-          .append("grade", "5")
-          .append("school", "Roosevelt")
-          .append("schoolAbbreviation", "R")
-          .append("teacher", "N/A")
-          .append("backpack", true)
-          .append("headphones", false)
-
-      ));
+    Document specialFamily = familyDoc(testFamilyId, "Bob Jones", "bob@email.com", "456 Oak Ave",
+      "None", "2:00-3:00", false, true, false, true, false, "not_helped",
+      List.of(studentDoc("Sara", "5", "Roosevelt", "R", true, false)));
 
     familyDocuments.insertMany(testFamilies);
     familyDocuments.insertOne(specialFamily);
 
     supplyListDocuments.insertMany(List.of(
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Roosevelt")
-        .append("grade", "5")
-        .append("teacher", "N/A")
-        .append("item", List.of("Backpack"))
-        .append("quantity", 1),
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Roosevelt")
-        .append("grade", "5")
-        .append("teacher", "N/A")
-        .append("item", List.of("Water Bottle"))
-        .append("quantity", 1)));
+      supplyListDoc("Backpack"),
+      supplyListDoc("Water Bottle")));
 
     inventoryDocuments.insertMany(List.of(
-      new Document()
-        .append("item", "Backpack")
-        .append("description", "Student Backpack")
-        .append("quantity", 3)
-        .append("internalID", "ID-10000")
-        .append("internalBarcode", "ITEM-10000")
-        .append("externalBarcode", List.of("EXT-10000")),
-      new Document()
-        .append("item", "Notebook")
-        .append("description", "Wide Ruled Notebook")
-        .append("quantity", 4)
-        .append("internalID", "ID-10001")
-        .append("internalBarcode", "ITEM-10001")
-        .append("externalBarcode", List.of("SUB-10001")),
-      new Document()
-        .append("item", "Water Bottle")
-        .append("description", "Blue Water Bottle")
-        .append("quantity", 0)
-        .append("internalID", "ID-10002")
-        .append("internalBarcode", "ITEM-10002")
-        .append("externalBarcode", List.of("EXT-10002"))));
+      inventoryDoc("Backpack", "Student Backpack", 3, "ID-10000", "ITEM-10000", "EXT-10000"),
+      inventoryDoc("Notebook", "Wide Ruled Notebook", 4, "ID-10001", "ITEM-10001", "SUB-10001"),
+      inventoryDoc("Water Bottle", "Blue Water Bottle", 0, "ID-10002", "ITEM-10002", "EXT-10002")));
 
-    Document settings = new Document()
-      .append("availableSpots", 5);
-
-    settingsDocuments.insertOne(settings);
+    settingsDocuments.insertOne(new Document().append("availableSpots", 5));
 
     familyController = new FamilyController(db);
+  }
+
+  private Document familyDoc(String guardianName, String email, String address, String accommodations,
+      String timeSlot, boolean earlyMorning, boolean lateMorning, boolean earlyAfternoon,
+      boolean lateAfternoon, boolean helped, String status, List<Document> students) {
+    return familyDoc(null, guardianName, email, address, accommodations, timeSlot, earlyMorning,
+      lateMorning, earlyAfternoon, lateAfternoon, helped, status, students);
+  }
+
+  private Document familyDoc(ObjectId id, String guardianName, String email, String address,
+      String accommodations, String timeSlot, boolean earlyMorning, boolean lateMorning,
+      boolean earlyAfternoon, boolean lateAfternoon, boolean helped, String status,
+      List<Document> students) {
+    Document family = new Document();
+    if (id != null) {
+      family.append("_id", id);
+    }
+    family.append("guardianName", guardianName)
+      .append("email", email)
+      .append("address", address);
+    if (accommodations != null) {
+      family.append("accommodations", accommodations);
+    }
+    return family.append("timeSlot", timeSlot)
+      .append("timeAvailability", timeAvailabilityDoc(earlyMorning, lateMorning,
+        earlyAfternoon, lateAfternoon))
+      .append("helped", helped)
+      .append("status", status)
+      .append("students", students);
+  }
+
+  private Document timeAvailabilityDoc(boolean earlyMorning, boolean lateMorning,
+      boolean earlyAfternoon, boolean lateAfternoon) {
+    return new Document()
+      .append("earlyMorning", earlyMorning)
+      .append("lateMorning", lateMorning)
+      .append("earlyAfternoon", earlyAfternoon)
+      .append("lateAfternoon", lateAfternoon);
+  }
+
+  private Document studentDoc(String name, String grade, String school, String schoolAbbreviation) {
+    return studentDoc(name, grade, school, schoolAbbreviation, null, null);
+  }
+
+  private Document studentDoc(String name, String grade, String school, String schoolAbbreviation,
+      Boolean backpack, Boolean headphones) {
+    Document student = new Document()
+      .append("name", name)
+      .append("grade", grade)
+      .append("school", school)
+      .append("schoolAbbreviation", schoolAbbreviation)
+      .append("teacher", "N/A");
+    if (backpack != null) {
+      student.append("backpack", backpack);
+    }
+    if (headphones != null) {
+      student.append("headphones", headphones);
+    }
+    return student;
+  }
+
+  private Document supplyListDoc(String item) {
+    return new Document()
+      .append("district", "District 1")
+      .append("school", "Roosevelt")
+      .append("grade", "5")
+      .append("teacher", "N/A")
+      .append("item", List.of(item))
+      .append("quantity", 1);
+  }
+
+  private Document inventoryDoc(String item, String description, int quantity,
+      String internalId, String internalBarcode, String externalBarcode) {
+    return new Document()
+      .append("item", item)
+      .append("description", description)
+      .append("quantity", quantity)
+      .append("internalID", internalId)
+      .append("internalBarcode", internalBarcode)
+      .append("externalBarcode", List.of(externalBarcode));
   }
 
   @Test
@@ -2046,7 +1943,7 @@ class FamilyControllerSpec {
 
     assertEquals("Jane Doe", families.get(5).guardianName);
     assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
-}
+  }
 
   @Test
   public void familySchedulingAtCapacity() {
@@ -2062,39 +1959,10 @@ class FamilyControllerSpec {
     newFamily.email = "charlie@email.com";
     newFamily.address = "789 Pine St";
     newFamily.timeAvailability = availability;
-    newFamily.students = new ArrayList<>();
-
-    StudentInfo student1 = new StudentInfo();
-    student1.name = "Janie";
-    student1.grade = "4";
-    student1.school = "Morris Area Elementary School";
-    student1.schoolAbbreviation = "MAES";
-    student1.teacher = "N/A";
-    student1.backpack = true;
-    student1.headphones = true;
-
-    StudentInfo student2 = new StudentInfo();
-    student2.name = "Susie";
-    student2.grade = "4";
-    student2.school = "Morris Area Elementary School";
-    student2.schoolAbbreviation = "MAES";
-    student2.teacher = "N/A";
-    student2.backpack = true;
-    student2.headphones = true;
-
-    StudentInfo student3 = new StudentInfo();
-    student3.name = "Paul";
-    student3.grade = "2";
-    student3.school = "Morris Area Elementary School";
-    student3.schoolAbbreviation = "MAES";
-    student3.teacher = "N/A";
-    student3.backpack = true;
-    student3.headphones = true;
-
-    newFamily.students.add(student1);
-    newFamily.students.add(student2);
-    newFamily.students.add(student3);
-
+    newFamily.students = List.of(
+      studentInfo("Janie", "4"),
+      studentInfo("Susie", "4"),
+      studentInfo("Paul", "2"));
 
     String json = javalinJackson.toJsonString(newFamily, Family.class);
 
@@ -2109,5 +1977,17 @@ class FamilyControllerSpec {
 
     assertThrows(NotFoundResponse.class,
     () -> familyController.scheduleFamilies(ctx));
+  }
+
+  private StudentInfo studentInfo(String name, String grade) {
+    StudentInfo student = new StudentInfo();
+    student.name = name;
+    student.grade = grade;
+    student.school = "Morris Area Elementary School";
+    student.schoolAbbreviation = "MAES";
+    student.teacher = "N/A";
+    student.backpack = true;
+    student.headphones = true;
+    return student;
   }
 }
