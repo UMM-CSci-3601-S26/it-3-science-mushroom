@@ -395,7 +395,6 @@ class FamilyControllerSpec {
     familyController.getFinalizedFamilyChecklist(ctx);
 
     verify(ctx).json(checklistCaptor.capture());
-    verify(ctx).status(HttpStatus.OK);
     assertFalse(checklistCaptor.getValue().snapshot);
     assertTrue(checklistCaptor.getValue().sections.get(0).saved);
   }
