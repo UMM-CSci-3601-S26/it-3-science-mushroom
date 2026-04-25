@@ -21,6 +21,7 @@ import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
+
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -29,7 +30,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
-
+import { BarcodePrintDialog } from './barcode-print-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
 
@@ -120,6 +121,19 @@ export class InventoryComponent {
   removeAmount: number;
   showRemovePanel = signal(false);
 
+  async openBarcodePrintDialog() {
+    const dialogRef = this.dialog.open(BarcodePrintDialog, {
+      data: {
+        items: this.displayedInventory()
+      }
+    });
+
+    const selectedItem = await firstValueFrom(dialogRef.afterClosed());
+
+    if (selectedItem?.length) {
+      //
+    }
+  }
   async onScanned(code: string) {
     console.log('scanned item', code);
 
