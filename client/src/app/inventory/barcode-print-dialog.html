@@ -2,6 +2,22 @@
 
 <mat-dialog-content class="barcode-print-content">
   <p> Select items to print barcodes</p>
+
+  <div class="barcode-filter-row">
+    <mat-form-field appearance="outline" class="description-filter">
+      <mat-label>Description</mat-label>
+      <input
+        matInput
+        type="text"
+        [(ngModel)]="descriptionFilter"
+        placeholder="Search descriptions..."
+      >
+    </mat-form-field>
+
+    <button mat-stroked-button type="button" (click)="clearDescriptionFilter()">
+      Clear
+    </button>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
@@ -15,8 +31,11 @@
 
 <mat-dialog-content class="barcode-print-content">
   <div class="barcode-item-list">
-    <div class="barcode-item-row" *ngFor="let item of data.items">
-      <mat-checkbox (change)="toggleSelectedItems(item, $event.checked)"></mat-checkbox>
+    <div class="barcode-item-row" *ngFor="let item of filteredItems()">
+      <mat-checkbox
+        [checked]="isSelected(item)"
+        (change)="toggleSelectedItems(item, $event.checked)">
+      </mat-checkbox>
       <div class="barcode-item-info">
         <div class="barcode-item-name">
           {{ item.item }}
@@ -26,5 +45,9 @@
         </div>
       </div>
     </div>
+
+    <p class="empty-filter-message" *ngIf="filteredItems().length === 0">
+      No items match that description.
+    </p>
   </div>
 </mat-dialog-content>
