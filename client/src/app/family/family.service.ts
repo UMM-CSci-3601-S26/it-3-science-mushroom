@@ -4,7 +4,7 @@ import { Injectable, inject, computed, signal  } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // JS Imports
-import { jsPDF } from "jspdf";
+import jsPDF, { jsPDF as jsPDFClass } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 // RxJS Imports
@@ -16,12 +16,12 @@ import { environment } from '../../environments/environment';
 import { Family, DashboardStats, SelectOption } from './family';
 import { FormatDateTimeService } from '../format-date-time/format-date-time.service';
 
-// // Type for jsPDF with autoTable metadata
-// interface jsPDFWithAutoTable extends jsPDFClass {
-//   lastAutoTable?: {
-//     finalY: number;
-//   };
-// }
+// Type for jsPDF with autoTable metadata
+interface jsPDFWithAutoTable extends jsPDFClass {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
 
 @Injectable({
   providedIn: 'root'
@@ -183,10 +183,11 @@ export class FamilyService {
 
   /**
    * Helper method to render a given family's info on the PDF
+   * @param offset the y offset to start rendering the family. Defaults to 15
    */
-  private renderFamily(doc: jsPDF, family: Family/*, familyNumber: number*/): void {
+  private renderFamily(doc: jsPDFWithAutoTable, family: Family, offset: number | 15): number {
     // Family title
-    const titleY = 15;
+    const titleY = offset;
     this.addText(doc, family.guardianName, 10, titleY, 14, "bold", "normal");
     const titleHeight = doc.getTextDimensions(family.guardianName).h;
 
@@ -196,7 +197,7 @@ export class FamilyService {
     // Vars for all boxes
     const boxWidth = 60;
     const boxX = 10;
-    const boxY = 30;
+    const boxY = titleY + titleHeight + 5;
     const labelOffsetX = 5;
     const labelOffsetY = 7;
 
@@ -319,6 +320,8 @@ export class FamilyService {
     // const tableHeight = (family.students.length + 1) * 10; // Approximate height based on number of rows
     // doc.roundedRect(boxX, tableY + 1, 190, tableHeight + 5, 3, 3);
 
+    // Return bottom Y of rendered family
+    return doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : tableY + lineHeight + 10; // Add some padding after table
   }
 
   /**
@@ -330,7 +333,7 @@ export class FamilyService {
      * The PDF is saved with the name "FamilyReport_MM-DD-YYYY.pdf", using formatDateTime to get the formatted date.
      */
   generatePDF() {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as jsPDFWithAutoTable;
     // Title
     this.addText(doc, "Family Report", 10, 10, 16, "bold", "normal");
     // Description
@@ -390,11 +393,21 @@ export class FamilyService {
       // Individual Family Pages \\
 
       this.family().forEach((family, index) => {
-        if (index >= 0) {
-          doc.addPage(); // Add new page every 2 families
+        if (index === 0) { // If first family, add a page
+          doc.addPage();
         }
 
-        this.renderFamily(doc, family/*, index*/);
+        // Render family info and get bottom Y of rendered content to know where to start next family
+        const lastY = this.renderFamily(doc, family, 15);
+
+        // Check if we need to add a new page (if next family won't fit on current page)
+        if (index < this.family().length - 1) { // If not last family
+          const nextFamily = this.family()[index + 1];
+          const spaceNeeded = 60 + (nextFamily.students.length * 10); // Approx space needed for next family (title + details + table)
+          if (lastY + spaceNeeded > doc.internal.pageSize.getHeight()) {
+            doc.addPage();
+          }
+        }
       });
 
       // PDF name
