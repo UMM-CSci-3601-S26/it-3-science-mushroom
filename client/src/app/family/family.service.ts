@@ -194,14 +194,6 @@ export class FamilyService {
 
     // Dashboard stats
     this.getDashboardStats().subscribe(stats => {
-      //       const statsText = `Total Families: ${stats.totalFamilies}
-      // Total Students: ${stats.totalStudents}
-      // Students Per School:
-      // ${this.formatSchoolsList(stats.studentsPerSchool)}
-      // Students Per Grade:
-      // ${this.formatGradesList(stats.studentsPerGrade)}`;
-
-
       const totalFamilies = `${stats.totalFamilies}`;
       const totalStudents = `${stats.totalStudents}`;
       const studentsPerSchool = `${this.formatSchoolsList(stats.studentsPerSchool)}`;
@@ -380,7 +372,6 @@ export class FamilyService {
         // Time availability box
         doc.setDrawColor(0);
         doc.roundedRect(availBoxX, boxY, boxWidth, availBoxHeight, 3, 3);
-
 
         // Students Table \\
 
