@@ -121,6 +121,7 @@ export class InventoryComponent {
   removeAmount: number;
   showRemovePanel = signal(false);
 
+  //This will open the barcode print dialog page
   async openBarcodePrintDialog() {
     const dialogRef = this.dialog.open(BarcodePrintDialog, {
       data: {
@@ -134,6 +135,7 @@ export class InventoryComponent {
       //
     }
   }
+
   async onScanned(code: string) {
     console.log('scanned item', code);
 

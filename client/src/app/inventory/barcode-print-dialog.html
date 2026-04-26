@@ -1,0 +1,30 @@
+<h2 mat-dialog-title> Print Barcodes</h2>
+
+<mat-dialog-content class="barcode-print-content">
+  <p> Select items to print barcodes</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancel()">
+    Cancel
+  </button>
+  <button mat-raised-button type="button">
+    Print
+  </button>
+</mat-dialog-actions>
+
+<mat-dialog-content class="barcode-print-content">
+  <div class="barcode-item-list">
+    <div class="barcode-item-row" *ngFor="let item of data.items">
+      <mat-checkbox></mat-checkbox>
+      <div class="barcode-item-info">
+        <div class="barcode-item-name">
+          {{ item.item }}
+        </div>
+        <div class="barcode-item-details">
+          {{ item.brand}} | {{ item.internalBarcode }}
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
