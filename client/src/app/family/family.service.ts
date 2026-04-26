@@ -139,19 +139,35 @@ export class FamilyService {
       .join('\n');
   }
 
+  private gradeOrder = ['PreK', 'Kindergarten', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+
+  private formatGrade(grade: string): string {
+    return (grade === 'PreK' || grade === 'Kindergarten') ? grade : `Grade ${grade}`;
+  }
+
   private formatGradesListLeft(gradesData: Record<string, number>): string {
-    const entries = Object.entries(gradesData);
+    const entries = Object.entries(gradesData)
+      .sort(([gradeA], [gradeB]) => {
+        const indexA = this.gradeOrder.indexOf(gradeA);
+        const indexB = this.gradeOrder.indexOf(gradeB);
+        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+      });
     const midpoint = Math.ceil(entries.length / 2);
     return entries.slice(0, midpoint)
-      .map(([grade, count]) => `  • Grade ${grade}: ${count}`)
+      .map(([grade, count]) => `  • ${this.formatGrade(grade)}: ${count}`)
       .join('\n');
   }
 
   private formatGradesListRight(gradesData: Record<string, number>): string {
-    const entries = Object.entries(gradesData);
+    const entries = Object.entries(gradesData)
+      .sort(([gradeA], [gradeB]) => {
+        const indexA = this.gradeOrder.indexOf(gradeA);
+        const indexB = this.gradeOrder.indexOf(gradeB);
+        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+      });
     const midpoint = Math.ceil(entries.length / 2);
     return entries.slice(midpoint)
-      .map(([grade, count]) => `  • Grade ${grade}: ${count}`)
+      .map(([grade, count]) => `  • ${this.formatGrade(grade)}: ${count}`)
       .join('\n');
   }
 
@@ -212,19 +228,22 @@ export class FamilyService {
       doc.setFont(undefined, "normal");
       doc.text(totalStudents, 30, 80);
 
-      // Box around school stats
+      // School Stats box
+      const schoolLines = studentsPerSchool.split('\n').length;
+      const schoolLineHeight = 5;
+      const schoolBoxHeight = (schoolLines * schoolLineHeight) + 7; // content + bottom padding
       doc.setDrawColor(0);
-      doc.roundedRect(65, 40, 70, 45, 3, 3);
+      doc.roundedRect(65, 40, 70, schoolBoxHeight, 3, 3);
 
       // School Stats List
       doc.setFontSize(14);
       doc.setFont(undefined, "bold");
-      doc.text("Students Per School", 70, 50);
+      doc.text("Students Per School", 67, 50);
       doc.setFontSize(10);
       doc.setFont(undefined, "normal");
-      doc.text(studentsPerSchool, 70, 55);
+      doc.text(studentsPerSchool, 67, 55);
 
-      // Box around grade stats
+      // Grade Stats box
       doc.setDrawColor(0);
       doc.roundedRect(140, 40, 60, 45, 3, 3);
 
@@ -235,7 +254,129 @@ export class FamilyService {
       doc.setFontSize(10);
       doc.setFont(undefined, "normal");
       doc.text(gradesLeft, 145, 55);
-      doc.text(gradesRight, 170, 55);
+      doc.text(gradesRight, 175, 55);
+
+      this.family().forEach((family, index) => {
+        if (index >= 0) {
+          doc.addPage(); // Add new page for each family after the first
+        }
+
+        const availability = `Time Availability:
+    • Early Morning: ${family.timeAvailability.earlyMorning ? 'Yes' : 'No'}
+    • Late Morning: ${family.timeAvailability.lateMorning ? 'Yes' : 'No'}
+    • Early Afternoon: ${family.timeAvailability.earlyAfternoon ? 'Yes' : 'No'}
+    • Late Afternoon: ${family.timeAvailability.lateAfternoon ? 'Yes' : 'No'}`;
+
+        // Family title
+        doc.setFontSize(14);
+        doc.setFont(undefined, "bold");
+        doc.text(family.guardianName, 10, 20);
+        doc.setFont(undefined, "normal");
+
+        // Separator Line
+        doc.setLineWidth(1);
+        doc.line(10, 25, 200, 25);
+
+        // Family contact details
+        doc.setFontSize(10);
+        const boxWidth = 60;
+        const boxHeight = 30;
+        const boxY = 30; // All boxes start at the same Y
+        const boxX = 10; // Starting X for the first box, others are offset from this
+
+        const textMarginX = boxX + 5;
+        const lineHeight = 5;
+
+        // For emails and addresses, shrink font size if needed
+        const detailsMaxWidth = boxWidth - 10; // Max width for text in box
+        const emailFontSize = doc.getTextWidth(family.email) > detailsMaxWidth ? 7 : 10;
+        const addressFontSize = doc.getTextWidth(family.address) > detailsMaxWidth ? 7 : 10;
+
+        // Contact details box
+        doc.setDrawColor(0);
+        doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 3, 3);
+
+        // Family contact details
+        let currentDetailsY = boxY + 7;
+
+        // Email label and content (shrunk if necessary)
+        doc.setFontSize(10);
+        doc.setFont(undefined, "bold");
+        doc.text(`Email:`, textMarginX, currentDetailsY);
+        currentDetailsY += lineHeight;
+        doc.setFontSize(emailFontSize);
+        doc.setFont(undefined, "normal");
+        doc.text(family.email, textMarginX, currentDetailsY);
+        currentDetailsY += lineHeight + 2;
+
+        // Address label and content (shrunk if necessary)
+        doc.setFontSize(10);
+        doc.setFont(undefined, "bold");
+        doc.text(`Address:`, textMarginX, currentDetailsY);
+        currentDetailsY += lineHeight;
+        doc.setFontSize(addressFontSize);
+        doc.setFont(undefined, "normal");
+        doc.text(family.address, textMarginX, currentDetailsY);
+
+        // Accommodations box
+        const accomBoxX = 75;
+        const accomMaxWidth = boxWidth - 25; // Max width for text in box
+
+        // Helper function to wrap text at word boundaries
+        const wrapTextAtWords = (text: string, maxWidth: number): string[] => {
+          const words = text.split(' ');
+          const lines: string[] = [];
+          let currentLine = '';
+
+          words.forEach(word => {
+            const testLine = currentLine ? `${currentLine} ${word}` : word;
+            const testWidth = doc.getTextWidth(testLine);
+
+            // Check if next word goes over width
+            if (testWidth > maxWidth) {
+              if (currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+              } else {
+                lines.push(word);
+                currentLine = '';
+              }
+            } else {
+              currentLine = testLine;
+            }
+          });
+
+          // Push remaining text
+          if (currentLine) {
+            lines.push(currentLine);
+          }
+
+          return lines;
+        };
+
+        // Wrap accommodations text
+        const wrappedAccom = wrapTextAtWords(family.accommodations || 'None', accomMaxWidth);
+        const accomDynamicHeight = 5 + lineHeight + (wrappedAccom.length * lineHeight) + 5;
+
+        doc.setDrawColor(0);
+        doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
+
+        // Accommodations content
+        const accomTextMarginX = accomBoxX + 5;
+        let currentAccomY = boxY + 7;
+
+        // Accommodations label
+        doc.setFontSize(10);
+        doc.setFont(undefined, "bold");
+        doc.text(`Accommodations:`, accomTextMarginX, currentAccomY);
+        currentAccomY += lineHeight;
+        doc.setFontSize(10);
+        doc.setFont(undefined, "normal");
+        wrappedAccom.forEach(line => {
+          doc.text(line, accomTextMarginX, currentAccomY);
+          currentAccomY += lineHeight;
+        });
+      });
 
       // PDF name
       const fileName = `FamilyReport_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.pdf`;
