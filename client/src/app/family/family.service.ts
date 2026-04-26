@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 // JS Imports
 import { jsPDF } from "jspdf";
-//import autoTable from "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 // RxJS Imports
 import { Observable } from 'rxjs';
@@ -238,10 +238,11 @@ export class FamilyService {
       // School Stats List
       doc.setFontSize(14);
       doc.setFont(undefined, "bold");
-      doc.text("Students Per School", 67, 50);
+      doc.text("Students Per School", 75, 50);
+
       doc.setFontSize(10);
       doc.setFont(undefined, "normal");
-      doc.text(studentsPerSchool, 67, 55);
+      doc.text(studentsPerSchool, 65, 55);
 
       // Grade Stats box
       doc.setDrawColor(0);
@@ -251,17 +252,27 @@ export class FamilyService {
       doc.setFontSize(14);
       doc.setFont(undefined, "bold");
       doc.text("Students Per Grade", 145, 50);
+
       doc.setFontSize(10);
       doc.setFont(undefined, "normal");
-      doc.text(gradesLeft, 145, 55);
-      doc.text(gradesRight, 175, 55);
+      doc.text(gradesLeft, 140, 55);
+      doc.text(gradesRight, 170, 55);
+
+      // Individual Family Pages \\
 
       this.family().forEach((family, index) => {
-        if (index >= 0) {
-          doc.addPage(); // Add new page for each family after the first
+        if (index >= 0 && index % 2 === 0) {
+          doc.addPage(); // Add new page every 2 families
         }
 
-        const availability = `Time Availability:
+        // Vars for all boxes
+        const boxWidth = 60;
+        const boxX = 10;
+        const boxY = 30;
+        const labelOffsetX = 5;
+        const labelOffsetY = 7;
+
+        const availability = `
     • Early Morning: ${family.timeAvailability.earlyMorning ? 'Yes' : 'No'}
     • Late Morning: ${family.timeAvailability.lateMorning ? 'Yes' : 'No'}
     • Early Afternoon: ${family.timeAvailability.earlyAfternoon ? 'Yes' : 'No'}
@@ -277,12 +288,12 @@ export class FamilyService {
         doc.setLineWidth(1);
         doc.line(10, 25, 200, 25);
 
-        // Family contact details
+        // Family Contact Details \\
+
+        // Layout vars
         doc.setFontSize(10);
-        const boxWidth = 60;
+        const detailsBoxWidth = boxX + boxWidth; // Width of details box, next box is offset from this
         const boxHeight = 30;
-        const boxY = 30; // All boxes start at the same Y
-        const boxX = 10; // Starting X for the first box, others are offset from this
 
         const textMarginX = boxX + 5;
         const lineHeight = 5;
@@ -297,7 +308,7 @@ export class FamilyService {
         doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 3, 3);
 
         // Family contact details
-        let currentDetailsY = boxY + 7;
+        let currentDetailsY = boxY + labelOffsetY;
 
         // Email label and content (shrunk if necessary)
         doc.setFontSize(10);
@@ -318,63 +329,92 @@ export class FamilyService {
         doc.setFont(undefined, "normal");
         doc.text(family.address, textMarginX, currentDetailsY);
 
-        // Accommodations box
-        const accomBoxX = 75;
-        const accomMaxWidth = boxWidth - 25; // Max width for text in box
+        // Accomodations \\
 
-        // Helper function to wrap text at word boundaries
-        const wrapTextAtWords = (text: string, maxWidth: number): string[] => {
-          const words = text.split(' ');
-          const lines: string[] = [];
-          let currentLine = '';
+        // Layout vars
+        const accomBoxX = detailsBoxWidth + 5; // Offset from details box
+        const accomBoxWidth = accomBoxX + boxWidth; // Width of accommodations box, next box is offset from this
+        const accomMaxWidth = boxWidth - 10; // Max width for text in box
+        const accomBoxHeight = 10; // Minimum height, will expand if text is long
 
-          words.forEach(word => {
-            const testLine = currentLine ? `${currentLine} ${word}` : word;
-            const testWidth = doc.getTextWidth(testLine);
+        // Accommodations label
+        doc.setFontSize(12);
+        doc.setFont(undefined, "bold");
+        doc.text(`Accommodations:`, accomBoxX + labelOffsetX, boxY + labelOffsetY);
 
-            // Check if next word goes over width
-            if (testWidth > maxWidth) {
-              if (currentLine) {
-                lines.push(currentLine);
-                currentLine = word;
-              } else {
-                lines.push(word);
-                currentLine = '';
-              }
-            } else {
-              currentLine = testLine;
-            }
-          });
+        // Accomodations text (wrapped if necessary)
+        doc.setFontSize(10);
+        doc.setFont(undefined, "normal");
+        doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).forEach((line, index) => {
+          doc.text(line, accomBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight));
+        });
 
-          // Push remaining text
-          if (currentLine) {
-            lines.push(currentLine);
-          }
-
-          return lines;
-        };
-
-        // Wrap accommodations text
-        const wrappedAccom = wrapTextAtWords(family.accommodations || 'None', accomMaxWidth);
-        const accomDynamicHeight = 5 + lineHeight + (wrappedAccom.length * lineHeight) + 5;
-
+        // Accomodations box
+        const accomDynamicHeight = Math.max(accomBoxHeight, 10 + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * lineHeight));
         doc.setDrawColor(0);
         doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
 
-        // Accommodations content
-        const accomTextMarginX = accomBoxX + 5;
-        let currentAccomY = boxY + 7;
+        // Time Slot and Availability \\
 
-        // Accommodations label
+        // Layout vars
+        const availBoxX = accomBoxWidth + 5;
+        const availBoxHeight = 35;
+
+        // Time slot label and content
         doc.setFontSize(10);
         doc.setFont(undefined, "bold");
-        doc.text(`Accommodations:`, accomTextMarginX, currentAccomY);
-        currentAccomY += lineHeight;
+        doc.text(`Time Slot: `, availBoxX + labelOffsetX, boxY + labelOffsetY);
+        doc.setFont(undefined, "normal");
+        doc.text(` ${family.timeSlot}`, availBoxX + labelOffsetX + doc.getTextWidth(`Time Slot: `), boxY + labelOffsetY);
+
+        // Time availability label
+        doc.text(`Time Availability:`, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight);
+
+        // Time availability content
         doc.setFontSize(10);
         doc.setFont(undefined, "normal");
-        wrappedAccom.forEach(line => {
-          doc.text(line, accomTextMarginX, currentAccomY);
-          currentAccomY += lineHeight;
+        availability.split('\n').forEach((line, index) => {
+          doc.text(line, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight));
+        });
+
+        // Time availability box
+        doc.setDrawColor(0);
+        doc.roundedRect(availBoxX, boxY, boxWidth, availBoxHeight, 3, 3);
+
+
+        // Students Table \\
+
+        // Layout vars
+        const tableY = boxY + Math.max(boxHeight, accomDynamicHeight, availBoxHeight) + 10; // Offset from bottom of tallest box + some padding
+        const tableX = 5;
+
+        // Table header
+        doc.setFontSize(12);
+        doc.setFont(undefined, "bold");
+        doc.text("Students", tableX + labelOffsetX, tableY);
+        const headers = [["Name", "School", "Grade", "Headphones", "Backpack"]];
+
+        // Table body
+        const columnStyling = {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 50 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 25 }
+        };
+
+        autoTable(doc, {
+          head: headers,
+          body: family.students.map(student => [
+            student.name,
+            student.school,
+            student.grade,
+            student.headphones ? "Yes" : "No",
+            student.backpack ? "Yes" : "No"
+          ]),
+          startY: tableY + lineHeight,
+          theme: 'striped',
+          columnStyles: columnStyling
         });
       });
 
