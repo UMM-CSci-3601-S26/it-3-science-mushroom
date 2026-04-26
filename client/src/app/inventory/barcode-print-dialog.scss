@@ -1,5 +1,6 @@
 .barcode-print-content {
-  min-width: 520px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .barcode-filter-row {
@@ -17,8 +18,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  height: 360px;
-  max-height: 360px;
+  height: 340px;
+  max-height: 340px;
   overflow-y: auto;
   padding: 0.25rem;
 }
@@ -58,4 +59,23 @@
   margin: 0.75rem;
   color: #4b5563;
   text-align: center;
+}
+.barcode-dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 24px 12px;
+  width: 100%;
+}
+
+.select-options,
+.action-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.select-options button,
+.action-options button {
+  margin: 0;
 }

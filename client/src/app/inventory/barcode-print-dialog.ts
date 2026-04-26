@@ -73,4 +73,24 @@ export class BarcodePrintDialog {
     this.dialogRef.close(this.selectedItems)
     //This will return the selected items from the dialog page to print.
   }
+
+  selectAllVisibleItems(): void {
+    for (const item of this.filteredItems()) {
+      if (!this.isSelected(item)) {
+        this.selectedItems.push(item);
+      }
+    }
+  }
+
+  selectAllItems(): void {
+    for (const item of this.data.items) {
+      if (!this.isSelected(item)) {
+        this.selectedItems.push(item);
+      }
+    }
+  }
+
+  clearSelectedItems(): void {
+    this.selectedItems = [];
+  }
 }
