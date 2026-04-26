@@ -182,6 +182,141 @@ export class FamilyService {
   }
 
   /**
+   * Helper function to render a given family's info on the PDF
+   */
+  private renderFamily(doc: jsPDF, family: Family/*, familyNumber: number*/): void {
+    const availability = `
+    • Early Morning: ${family.timeAvailability.earlyMorning ? 'Yes' : 'No'}
+    • Late Morning: ${family.timeAvailability.lateMorning ? 'Yes' : 'No'}
+    • Early Afternoon: ${family.timeAvailability.earlyAfternoon ? 'Yes' : 'No'}
+    • Late Afternoon: ${family.timeAvailability.lateAfternoon ? 'Yes' : 'No'}`;
+
+    // Family title
+    const titleY = 15;
+    this.addText(doc, family.guardianName, 10, titleY, 14, "bold", "normal");
+    const titleHeight = doc.getTextDimensions(family.guardianName).h;
+
+    // Separator Line
+    doc.line(10, titleHeight + titleY, 200, titleHeight + titleY);
+
+    // Vars for all boxes
+    const boxWidth = 60;
+    const boxX = 10;
+    const boxY = 30;
+    const labelOffsetX = 5;
+    const labelOffsetY = 7;
+
+    // Family Contact Details \\
+
+    // Layout vars
+    doc.setFontSize(10);
+    const detailsBoxWidth = boxX + boxWidth; // Width of details box, next box is offset from this
+    const boxHeight = 30;
+
+    const textMarginX = boxX + 5;
+    const lineHeight = 5;
+
+    // For emails and addresses, shrink font size if needed
+    const detailsMaxWidth = boxWidth - 10; // Max width for text in box
+    const emailFontSize = doc.getTextWidth(family.email) > detailsMaxWidth ? 7 : 10;
+    const addressFontSize = doc.getTextWidth(family.address) > detailsMaxWidth ? 7 : 10;
+
+    // Contact details box
+    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 3, 3);
+
+    // Family contact details
+    let currentDetailsY = boxY + labelOffsetY;
+
+    // Email label and content (shrunk if necessary)
+    this.addText(doc, `Email:`, textMarginX, currentDetailsY, 10, "bold", "normal");
+    currentDetailsY += lineHeight;
+
+    this.addText(doc, family.email, textMarginX, currentDetailsY, emailFontSize, "normal", "normal");
+    currentDetailsY += lineHeight + 2;
+
+    // Address label and content (shrunk if necessary)
+    this.addText(doc, "Address:", textMarginX, currentDetailsY, 10, "bold", "normal");
+    currentDetailsY += lineHeight;
+
+    this.addText(doc, family.address, textMarginX, currentDetailsY, addressFontSize, "normal", "normal");
+
+    // Accomodations \\
+
+    // Layout vars
+    const accomBoxX = detailsBoxWidth + 5; // Offset from details box
+    const accomBoxWidth = accomBoxX + boxWidth; // Width of accommodations box, next box is offset from this
+    const accomMaxWidth = boxWidth - 10; // Max width for text in box
+    const accomBoxHeight = 10; // Minimum height, will expand if text is long
+
+    // Accommodations label
+    this.addText(doc, "Accommodations:", accomBoxX + labelOffsetX, boxY + labelOffsetY, 12, "bold", "normal");
+
+    // Accomodations text (wrapped if necessary)
+    doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).forEach((line: string, index: number) => {
+      this.addText(doc, line, accomBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight), 10, "normal", "normal");
+    });
+
+    // Accomodations box
+    const accomDynamicHeight = Math.max(accomBoxHeight, 10 + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * lineHeight));
+    doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
+
+    // Time Slot and Availability \\
+
+    // Layout vars
+    const availBoxX = accomBoxWidth + 5;
+    const availBoxHeight = 35;
+
+    // Time slot label and content
+    this.addText(doc, "Time Slot: ", availBoxX + labelOffsetX, boxY + labelOffsetY, 10, "bold", "normal");
+    this.addText(doc, ` ${family.timeSlot}`, availBoxX + labelOffsetX + doc.getTextWidth(`Time Slot: `), boxY + labelOffsetY, 10, "normal", "normal");
+
+    // Time availability label
+    this.addText(doc, "Time Availability:", availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight, 10, "bold", "normal");
+
+    // Time availability content
+    availability.split('\n').forEach((line, index) => {
+      this.addText(doc, line, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight), 10, "normal", "normal");
+    });
+
+    // Time availability box
+    doc.roundedRect(availBoxX, boxY, boxWidth, availBoxHeight, 3, 3);
+
+    // Students Table \\
+
+    // Layout vars
+    const tableY = boxY + Math.max(boxHeight, accomDynamicHeight, availBoxHeight) + 10; // Offset from bottom of tallest box + some padding
+    const tableX = 5;
+
+    // Table header
+    this.addText(doc, "Students", tableX + labelOffsetX, tableY, 12, "bold", "normal");
+
+    const headers = [["Name", "School", "Grade", "Headphones", "Backpack"]];
+
+    // Table body
+    const columnStyling = {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 25 },
+      3: { cellWidth: 30 },
+      4: { cellWidth: 25 }
+    };
+
+    autoTable(doc, {
+      head: headers,
+      body: family.students.map(student => [
+        student.name,
+        student.school,
+        student.grade,
+        student.headphones ? "Yes" : "No",
+        student.backpack ? "Yes" : "No"
+      ]),
+      startY: tableY + lineHeight,
+      theme: 'striped',
+      columnStyles: columnStyling
+    });
+  }
+
+  /**
      * Generates a PDF report of all the families. First page has a description and title with the date it was generated.
      * Family dashboard info (number of families, students per school, etc) is also placed on the first page.
      * The pages after hold family info in a list + table format. Each family gets its own page.
@@ -254,135 +389,7 @@ export class FamilyService {
           doc.addPage(); // Add new page every 2 families
         }
 
-        const availability = `
-    • Early Morning: ${family.timeAvailability.earlyMorning ? 'Yes' : 'No'}
-    • Late Morning: ${family.timeAvailability.lateMorning ? 'Yes' : 'No'}
-    • Early Afternoon: ${family.timeAvailability.earlyAfternoon ? 'Yes' : 'No'}
-    • Late Afternoon: ${family.timeAvailability.lateAfternoon ? 'Yes' : 'No'}`;
-
-        // Family title
-        const titleY = 15;
-        this.addText(doc, family.guardianName, 10, titleY, 14, "bold", "normal");
-        const titleHeight = doc.getTextDimensions(family.guardianName).h;
-
-        // Separator Line
-        doc.line(10, titleHeight + titleY, 200, titleHeight + titleY);
-
-        // Vars for all boxes
-        const boxWidth = 60;
-        const boxX = 10;
-        const boxY = 30;
-        const labelOffsetX = 5;
-        const labelOffsetY = 7;
-
-        // Family Contact Details \\
-
-        // Layout vars
-        doc.setFontSize(10);
-        const detailsBoxWidth = boxX + boxWidth; // Width of details box, next box is offset from this
-        const boxHeight = 30;
-
-        const textMarginX = boxX + 5;
-        const lineHeight = 5;
-
-        // For emails and addresses, shrink font size if needed
-        const detailsMaxWidth = boxWidth - 10; // Max width for text in box
-        const emailFontSize = doc.getTextWidth(family.email) > detailsMaxWidth ? 7 : 10;
-        const addressFontSize = doc.getTextWidth(family.address) > detailsMaxWidth ? 7 : 10;
-
-        // Contact details box
-        doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 3, 3);
-
-        // Family contact details
-        let currentDetailsY = boxY + labelOffsetY;
-
-        // Email label and content (shrunk if necessary)
-        this.addText(doc, `Email:`, textMarginX, currentDetailsY, 10, "bold", "normal");
-        currentDetailsY += lineHeight;
-
-        this.addText(doc, family.email, textMarginX, currentDetailsY, emailFontSize, "normal", "normal");
-        currentDetailsY += lineHeight + 2;
-
-        // Address label and content (shrunk if necessary)
-        this.addText(doc, "Address:", textMarginX, currentDetailsY, 10, "bold", "normal");
-        currentDetailsY += lineHeight;
-
-        this.addText(doc, family.address, textMarginX, currentDetailsY, addressFontSize, "normal", "normal");
-
-        // Accomodations \\
-
-        // Layout vars
-        const accomBoxX = detailsBoxWidth + 5; // Offset from details box
-        const accomBoxWidth = accomBoxX + boxWidth; // Width of accommodations box, next box is offset from this
-        const accomMaxWidth = boxWidth - 10; // Max width for text in box
-        const accomBoxHeight = 10; // Minimum height, will expand if text is long
-
-        // Accommodations label
-        this.addText(doc, "Accommodations:", accomBoxX + labelOffsetX, boxY + labelOffsetY, 12, "bold", "normal");
-
-        // Accomodations text (wrapped if necessary)
-        doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).forEach((line: string, index: number) => {
-          this.addText(doc, line, accomBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight), 10, "normal", "normal");
-        });
-
-        // Accomodations box
-        const accomDynamicHeight = Math.max(accomBoxHeight, 10 + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * lineHeight));
-        doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
-
-        // Time Slot and Availability \\
-
-        // Layout vars
-        const availBoxX = accomBoxWidth + 5;
-        const availBoxHeight = 35;
-
-        // Time slot label and content
-        this.addText(doc, "Time Slot: ", availBoxX + labelOffsetX, boxY + labelOffsetY, 10, "bold", "normal");
-        this.addText(doc, ` ${family.timeSlot}`, availBoxX + labelOffsetX + doc.getTextWidth(`Time Slot: `), boxY + labelOffsetY, 10, "normal", "normal");
-
-        // Time availability label
-        this.addText(doc, "Time Availability:", availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight, 10, "bold", "normal");
-
-        // Time availability content
-        availability.split('\n').forEach((line, index) => {
-          this.addText(doc, line, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight), 10, "normal", "normal");
-        });
-
-        // Time availability box
-        doc.roundedRect(availBoxX, boxY, boxWidth, availBoxHeight, 3, 3);
-
-        // Students Table \\
-
-        // Layout vars
-        const tableY = boxY + Math.max(boxHeight, accomDynamicHeight, availBoxHeight) + 10; // Offset from bottom of tallest box + some padding
-        const tableX = 5;
-
-        // Table header
-        this.addText(doc, "Students", tableX + labelOffsetX, tableY, 12, "bold", "normal");
-
-        const headers = [["Name", "School", "Grade", "Headphones", "Backpack"]];
-
-        // Table body
-        const columnStyling = {
-          0: { cellWidth: 50 },
-          1: { cellWidth: 50 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 30 },
-          4: { cellWidth: 25 }
-        };
-
-        autoTable(doc, {
-          head: headers,
-          body: family.students.map(student => [
-            student.name,
-            student.school,
-            student.grade,
-            student.headphones ? "Yes" : "No",
-            student.backpack ? "Yes" : "No"
-          ]),
-          startY: tableY + lineHeight,
-          theme: 'striped',
-          columnStyles: columnStyling
-        });
+        this.renderFamily(doc, family/*, index*/);
       });
 
       // PDF name
