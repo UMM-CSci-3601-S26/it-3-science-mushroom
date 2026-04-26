@@ -182,15 +182,9 @@ export class FamilyService {
   }
 
   /**
-   * Helper function to render a given family's info on the PDF
+   * Helper method to render a given family's info on the PDF
    */
   private renderFamily(doc: jsPDF, family: Family/*, familyNumber: number*/): void {
-    const availability = `
-    • Early Morning: ${family.timeAvailability.earlyMorning ? 'Yes' : 'No'}
-    • Late Morning: ${family.timeAvailability.lateMorning ? 'Yes' : 'No'}
-    • Early Afternoon: ${family.timeAvailability.earlyAfternoon ? 'Yes' : 'No'}
-    • Late Afternoon: ${family.timeAvailability.lateAfternoon ? 'Yes' : 'No'}`;
-
     // Family title
     const titleY = 15;
     this.addText(doc, family.guardianName, 10, titleY, 14, "bold", "normal");
@@ -274,6 +268,12 @@ export class FamilyService {
     this.addText(doc, "Time Availability:", availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight, 10, "bold", "normal");
 
     // Time availability content
+    const availability = `
+    • Early Morning: ${family.timeAvailability.earlyMorning ? 'Yes' : 'No'}
+    • Late Morning: ${family.timeAvailability.lateMorning ? 'Yes' : 'No'}
+    • Early Afternoon: ${family.timeAvailability.earlyAfternoon ? 'Yes' : 'No'}
+    • Late Afternoon: ${family.timeAvailability.lateAfternoon ? 'Yes' : 'No'}`;
+
     availability.split('\n').forEach((line, index) => {
       this.addText(doc, line, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight), 10, "normal", "normal");
     });
@@ -314,6 +314,11 @@ export class FamilyService {
       theme: 'striped',
       columnStyles: columnStyling
     });
+
+    // Student Table box
+    // const tableHeight = (family.students.length + 1) * 10; // Approximate height based on number of rows
+    // doc.roundedRect(boxX, tableY + 1, 190, tableHeight + 5, 3, 3);
+
   }
 
   /**
