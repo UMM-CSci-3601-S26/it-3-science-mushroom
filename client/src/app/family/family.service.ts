@@ -172,6 +172,16 @@ export class FamilyService {
   }
 
   /**
+   * Custom helper function to add text with specified styling.
+   */
+  private addText(doc: jsPDF, text: string, x: number, y: number, size: number, weight: string, font: string): void {
+    doc.setFont(undefined, weight);
+    doc.setFontSize(size);
+    doc.text(text, x, y);
+    doc.setFont(undefined, font);
+  }
+
+  /**
      * Generates a PDF report of all the families. First page has a description and title with the date it was generated.
      * Family dashboard info (number of families, students per school, etc) is also placed on the first page.
      * The pages after hold family info in a list + table format. Each family gets its own page.
@@ -182,14 +192,15 @@ export class FamilyService {
   generatePDF() {
     const doc = new jsPDF();
     // Title
-    doc.setFontSize(16);
-    doc.text("Family Report", 10, 10);
+    this.addText(doc, "Family Report", 10, 10, 16, "bold", "normal");
     // Description
-    doc.setFontSize(12);
-    doc.text("This is a report of the families generated on ${formattedDate}".replace("${formattedDate}", this.formatDateTimeService.formatDateTime(this.dateTime)[0]), 10, 20);
+    this.addText(doc, "This is a report of the families generated on ${formattedDate}"
+      .replace("${formattedDate}",
+        this.formatDateTimeService.formatDateTime(this.dateTime)[0]), 10, 20, 12, "normal", "normal");
 
     // Separator Line
     doc.setLineWidth(1);
+    doc.setDrawColor(0);
     doc.line(10, 30, 200, 30);
 
     // Dashboard stats
@@ -200,31 +211,22 @@ export class FamilyService {
       const gradesLeft = `${this.formatGradesListLeft(stats.studentsPerGrade)}`;
       const gradesRight = `${this.formatGradesListRight(stats.studentsPerGrade)}`;
 
-      // doc.setFontSize(10);
-      // doc.text(statsText, 10, 30);
-
       // Box around family and student stats
-      doc.setDrawColor(0);
       doc.roundedRect(10, 40, 50, 45, 3, 3);
 
       // Family Dashboard Stats
-      doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
-      doc.text("Total Families", 15, 50);
-      doc.setFont(undefined, "normal");
-      doc.text(totalFamilies, 30, 60);
+      this.addText(doc, "Total Families", 15, 50, 14, "bold", "normal");
+      this.addText(doc, totalFamilies, 30, 60, 14, "normal", "normal");
 
       // Student Dashboard Stats
-      doc.setFont(undefined, "bold");
-      doc.text("Total Students", 15, 70);
-      doc.setFont(undefined, "normal");
-      doc.text(totalStudents, 30, 80);
+      this.addText(doc, "Total Students", 15, 70, 14, "bold", "normal");
+      this.addText(doc, totalStudents, 30, 80, 14, "normal", "normal");
 
       // School Stats box
       const schoolLines = studentsPerSchool.split('\n').length;
       const schoolLineHeight = 5;
       const schoolBoxHeight = (schoolLines * schoolLineHeight) + 7; // content + bottom padding
-      doc.setDrawColor(0);
+
       doc.roundedRect(65, 40, 70, schoolBoxHeight, 3, 3);
 
       // School Stats List
@@ -232,12 +234,9 @@ export class FamilyService {
       doc.setFont(undefined, "bold");
       doc.text("Students Per School", 75, 50);
 
-      doc.setFontSize(10);
-      doc.setFont(undefined, "normal");
-      doc.text(studentsPerSchool, 65, 55);
+      this.addText(doc, studentsPerSchool, 65, 55, 10, "normal", "normal");
 
       // Grade Stats box
-      doc.setDrawColor(0);
       doc.roundedRect(140, 40, 60, 45, 3, 3);
 
       // Grade Stats List
@@ -245,24 +244,15 @@ export class FamilyService {
       doc.setFont(undefined, "bold");
       doc.text("Students Per Grade", 145, 50);
 
-      doc.setFontSize(10);
-      doc.setFont(undefined, "normal");
-      doc.text(gradesLeft, 140, 55);
-      doc.text(gradesRight, 170, 55);
+      this.addText(doc, gradesLeft, 140, 55, 10, "normal", "normal");
+      this.addText(doc, gradesRight, 170, 55, 10, "normal", "normal");
 
       // Individual Family Pages \\
 
       this.family().forEach((family, index) => {
-        if (index >= 0 && index % 2 === 0) {
+        if (index >= 0) {
           doc.addPage(); // Add new page every 2 families
         }
-
-        // Vars for all boxes
-        const boxWidth = 60;
-        const boxX = 10;
-        const boxY = 30;
-        const labelOffsetX = 5;
-        const labelOffsetY = 7;
 
         const availability = `
     • Early Morning: ${family.timeAvailability.earlyMorning ? 'Yes' : 'No'}
@@ -271,14 +261,19 @@ export class FamilyService {
     • Late Afternoon: ${family.timeAvailability.lateAfternoon ? 'Yes' : 'No'}`;
 
         // Family title
-        doc.setFontSize(14);
-        doc.setFont(undefined, "bold");
-        doc.text(family.guardianName, 10, 20);
-        doc.setFont(undefined, "normal");
+        const titleY = 15;
+        this.addText(doc, family.guardianName, 10, titleY, 14, "bold", "normal");
+        const titleHeight = doc.getTextDimensions(family.guardianName).h;
 
         // Separator Line
-        doc.setLineWidth(1);
-        doc.line(10, 25, 200, 25);
+        doc.line(10, titleHeight + titleY, 200, titleHeight + titleY);
+
+        // Vars for all boxes
+        const boxWidth = 60;
+        const boxX = 10;
+        const boxY = 30;
+        const labelOffsetX = 5;
+        const labelOffsetY = 7;
 
         // Family Contact Details \\
 
@@ -296,30 +291,23 @@ export class FamilyService {
         const addressFontSize = doc.getTextWidth(family.address) > detailsMaxWidth ? 7 : 10;
 
         // Contact details box
-        doc.setDrawColor(0);
         doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 3, 3);
 
         // Family contact details
         let currentDetailsY = boxY + labelOffsetY;
 
         // Email label and content (shrunk if necessary)
-        doc.setFontSize(10);
-        doc.setFont(undefined, "bold");
-        doc.text(`Email:`, textMarginX, currentDetailsY);
+        this.addText(doc, `Email:`, textMarginX, currentDetailsY, 10, "bold", "normal");
         currentDetailsY += lineHeight;
-        doc.setFontSize(emailFontSize);
-        doc.setFont(undefined, "normal");
-        doc.text(family.email, textMarginX, currentDetailsY);
+
+        this.addText(doc, family.email, textMarginX, currentDetailsY, emailFontSize, "normal", "normal");
         currentDetailsY += lineHeight + 2;
 
         // Address label and content (shrunk if necessary)
-        doc.setFontSize(10);
-        doc.setFont(undefined, "bold");
-        doc.text(`Address:`, textMarginX, currentDetailsY);
+        this.addText(doc, "Address:", textMarginX, currentDetailsY, 10, "bold", "normal");
         currentDetailsY += lineHeight;
-        doc.setFontSize(addressFontSize);
-        doc.setFont(undefined, "normal");
-        doc.text(family.address, textMarginX, currentDetailsY);
+
+        this.addText(doc, family.address, textMarginX, currentDetailsY, addressFontSize, "normal", "normal");
 
         // Accomodations \\
 
@@ -330,20 +318,15 @@ export class FamilyService {
         const accomBoxHeight = 10; // Minimum height, will expand if text is long
 
         // Accommodations label
-        doc.setFontSize(12);
-        doc.setFont(undefined, "bold");
-        doc.text(`Accommodations:`, accomBoxX + labelOffsetX, boxY + labelOffsetY);
+        this.addText(doc, "Accommodations:", accomBoxX + labelOffsetX, boxY + labelOffsetY, 12, "bold", "normal");
 
         // Accomodations text (wrapped if necessary)
-        doc.setFontSize(10);
-        doc.setFont(undefined, "normal");
-        doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).forEach((line, index) => {
-          doc.text(line, accomBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight));
+        doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).forEach((line: string, index: number) => {
+          this.addText(doc, line, accomBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight), 10, "normal", "normal");
         });
 
         // Accomodations box
         const accomDynamicHeight = Math.max(accomBoxHeight, 10 + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * lineHeight));
-        doc.setDrawColor(0);
         doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
 
         // Time Slot and Availability \\
@@ -353,24 +336,18 @@ export class FamilyService {
         const availBoxHeight = 35;
 
         // Time slot label and content
-        doc.setFontSize(10);
-        doc.setFont(undefined, "bold");
-        doc.text(`Time Slot: `, availBoxX + labelOffsetX, boxY + labelOffsetY);
-        doc.setFont(undefined, "normal");
-        doc.text(` ${family.timeSlot}`, availBoxX + labelOffsetX + doc.getTextWidth(`Time Slot: `), boxY + labelOffsetY);
+        this.addText(doc, "Time Slot: ", availBoxX + labelOffsetX, boxY + labelOffsetY, 10, "bold", "normal");
+        this.addText(doc, ` ${family.timeSlot}`, availBoxX + labelOffsetX + doc.getTextWidth(`Time Slot: `), boxY + labelOffsetY, 10, "normal", "normal");
 
         // Time availability label
-        doc.text(`Time Availability:`, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight);
+        this.addText(doc, "Time Availability:", availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight, 10, "bold", "normal");
 
         // Time availability content
-        doc.setFontSize(10);
-        doc.setFont(undefined, "normal");
         availability.split('\n').forEach((line, index) => {
-          doc.text(line, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight));
+          this.addText(doc, line, availBoxX + labelOffsetX, boxY + labelOffsetY + lineHeight + (index * lineHeight), 10, "normal", "normal");
         });
 
         // Time availability box
-        doc.setDrawColor(0);
         doc.roundedRect(availBoxX, boxY, boxWidth, availBoxHeight, 3, 3);
 
         // Students Table \\
@@ -380,9 +357,8 @@ export class FamilyService {
         const tableX = 5;
 
         // Table header
-        doc.setFontSize(12);
-        doc.setFont(undefined, "bold");
-        doc.text("Students", tableX + labelOffsetX, tableY);
+        this.addText(doc, "Students", tableX + labelOffsetX, tableY, 12, "bold", "normal");
+
         const headers = [["Name", "School", "Grade", "Headphones", "Backpack"]];
 
         // Table body
