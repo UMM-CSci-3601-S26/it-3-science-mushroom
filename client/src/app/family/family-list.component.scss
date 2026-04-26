@@ -114,7 +114,34 @@ mat-radio-button {
 }
 
 .add-family-fab {
+  // No fixed positioning - positioned via fab-container
+}
+
+.fab-container {
   position: fixed;
   bottom: 15px;
   right: 30px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.export-toggle-fab {
+  position: relative;
+}
+
+.export-fab {
+  animation: slideInUp 0.2s ease-in-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
