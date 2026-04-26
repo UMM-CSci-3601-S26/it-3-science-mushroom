@@ -111,7 +111,7 @@ export class BarcodePrintWindowService {
         </head>
         <body>
           <div class="toolbar">
-            <button class="print-button" type="button" onclick="window.print()">Print</button>
+            <button class="print-button" type="button" onclick="window.print()">Print Barcodes</button>
           </div>
           <main class="barcode-grid">
             ${labels}
