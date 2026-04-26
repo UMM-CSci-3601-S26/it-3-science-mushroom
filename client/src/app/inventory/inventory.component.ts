@@ -129,11 +129,26 @@ export class InventoryComponent {
       }
     });
 
-    const selectedItem = await firstValueFrom(dialogRef.afterClosed());
+    const selectedItems = await firstValueFrom(dialogRef.afterClosed());
 
-    if (selectedItem?.length) {
-      //
+    if (selectedItems?.length) {
+      this.printBarcodeItems(selectedItems);
     }
+  }
+
+  getPrintableBarcodeValue(item: Inventory): string | undefined {
+    return item.internalBarcode;
+  }
+
+  printBarcodeItems(items: Inventory[]): void {
+    const printableItems = items.map(
+      item => ({
+        item,
+        barcode: this.getPrintableBarcodeValue(item)
+      })
+    ).filter(printable => printable.barcode);
+
+    console.log("printable barcode items: ", printableItems)
   }
 
   async onScanned(code: string) {
