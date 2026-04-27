@@ -162,7 +162,7 @@ export class FamilyListPage {
     return cy.get('[data-cy="export-pdf-button"]');
   }
 
-  toggleExportMenu() {
-    return cy.get('[data-cy="export-menu-toggle"]').click();
+  toggleOptionsMenu() {
+    return cy.get('[data-cy="options-menu-toggle"]').click();
   }
 }

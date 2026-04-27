@@ -68,6 +68,29 @@ describe('Family list', () => {
     });
   });
 
+  describe('Options menu', () => {
+    it('Should have an options button that opens the options menu', () => {
+      page.getFamilyCards().should('have.length', 8);
+      page.toggleOptionsMenu();
+      cy.get('[data-cy="options-menu-toggle"]').should('be.visible');
+    });
+
+    it('Should have an options menu with a button to export CSV', () => {
+      page.toggleOptionsMenu();
+      page.exportCSVButton().should('be.visible');
+    });
+
+    it('Should have an options menu with a button to export PDF', () => {
+      page.toggleOptionsMenu();
+      page.exportPDFButton().should('be.visible');
+    });
+
+    it('Should have an options menu with a button to add a family', () => {
+      page.toggleOptionsMenu();
+      page.addFamilyButton().should('be.visible');
+    });
+  });
+
   describe('Filter', () => {
     it('Should have specification filters', () => {
       page.getSidenavButton().click();
@@ -175,6 +198,7 @@ describe('Family list', () => {
   });
 
   it('Should click add family and go to the right URL', () => {
+    page.toggleOptionsMenu();
     // Click on the button for adding a new family
     page.addFamilyButton().click();
 
@@ -183,24 +207,6 @@ describe('Family list', () => {
 
     // On the page we were sent to, we should see the right title
     cy.get('.add-family-title').should('have.text', 'New Family');
-  });
-
-  describe('Export menu', () => {
-    it('Should have an export button that opens the export menu', () => {
-      page.getFamilyCards().should('have.length', 8);
-      page.toggleExportMenu();
-      cy.get('[data-cy="export-menu-toggle"]').should('be.visible');
-    });
-
-    it('Should have an export menu with a button to export CSV', () => {
-      page.toggleExportMenu();
-      page.exportCSVButton().should('be.visible');
-    });
-
-    it('Should have an export menu with a button to export PDF', () => {
-      page.toggleExportMenu();
-      page.exportPDFButton().should('be.visible');
-    });
   });
 
 });

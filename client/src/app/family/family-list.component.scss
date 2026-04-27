@@ -113,6 +113,14 @@ mat-radio-button {
   margin: 0 12px;
 }
 
+.paginator-container {
+  justify-self: start;
+  align-self: start;
+  text-align: left;
+  margin-left: 0;
+}
+
+// Rules for buttons on side of page
 .fab-container {
   position: fixed;
   bottom: 15px;

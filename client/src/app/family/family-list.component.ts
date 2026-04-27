@@ -67,7 +67,7 @@ export class FamilyListComponent {
 
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
-  showExportMenu = signal<boolean>(false);
+  showOptionsMenu = signal<boolean>(false);
 
   families = toSignal <Family[]>(
     this.familyService.getFamilies().pipe(
@@ -151,8 +151,8 @@ export class FamilyListComponent {
     this.pageSize.set(event.pageSize);
   }
 
-  toggleExportMenu() {
-    this.showExportMenu.update(value => !value);
+  toggleOptionsMenu() {
+    this.showOptionsMenu.update(value => !value);
   }
 
   downloadCSV() {
@@ -166,7 +166,7 @@ export class FamilyListComponent {
       a.click();
 
       window.URL.revokeObjectURL(url);
-      this.showExportMenu.set(false);
+      this.showOptionsMenu.set(false);
     });
   }
 
@@ -175,7 +175,7 @@ export class FamilyListComponent {
     this.familyService.getFamilies().subscribe({
       next: () => {
         this.familyService.generatePDF();
-        this.showExportMenu.set(false);
+        this.showOptionsMenu.set(false);
       },
       error: (err) => {
         if (!(err.error instanceof ErrorEvent)) {

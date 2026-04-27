@@ -83,40 +83,40 @@ describe('Family list', () => {
 
   it('should close export menu when PDF is downloaded', () => {
     spyOn(familyService, 'generatePDF');
-    familyList.showExportMenu.set(true);
+    familyList.showOptionsMenu.set(true);
 
     familyList.downloadPDF();
 
-    expect(familyList.showExportMenu()).toBe(false);
+    expect(familyList.showOptionsMenu()).toBe(false);
   });
 
-  it('toggleExportMenu() should toggle showExportMenu signal from false to true', () => {
-    familyList.showExportMenu.set(false);
+  it('toggleOptionsMenu() should toggle showOptionsMenu signal from false to true', () => {
+    familyList.showOptionsMenu.set(false);
 
-    familyList.toggleExportMenu();
+    familyList.toggleOptionsMenu();
 
-    expect(familyList.showExportMenu()).toBe(true);
+    expect(familyList.showOptionsMenu()).toBe(true);
   });
 
-  it('toggleExportMenu() should toggle showExportMenu signal from true to false', () => {
-    familyList.showExportMenu.set(true);
+  it('toggleOptionsMenu() should toggle showOptionsMenu signal from true to false', () => {
+    familyList.showOptionsMenu.set(true);
 
-    familyList.toggleExportMenu();
+    familyList.toggleOptionsMenu();
 
-    expect(familyList.showExportMenu()).toBe(false);
+    expect(familyList.showOptionsMenu()).toBe(false);
   });
 
-  it('toggleExportMenu() should toggle showExportMenu multiple times in succession', () => {
-    familyList.showExportMenu.set(false);
+  it('toggleOptionsMenu() should toggle showOptionsMenu multiple times in succession', () => {
+    familyList.showOptionsMenu.set(false);
 
-    familyList.toggleExportMenu();
-    expect(familyList.showExportMenu()).toBe(true);
+    familyList.toggleOptionsMenu();
+    expect(familyList.showOptionsMenu()).toBe(true);
 
-    familyList.toggleExportMenu();
-    expect(familyList.showExportMenu()).toBe(false);
+    familyList.toggleOptionsMenu();
+    expect(familyList.showOptionsMenu()).toBe(false);
 
-    familyList.toggleExportMenu();
-    expect(familyList.showExportMenu()).toBe(true);
+    familyList.toggleOptionsMenu();
+    expect(familyList.showOptionsMenu()).toBe(true);
   });
 });
 

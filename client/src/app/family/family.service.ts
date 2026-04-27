@@ -134,6 +134,7 @@ export class FamilyService {
 
   private formatSchoolsList(schoolsData: Record<string, number>): string {
     return Object.entries(schoolsData)
+      .sort(([schoolA], [schoolB]) => schoolA.localeCompare(schoolB))
       .map(([school, count]) => `  • ${school}: ${count}`)
       .join('\n');
   }
@@ -422,8 +423,8 @@ export class FamilyService {
             let currentOffset = 15; // Determine offset for current family
 
             if (i > 0) {  // Not first family
-              const spaceNeeded = 60 + (currentFamily.students.length * 10); // Rough estimate of space needed for family info + table
-              if (lastY + 5 + spaceNeeded > maxY) { // Doesn't fit
+              const spaceNeeded = 90 + (currentFamily.students.length * 10); // Rough estimate of space needed for family info + table
+              if (lastY + 15 + spaceNeeded > maxY) { // Doesn't fit
                 doc.addPage();
                 currentOffset = 15;
               } else { // Fits
