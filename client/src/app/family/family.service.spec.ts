@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed, waitForAsync, fakeAsync, tick } from '@angular/core/testing';
 
 // RxJS Imports
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 // Family Imports
 import { Family } from './family';
@@ -752,5 +752,41 @@ describe('FamilyService', () => {
 
       expect(snackBarSpy).toHaveBeenCalled();
     }));
+
+    describe('Error handling during PDF generation', () => {
+      it('should show error message when getDashboardStats fails', fakeAsync(() => {
+        const error = new Error('API Error');
+        spyOn(familyService, 'getDashboardStats').and.returnValue(
+          new Observable(observer => observer.error(error))
+        );
+        spyOn(console, 'error');
+        const snackBarSpy = spyOn(familyService['snackBar'], 'open');
+
+        familyService.generatePDF();
+        tick();
+
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          'Unable to load dashboard data. Please try again.',
+          'Close',
+          { duration: 5000 }
+        );
+        expect(console.error).toHaveBeenCalledWith('Error fetching dashboard stats:', error);
+      }));
+
+      it('should handle errors gracefully during PDF generation', fakeAsync(() => {
+        spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+        spyOn(console, 'error');
+        const snackBarSpy = spyOn(familyService['snackBar'], 'open');
+
+        familyService.generatePDF();
+        tick();
+
+        // Verify the success snackbar is shown (if no error occurs)
+        const successCall = snackBarSpy.calls.all().find(call =>
+          call.args[0] === 'Generating and downloading report as PDF file...'
+        );
+        expect(successCall).toBeDefined();
+      }));
+    });
   });
 });

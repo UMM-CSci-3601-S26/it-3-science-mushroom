@@ -120,12 +120,6 @@ describe('Family list', () => {
   });
 });
 
-/*
-* This test is a little odd, but illustrates how we can use stubs
-* to create mock objects (a service in this case) that be used for
-* testing. Here we set up the mock FamilyService (familyServiceStub) so that
-* _always_ fails (throws an exception) when you request a set of families.
-*/
 describe('Misbehaving Family List', () => {
   let familyList: FamilyListComponent;
   let fixture: ComponentFixture<FamilyListComponent>;
@@ -142,11 +136,11 @@ describe('Misbehaving Family List', () => {
     familyServiceStub = {
       getFamilies: () =>
         new Observable((observer) => {
-          observer.error('getFamilies() Observer generates an error');
+          observer.error({ error: new Error('getFamilies error'), status: 500, message: 'Server error' });
         }),
       getDashboardStats: () =>
         new Observable((observer) => {
-          observer.error('getDashboardStats() Observer generates an error');
+          observer.error({ error: new Error('getDashboardStats error'), status: 500, message: 'Server error' });
         }),
       familyOptions: signal([]),
       exportFamilies: () => of('')
@@ -175,7 +169,7 @@ describe('Misbehaving Family List', () => {
     fixture.detectChanges();
   });
 
-  it('generates an error if we dont set up a Family Service', () => {
+  it('generates an error if we do not set up a Family Service', () => {
     // If the service fails, we expect the `serverFilteredFamilies` signal to
     // be an empty array of families.
     expect(familyList.serverFilteredFamilies())
@@ -186,7 +180,7 @@ describe('Misbehaving Family List', () => {
     // like this; maybe we just want to expect it to be non-empty?)
     expect(familyList.errMsg())
       .withContext('the error message will be')
-      .toContain('Problem contacting the server – Error Code:');
+      .toContain('Problem contacting the server - Error Code:');
   });
 });
 
