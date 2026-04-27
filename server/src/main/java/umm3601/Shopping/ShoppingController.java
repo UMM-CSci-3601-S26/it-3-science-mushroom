@@ -20,7 +20,7 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 import umm3601.Controller;
-import umm3601.Inventory.Inventory;
+//import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 import umm3601.Family.Family;
 
@@ -32,7 +32,7 @@ public class ShoppingController implements Controller {
   // Database Collections
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
-  private final JacksonMongoCollection<Inventory> inventoryCollection;
+  // private final JacksonMongoCollection<Inventory> inventoryCollection;
 
   // Database Constructor
   public ShoppingController(MongoDatabase database) {
@@ -46,11 +46,11 @@ public class ShoppingController implements Controller {
       "supplylist",
       SupplyList.class,
       UuidRepresentation.STANDARD);
-    inventoryCollection = JacksonMongoCollection.builder().build(
-      database,
-      "inventory",
-      Inventory.class,
-      UuidRepresentation.STANDARD);
+    // inventoryCollection = JacksonMongoCollection.builder().build(
+    //   database,
+    //   "inventory",
+    //   Inventory.class,
+    //   UuidRepresentation.STANDARD);
   }
 
   // get school and grade totals
@@ -103,9 +103,9 @@ public class ShoppingController implements Controller {
   }
 
   // get inventory
-  private List<Inventory> getInventory() {
-    return inventoryCollection.find().into(new ArrayList<>());
-  }
+  // private List<Inventory> getInventory() {
+  //   return inventoryCollection.find().into(new ArrayList<>());
+  // }
 
   // get shopping items based on supplylist totals and inventory totals,
   // must fulfill specific request first with best matching items
@@ -113,9 +113,9 @@ public class ShoppingController implements Controller {
     Map<String, Map<String, Integer>> schoolGradeTotals = getSchoolGradeTotals();
     List<ShoppingSupplyList> supplyListTotals = getSupplyListTotals(schoolGradeTotals);
 
-    List<Inventory> inventory = getInventory();
+    //List<Inventory> inventory = getInventory();
 
-    List<Shopping> shoppingItems = new ArrayList<>();
+    //List<Shopping> shoppingItems = new ArrayList<>();
 
     // try to find exact match from inventory for each supply list item,
     // if not found, find closest match that satisfies the specifications of the supply list item with the highest quantity in inventory
