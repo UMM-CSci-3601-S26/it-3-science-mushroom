@@ -126,9 +126,9 @@ describe('AddSupplyListComponent', () => {
       }
     });
 
-    it('should still include PreK and K', () => {
+    it('should still include PreK and Kindergarten', () => {
       expect(GRADES).toContain('PreK');
-      expect(GRADES).toContain('K');
+      expect(GRADES).toContain('Kindergarten');
     });
   });
 
