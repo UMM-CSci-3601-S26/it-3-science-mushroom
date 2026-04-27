@@ -1,36 +1,21 @@
 package umm3601.Shopping;
 
-// Static Imports
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
-
 // Java Imports
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 // Org Imports
-import org.bson.Document;
 import org.bson.UuidRepresentation;
-import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 
 // Com Imports
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Updates;
-import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
 import io.javalin.Javalin;
-import io.javalin.http.BadRequestResponse;
-import io.javalin.http.NotFoundResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
@@ -58,9 +43,9 @@ public class ShoppingController implements Controller {
       UuidRepresentation.STANDARD);
     supplyListCollection = JacksonMongoCollection.builder().build(
       database,
-       "supplyLists",
-        SupplyList.class,
-         UuidRepresentation.STANDARD);
+      "supplylist",
+      SupplyList.class,
+      UuidRepresentation.STANDARD);
     inventoryCollection = JacksonMongoCollection.builder().build(
       database,
       "inventory",
@@ -84,10 +69,10 @@ public class ShoppingController implements Controller {
   }
 
   // get supplylist totals based on school and grade totals
-  // current issue with how family and supply lists data is formatted with school and grade, not being the same format.
-  private Map<SupplyList, Integer> getSupplyListTotals(Map<String, Map<String, Integer>> schoolGradeTotals) {
+  // probably a more efficient way to do this, but this is straightforward and works for now
+  private List<ShoppingSupplyList> getSupplyListTotals(Map<String, Map<String, Integer>> schoolGradeTotals) {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-    Map<SupplyList, Integer> supplyListTotals = new HashMap<>();
+    List<ShoppingSupplyList> supplyListTotals = new ArrayList<>();
 
     // loop through each supply list
     for (SupplyList supplyList : allSupplyLists) {
@@ -104,16 +89,18 @@ public class ShoppingController implements Controller {
           int numStudents = gradeEntry.getValue();
 
           // if the supply list matches the school and grade, add the quantity needed for that supply list to the total needed
-          if (supplyList.school.equals(school) && supplyList.grade.equals(grade)) {
-            totalNeeded += numStudents * supplyList.quantity;
+          if (supplyList.school.equals(school) && (supplyList.grade.equals(grade) || (supplyList.grade.equals("High School") && Arrays.asList("9","10","11","12").contains(grade)))) {
+            int qty = supplyList.quantity != null ? supplyList.quantity : 1;
+            totalNeeded += numStudents * qty;
           }
         }
       }
-      supplyListTotals.put(supplyList, totalNeeded);
+      if (totalNeeded > 0) {
+        supplyListTotals.add(new ShoppingSupplyList(supplyList, totalNeeded));
+      }
     }
     return supplyListTotals;
   }
-
 
   // get inventory
   private List<Inventory> getInventory() {
@@ -123,14 +110,23 @@ public class ShoppingController implements Controller {
   // get shopping items based on supplylist totals and inventory totals,
   // must fulfill specific request first with best matching items
   public void getShoppingItems(Context ctx) {
-  Map<String, Map<String, Integer>> schoolGradeTotals = getSchoolGradeTotals();
-  Map<SupplyList, Integer> supplyListTotals = getSupplyListTotals(schoolGradeTotals);
-  List<Inventory> inventory = getInventory();
+    Map<String, Map<String, Integer>> schoolGradeTotals = getSchoolGradeTotals();
+    List<ShoppingSupplyList> supplyListTotals = getSupplyListTotals(schoolGradeTotals);
 
-  List<Shopping> shoppingItems = new ArrayList<>();
-  ctx.json(schoolGradeTotals);
-  ctx.status(HttpStatus.OK);
-}
+    List<Inventory> inventory = getInventory();
+
+    List<Shopping> shoppingItems = new ArrayList<>();
+
+    // try to find exact match from inventory for each supply list item,
+    // if not found, find closest match that satisfies the specifications of the supply list item with the highest quantity in inventory
+    // if no match is found, add the supply list item to the shopping list with the quantity needed
+    // if supply list item is partially fulfilled by inventory item, add the remaining quantity needed to the shopping list with the quantity needed
+    // fill most specific items first, then less specific items, then least specific items
+    // Cannot reuse inventory items, so if an inventory item is used, it is removed from the inventory list
+
+    ctx.json(supplyListTotals);
+    ctx.status(HttpStatus.OK);
+  }
 
   @Override
   public void addRoutes(Javalin server) {
