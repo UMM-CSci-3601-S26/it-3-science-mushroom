@@ -19,23 +19,21 @@
         Clear
       </button>
     </div>
-  </mat-dialog-content>
 
-  <mat-dialog-actions class="barcode-dialog-actions" align="end">
-    <div class="select-options">
-      <button mat-raised-button type="button" (click)="clearSelectedItems()">
-        Clear Selected
-      </button>
-      <button mat-raised-button type="button" (click)="selectAllVisibleItems()">
-        Select Visible
-      </button>
-      <button mat-raised-button type="button" (click)="selectAllItems()">
-        Select All
-      </button>
+    <div class="barcode-dialog-actions barcode-select-actions">
+      <div class="select-options">
+        <button mat-raised-button type="button" (click)="clearSelectedItems()">
+          Clear Selected
+        </button>
+        <button mat-raised-button type="button" (click)="selectAllVisibleItems()">
+          Select Visible
+        </button>
+        <button mat-raised-button type="button" (click)="selectAllItems()">
+          Select All
+        </button>
+      </div>
     </div>
-  </mat-dialog-actions>
 
-  <mat-dialog-content class="barcode-print-content barcode-list-content">
     <div class="barcode-item-list-frame">
       <div class="barcode-item-list">
         <div class="barcode-item-row" *ngFor="let item of filteredItems()">
@@ -59,8 +57,6 @@
       </div>
     </div>
   </mat-dialog-content>
-
-  <div class="barcode-dialog-bottom-section" aria-hidden="true"></div>
 
   <mat-dialog-actions class="barcode-dialog-actions barcode-print-actions" align="end">
     <button mat-raised-button type="button" (click)="cancel()">

@@ -31,6 +31,7 @@ h2[mat-dialog-title] {
   box-sizing: border-box;
   margin: 0 32px;
   padding: 18px;
+  height: min(720px, calc(95vh - 86px));
   max-height: calc(95vh - 86px);
   min-height: 0;
   overflow: hidden;
@@ -53,24 +54,24 @@ h2[mat-dialog-title] {
 }
 
 .barcode-print-content {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   width: 100%;
   padding-top: 0.5rem;
   padding-left: 0;
   padding-right: 0;
-  max-height: none;
-  overflow: visible;
+  padding-bottom: 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
   background: transparent;
   color: var(--barcode-text);
 }
 
-.barcode-list-content {
-  flex: 0 1 auto;
-  overflow: visible;
-}
-
 .barcode-filter-row {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -83,6 +84,8 @@ h2[mat-dialog-title] {
 }
 
 .barcode-item-list-frame {
+  flex: 1 1 auto;
+  display: flex;
   box-sizing: border-box;
   min-height: 0;
   overflow: hidden;
@@ -97,13 +100,11 @@ h2[mat-dialog-title] {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   grid-auto-rows: 86px;
   gap: 0.5rem;
-  max-height: clamp(260px, 48vh, 520px);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
   padding: 0 0.25rem 0.5rem 0;
-}
-
-.barcode-dialog-bottom-section {
-  flex: 0 0 4px;
 }
 
 .barcode-item-row {
@@ -165,11 +166,15 @@ h2[mat-dialog-title] {
   color: var(--barcode-text);
 }
 
+.barcode-select-actions {
+  margin: 0.25rem 0 0.75rem;
+}
+
 .barcode-print-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin: 0;
+  margin: 0.75rem 0 0;
 }
 
 .select-options,
