@@ -145,6 +145,8 @@ export class FamilyService {
     return (grade === 'PreK' || grade === 'Kindergarten') ? grade : `Grade ${grade}`;
   }
 
+  // Splits grades list into two columns, left having first half and right having second half
+  // Sorted by gradeOrder and formatted with formatGrade
   private formatGradesListLeft(gradesData: Record<string, number>): string {
     const entries = Object.entries(gradesData)
       .sort(([gradeA], [gradeB]) => {
@@ -172,7 +174,7 @@ export class FamilyService {
   }
 
   /**
-   * Custom helper function to add text with specified styling.
+   * Custom helper function to add text with specified styling
    */
   private addText(doc: jsPDF, text: string, x: number, y: number, size: number, weight: string, font: string): void {
     doc.setFont(undefined, weight);
@@ -183,16 +185,21 @@ export class FamilyService {
 
   /**
    * Helper method to render a given family's info on the PDF
-   * @param offset the y offset to start rendering the family. Defaults to 15
+   * @param offset the y offset from top of page to start rendering the family at
    */
-  private renderFamily(doc: jsPDFWithAutoTable, family: Family, offset: number | 15): number {
+  private renderFamily(doc: jsPDFWithAutoTable, family: Family, offset: number): number {
+    const thinLineWidth = 0.5;
+    const thickLineWidth = 1;
+
     // Family title
     const titleY = offset;
     this.addText(doc, family.guardianName, 10, titleY, 14, "bold", "normal");
     const titleHeight = doc.getTextDimensions(family.guardianName).h;
 
     // Separator Line
+    doc.setLineWidth(thickLineWidth);
     doc.line(10, titleHeight + titleY, 200, titleHeight + titleY);
+    doc.setLineWidth(thinLineWidth);
 
     // Vars for all boxes
     const boxWidth = 60;
@@ -325,15 +332,15 @@ export class FamilyService {
   }
 
   /**
-     * Generates a PDF report of all the families. First page has a description and title with the date it was generated.
-     * Family dashboard info (number of families, students per school, etc) is also placed on the first page.
-     * The pages after hold family info in a list + table format. Each family gets its own page.
-     * The list has entries for the guardian name, email, address, accommodations, time slot, time availability
-     * The table has has entries for each student, with columns for name, school, grade, and item requests.
-     * The PDF is saved with the name "FamilyReport_MM-DD-YYYY.pdf", using formatDateTime to get the formatted date.
+     * Generates a PDF report of all the families.
+     * Page 1: Dashboard stats (total families, total students, students per school, students per grade)
+     * Subsequent pages: Each family's details and students, with page breaks as needed. Attempts to fit as many families per page as possible
      */
   generatePDF() {
     const doc = new jsPDF() as jsPDFWithAutoTable;
+    const thinLineWidth = 0.5;
+    const thickLineWidth = 1;
+
     // Title
     this.addText(doc, "Family Report", 10, 10, 16, "bold", "normal");
     // Description
@@ -342,9 +349,9 @@ export class FamilyService {
         this.formatDateTimeService.formatDateTime(this.dateTime)[0]), 10, 20, 12, "normal", "normal");
 
     // Separator Line
-    doc.setLineWidth(1);
-    doc.setDrawColor(0);
+    doc.setLineWidth(thickLineWidth);
     doc.line(10, 30, 200, 30);
+    doc.setLineWidth(thinLineWidth);
 
     // Dashboard stats
     this.getDashboardStats().subscribe(stats => {
@@ -391,24 +398,31 @@ export class FamilyService {
       this.addText(doc, gradesRight, 170, 55, 10, "normal", "normal");
 
       // Individual Family Pages \\
+      const maxY = doc.internal.pageSize.getHeight() - 15;
+      let lastY = 15;
 
-      this.family().forEach((family, index) => {
-        if (index === 0) { // If first family, add a page
+      for (let i = 0; i < this.family().length; i++) {
+        if (i === 0) { // First family, add page after dashboard stats
           doc.addPage();
         }
 
-        // Render family info and get bottom Y of rendered content to know where to start next family
-        const lastY = this.renderFamily(doc, family, 15);
+        const currentFamily = this.family()[i];
+        let currentOffset = 15; // Determine offset for current family
 
-        // Check if we need to add a new page (if next family won't fit on current page)
-        if (index < this.family().length - 1) { // If not last family
-          const nextFamily = this.family()[index + 1];
-          const spaceNeeded = 60 + (nextFamily.students.length * 10); // Approx space needed for next family (title + details + table)
-          if (lastY + spaceNeeded > doc.internal.pageSize.getHeight()) {
+        if (i > 0) {  // Not first family
+          const spaceNeeded = 60 + (currentFamily.students.length * 10); // Rough estimate of space needed for family info + table
+          if (lastY + 5 + spaceNeeded > maxY) { // Doesn't fit
             doc.addPage();
+            currentOffset = 15;
+          } else { // Fits
+            doc.setLineWidth(thinLineWidth);
+            doc.line(10, lastY + 5, 200, lastY + 5); // Separator line between families
+            currentOffset = lastY + 15;
           }
         }
-      });
+        // Render family
+        lastY = this.renderFamily(doc, currentFamily, currentOffset);
+      }
 
       // PDF name
       const fileName = `FamilyReport_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.pdf`;
