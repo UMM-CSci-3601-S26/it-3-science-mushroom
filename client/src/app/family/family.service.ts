@@ -373,15 +373,15 @@ export class FamilyService {
       const gradesRight = `${this.formatGradesListRight(stats.studentsPerGrade)}`;
 
       // Box around family and student stats
-      doc.roundedRect(boxX, boxY, boxWidth, 40, 3, 3);
+      doc.roundedRect(boxX, boxY, boxWidth, 35, 3, 3);
 
       // Family Dashboard Stats
       this.addText(doc, "Total Families", boxX + labelOffsetX + 2, boxY + labelOffsetY, 14, "bold", "normal");
       this.addText(doc, totalFamilies, boxX + labelOffsetX + 15, boxY + 15, 14, "normal", "normal");
 
       // Student Dashboard Stats
-      this.addText(doc, "Total Students", boxX + labelOffsetX + 2, boxY + labelOffsetY + 20, 14, "bold", "normal");
-      this.addText(doc, totalStudents, boxX + labelOffsetX + 15, boxY + 35, 14, "normal", "normal");
+      this.addText(doc, "Total Students", boxX + labelOffsetX + 2, boxY + labelOffsetY + 15, 14, "bold", "normal");
+      this.addText(doc, totalStudents, boxX + labelOffsetX + 15, boxY + 30, 14, "normal", "normal");
 
       // School Stats box
       const schoolLines = studentsPerSchool.split('\n').length;
@@ -407,8 +407,8 @@ export class FamilyService {
       // Grade Stats List
       this.addText(doc, "Students Per Grade", gradeBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
 
-      this.addText(doc, gradesLeft, gradeBoxX + labelOffsetX, boxY + labelOffsetY + 5, 10, "normal", "normal");
-      this.addText(doc, gradesRight, gradeBoxX + labelOffsetX + 30, boxY + labelOffsetY + 5, 10, "normal", "normal");
+      this.addText(doc, gradesLeft, gradeBoxX + labelOffsetX - 2, boxY + labelOffsetY + 5, 10, "normal", "normal");
+      this.addText(doc, gradesRight, gradeBoxX + labelOffsetX + 28, boxY + labelOffsetY + 5, 10, "normal", "normal");
 
       // Individual Family Pages \\
       const maxY = doc.internal.pageSize.getHeight() - 15;
