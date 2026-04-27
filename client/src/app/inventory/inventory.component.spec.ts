@@ -23,6 +23,9 @@ import { By } from '@angular/platform-browser';
 import { BarcodePrintWindowService } from './barcode-print-window.service';
 import { SettingsService } from '../settings/settings.service';
 
+const mockSettingsService = {
+  getSettings: () => of({ barcodePrintWarningLimit: 25 })
+};
 
 describe('Inventory Table', () => {
   let inventoryTable: InventoryComponent;
@@ -52,6 +55,7 @@ describe('Inventory Table', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: InventoryService, useClass: MockInventoryService },
+        { provide: SettingsService, useValue: mockSettingsService },
         provideRouter([])
       ],
     });
@@ -637,6 +641,7 @@ describe('Filter Dropdown options', () => {
       imports: [InventoryComponent],
       providers: [
         { provide: InventoryService, useClass: MockInventoryService },
+        { provide: SettingsService, useValue: mockSettingsService },
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([])
@@ -706,7 +711,9 @@ describe('Misbehaving Inventory Table', () => {
       providers: [{
         provide: InventoryService,
         useValue: inventoryServiceStub
-      }, provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      },
+      { provide: SettingsService, useValue: mockSettingsService },
+      provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     })
       .compileComponents();
   }));
