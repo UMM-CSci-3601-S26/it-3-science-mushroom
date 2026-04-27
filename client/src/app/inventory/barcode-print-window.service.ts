@@ -64,6 +64,12 @@ export class BarcodePrintWindowService {
               font-size: 13px;
             }
 
+            .print-summary-total {
+              font-size: 14px;
+              font-weight: 700;
+              color: #111;
+            }
+
             .print-summary li {
               border: 1px solid #ddd;
               border-radius: 4px;
@@ -160,8 +166,13 @@ export class BarcodePrintWindowService {
         `;
       })
       .join('');
-
+    const totalBarcodes = printableItems.reduce(
+      (total, printableItems) => total + this.normalizeQuantity(printableItems.quantity), 0
+    );
     return `
+      <div class="print-summary-total">
+        Total barcodes: <span class="summary-quantity">${totalBarcodes}</span>
+      </div>
       <ul class="print-summary" aria-label="Barcode print summary">
         ${summaryItems}
       </ul>
