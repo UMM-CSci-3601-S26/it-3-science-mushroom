@@ -22,7 +22,7 @@ export class BarcodePrintWindowService {
 
   private buildPrintDocument(printableItems: PrintableBarcodeItem[]): string {
     const labels = printableItems
-      .map(printableItem => this.buildBarcodeLabel(printableItem))
+      .map(printableItem => this.buildBarcodeLabels(printableItem))
       .join('');
 
     return `
@@ -119,6 +119,13 @@ export class BarcodePrintWindowService {
         </body>
       </html>
     `;
+  }
+
+  private buildBarcodeLabels(printableItem: PrintableBarcodeItem): string {
+    const requestedQuantity = Math.floor(Number(printableItem.quantity));
+    const quantity = Number.isFinite(requestedQuantity) && requestedQuantity > 0 ? requestedQuantity : 1;
+
+    return Array.from({ length: quantity }, () => this.buildBarcodeLabel(printableItem)).join('');
   }
 
   private buildBarcodeLabel(printableItem: PrintableBarcodeItem): string {

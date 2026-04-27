@@ -27,6 +27,7 @@ describe('BarcodePrintWindowService', () => {
     item,
     barcode: 'ITEM-00001',
     barcodeImage: 'data:image/png;base64,barcode-image',
+    quantity: 2,
   };
 
   beforeEach(() => {
@@ -65,5 +66,6 @@ describe('BarcodePrintWindowService', () => {
     expect(html).toContain('data:image/png;base64,barcode-image');
     expect(html).toContain('Markers &lt;Blue&gt;');
     expect(html).toContain('Washable &amp; bright &quot;markers&quot;');
+    expect(html.match(/data:image\/png;base64,barcode-image/g)?.length).toBe(2);
   });
 });

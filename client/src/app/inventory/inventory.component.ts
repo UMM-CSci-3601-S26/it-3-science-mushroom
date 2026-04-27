@@ -31,11 +31,12 @@ import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
 import { BarcodePrintDialog } from './barcode-print-dialog';
+import { BarcodePrintQuantityDialog } from './barcode-print-quantity-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
 import JsBarcode from 'jsbarcode';
 import { BarcodePrintWindowService } from './barcode-print-window.service';
-import { PrintableBarcodeItem } from './barcode-print-item';
+import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode-print-item';
 
 type ScanCard = {
   id: string;
@@ -139,7 +140,20 @@ export class InventoryComponent {
     const selectedItems = await firstValueFrom(dialogRef.afterClosed());
 
     if (selectedItems?.length) {
-      this.printBarcodeItems(selectedItems);
+      const quantityDialogRef = this.dialog.open(BarcodePrintQuantityDialog, {
+        width: '760px',
+        maxWidth: '95vw',
+        maxHeight: '95vh',
+        data: {
+          items: selectedItems
+        }
+      });
+
+      const quantitySelections = await firstValueFrom(quantityDialogRef.afterClosed());
+
+      if (quantitySelections?.length) {
+        this.printBarcodeItems(quantitySelections);
+      }
     }
   }
 
@@ -147,20 +161,21 @@ export class InventoryComponent {
     return item.internalBarcode;
   }
 
-  printBarcodeItems(items: Inventory[]): void {
+  printBarcodeItems(selections: BarcodePrintQuantitySelection[]): void {
     const printableItems: PrintableBarcodeItem[] = [];
 
-    for (const item of items) {
-      const barcode = this.getPrintableBarcodeValue(item);
+    for (const selection of selections) {
+      const barcode = this.getPrintableBarcodeValue(selection.item);
 
       if (!barcode) {
         continue;
       }
 
       printableItems.push({
-        item,
+        item: selection.item,
         barcode,
-        barcodeImage: this.createBarcodeImage(barcode)
+        barcodeImage: this.createBarcodeImage(barcode),
+        quantity: selection.quantity
       });
     }
 
