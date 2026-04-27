@@ -72,6 +72,52 @@ describe('Family list', () => {
     expect(URL.createObjectURL).toHaveBeenCalled();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob-url');
   });
+
+  it('generatePDF() should be called when PDF is downloaded', () => {
+    const generatePDFSpy = spyOn(familyService, 'generatePDF');
+
+    familyList.downloadPDF();
+
+    expect(generatePDFSpy).toHaveBeenCalled();
+  });
+
+  it('should close export menu when PDF is downloaded', () => {
+    spyOn(familyService, 'generatePDF');
+    familyList.showExportMenu.set(true);
+
+    familyList.downloadPDF();
+
+    expect(familyList.showExportMenu()).toBe(false);
+  });
+
+  it('toggleExportMenu() should toggle showExportMenu signal from false to true', () => {
+    familyList.showExportMenu.set(false);
+
+    familyList.toggleExportMenu();
+
+    expect(familyList.showExportMenu()).toBe(true);
+  });
+
+  it('toggleExportMenu() should toggle showExportMenu signal from true to false', () => {
+    familyList.showExportMenu.set(true);
+
+    familyList.toggleExportMenu();
+
+    expect(familyList.showExportMenu()).toBe(false);
+  });
+
+  it('toggleExportMenu() should toggle showExportMenu multiple times in succession', () => {
+    familyList.showExportMenu.set(false);
+
+    familyList.toggleExportMenu();
+    expect(familyList.showExportMenu()).toBe(true);
+
+    familyList.toggleExportMenu();
+    expect(familyList.showExportMenu()).toBe(false);
+
+    familyList.toggleExportMenu();
+    expect(familyList.showExportMenu()).toBe(true);
+  });
 });
 
 /*
@@ -252,4 +298,83 @@ describe('Paginator pageChange event', () => {
     expect(component.pageSize()).toBe(25);
   });
 
+});
+
+describe('Grade Sort Comparator', () => {
+  let component: FamilyListComponent;
+  let fixture: ComponentFixture<FamilyListComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [FamilyListComponent],
+      providers: [
+        { provide: FamilyService, useClass: MockFamilyService },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(FamilyListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should return -1 when a is PreK and b is not', () => {
+    const result = component.gradeSort({ key: 'PreK' }, { key: '1' });
+    expect(result).toBe(-1);
+  });
+
+  it('should return 1 when b is PreK and a is not', () => {
+    const result = component.gradeSort({ key: '1' }, { key: 'PreK' });
+    expect(result).toBe(1);
+  });
+
+  it('should return 0 when both a and b are PreK', () => {
+    const result = component.gradeSort({ key: 'PreK' }, { key: 'PreK' });
+    expect(result).toBe(0);
+  });
+
+  it('should return -1 when a is Kindergarten and b is not', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: '1' });
+    expect(result).toBe(-1);
+  });
+
+  it('should return 1 when b is Kindergarten and a is not', () => {
+    const result = component.gradeSort({ key: '1' }, { key: 'Kindergarten' });
+    expect(result).toBe(1);
+  });
+
+  it('should return 0 when both a and b are Kindergarten', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: 'Kindergarten' });
+    expect(result).toBe(0);
+  });
+
+  it('should place PreK before Kindergarten', () => {
+    const result = component.gradeSort({ key: 'PreK' }, { key: 'Kindergarten' });
+    expect(result).toBeLessThan(0);
+  });
+
+  it('should place Kindergarten after PreK', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: 'PreK' });
+    expect(result).toBeGreaterThan(0);
+  });
+
+  it('should sort numeric grades in ascending order', () => {
+    expect(component.gradeSort({ key: '1' }, { key: '2' })).toBeLessThan(0);
+    expect(component.gradeSort({ key: '5' }, { key: '3' })).toBeGreaterThan(0);
+    expect(component.gradeSort({ key: '4' }, { key: '4' })).toBe(0);
+  });
+
+  it('should place Kindergarten before numeric grades', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: '1' });
+    expect(result).toBeLessThan(0);
+  });
+
+  it('should place numeric grades after Kindergarten', () => {
+    const result = component.gradeSort({ key: '1' }, { key: 'Kindergarten' });
+    expect(result).toBeGreaterThan(0);
+  });
 });
