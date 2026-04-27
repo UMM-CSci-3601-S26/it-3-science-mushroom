@@ -21,6 +21,7 @@ export class BarcodePrintWindowService {
   }
 
   private buildPrintDocument(printableItems: PrintableBarcodeItem[]): string {
+    const summary = this.buildPrintSummary(printableItems);
     const labels = printableItems
       .map(printableItem => this.buildBarcodeLabels(printableItem))
       .join('');
@@ -47,7 +48,31 @@ export class BarcodePrintWindowService {
             }
 
             .toolbar {
+              display: grid;
+              gap: 12px;
               margin-bottom: 20px;
+            }
+
+            .print-summary {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+              gap: 8px;
+              margin: 0;
+              padding: 0;
+              list-style: none;
+              color: #333;
+              font-size: 13px;
+            }
+
+            .print-summary li {
+              border: 1px solid #ddd;
+              border-radius: 4px;
+              padding: 6px 8px;
+              background: #f8fafc;
+            }
+
+            .summary-quantity {
+              font-weight: 700;
             }
 
             .print-button {
@@ -112,6 +137,7 @@ export class BarcodePrintWindowService {
         <body>
           <div class="toolbar">
             <button class="print-button" type="button" onclick="window.print()">Print Barcodes</button>
+            ${summary}
           </div>
           <main class="barcode-grid">
             ${labels}
@@ -121,11 +147,37 @@ export class BarcodePrintWindowService {
     `;
   }
 
+  private buildPrintSummary(printableItems: PrintableBarcodeItem[]): string {
+    const summaryItems = printableItems
+      .map(printableItem => {
+        const itemName = this.escapeHtml(printableItem.item.item);
+        const quantity = this.normalizeQuantity(printableItem.quantity);
+
+        return `
+          <li>
+            ${itemName}: <span class="summary-quantity">${quantity}</span>
+          </li>
+        `;
+      })
+      .join('');
+
+    return `
+      <ul class="print-summary" aria-label="Barcode print summary">
+        ${summaryItems}
+      </ul>
+    `;
+  }
+
   private buildBarcodeLabels(printableItem: PrintableBarcodeItem): string {
-    const requestedQuantity = Math.floor(Number(printableItem.quantity));
-    const quantity = Number.isFinite(requestedQuantity) && requestedQuantity > 0 ? requestedQuantity : 1;
+    const quantity = this.normalizeQuantity(printableItem.quantity);
 
     return Array.from({ length: quantity }, () => this.buildBarcodeLabel(printableItem)).join('');
+  }
+
+  private normalizeQuantity(quantity: number): number {
+    const requestedQuantity = Math.floor(Number(quantity));
+
+    return Number.isFinite(requestedQuantity) && requestedQuantity > 0 ? requestedQuantity : 1;
   }
 
   private buildBarcodeLabel(printableItem: PrintableBarcodeItem): string {

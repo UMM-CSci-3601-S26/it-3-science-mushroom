@@ -37,6 +37,7 @@ import { ManualEntry, ManualEntryResult } from './manual-entry';
 import JsBarcode from 'jsbarcode';
 import { BarcodePrintWindowService } from './barcode-print-window.service';
 import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode-print-item';
+import { SettingsService } from '../settings/settings.service';
 
 type ScanCard = {
   id: string;
@@ -89,6 +90,7 @@ export class InventoryComponent {
   private inventoryIndex = inject(InventoryIndex);
   private dialog = inject(MatDialog);
   private barcodePrintWindow = inject(BarcodePrintWindowService);
+  private settingsService = inject(SettingsService);
 
   reload = signal(0);
   showScanner = false;
@@ -145,7 +147,8 @@ export class InventoryComponent {
         maxWidth: '95vw',
         maxHeight: '95vh',
         data: {
-          items: selectedItems
+          items: selectedItems,
+          warningLimit: await this.getBarcodePrintWarningLimit()
         }
       });
 
@@ -154,6 +157,16 @@ export class InventoryComponent {
       if (quantitySelections?.length) {
         this.printBarcodeItems(quantitySelections);
       }
+    }
+  }
+
+  private async getBarcodePrintWarningLimit(): Promise<number> {
+    try {
+      const settings = await firstValueFrom(this.settingsService.getSettings());
+
+      return settings.barcodePrintWarningLimit ?? 25;
+    } catch {
+      return 25;
     }
   }
 

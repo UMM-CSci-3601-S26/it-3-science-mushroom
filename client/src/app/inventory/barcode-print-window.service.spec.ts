@@ -63,8 +63,10 @@ describe('BarcodePrintWindowService', () => {
 
     const html = documentSpy.write.calls.mostRecent().args[0] as string;
     expect(html).toContain('Print Barcodes');
+    expect(html).toContain('Barcode print summary');
     expect(html).toContain('data:image/png;base64,barcode-image');
     expect(html).toContain('Markers &lt;Blue&gt;');
+    expect(html).toContain('<span class="summary-quantity">2</span>');
     expect(html).toContain('Washable &amp; bright &quot;markers&quot;');
     expect(html.match(/data:image\/png;base64,barcode-image/g)?.length).toBe(2);
   });

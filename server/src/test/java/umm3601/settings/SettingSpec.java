@@ -34,6 +34,7 @@ public class SettingSpec {
     assertEquals("10:30 AM - 12:30 AM", settings.timeAvailability.lateMorning);
     assertEquals("1:00 PM - 3:00 PM", settings.timeAvailability.earlyAfternoon);
     assertEquals("3:00 PM - 5:00 PM", settings.timeAvailability.lateAfternoon);
+    assertEquals(25, settings.barcodePrintWarningLimit);
   }
 
   @Test

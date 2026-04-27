@@ -90,6 +90,44 @@ describe('BarcodePrintQuantityDialog', () => {
     ]);
   });
 
+  it('asks for confirmation before printing more than the warning limit', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component.rows[0].quantity = 26;
+
+    component.print();
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'You are printing more than 25 labels for: Markers (26). Continue?'
+    );
+    expect(dialogRefSpy.close).toHaveBeenCalledWith([
+      { item: itemA, quantity: 26 },
+      { item: itemB, quantity: 1 },
+    ]);
+  });
+
+  it('does not close when printing over the warning limit is canceled', () => {
+    spyOn(window, 'confirm').and.returnValue(false);
+    component.rows[0].quantity = 26;
+
+    component.print();
+
+    expect(dialogRefSpy.close).not.toHaveBeenCalled();
+  });
+
+  it('lets the warning limit be changed before printing', () => {
+    spyOn(window, 'confirm');
+    component.data.warningLimit = 30;
+    component.rows[0].quantity = 26;
+
+    component.print();
+
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(dialogRefSpy.close).toHaveBeenCalledWith([
+      { item: itemA, quantity: 26 },
+      { item: itemB, quantity: 1 },
+    ]);
+  });
+
   it('closes without selections when canceled', () => {
     component.cancel();
 

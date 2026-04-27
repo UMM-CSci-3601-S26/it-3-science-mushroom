@@ -27,6 +27,7 @@ describe('SettingsService', () => {
       { itemTerm: 'pencil', status: 'notGiven' },
     ],
     availableSpots: 5,
+    barcodePrintWarningLimit: 25,
   };
 
   beforeEach(() => {
@@ -143,6 +144,17 @@ describe('SettingsService', () => {
       const req = httpTestingController.expectOne(`${settingsUrl}/availableSpots`);
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(updatedValue);
+      req.flush(null);
+    });
+  });
+
+  describe('updateBarcodePrintWarningLimit()', () => {
+    it('sends PATCH to /api/settings/barcodePrintWarningLimit', () => {
+      service.updateBarcodePrintWarningLimit(30).subscribe();
+
+      const req = httpTestingController.expectOne(`${settingsUrl}/barcodePrintWarningLimit`);
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual({ barcodePrintWarningLimit: 30 });
       req.flush(null);
     });
   });

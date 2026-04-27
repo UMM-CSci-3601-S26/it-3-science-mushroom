@@ -28,8 +28,10 @@ type BarcodePrintQuantityRow = {
   ]
 })
 export class BarcodePrintQuantityDialog {
+  readonly defaultWarningLimit = 25;
+
   private dialogRef = inject(MatDialogRef<BarcodePrintQuantityDialog>);
-  data = inject<{ items: Inventory[] }>(MAT_DIALOG_DATA);
+  data = inject<{ items: Inventory[]; warningLimit?: number }>(MAT_DIALOG_DATA);
 
   rows: BarcodePrintQuantityRow[] = this.data.items.map(item => ({
     item,
@@ -45,6 +47,21 @@ export class BarcodePrintQuantityDialog {
       item: row.item,
       quantity: this.normalizeQuantity(row.quantity)
     }));
+    const warningLimit = this.normalizeWarningLimit(this.data.warningLimit);
+    const highQuantitySelections = selections.filter(selection => selection.quantity > warningLimit);
+
+    if (highQuantitySelections.length) {
+      const itemNames = highQuantitySelections.map(selection =>
+        `${selection.item.item} (${selection.quantity})`
+      ).join(', ');
+      const confirmed = window.confirm(
+        `You are printing more than ${warningLimit} labels for: ${itemNames}. Continue?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+    }
 
     this.dialogRef.close(selections);
   }
@@ -61,5 +78,15 @@ export class BarcodePrintQuantityDialog {
     }
 
     return safeQuantity;
+  }
+
+  private normalizeWarningLimit(limit: number | string | undefined): number {
+    const safeLimit = Math.floor(Number(limit));
+
+    if (!Number.isFinite(safeLimit) || safeLimit < 1) {
+      return this.defaultWarningLimit;
+    }
+
+    return safeLimit;
   }
 }
