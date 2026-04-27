@@ -67,7 +67,7 @@ describe('BarcodePrintQuantityDialog', () => {
   });
 
   it('returns quantity selections when printing', () => {
-    component.rows[0].quantity = 3;
+    component.rows[0].quantity = '3';
     component.rows[1].quantity = 2;
 
     component.print();
@@ -79,13 +79,24 @@ describe('BarcodePrintQuantityDialog', () => {
   });
 
   it('normalizes invalid quantities to one copy', () => {
-    component.rows[0].quantity = 0;
+    component.rows[0].quantity = 'not-a-number';
     component.rows[1].quantity = -4;
 
     component.print();
 
     expect(dialogRefSpy.close).toHaveBeenCalledWith([
       { item: itemA, quantity: 1 },
+      { item: itemB, quantity: 1 },
+    ]);
+  });
+
+  it('floors decimal quantities before printing', () => {
+    component.rows[0].quantity = '2.9';
+
+    component.print();
+
+    expect(dialogRefSpy.close).toHaveBeenCalledWith([
+      { item: itemA, quantity: 2 },
       { item: itemB, quantity: 1 },
     ]);
   });
@@ -126,6 +137,34 @@ describe('BarcodePrintQuantityDialog', () => {
       { item: itemA, quantity: 26 },
       { item: itemB, quantity: 1 },
     ]);
+  });
+
+  it('falls back to the default warning limit when the saved setting is invalid', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component.data.warningLimit = 0;
+    component.rows[0].quantity = 26;
+
+    component.print();
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'You are printing more than 25 labels for: Markers (26). Continue?'
+    );
+  });
+
+  it('falls back to the default warning limit when the saved setting is missing', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component.data.warningLimit = undefined;
+    component.rows[0].quantity = 26;
+
+    component.print();
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'You are printing more than 25 labels for: Markers (26). Continue?'
+    );
+  });
+
+  it('tracks rows by internal ID', () => {
+    expect(component.trackByInternalID(0, component.rows[0])).toBe('item-a');
   });
 
   it('closes without selections when canceled', () => {
