@@ -82,11 +82,17 @@ export class FamilyListComponent {
   );
 
   gradeSort = (a: { key: string }, b: { key: string }) => {
-    if (a.key === 'PreK') return -2;
-    if (b.key === 'PreK') return -2;
-    if (a.key === 'Kindergarten') return -1;
-    if (b.key === 'Kindergarten') return -1;
+    // PreK comes first
+    if (a.key === 'PreK' && b.key === 'PreK') return 0;
+    if (a.key === 'PreK') return -1;
+    if (b.key === 'PreK') return 1;
 
+    // Kindergarten comes second
+    if (a.key === 'Kindergarten' && b.key === 'Kindergarten') return 0;
+    if (a.key === 'Kindergarten') return -1;
+    if (b.key === 'Kindergarten') return 1;
+
+    // Numeric grades
     return Number(a.key) - Number(b.key);
   };
 
