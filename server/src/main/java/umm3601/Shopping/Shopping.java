@@ -1,5 +1,6 @@
 package umm3601.Shopping;
 
+@SuppressWarnings({ "VisibilityModifier" })
 public class Shopping {
   public String item;
   public String brand;

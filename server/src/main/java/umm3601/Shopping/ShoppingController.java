@@ -59,10 +59,13 @@ public class ShoppingController implements Controller {
     Map<String, Map<String, Integer>> schoolGradeTotals = new HashMap<>();
 
     for (Family family : allFamilies) {
-      if (family.students == null) continue;
+      if (family.students == null) {
+        continue;
+      }
 
       for (Family.StudentInfo student : family.students) {
-        schoolGradeTotals.computeIfAbsent(student.school, school -> new HashMap<>()).merge(student.grade, 1, Integer::sum);
+        schoolGradeTotals.computeIfAbsent(student.school, school -> new HashMap<>())
+        .merge(student.grade, 1, Integer::sum);
       }
     }
     return schoolGradeTotals;
@@ -88,8 +91,11 @@ public class ShoppingController implements Controller {
           String grade = gradeEntry.getKey();
           int numStudents = gradeEntry.getValue();
 
-          // if the supply list matches the school and grade, add the quantity needed for that supply list to the total needed
-          if (supplyList.school.equals(school) && (supplyList.grade.equals(grade) || (supplyList.grade.equals("High School") && Arrays.asList("9","10","11","12").contains(grade)))) {
+          // if the supply list matches the school and grade,
+          // add the quantity needed for that supply list to the total needed
+          if (supplyList.school.equals(school) && (supplyList.grade.equals(grade)
+            || (supplyList.grade.equals("High School") && Arrays.asList("9", "10", "11", "12")
+            .contains(grade)))) {
             int qty = supplyList.quantity != null ? supplyList.quantity : 1;
             totalNeeded += numStudents * qty;
           }
@@ -117,12 +123,6 @@ public class ShoppingController implements Controller {
 
     //List<Shopping> shoppingItems = new ArrayList<>();
 
-    // try to find exact match from inventory for each supply list item,
-    // if not found, find closest match that satisfies the specifications of the supply list item with the highest quantity in inventory
-    // if no match is found, add the supply list item to the shopping list with the quantity needed
-    // if supply list item is partially fulfilled by inventory item, add the remaining quantity needed to the shopping list with the quantity needed
-    // fill most specific items first, then less specific items, then least specific items
-    // Cannot reuse inventory items, so if an inventory item is used, it is removed from the inventory list
 
     ctx.json(supplyListTotals);
     ctx.status(HttpStatus.OK);
