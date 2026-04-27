@@ -128,8 +128,9 @@ export class InventoryComponent {
   //This will open the barcode print dialog page
   async openBarcodePrintDialog() {
     const dialogRef = this.dialog.open(BarcodePrintDialog, {
-      width: '720px',
-      height: '680px',
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
       data: {
         items: this.displayedInventory()
       }
