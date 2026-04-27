@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, of, startWith, switchMap, tap } from 'rxjs';
+import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, map, merge, of, startWith, switchMap, tap } from 'rxjs';
 
 import { Family } from '../family/family';
 import { FamilyService } from '../family/family.service';
@@ -54,12 +54,22 @@ export class PointOfSaleComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    const debouncedFamilySearch = merge(
+      of(this.familySearch.value),
+      this.familySearch.valueChanges.pipe(debounceTime(300))
+    ).pipe(
+      map(searchTerm => searchTerm.trim()),
+      distinctUntilChanged()
+    );
+
     combineLatest([
-      this.familySearch.valueChanges.pipe(startWith(this.familySearch.value)),
-      this.statusFilter.valueChanges.pipe(startWith(this.statusFilter.value)),
+      debouncedFamilySearch,
+      this.statusFilter.valueChanges.pipe(
+        startWith(this.statusFilter.value),
+        distinctUntilChanged()
+      ),
       this.familyRefresh.pipe(startWith(0))
     ]).pipe(
-      debounceTime(250),
       distinctUntilChanged((previous, current) =>
         previous[0] === current[0] && previous[1] === current[1] && previous[2] === current[2]),
       tap(() => {
@@ -67,7 +77,7 @@ export class PointOfSaleComponent implements OnInit {
         this.familyLoadError = '';
       }),
       switchMap(([searchTerm, status]) => this.familyService.getFamilies({
-        guardianName: searchTerm.trim(),
+        guardianName: searchTerm,
         status
       }).pipe(
         catchError(err => {
@@ -106,6 +116,28 @@ export class PointOfSaleComponent implements OnInit {
     ).subscribe(result => {
       if (result?.cleared || result?.draftSaved || result?.completed) {
         this.familyRefresh.next(Date.now());
+      }
+    });
+  }
+
+  revertCompletedFamilySession(family: Family): void {
+    if (!family._id) {
+      return;
+    }
+    if (!window.confirm('Revert this completed session? This will restore the removed inventory and reopen the session.')) {
+      return;
+    }
+
+    this.loadingFamilies = true;
+    this.familyLoadError = '';
+    this.familyService.revertCompletedFamilyHelpSession(family._id).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: () => this.familyRefresh.next(Date.now()),
+      error: (err) => {
+        console.error('Failed to revert completed session', err);
+        this.loadingFamilies = false;
+        this.familyLoadError = 'Unable to revert that completed session.';
       }
     });
   }

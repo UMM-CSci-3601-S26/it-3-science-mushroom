@@ -323,6 +323,23 @@ describe('FamilyService', () => {
     }));
   });
 
+  describe('When revertCompletedFamilyHelpSession() is given an ID', () => {
+    it('calls api/family/id/help-session/revert with the correct ID', waitForAsync(() => {
+      const targetFamily: Family = testFamilies[1];
+      const targetId: string = targetFamily._id;
+      const mockedMethod = spyOn(httpClient, 'post').and.returnValue(of(targetFamily));
+
+      familyService.revertCompletedFamilyHelpSession(targetId).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${familyService.familyUrl}/${targetId}/help-session/revert`, {});
+      });
+    }));
+  });
+
   describe('Adding a family using `addFamily()`', () => {
     it('talks to the right endpoint', waitForAsync(() => {
       const family_id = 'john_id';
