@@ -355,6 +355,14 @@ export class FamilyService {
 
     // Dashboard stats
     this.getDashboardStats().subscribe(stats => {
+      // Box vars
+      const boxX = 10; // Starting x, following boxes offset from this
+      const boxY = 40;
+      const boxWidth = 50;
+      const boxOffset = 5; // Offset for subsequent boxes
+      const labelOffsetX = 5;
+      const labelOffsetY = 7;
+
       const totalFamilies = `${stats.totalFamilies}`;
       const totalStudents = `${stats.totalStudents}`;
       const studentsPerSchool = `${this.formatSchoolsList(stats.studentsPerSchool)}`;
@@ -362,40 +370,45 @@ export class FamilyService {
       const gradesRight = `${this.formatGradesListRight(stats.studentsPerGrade)}`;
 
       // Box around family and student stats
-      doc.roundedRect(10, 40, 50, 45, 3, 3);
+      doc.roundedRect(boxX, boxY, boxWidth, 40, 3, 3);
 
       // Family Dashboard Stats
-      this.addText(doc, "Total Families", 15, 50, 14, "bold", "normal");
-      this.addText(doc, totalFamilies, 30, 60, 14, "normal", "normal");
+      this.addText(doc, "Total Families", boxX + labelOffsetX + 2, boxY + labelOffsetY, 14, "bold", "normal");
+      this.addText(doc, totalFamilies, boxX + labelOffsetX + 15, boxY + 15, 14, "normal", "normal");
 
       // Student Dashboard Stats
-      this.addText(doc, "Total Students", 15, 70, 14, "bold", "normal");
-      this.addText(doc, totalStudents, 30, 80, 14, "normal", "normal");
+      this.addText(doc, "Total Students", boxX + labelOffsetX + 2, boxY + labelOffsetY + 20, 14, "bold", "normal");
+      this.addText(doc, totalStudents, boxX + labelOffsetX + 15, boxY + 35, 14, "normal", "normal");
 
       // School Stats box
       const schoolLines = studentsPerSchool.split('\n').length;
       const schoolLineHeight = 5;
-      const schoolBoxHeight = (schoolLines * schoolLineHeight) + 7; // content + bottom padding
+      const schoolBoxHeight = (schoolLines * schoolLineHeight) + 5; // content + bottom padding
+      const schoolBoxX = boxX + boxWidth + boxOffset;
+      const schoolBoxWidth = schoolBoxX + 5; // Width of school stats box, next box is offset from this
 
-      doc.roundedRect(65, 40, 70, schoolBoxHeight, 3, 3);
+      doc.roundedRect(schoolBoxX, boxY, schoolBoxWidth, schoolBoxHeight, 3, 3);
 
       // School Stats List
-      doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
-      doc.text("Students Per School", 75, 50);
-
-      this.addText(doc, studentsPerSchool, 65, 55, 10, "normal", "normal");
+      this.addText(doc, "Students Per School", schoolBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
+      this.addText(doc, studentsPerSchool, schoolBoxX + labelOffsetX, boxY + labelOffsetY + 5, 10, "normal", "normal");
 
       // Grade Stats box
-      doc.roundedRect(140, 40, 60, 45, 3, 3);
+      const gradeLines = Math.max(gradesLeft.split('\n').length, gradesRight.split('\n').length);
+      const gradeLineHeight = 5;
+      const gradeBoxHeight = (gradeLines * gradeLineHeight) + 5; // content + bottom padding
+      const gradeBoxX = schoolBoxX + schoolBoxWidth + boxOffset;
+      //const gradeBoxWidth = gradeBoxX + 5;
+
+      //doc.roundedRect(schoolBoxX, boxY, schoolBoxWidth, schoolBoxHeight, 3, 3);
+
+      doc.roundedRect(gradeBoxX, boxY, boxWidth + 10, gradeBoxHeight, 3, 3);
 
       // Grade Stats List
-      doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
-      doc.text("Students Per Grade", 145, 50);
+      this.addText(doc, "Students Per Grade", gradeBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
 
-      this.addText(doc, gradesLeft, 140, 55, 10, "normal", "normal");
-      this.addText(doc, gradesRight, 170, 55, 10, "normal", "normal");
+      this.addText(doc, gradesLeft, gradeBoxX + labelOffsetX, boxY + labelOffsetY + 5, 10, "normal", "normal");
+      this.addText(doc, gradesRight, gradeBoxX + labelOffsetX + 30, boxY + labelOffsetY + 5, 10, "normal", "normal");
 
       // Individual Family Pages \\
       const maxY = doc.internal.pageSize.getHeight() - 15;
