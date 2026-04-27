@@ -139,33 +139,24 @@
 
 <div class="fab-container">
   <button mat-fab class="export-toggle-fab" matTooltip="Export Options" matTooltipPosition="left"
-    (click)="toggleExportMenu()" [ngClass]="{'expanded': showExportMenu()}">
+    (click)="toggleExportMenu()" [ngClass]="{'expanded': showExportMenu()}" data-cy="export-menu-toggle">
     <mat-icon class="md-24" aria-label="Export Options">more_vert</mat-icon>
   </button>
 
   <button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
-    data-test="addFamilyButton">
+    data-cy="add-family-button">
     <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
   </button>
 
   @if (showExportMenu()) {
     <button mat-fab class="export-fab" matTooltip="Export CSV" matTooltipPosition="left" (click)="downloadCSV()"
-      data-test="exportCsvButton">
+      data-cy="export-csv-button">
       <mat-icon class="md-24" aria-label="Export CSV">table_chart</mat-icon>
     </button>
 
     <button mat-fab class="export-fab" matTooltip="Export PDF" matTooltipPosition="left" (click)="downloadPDF()"
-      data-test="exportPdfButton">
+      data-cy="export-pdf-button">
       <mat-icon class="md-24" aria-label="Export PDF">picture_as_pdf</mat-icon>
     </button>
   }
 </div>
-
-
-<!-- <button mat-raised-button (click)="downloadCSV()">
-  Export CSV
-</button>
-
-<button mat-raised-button (click)="downloadPDF()">
-  Export PDF
-</button> -->
