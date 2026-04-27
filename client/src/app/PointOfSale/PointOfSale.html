@@ -75,7 +75,8 @@
             @for (family of families; track family._id) {
             <app-point-of-sale-family-card
               [family]="family"
-              (helpFamily)="openHelpFamilySession($event)">
+              (helpFamily)="openHelpFamilySession($event)"
+              (revertFamily)="revertCompletedFamilySession($event)">
             </app-point-of-sale-family-card>
             } @empty {
               <div class="list-message">

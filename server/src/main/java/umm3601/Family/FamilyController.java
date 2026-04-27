@@ -70,6 +70,7 @@ public class FamilyController implements Controller {
   private static final String API_FAMILY_HELP_SESSION_SAVE_CHILD = "/api/family/{id}/help-session/save-child";
   private static final String API_FAMILY_HELP_SESSION_SAVE_ALL = "/api/family/{id}/help-session/save-all";
   private static final String API_FAMILY_HELP_SESSION_CLEAR = "/api/family/{id}/help-session/clear";
+  private static final String API_FAMILY_HELP_SESSION_REVERT = "/api/family/{id}/help-session/revert";
   private static final String STATUS_HELPED = "helped";
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
@@ -591,6 +592,25 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  public void revertCompletedFamilyHelpSession(Context ctx) {
+    Family family = requireFamily(ctx.pathParam("id"));
+    ensureCompletedHelpSessionExists(family);
+
+    restoreChecklistInventoryChanges(family.checklist);
+    for (Family.ChecklistSection section : family.checklist.sections) {
+      section.saved = false;
+    }
+
+    family.checklist.snapshot = true;
+    family.status = STATUS_BEING_HELPED;
+    family.helped = false;
+    persistFamilyChecklistAndStatus(family);
+
+    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
   // GET dashboard stats
   public void getDashboardStats(Context ctx) {
     ArrayList<Family> families = familyCollection
@@ -710,6 +730,15 @@ public class FamilyController implements Controller {
   private void ensureHelpSessionExists(Family family) {
     if (family.checklist == null || !family.checklist.snapshot) {
       throw new BadRequestResponse("A help session must be started before saving checklist progress.");
+    }
+  }
+
+  private void ensureCompletedHelpSessionExists(Family family) {
+    if (family.checklist == null
+        || family.checklist.snapshot
+        || !STATUS_HELPED.equals(determineStatus(family))
+        || !areAllSectionsSaved(family.checklist)) {
+      throw new BadRequestResponse("Only completed help sessions can be reverted.");
     }
   }
 
@@ -1055,6 +1084,25 @@ public class FamilyController implements Controller {
     }
   }
 
+  private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
+    for (Family.ChecklistSection section : checklist.sections) {
+      for (Family.ChecklistItem item : section.items) {
+        if (item.selected) {
+          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
+        } else if (hasText(item.substituteInventoryId)) {
+          restoreInventory(item.substituteInventoryId, item.requestedQuantity);
+        } else if (hasText(item.substituteBarcode)) {
+          Inventory substituteInventory = findInventoryByBarcode(item.substituteBarcode);
+          if (substituteInventory == null) {
+            throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
+          }
+          restoreInventory(substituteInventory.internalID, item.requestedQuantity);
+          item.substituteInventoryId = substituteInventory.internalID;
+        }
+      }
+    }
+  }
+
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
     if (item.selected && !item.available) {
       throw new BadRequestResponse("Unavailable items cannot be saved as selected.");
@@ -1127,6 +1175,21 @@ public class FamilyController implements Controller {
 
     inventoryCollection.updateOne(eq("_id",
      new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity - amount));
+  }
+
+  private void restoreInventory(String internalId, int amount) {
+    if (!hasText(internalId)) {
+      throw new BadRequestResponse("A reverted checklist item is missing its inventory match.");
+    }
+
+    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    if (inventory == null) {
+      throw new NotFoundResponse("No item found for internalID: " + internalId);
+    }
+
+    int quantityToRestore = amount <= 0 ? 1 : amount;
+    inventoryCollection.updateOne(eq("_id",
+     new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
   }
 
   private boolean nameEquivalent(String left, String right) {
@@ -1472,6 +1535,7 @@ public class FamilyController implements Controller {
     server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
     server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);
     server.post(API_FAMILY_HELP_SESSION_CLEAR, this::clearFamilyHelpSession);
+    server.post(API_FAMILY_HELP_SESSION_REVERT, this::revertCompletedFamilyHelpSession);
 
     server.delete(API_FAMILY_BY_ID, this::deleteFamily);
   }

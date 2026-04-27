@@ -71,6 +71,10 @@ export class FamilyService {
     return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/clear`, {});
   }
 
+  revertCompletedFamilyHelpSession(id: string): Observable<Family> {
+    return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/revert`, {});
+  }
+
   updateFamilyChecklist(id: string, checklist: FamilyChecklist): Observable<Family> {
     return this.httpClient.patch<Family>(`${this.familyUrl}/${id}/checklist`, { checklist });
   }

@@ -90,12 +90,23 @@
   font-weight: 700;
 }
 
-.help-family-button {
+.family-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.help-family-button,
+.revert-session-button {
   min-width: 9.5rem;
   white-space: nowrap;
   border-radius: 12px;
   font-weight: 800;
   letter-spacing: 0.01em;
+}
+
+.help-family-button mat-icon,
+.revert-session-button mat-icon {
+  margin-right: 0.35rem;
 }
 
 .help-family-button:disabled {
@@ -118,7 +129,9 @@
     grid-template-columns: 1fr;
   }
 
-  .help-family-button {
+  .family-actions,
+  .help-family-button,
+  .revert-session-button {
     width: 100%;
   }
 

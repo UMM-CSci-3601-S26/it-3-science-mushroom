@@ -11,13 +11,28 @@
       </div>
       <p class="family-address">{{ family().address }}</p>
     </div>
-    <button
-      mat-flat-button
-      color="primary"
-      class="help-family-button"
-      [disabled]="family().status === 'helped' || family().helped"
-      (click)="helpFamily.emit(family())">
-      {{ family().status === 'helped' || family().helped ? 'Completed' : 'Help Family' }}
-    </button>
+    <div class="family-actions">
+      @if (isCompleted()) {
+        <button
+          mat-stroked-button
+          color="warn"
+          type="button"
+          class="revert-session-button"
+          (click)="revertFamily.emit(family())">
+          <mat-icon>undo</mat-icon>
+          Revert Session
+        </button>
+      } @else {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          class="help-family-button"
+          (click)="helpFamily.emit(family())">
+          <mat-icon>assignment</mat-icon>
+          Help Family
+        </button>
+      }
+    </div>
   </div>
 </mat-card>
