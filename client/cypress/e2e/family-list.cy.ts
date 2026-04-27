@@ -22,11 +22,11 @@ describe('Family list', () => {
     });
 
     it('Should have the dashboard display the correct number of families', () => {
-      page.getTotalFamilies().should('contain.text', '10')
+      page.getTotalFamilies().should('contain.text', '11')
     });
 
     it('Should have the dashboard display the correct number of students', () => {
-      page.getTotalStudents().should('contain.text', '19')
+      page.getTotalStudents().should('contain.text', '21')
     });
 
     it('Should have the dashboard display the correct number of students per school', () => {
@@ -35,7 +35,7 @@ describe('Family list', () => {
         { label: 'Hancock High School', value: '4'},
         { label: 'Herman-Norcross High School', value: '2'},
         { label: 'Herman-Norcross Middle School', value: '2'},
-        { label: 'Morris Area Elementary School', value: '2'},
+        { label: 'Morris Area Elementary School', value: '4'},
         { label: 'Morris Area High School', value: '4'},
         { label: 'Morris Area Middle School', value: '3'},
       ];
@@ -48,6 +48,8 @@ describe('Family list', () => {
 
     it('Should have the dashboard display the correct number of students per grade', () => {
       const expectedValuesGrade = [
+        { label: 'Grade: PreK', value: '1'},
+        { label: 'Grade: Kindergarten', value: '1'},
         { label: 'Grade: 3', value: '1'},
         { label: 'Grade: 5', value: '1'},
         { label: 'Grade: 6', value: '2'},
