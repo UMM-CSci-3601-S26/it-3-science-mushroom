@@ -326,10 +326,6 @@ export class FamilyService {
       margin: { left: 10 }
     });
 
-    // Student Table box
-    // const tableHeight = (family.students.length + 1) * 10; // Approximate height based on number of rows
-    // doc.roundedRect(boxX, tableY + 1, 190, tableHeight + 5, 3, 3);
-
     // Return bottom Y of rendered family
     return doc.lastAutoTable.finalY + 10; // Add some padding after table
   }
@@ -450,7 +446,7 @@ export class FamilyService {
             `Okay`,
             { duration: 2000 }
           );
-        } catch (error) {
+        } catch (error) { // Generator error
           console.error('Error generating PDF:', error);
           this.snackBar.open(
             `Error generating PDF. Please try again.`,
@@ -459,7 +455,7 @@ export class FamilyService {
           );
         }
       },
-      error: (err) => {
+      error: (err) => { // Server error
         console.error('Error fetching dashboard stats:', err);
         this.snackBar.open(
           `Unable to load dashboard data. Please try again.`,

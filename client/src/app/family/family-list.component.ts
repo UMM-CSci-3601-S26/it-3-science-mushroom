@@ -186,7 +186,5 @@ export class FamilyListComponent {
         this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
       }
     });
-    // this.familyService.generatePDF();
-    // this.showExportMenu.set(false);
   }
 }
