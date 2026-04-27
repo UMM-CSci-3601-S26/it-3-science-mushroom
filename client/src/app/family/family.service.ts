@@ -31,7 +31,6 @@ export class FamilyService {
   private httpClient = inject(HttpClient);
   private snackBar = inject(MatSnackBar);
   private formatDateTimeService = inject(FormatDateTimeService);
-  private dateTime = new Date();
 
   readonly familyUrl: string = `${environment.apiUrl}family`;
   readonly dashboardUrl: string = `${environment.apiUrl}dashboard`;
@@ -217,6 +216,7 @@ export class FamilyService {
 
     const textMarginX = boxX + 5;
     const lineHeight = 5;
+    const lineSpacing = 2;
 
     // For emails and addresses, shrink font size if needed
     const detailsMaxWidth = boxWidth - 10; // Max width for text in box
@@ -259,7 +259,7 @@ export class FamilyService {
     });
 
     // Accomodations box
-    const accomDynamicHeight = Math.max(accomBoxHeight, 10 + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * lineHeight));
+    const accomDynamicHeight = Math.max(accomBoxHeight, (5 + lineSpacing) + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * (lineHeight + lineSpacing)));
     doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
 
     // Time Slot and Availability \\
@@ -341,6 +341,7 @@ export class FamilyService {
      */
   generatePDF() {
     const doc = new jsPDF() as jsPDFWithAutoTable;
+    const dateTime = new Date();
     const thinLineWidth = 0.5;
     const thickLineWidth = 1;
 
@@ -349,7 +350,7 @@ export class FamilyService {
     // Description
     this.addText(doc, "This is a report of the families generated on ${formattedDate}"
       .replace("${formattedDate}",
-        this.formatDateTimeService.formatDateTime(this.dateTime)[0]), 10, 20, 12, "normal", "normal");
+        this.formatDateTimeService.formatDateTime(dateTime)[0]), 10, 20, 12, "normal", "normal");
 
     // Separator Line
     doc.setLineWidth(thickLineWidth);
@@ -357,96 +358,115 @@ export class FamilyService {
     doc.setLineWidth(thinLineWidth);
 
     // Dashboard stats
-    this.getDashboardStats().subscribe(stats => {
-      // Box vars
-      const boxX = 10; // Starting x, following boxes offset from this
-      const boxY = 40;
-      const boxWidth = 50;
-      const boxOffset = 5; // Offset for subsequent boxes
-      const labelOffsetX = 5;
-      const labelOffsetY = 7;
+    this.getDashboardStats().subscribe({
+      next: (stats) => {
+        try {
+          // Box vars
+          const boxX = 10; // Starting x, following boxes offset from this
+          const boxY = 40;
+          const boxWidth = 50;
+          const boxOffset = 5; // Offset for subsequent boxes
+          const labelOffsetX = 5;
+          const labelOffsetY = 7;
 
-      const totalFamilies = `${stats.totalFamilies}`;
-      const totalStudents = `${stats.totalStudents}`;
-      const studentsPerSchool = `${this.formatSchoolsList(stats.studentsPerSchool)}`;
-      const gradesLeft = `${this.formatGradesListLeft(stats.studentsPerGrade)}`;
-      const gradesRight = `${this.formatGradesListRight(stats.studentsPerGrade)}`;
+          const totalFamilies = `${stats.totalFamilies}`;
+          const totalStudents = `${stats.totalStudents}`;
+          const studentsPerSchool = `${this.formatSchoolsList(stats.studentsPerSchool)}`;
+          const gradesLeft = `${this.formatGradesListLeft(stats.studentsPerGrade)}`;
+          const gradesRight = `${this.formatGradesListRight(stats.studentsPerGrade)}`;
 
-      // Box around family and student stats
-      doc.roundedRect(boxX, boxY, boxWidth, 35, 3, 3);
+          // Box around family and student stats
+          doc.roundedRect(boxX, boxY, boxWidth, 35, 3, 3);
 
-      // Family Dashboard Stats
-      this.addText(doc, "Total Families", boxX + labelOffsetX + 2, boxY + labelOffsetY, 14, "bold", "normal");
-      this.addText(doc, totalFamilies, boxX + labelOffsetX + 15, boxY + 15, 14, "normal", "normal");
+          // Family Dashboard Stats
+          this.addText(doc, "Total Families", boxX + labelOffsetX + 2, boxY + labelOffsetY, 14, "bold", "normal");
+          this.addText(doc, totalFamilies, boxX + labelOffsetX + 15, boxY + 15, 14, "normal", "normal");
 
-      // Student Dashboard Stats
-      this.addText(doc, "Total Students", boxX + labelOffsetX + 2, boxY + labelOffsetY + 15, 14, "bold", "normal");
-      this.addText(doc, totalStudents, boxX + labelOffsetX + 15, boxY + 30, 14, "normal", "normal");
+          // Student Dashboard Stats
+          this.addText(doc, "Total Students", boxX + labelOffsetX + 2, boxY + labelOffsetY + 15, 14, "bold", "normal");
+          this.addText(doc, totalStudents, boxX + labelOffsetX + 15, boxY + 30, 14, "normal", "normal");
 
-      // School Stats box
-      const schoolLines = studentsPerSchool.split('\n').length;
-      const schoolLineHeight = 5;
-      const schoolBoxHeight = (schoolLines * schoolLineHeight) + 5; // content + bottom padding
-      const schoolBoxX = boxX + boxWidth + boxOffset;
-      const schoolBoxWidth = schoolBoxX + 5; // Width of school stats box, next box is offset from this
+          // School Stats box
+          const schoolLines = studentsPerSchool.split('\n').length;
+          const schoolLineHeight = 5;
+          const schoolBoxHeight = (schoolLines * schoolLineHeight) + 5; // content + bottom padding
+          const schoolBoxX = boxX + boxWidth + boxOffset;
+          const schoolBoxWidth = schoolBoxX + 5; // Width of school stats box, next box is offset from this
 
-      doc.roundedRect(schoolBoxX, boxY, schoolBoxWidth, schoolBoxHeight, 3, 3);
+          doc.roundedRect(schoolBoxX, boxY, schoolBoxWidth, schoolBoxHeight, 3, 3);
 
-      // School Stats List
-      this.addText(doc, "Students Per School", schoolBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
-      this.addText(doc, studentsPerSchool, schoolBoxX + labelOffsetX, boxY + labelOffsetY + 5, 10, "normal", "normal");
+          // School Stats List
+          this.addText(doc, "Students Per School", schoolBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
+          this.addText(doc, studentsPerSchool, schoolBoxX + labelOffsetX, boxY + labelOffsetY + 5, 10, "normal", "normal");
 
-      // Grade Stats box
-      const gradeLines = Math.max(gradesLeft.split('\n').length, gradesRight.split('\n').length);
-      const gradeLineHeight = 5;
-      const gradeBoxHeight = (gradeLines * gradeLineHeight) + 5; // content + bottom padding
-      const gradeBoxX = schoolBoxX + schoolBoxWidth + boxOffset;
+          // Grade Stats box
+          const gradeLines = Math.max(gradesLeft.split('\n').length, gradesRight.split('\n').length);
+          const gradeLineHeight = 5;
+          const gradeBoxHeight = (gradeLines * gradeLineHeight) + 5; // content + bottom padding
+          const gradeBoxX = schoolBoxX + schoolBoxWidth + boxOffset;
 
-      doc.roundedRect(gradeBoxX, boxY, boxWidth + 10, gradeBoxHeight, 3, 3);
+          doc.roundedRect(gradeBoxX, boxY, boxWidth + 10, gradeBoxHeight, 3, 3);
 
-      // Grade Stats List
-      this.addText(doc, "Students Per Grade", gradeBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
+          // Grade Stats List
+          this.addText(doc, "Students Per Grade", gradeBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
 
-      this.addText(doc, gradesLeft, gradeBoxX + labelOffsetX - 2, boxY + labelOffsetY + 5, 10, "normal", "normal");
-      this.addText(doc, gradesRight, gradeBoxX + labelOffsetX + 28, boxY + labelOffsetY + 5, 10, "normal", "normal");
+          this.addText(doc, gradesLeft, gradeBoxX + labelOffsetX - 2, boxY + labelOffsetY + 5, 10, "normal", "normal");
+          this.addText(doc, gradesRight, gradeBoxX + labelOffsetX + 28, boxY + labelOffsetY + 5, 10, "normal", "normal");
 
-      // Individual Family Pages \\
-      const maxY = doc.internal.pageSize.getHeight() - 15;
-      let lastY = 15;
+          // Individual Family Pages \\
+          const maxY = doc.internal.pageSize.getHeight() - 15;
+          let lastY = 15;
 
-      for (let i = 0; i < this.family().length; i++) {
-        if (i === 0) { // First family, add page after dashboard stats
-          doc.addPage();
-        }
+          for (let i = 0; i < this.family().length; i++) {
+            if (i === 0) { // First family, add page after dashboard stats
+              doc.addPage();
+            }
 
-        const currentFamily = this.family()[i];
-        let currentOffset = 15; // Determine offset for current family
+            const currentFamily = this.family()[i];
+            let currentOffset = 15; // Determine offset for current family
 
-        if (i > 0) {  // Not first family
-          const spaceNeeded = 60 + (currentFamily.students.length * 10); // Rough estimate of space needed for family info + table
-          if (lastY + 5 + spaceNeeded > maxY) { // Doesn't fit
-            doc.addPage();
-            currentOffset = 15;
-          } else { // Fits
-            doc.setLineWidth(thinLineWidth);
-            doc.line(10, lastY + 5, 200, lastY + 5); // Separator line between families
-            currentOffset = lastY + 15;
+            if (i > 0) {  // Not first family
+              const spaceNeeded = 60 + (currentFamily.students.length * 10); // Rough estimate of space needed for family info + table
+              if (lastY + 5 + spaceNeeded > maxY) { // Doesn't fit
+                doc.addPage();
+                currentOffset = 15;
+              } else { // Fits
+                doc.setLineWidth(thinLineWidth);
+                doc.line(10, lastY + 5, 200, lastY + 5); // Separator line between families
+                currentOffset = lastY + 15;
+              }
+            }
+            // Render family
+            lastY = this.renderFamily(doc, currentFamily, currentOffset);
           }
+
+          // PDF name
+          const fileName = `FamilyReport_${this.formatDateTimeService.formatDateTime(dateTime)[1]}.pdf`;
+
+          // Save to client machine
+          doc.save(fileName);
+          this.snackBar.open(
+            `Generating and downloading report as PDF file...`,
+            `Okay`,
+            { duration: 2000 }
+          );
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+          this.snackBar.open(
+            `Error generating PDF. Please try again.`,
+            `Close`,
+            { duration: 5000 }
+          );
         }
-        // Render family
-        lastY = this.renderFamily(doc, currentFamily, currentOffset);
+      },
+      error: (err) => {
+        console.error('Error fetching dashboard stats:', err);
+        this.snackBar.open(
+          `Unable to load dashboard data. Please try again.`,
+          `Close`,
+          { duration: 5000 }
+        );
       }
-
-      // PDF name
-      const fileName = `FamilyReport_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.pdf`;
-
-      // Save to client machine
-      doc.save(fileName);
-      this.snackBar.open(
-        `Generating and downloading report as PDF file...`,
-        `Okay`,
-        { duration: 2000 }
-      );
     });
   }
 }

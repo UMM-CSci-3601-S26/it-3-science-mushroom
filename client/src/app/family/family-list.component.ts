@@ -125,7 +125,7 @@ export class FamilyListComponent {
         catchError((err) => {
           if (!(err.error instanceof ErrorEvent)) {
             this.errMsg.set(
-              `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`
+              `Problem contacting the server - Error Code: ${err.status}\nMessage: ${err.message}`
             );
           }
           this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
@@ -171,7 +171,22 @@ export class FamilyListComponent {
   }
 
   downloadPDF() {
-    this.familyService.generatePDF();
-    this.showExportMenu.set(false);
+    // Reload family data to ensure the PDF has the most up-to-date information
+    this.familyService.getFamilies().subscribe({
+      next: () => {
+        this.familyService.generatePDF();
+        this.showExportMenu.set(false);
+      },
+      error: (err) => {
+        if (!(err.error instanceof ErrorEvent)) {
+          this.errMsg.set(
+            `Problem contacting the server - Error Code: ${err.status}\nMessage: ${err.message}`
+          );
+        }
+        this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
+      }
+    });
+    // this.familyService.generatePDF();
+    // this.showExportMenu.set(false);
   }
 }
