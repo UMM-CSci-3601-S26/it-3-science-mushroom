@@ -328,7 +328,7 @@ export class FamilyService {
     // doc.roundedRect(boxX, tableY + 1, 190, tableHeight + 5, 3, 3);
 
     // Return bottom Y of rendered family
-    return doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : tableY + lineHeight + 10; // Add some padding after table
+    return doc.lastAutoTable.finalY + 10; // Add some padding after table
   }
 
   /**
