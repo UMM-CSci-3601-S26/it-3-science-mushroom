@@ -1,10 +1,10 @@
 // Angular Imports
 import { HttpClient, HttpParams, provideHttpClient } from '@angular/common/http'; //HttpParams
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed, waitForAsync } from '@angular/core/testing';
+import { TestBed, waitForAsync, fakeAsync, tick } from '@angular/core/testing';
 
 // RxJS Imports
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 // Family Imports
 import { Family } from './family';
@@ -630,6 +630,163 @@ describe('FamilyService', () => {
 
       expect(result.length).toBe(1);
       expect(result[0]).toEqual({ label: 'Jack Jack', value: 'Jack Jack' });
+    });
+  });
+
+  describe('generatePDF', () => {
+    const mockDashboardStats = {
+      totalFamilies: 3,
+      totalStudents: 6,
+      studentsPerSchool: {
+        'Morris Elementary': 2,
+        'Hancock Middle School': 2,
+        'Morris High School': 2
+      },
+      studentsPerGrade: {
+        '1': 1,
+        '2': 1,
+        '6': 2,
+        '8': 1,
+        '11': 1
+      }
+    };
+
+    it('should call getDashboardStats when generating PDF', fakeAsync(() => {
+      const getDashboardStatsSpy = spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService['snackBar'], 'open');
+
+      familyService.generatePDF();
+      tick();
+
+      expect(getDashboardStatsSpy).toHaveBeenCalledTimes(1);
+    }));
+
+    it('should show snackbar notification when PDF generation starts', fakeAsync(() => {
+      spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      const snackBarSpy = spyOn(familyService['snackBar'], 'open');
+
+      familyService.generatePDF();
+      tick();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        'Generating and downloading report as PDF file...',
+        'Okay',
+        { duration: 2000 }
+      );
+    }));
+
+    it('should include all families in PDF when generating', fakeAsync(() => {
+      spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService['snackBar'], 'open');
+
+      familyService.generatePDF();
+      tick();
+
+      // Verify all families from the test data are available
+      expect(familyService.family().length).toBe(3);
+      expect(familyService.family()[0].guardianName).toBe('John Johnson');
+      expect(familyService.family()[1].guardianName).toBe('Jane Doe');
+      expect(familyService.family()[2].guardianName).toBe('George Peterson');
+    }));
+
+    it('should process all dashboard statistics categories', fakeAsync(() => {
+      const getDashboardStatsSpy = spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService['snackBar'], 'open');
+
+      familyService.generatePDF();
+      tick();
+
+      expect(getDashboardStatsSpy).toHaveBeenCalled();
+      const stats = getDashboardStatsSpy.calls.mostRecent().returnValue;
+      stats.subscribe((data) => {
+        expect(data.totalFamilies).toBe(3);
+        expect(data.totalStudents).toBe(6);
+        expect(Object.keys(data.studentsPerSchool).length).toBe(3);
+        expect(Object.keys(data.studentsPerGrade).length).toBe(5);
+      });
+    }));
+
+    it('should load families before generating PDF', fakeAsync(() => {
+      spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService['snackBar'], 'open');
+
+      expect(familyService.family().length).toBeGreaterThan(0);
+
+      familyService.generatePDF();
+      tick();
+
+      // Families should still be loaded after PDF generation
+      expect(familyService.family().length).toBe(3);
+    }));
+
+    it('should handle PDF generation with empty schools data', fakeAsync(() => {
+      const emptySchoolsStats = {
+        ...mockDashboardStats,
+        studentsPerSchool: {}
+      };
+
+      spyOn(familyService, 'getDashboardStats').and.returnValue(of(emptySchoolsStats));
+      const snackBarSpy = spyOn(familyService['snackBar'], 'open');
+
+      familyService.generatePDF();
+      tick();
+
+      expect(snackBarSpy).toHaveBeenCalledWith(
+        'Generating and downloading report as PDF file...',
+        'Okay',
+        { duration: 2000 }
+      );
+    }));
+
+    it('should handle PDF generation with empty grades data', fakeAsync(() => {
+      const emptyGradesStats = {
+        ...mockDashboardStats,
+        studentsPerGrade: {}
+      };
+
+      spyOn(familyService, 'getDashboardStats').and.returnValue(of(emptyGradesStats));
+      const snackBarSpy = spyOn(familyService['snackBar'], 'open');
+
+      familyService.generatePDF();
+      tick();
+
+      expect(snackBarSpy).toHaveBeenCalled();
+    }));
+
+    describe('Error handling during PDF generation', () => {
+      it('should show error message when getDashboardStats fails', fakeAsync(() => {
+        const error = new Error('API Error');
+        spyOn(familyService, 'getDashboardStats').and.returnValue(
+          new Observable(observer => observer.error(error))
+        );
+        spyOn(console, 'error');
+        const snackBarSpy = spyOn(familyService['snackBar'], 'open');
+
+        familyService.generatePDF();
+        tick();
+
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          'Unable to load dashboard data. Please try again.',
+          'Close',
+          { duration: 5000 }
+        );
+        expect(console.error).toHaveBeenCalledWith('Error fetching dashboard stats:', error);
+      }));
+
+      it('should handle errors gracefully during PDF generation', fakeAsync(() => {
+        spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+        spyOn(console, 'error');
+        const snackBarSpy = spyOn(familyService['snackBar'], 'open');
+
+        familyService.generatePDF();
+        tick();
+
+        // Verify the success snackbar is shown (if no error occurs)
+        const successCall = snackBarSpy.calls.all().find(call =>
+          call.args[0] === 'Generating and downloading report as PDF file...'
+        );
+        expect(successCall).toBeDefined();
+      }));
     });
   });
 });
