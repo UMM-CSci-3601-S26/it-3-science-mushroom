@@ -298,15 +298,16 @@ export class FamilyService {
     // Table header
     this.addText(doc, "Students", tableX + labelOffsetX, tableY, 12, "bold", "normal");
 
-    const headers = [["Name", "School", "Grade", "Headphones", "Backpack"]];
+    const headers = [["Name", "School", "Grade", "Teacher", "Headphones", "Backpack"]];
 
     // Table body
     const columnStyling = {
-      0: { cellWidth: 50 },
+      0: { cellWidth: 40 },
       1: { cellWidth: 50 },
       2: { cellWidth: 25 },
       3: { cellWidth: 30 },
-      4: { cellWidth: 25 }
+      4: { cellWidth: 25 },
+      5: { cellWidth: 20 }
     };
 
     autoTable(doc, {
@@ -315,12 +316,14 @@ export class FamilyService {
         student.name,
         student.school,
         student.grade,
+        student.teacher,
         student.headphones ? "Yes" : "No",
         student.backpack ? "Yes" : "No"
       ]),
       startY: tableY + lineHeight,
       theme: 'striped',
-      columnStyles: columnStyling
+      columnStyles: columnStyling,
+      margin: { left: 10 }
     });
 
     // Student Table box
@@ -398,9 +401,6 @@ export class FamilyService {
       const gradeLineHeight = 5;
       const gradeBoxHeight = (gradeLines * gradeLineHeight) + 5; // content + bottom padding
       const gradeBoxX = schoolBoxX + schoolBoxWidth + boxOffset;
-      //const gradeBoxWidth = gradeBoxX + 5;
-
-      //doc.roundedRect(schoolBoxX, boxY, schoolBoxWidth, schoolBoxHeight, 3, 3);
 
       doc.roundedRect(gradeBoxX, boxY, boxWidth + 10, gradeBoxHeight, 3, 3);
 
