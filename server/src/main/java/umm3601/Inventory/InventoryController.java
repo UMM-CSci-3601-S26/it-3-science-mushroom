@@ -215,7 +215,7 @@ public class InventoryController implements Controller {
   }
 
   /**
-   * Endpoint to update inventory quantity, logic handles updates to prevent negative levels
+   * Endpoint to remove a given quantity from a given inventory
    * @param ctx The context for the HTTP request
    */
   public void removeQuantity(Context ctx) {
@@ -252,27 +252,15 @@ public class InventoryController implements Controller {
   }
 
   /**
-   * Deletes a single given inventory item from the database, identified by its internal MongoDB ID
+   * Deletes a single given inventory item from the database, identified by its internal ID
    * @param ctx The HTTP request context
    */
   public void deleteInventory(Context ctx) {
-    String id = ctx.pathParam("id");
-    DeleteResult deleteResult;
+    String internalID = ctx.pathParam("id");
+    DeleteResult result = inventoryCollection.deleteOne(eq("internalID", internalID));
 
-    // Handle case where ID is not proper
-    try {
-      ObjectId reportId = new ObjectId(id);
-      deleteResult = inventoryCollection.deleteOne(eq("_id", reportId));
-    } catch (IllegalArgumentException e) {
-      throw new BadRequestResponse("The requested report id wasn't a legal Mongo Object ID.");
-    }
-
-    if (deleteResult.getDeletedCount() != 1) {
-      ctx.status(HttpStatus.NOT_FOUND);
-      throw new NotFoundResponse(
-        "Was unable to delete Report ID "
-          + id
-          + "; perhaps illegal Report ID or an ID for a Report not in the system?");
+    if (result.getDeletedCount() == 0) {
+      throw new NotFoundResponse("The requested inventory item was not found");
     }
 
     ctx.status(HttpStatus.OK);
@@ -283,32 +271,14 @@ public class InventoryController implements Controller {
    * @param ctx The HTTP request context
   */
   public void deleteInventories(Context ctx) {
-     Bson filter = constructFilter(ctx);
+    Bson filter = constructFilter(ctx);
 
     FindIterable<Inventory> results = inventoryCollection.find(filter);
 
     ArrayList<Inventory> matching = results.into(new ArrayList<>());
 
-    String itemSearch = ctx.queryParam(ITEM_KEY);
-    if (itemSearch != null) {
-      matching.sort((a, b) -> {
-        int scoreA = getRelevanceScore(a.item, itemSearch);
-        int scoreB = getRelevanceScore(b.item, itemSearch);
+    matching.forEach(inv -> inventoryCollection.deleteOne(eq("_id", inv._id)));
 
-        // Higher score first
-        if (scoreA != scoreB) {
-          return Integer.compare(scoreB, scoreA);
-        }
-
-        // Tie-breaker: shorter string first
-        return Integer.compare(a.item.length(), b.item.length());
-      });
-    }
-
-    for (Inventory inv : matching) {
-      updateStockState(inv);
-      generateDescription(inv);
-    }
     ctx.json(matching);
     ctx.status(HttpStatus.OK);
   }
