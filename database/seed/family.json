@@ -5,7 +5,7 @@
     "address": "123 Street",
     "accommodations": "None",
     "timeSlot": "TBD",
-    "timeAvailability": { 
+    "timeAvailability": {
       "earlyMorning": true,
       "lateMorning": false,
       "earlyAfternoon": true,
@@ -213,8 +213,8 @@
       {
         "name": "Maya",
         "grade": "6",
-        "school": "Herman-Norcross Elementary",
-        "schoolAbbreviation": "HNE",
+        "school": "Herman-Norcross Elementary School",
+        "schoolAbbreviation": "HNES",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true
@@ -246,8 +246,8 @@
       {
         "name": "Lucas",
         "grade": "5",
-        "school": "Hancock Elementary",
-        "schoolAbbreviation": "HE",
+        "school": "Hancock Elementary School",
+        "schoolAbbreviation": "HES",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -303,8 +303,8 @@
       {
         "name": "Mateo",
         "grade": "6",
-        "school": "Herman-Norcross Elementary",
-        "schoolAbbreviation": "HNE",
+        "school": "Herman-Norcross Elementary School",
+        "schoolAbbreviation": "HNES",
         "teacher": "N/A",
         "backpack": true,
         "headphones": false
@@ -312,8 +312,8 @@
       {
         "name": "Sofia",
         "grade": "3",
-        "school": "Hancock Elementary",
-        "schoolAbbreviation": "HE",
+        "school": "Hancock Elementary School",
+        "schoolAbbreviation": "HES",
         "teacher": "N/A",
         "backpack": false,
         "headphones": true

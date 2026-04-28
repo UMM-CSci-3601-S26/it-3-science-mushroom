@@ -32,9 +32,9 @@ describe('Family list', () => {
     it('Should have the dashboard display the correct number of students per school', () => {
       const expectedValuesSchool = [
         { label: 'Chokio-Alberta High School', value: '3'},
-        { label: 'Hancock Elementary', value: '2'},
+        { label: 'Hancock Elementary School', value: '2'},
         { label: 'Hancock High School', value: '6'},
-        { label: 'Herman-Norcross Elementary', value: '2'},
+        { label: 'Herman-Norcross Elementary School', value: '2'},
         { label: 'Herman-Norcross High School', value: '6'},
         { label: 'Morris Area Elementary School', value: '2'},
       ];
@@ -183,9 +183,9 @@ describe('Family list', () => {
         { name: 'Name: Lily', school: 'School: CAHS', grade: 'Grade: 7', teacher: 'Teacher: N/A'},
         { name: 'Name: Chris', school: 'School: HHS', grade: 'Grade: 12', teacher: 'Teacher: N/A'},
         { name: 'Name: Derek', school: 'School: HNHS', grade: 'Grade: 9', teacher: 'Teacher: N/A'},
-        { name: 'Name: Maya', school: 'School: HNE', grade: 'Grade: 6', teacher: 'Teacher: N/A'},
+        { name: 'Name: Maya', school: 'School: HNES', grade: 'Grade: 6', teacher: 'Teacher: N/A'},
         { name: 'Name: Elena', school: 'School: HHS', grade: 'Grade: 11', teacher: 'Teacher: N/A'},
-        { name: 'Name: Lucas', school: 'School: HE', grade: 'Grade: 5', teacher: 'Teacher: N/A'}
+        { name: 'Name: Lucas', school: 'School: HES', grade: 'Grade: 5', teacher: 'Teacher: N/A'}
       ];
 
       page.getStudentCards().should('have.length', expectedValuesStudent.length)
