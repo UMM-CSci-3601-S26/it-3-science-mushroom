@@ -1,5 +1,7 @@
 package umm3601.Users;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,5 +41,11 @@ public class UsersSpec {
     user2._id = fakeIdString2;
 
     assert (!user1.equals(user2));
+  }
+
+  @Test
+  void usersAreNotEqualToOtherKindsOfThings() {
+    user1._id = fakeIdString1;
+    assertFalse(user1.equals(fakeIdString1));
   }
 }
