@@ -1,0 +1,26 @@
+[
+  {
+    "username": "addy",
+    "passwordHash": "$2a$12$05sHfXuH7y0SqDImhn3xH.u/Sk5j2NRa2Pd2q.8VnZO039EV4pyPq",
+    "fullName": "Katelyn Money",
+    "email": "admin@readyforsupplies.org",
+    "systemRole": "ADMIN",
+    "jobRole": null
+  },
+  {
+    "username": "viorel",
+    "passwordHash": "$2a$12$05sHfXuH7y0SqDImhn3xH.u/Sk5j2NRa2Pd2q.8VnZO039EV4pyPq",
+    "fullName": "Random Person",
+    "email": "volunteer@readyforsupplies.org",
+    "systemRole": "VOLUNTEER",
+    "jobRole": "volunteer_base"
+  },
+  {
+    "username": "gwen",
+    "passwordHash": "$2a$12$05sHfXuH7y0SqDImhn3xH.u/Sk5j2NRa2Pd2q.8VnZO039EV4pyPq",
+    "fullName": "Random Person",
+    "email": null,
+    "systemRole": "GUARDIAN",
+    "jobRole": null
+  }
+]

@@ -32,6 +32,8 @@ public class Settings {
   // Ordered list of supply item statuses used to sort/filter checklists on drive day
   public List<SupplyItemOrder> supplyOrder;
 
+  public DriveDay driveDay;
+
   // Represents a single school entry
   public static class SchoolInfo {
     public String name;         // e.g. "Morris Area High School"
@@ -65,5 +67,10 @@ public class Settings {
   public static class SupplyItemOrder {
     public String itemTerm; // general item term, e.g. "notebook", "folder"
     public String status;   // "staged", "unstaged", or "notGiven"
+  }
+
+  public static class DriveDay {
+    public String date; // e.g. "2024-12-14"
+    public String location; // e.g. "Morris Area High School"
   }
 }
