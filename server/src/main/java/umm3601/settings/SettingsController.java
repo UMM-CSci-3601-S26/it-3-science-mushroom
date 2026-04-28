@@ -53,6 +53,8 @@ public class SettingsController {
 
   private static final int DEFAULT_AVAILABLE_SPOTS = 5;
 
+  private static final String API_SETTINGS_DRIVE_DAY = "/api/settings/driveDay";
+
   private final JacksonMongoCollection<Settings> settingsCollection;
 
   public SettingsController(MongoDatabase database) {
@@ -70,6 +72,12 @@ public class SettingsController {
   @Route(method = HttpMethod.GET, path = API_SETTINGS)
   @RequirePermission("view_settings")
   public void getSettings(Context ctx) {
+    Settings settings = getSettingsDocument();
+    ctx.json(settings);
+    ctx.status(HttpStatus.OK);
+  }
+
+  public Settings getSettingsDocument() {
     Settings settings = settingsCollection.find(eq("_id", SETTINGS_ID)).first();
     if (settings == null) {
       settings = new Settings();
@@ -81,8 +89,7 @@ public class SettingsController {
     } else if (settings.supplyOrder == null) {
       settings.supplyOrder = new ArrayList<>();
     }
-    ctx.json(settings);
-    ctx.status(HttpStatus.OK);
+    return settings;
   }
 
   /**
@@ -177,4 +184,20 @@ public class SettingsController {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_DRIVE_DAY)
+  @RequirePermission("edit_drive_day")
+  public void updateDriveDay(Context ctx) {
+    Settings.DriveDay body = ctx.bodyAsClass(Settings.DriveDay.class);
+
+    Document driveDayDoc = new Document()
+        .append("date", body.date)
+        .append("location", body.location);
+
+    settingsCollection.updateOne(
+        eq("_id", SETTINGS_ID),
+        new Document("$set", new Document("driveDay", driveDayDoc)),
+        new UpdateOptions().upsert(true));
+
+      ctx.status(HttpStatus.OK);
+    }
 }

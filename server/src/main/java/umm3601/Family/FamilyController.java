@@ -5,8 +5,10 @@ package umm3601.Family;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Updates.unset;
 
 // Java Imports
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ import io.javalin.http.HttpStatus;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
+import umm3601.Common.AuthContext;
 import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.SupplyList.SupplyList;
@@ -86,6 +89,8 @@ public class FamilyController {
   static final String LAST_NAME_KEY = "guardianLastName";
   static final String STATUS_KEY = "status";
   static final String HELPED_KEY = "helped";
+  private static final String API_FAMILY_DELETE_REQUEST = "/api/family/{id}/delete-request";
+  private static final String API_FAMILY_DELETE_REQUESTS = "/api/family/delete-requests";
 
   // Database Collection
   private final JacksonMongoCollection<Family> familyCollection;
@@ -149,6 +154,31 @@ public class FamilyController {
       ctx.json(family);
       ctx.status(HttpStatus.OK);
     }
+  }
+
+  public Family getByOwnerUserId(String ownerUserId) {
+    Family family = familyCollection.find(eq("ownerUserId", ownerUserId)).first();
+    if (family == null) {
+      throw new NotFoundResponse("No family profile exists for this guardian yet");
+    }
+    return family;
+  }
+
+  public void upsertByOwnerUserId(Family family) {
+    Family existingFamily = familyCollection.find(eq("ownerUserId", family.ownerUserId)).first();
+    normalizeFamilyForPersistence(family, existingFamily);
+    family.profileComplete = true;
+
+    if (existingFamily == null) {
+      familyCollection.insertOne(family);
+      return;
+    }
+
+    family._id = existingFamily._id;
+    family.helped = existingFamily.helped;
+    family.status = determineStatus(existingFamily);
+    family.deleteRequest = existingFamily.deleteRequest;
+    familyCollection.replaceOne(eq("_id", new ObjectId(existingFamily._id)), family);
   }
 
   // takes the list of families and goes through them one by one sorting them into the first available time slot
@@ -306,6 +336,7 @@ public class FamilyController {
     }
 
     normalizeFamilyForPersistence(newFamily, null);
+    newFamily.profileComplete = true;
     familyCollection.insertOne(newFamily);
 
     ctx.json(Map.of("id", newFamily._id));
@@ -349,6 +380,8 @@ public class FamilyController {
 
     Bson update = new Document("$set", new Document()
       .append("guardianName", updatedFamily.guardianName)
+      .append("ownerUserId", existingFamily.ownerUserId)
+      .append("profileComplete", existingFamily.profileComplete)
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
       .append("accommodations", updatedFamily.accommodations)
@@ -362,6 +395,7 @@ public class FamilyController {
       .append("students", studentInfoToDocuments(updatedFamily.students))
       .append("helped", updatedFamily.helped)
       .append("status", updatedFamily.status)
+      .append("deleteRequest", deleteRequestToDocument(existingFamily.deleteRequest))
       .append("checklist", checklistToDocument(updatedFamily.checklist))
     );
 
@@ -395,6 +429,93 @@ public class FamilyController {
           + id
           + "; perhaps illegal Family ID or an ID for a Family not in the system?");
     }
+    ctx.status(HttpStatus.OK);
+  }
+
+  // DELETE request to delete family (volunteer->admin approval flow)
+  @Route(method = HttpMethod.POST, path = API_FAMILY_DELETE_REQUEST)
+  @RequirePermission("request_family_delete")
+  public void requestToDeleteFamily(Context ctx) {
+    AuthContext authContext = AuthContext.from(ctx);
+    String id = ctx.pathParam("id");
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id wasn't a legal Mongo Object ID.");
+    }
+
+    Family existingFamily = familyCollection.find(eq("_id", familyId)).first();
+
+    if (existingFamily == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+
+    String rawBody = ctx.body();
+    FamilyDeleteRequest deleteRequest = rawBody == null || rawBody.isBlank()
+      ? new FamilyDeleteRequest()
+      : ctx.bodyAsClass(FamilyDeleteRequest.class);
+    String message = deleteRequest.message == null || deleteRequest.message.isBlank()
+      ? "Requested by volunteer"
+      : deleteRequest.message.trim();
+
+    Bson update = new Document("$set", new Document()
+      .append("deleteRequest", new Document()
+        .append("requested", true)
+        .append("message", message)
+        .append("requestedByUserId", authContext.userId())
+        .append("requestedAt", Instant.now().toString())
+      )
+    );
+
+    familyCollection.updateOne(eq("_id", familyId), update);
+
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @SuppressWarnings({"VisibilityModifier"})
+  public static class FamilyDeleteRequest {
+    public String message;
+  }
+
+  @Route(method = HttpMethod.GET, path = API_FAMILY_DELETE_REQUESTS)
+  @RequirePermission("delete_family")
+  public void getDeleteRequests(Context ctx) {
+    List<Family> familiesWithDeleteRequests = familyCollection
+      .find(eq("deleteRequest.requested", true))
+      .into(new ArrayList<>());
+    ctx.json(familiesWithDeleteRequests);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.DELETE, path = API_FAMILY_DELETE_REQUEST)
+  @RequirePermission("delete_family")
+  public void restoreFamilyDeleteRequest(Context ctx) {
+    String id = ctx.pathParam("id");
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id wasn't a legal Mongo Object ID.");
+    }
+
+    Family existingFamily = familyCollection.find(eq("_id", familyId)).first();
+
+    if (existingFamily == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+
+    Bson update = unset("deleteRequest");
+    familyCollection.updateOne(eq("_id", familyId), update);
+
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
     ctx.status(HttpStatus.OK);
   }
 
@@ -1291,6 +1412,17 @@ public class FamilyController {
       .append("printableTitle", checklist.printableTitle)
       .append("snapshot", checklist.snapshot)
       .append("sections", sectionDocuments);
+  }
+
+  private Document deleteRequestToDocument(Family.DeleteRequest deleteRequest) {
+    if (deleteRequest == null) {
+      return null;
+    }
+    return new Document()
+      .append("requested", deleteRequest.requested)
+      .append("message", deleteRequest.message)
+      .append("requestedByUserId", deleteRequest.requestedByUserId)
+      .append("requestedAt", deleteRequest.requestedAt);
   }
 
 }

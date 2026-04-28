@@ -9,6 +9,7 @@ import umm3601.Auth.PermissionsService;
 import umm3601.Auth.RouteRegistrar;
 import umm3601.Common.ApiExceptionHandler;
 import umm3601.Family.FamilyController;
+import umm3601.Family.FamilyPortalController;
 import umm3601.Inventory.BarcodeController;
 import umm3601.Inventory.InventoryController;
 import umm3601.Middleware.AuthMiddleware;
@@ -71,13 +72,16 @@ public class Bootstrap {
         usersService,
         new UsersPolicy(),
         new UsersValidator(permissionsService));
+    FamilyController familyController = new FamilyController(db);
+    SettingsController settingsController = new SettingsController(db);
 
     return new Object[] {
         new InventoryController(db),
         new BarcodeController(db),
-        new FamilyController(db),
+        familyController,
+        new FamilyPortalController(familyController, settingsController, usersService),
         new SupplyListController(db),
-        new SettingsController(db),
+        settingsController,
         new StockReportController(db),
         new TermsController(db),
         authController,

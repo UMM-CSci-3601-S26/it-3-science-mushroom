@@ -1,0 +1,29 @@
+[
+  {
+    "_id": "role-permissions",
+    "roles": {
+      "inventory_manager": {
+        "permissions": [
+          "view_inventory",
+          "view_inventory_item",
+          "edit_inventory_item"
+        ],
+        "inherits": [
+          "volunteer_base"
+        ]
+      },
+      "volunteer_base": {
+        "permissions": [
+          "view_inventory",
+          "view_inventory_item",
+          "view_families",
+          "view_family",
+          "view_supply_lists",
+          "view_checklist",
+          "request_family_delete"
+        ],
+        "inherits": []
+      }
+    }
+  }
+]

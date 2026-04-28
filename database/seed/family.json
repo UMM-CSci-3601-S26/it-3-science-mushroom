@@ -3,6 +3,7 @@
     "guardianName": "Jane Doe",
     "email": "jane@email.com",
     "address": "123 Street",
+    "profileComplete": true,
     "accommodations": "None",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -36,6 +37,7 @@
     "guardianName": "John Doe",
     "email": "john@email.com",
     "address": "1232 Street",
+    "profileComplete": true,
     "accommodations": "",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -78,6 +80,7 @@
     "guardianName": "Janis Dorothy",
     "email": "jane@email.com",
     "address": "123 Street",
+    "profileComplete": true,
     "accommodations": "None",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -111,6 +114,7 @@
     "guardianName": "Michael Carter",
     "email": "michael.carter@email.com",
     "address": "45 Oak Lane",
+    "profileComplete": true,
     "accommodations": "My child is hard of hearing",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -135,6 +139,7 @@
     "guardianName": "Laura Nelson",
     "email": "laura.nelson@email.com",
     "address": "78 Pine Street",
+    "profileComplete": true,
     "accommodations": "",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -168,6 +173,7 @@
     "guardianName": "Robert Fields",
     "email": "rfields@email.com",
     "address": "902 Maple Ave",
+    "profileComplete": true,
     "accommodations": "My child is red-green color blind",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -192,6 +198,7 @@
     "guardianName": "Angela Brooks",
     "email": "angela.brooks@email.com",
     "address": "311 Cedar Blvd",
+    "profileComplete": true,
     "accommodations": "None",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -225,6 +232,7 @@
     "guardianName": "Samuel Ortiz",
     "email": "samuel.ortiz@email.com",
     "address": "129 Birch Road",
+    "profileComplete": true,
     "accommodations": "My children have allergies",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -258,6 +266,7 @@
     "guardianName": "Danielle Kim",
     "email": "danielle.kim@email.com",
     "address": "555 Walnut St",
+    "profileComplete": true,
     "accommodations": "",
     "timeSlot": "TBD",
     "timeAvailability": {
@@ -282,6 +291,7 @@
     "guardianName": "Carlos Ramirez",
     "email": "carlos.ramirez@email.com",
     "address": "888 Spruce Drive",
+    "profileComplete": true,
     "accommodations": "None",
     "timeSlot": "TBD",
     "timeAvailability": {
