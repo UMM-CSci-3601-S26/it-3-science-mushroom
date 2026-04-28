@@ -32,6 +32,7 @@ import com.mongodb.client.MongoDatabase;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
+import io.javalin.http.HttpStatus;
 import io.javalin.http.UnauthorizedResponse;
 import umm3601.Users.UsersService;
 
@@ -420,11 +421,11 @@ class AuthControllerSpec {
 
     authController.upsertJobRole(ctx);
     // Only verify status and effect, not exact argument
-    verify(ctx, atLeast(1)).status(200);
+    verify(ctx, atLeast(1)).status(HttpStatus.OK);
     assertTrue(permissionsService.roleExists("frontdesk"));
 
     authController.deleteJobRole(ctx);
-    verify(ctx, atLeast(2)).status(200);
+    verify(ctx, atLeast(2)).status(HttpStatus.OK);
     assertFalse(permissionsService.roleExists("frontdesk"));
   }
 
@@ -453,7 +454,7 @@ class AuthControllerSpec {
     authController.assignVolunteerJobRole(ctx);
 
     // Only verify status and effect, not exact argument
-    verify(ctx).status(200);
+    verify(ctx).status(HttpStatus.OK);
     assertEquals("frontdesk", usersService.findByUsername("vol1").jobRole);
   }
 
