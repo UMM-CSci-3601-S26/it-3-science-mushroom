@@ -1,4 +1,4 @@
-package umm3601.terms;
+package umm3601.Terms;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,10 +9,10 @@ import org.bson.Document;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.Route;
 
 /**
  * Controller that aggregates distinct vocabulary terms from both the
@@ -20,9 +20,9 @@ import umm3601.Controller;
  * to power autocomplete on the add-item forms.
  *
  * Route:
- *  - GET /api/terms → returns distinct sorted values per shared field
+ *  - GET /api/terms â†’ returns distinct sorted values per shared field
  */
-public class TermsController implements Controller {
+public class TermsController {
 
   private static final String API_TERMS = "/api/terms";
 
@@ -37,9 +37,10 @@ public class TermsController implements Controller {
   /**
    * GET /api/terms
    * Returns a Terms object containing sorted, case-deduplicated lists for
-   * item, brand, color, size, type, and material — pulling values from
+   * item, brand, color, size, type, and material â€” pulling values from
    * both the supplylist and inventory collections.
    */
+  @Route(method = HttpMethod.GET, path = API_TERMS)
   public void getTerms(Context ctx) {
     Terms terms = new Terms();
 
@@ -135,8 +136,4 @@ public class TermsController implements Controller {
     return new ArrayList<>(set);
   }
 
-  @Override
-  public void addRoutes(Javalin server) {
-    server.get(API_TERMS, this::getTerms);
-  }
 }

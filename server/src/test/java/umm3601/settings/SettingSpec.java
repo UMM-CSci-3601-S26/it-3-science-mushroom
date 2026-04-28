@@ -1,4 +1,4 @@
-package umm3601.settings;
+package umm3601.Settings;
 
 // Static Imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
