@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, inject, computed, signal, OnInit } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule, MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
@@ -61,7 +61,7 @@ import { DashboardStats } from '../family/family';
   ],
 })
 
-export class FamilyListComponent implements OnInit {
+export class FamilyListComponent {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
@@ -157,12 +157,6 @@ export class FamilyListComponent implements OnInit {
       a.click();
 
       window.URL.revokeObjectURL(url);
-    });
-  }
-
-  ngOnInit() {
-    this.route.queryParams.subscribe(() => {
-      this.families = toSignal(this.familyService.getFamilies());
     });
   }
 }
