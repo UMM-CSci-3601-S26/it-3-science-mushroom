@@ -32,17 +32,18 @@ import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 // Misc Imports
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
 import umm3601.Inventory.Inventory;
+import umm3601.Settings.Settings;
 import umm3601.SupplyList.SupplyList;
-import umm3601.settings.Settings;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -54,7 +55,7 @@ import umm3601.settings.Settings;
 */
 
 // Controller
-public class FamilyController implements Controller {
+public class FamilyController {
   // API Endpoints
   private static final String API_FAMILY = "/api/family";
   private static final String API_SCHEDULE_FAMILIES = "/api/family/schedule";
@@ -118,6 +119,8 @@ public class FamilyController implements Controller {
   }
 
   // GET all families
+  @Route(method = HttpMethod.GET, path = API_FAMILY)
+  @RequirePermission("view_families")
   public void getFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
 
@@ -129,6 +132,8 @@ public class FamilyController implements Controller {
   }
 
   // GET family by ID
+  @Route(method = HttpMethod.GET, path = API_FAMILY_BY_ID)
+  @RequirePermission("view_family")
   public void getFamily(Context ctx) {
     String id = ctx.pathParam("id");
     Family family;
@@ -215,6 +220,8 @@ public class FamilyController implements Controller {
     return families;
   }
 
+  @Route(method = HttpMethod.POST, path = API_SCHEDULE_FAMILIES)
+  @RequirePermission("schedule_families")
   public void scheduleFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
 
@@ -284,6 +291,8 @@ public class FamilyController implements Controller {
   }
 
   // POST new family
+  @Route(method = HttpMethod.POST, path = API_FAMILY)
+  @RequirePermission("add_family")
   public void addNewFamily(Context ctx) {
     String body = ctx.body();
     Family newFamily = ctx.bodyValidator(Family.class).get();
@@ -304,6 +313,8 @@ public class FamilyController implements Controller {
   }
 
   // UPDATE family
+  @Route(method = HttpMethod.PUT, path = API_FAMILY_BY_ID)
+  @RequirePermission("edit_family")
   public void updateFamily(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
@@ -363,6 +374,8 @@ public class FamilyController implements Controller {
   }
 
   // DELETE family
+  @Route(method = HttpMethod.DELETE, path = API_FAMILY_BY_ID)
+  @RequirePermission("delete_family")
   public void deleteFamily(Context ctx) {
     String id = ctx.pathParam("id");
     DeleteResult deleteResult;
@@ -385,10 +398,14 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_HELPED)
+  @RequirePermission("edit_family")
   public void updateFamilyHelped(Context ctx) {
     updateFamilyStatus(ctx);
   }
 
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_STATUS)
+  @RequirePermission("edit_family")
   public void updateFamilyStatus(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
@@ -432,6 +449,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_CHECKLIST)
+  @RequirePermission("manage_family_help_sessions")
   public void updateFamilyChecklist(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
@@ -467,6 +486,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.GET, path = API_FAMILY_HELP_SESSION)
+  @RequirePermission("manage_family_help_sessions")
   public void getFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     if (family.checklist == null || !family.checklist.snapshot) {
@@ -481,6 +502,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_START)
+  @RequirePermission("manage_family_help_sessions")
   public void startFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
 
@@ -497,6 +520,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_SAVE_CHILD)
+  @RequirePermission("manage_family_help_sessions")
   public void saveFamilyHelpSessionChild(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
@@ -531,6 +556,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_SAVE_ALL)
+  @RequirePermission("manage_family_help_sessions")
   public void saveFamilyHelpSessionAll(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
@@ -560,6 +587,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_CLEAR)
+  @RequirePermission("manage_family_help_sessions")
   public void clearFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
@@ -575,6 +604,8 @@ public class FamilyController implements Controller {
   }
 
   // GET dashboard stats
+  @Route(method = HttpMethod.GET, path = API_DASHBOARD)
+  @RequirePermission("view_dashboard_stats")
   public void getDashboardStats(Context ctx) {
     ArrayList<Family> families = familyCollection
       .find()
@@ -614,6 +645,8 @@ public class FamilyController implements Controller {
   }
 
   // GET export families as CSV
+  @Route(method = HttpMethod.GET, path = API_FAMILY_EXPORT)
+  @RequirePermission("export_families_csv")
   public void exportFamiliesAsCSV(Context ctx) {
     List<Family> families = familyCollection.find().into(new ArrayList<>());
 
@@ -1260,26 +1293,4 @@ public class FamilyController implements Controller {
       .append("sections", sectionDocuments);
   }
 
-  @Override
-  public void addRoutes(Javalin server) {
-    server.get(API_FAMILY_EXPORT, this::exportFamiliesAsCSV);
-    server.get(API_FAMILY, this::getFamilies);
-    server.get(API_FAMILY_BY_ID, this::getFamily);
-    server.get(API_DASHBOARD, this::getDashboardStats);
-    server.get(API_FAMILY_HELP_SESSION, this::getFamilyHelpSession);
-
-    server.put(API_FAMILY_BY_ID, this::updateFamily);
-    server.patch(API_FAMILY_HELPED, this::updateFamilyHelped);
-    server.patch(API_FAMILY_STATUS, this::updateFamilyStatus);
-    server.patch(API_FAMILY_CHECKLIST, this::updateFamilyChecklist);
-
-    server.post(API_FAMILY, this::addNewFamily);
-    server.post(API_SCHEDULE_FAMILIES, this::scheduleFamilies);
-    server.post(API_FAMILY_HELP_SESSION_START, this::startFamilyHelpSession);
-    server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
-    server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);
-    server.post(API_FAMILY_HELP_SESSION_CLEAR, this::clearFamilyHelpSession);
-
-    server.delete(API_FAMILY_BY_ID, this::deleteFamily);
-  }
 }

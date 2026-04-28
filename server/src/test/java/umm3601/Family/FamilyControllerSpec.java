@@ -57,9 +57,9 @@ import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
 // Misc Imports
 import umm3601.Inventory.Inventory;
+import umm3601.Settings.Settings;
+import umm3601.Settings.Settings.TimeAvailabilityLabels;
 import umm3601.SupplyList.SupplyList;
-import umm3601.settings.Settings;
-import umm3601.settings.Settings.TimeAvailabilityLabels;
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength" })
 class FamilyControllerSpec {
   private FamilyController familyController;
@@ -346,7 +346,7 @@ class FamilyControllerSpec {
   void addsRoutes() {
     Javalin mockServer = mock(Javalin.class);
 
-    familyController.addRoutes(mockServer);
+    umm3601.Auth.RouteRegistrar.register(mockServer, familyController, null);
 
     verify(mockServer, Mockito.atLeast(5)).get(any(), any());
     verify(mockServer, Mockito.atLeast(3)).post(any(), any());

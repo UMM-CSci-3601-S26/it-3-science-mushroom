@@ -16,14 +16,15 @@ import com.mongodb.client.model.Sorts;
 import static com.mongodb.client.model.Updates.addToSet;
 import static com.mongodb.client.model.Updates.combine;
 
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
 
-public class BarcodeController implements Controller {
+public class BarcodeController {
     private static final String API_BARCODE_LOOKUP = "/api/barcode/lookup/{code}"; // find barcode in internal system
     private static final String API_BARCODE_NEXT = "/api/barcode/next";
     private static final String API_BARCODE_QTY = "/api/inventory/{id}/quantity";
@@ -39,7 +40,9 @@ public class BarcodeController implements Controller {
           UuidRepresentation.STANDARD);
     }
 
-  public void getNextBarcode(Context ctx) {
+    @Route(method = HttpMethod.GET, path = API_BARCODE_NEXT)
+    @RequirePermission("add_inventory_item")
+    public void getNextBarcode(Context ctx) {
       Inventory last = inventoryCollection.find(new Document("internalBarcode", new Document("$exists", true)))
       .sort(Sorts.descending("internalBarcode"))
       .first();
@@ -57,7 +60,9 @@ public class BarcodeController implements Controller {
       ctx.status(HttpStatus.OK);
   }
 
-  public void lookupBarcode(Context ctx) {
+    @Route(method = HttpMethod.GET, path = API_BARCODE_LOOKUP)
+    @RequirePermission("view_inventory_item")
+    public void lookupBarcode(Context ctx) {
     String code = ctx.pathParam("code");
 
     Bson filter;
@@ -93,7 +98,9 @@ public class BarcodeController implements Controller {
     ctx.status(HttpStatus.CREATED);
   }
 
-  public void updateQuantity(Context ctx) {
+    @Route(method = HttpMethod.POST, path = API_BARCODE_QTY)
+    @RequirePermission("edit_inventory_item")
+    public void updateQuantity(Context ctx) {
     String id = ctx.pathParam("id");
     Document body = ctx.bodyAsClass(Document.class);
     String action = body.getString("action");
@@ -129,7 +136,9 @@ public class BarcodeController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
-  public void linkExternalBarcode(Context ctx) {
+    @Route(method = HttpMethod.PATCH, path = API_LINK_EXTERNAL_BARCODE)
+    @RequirePermission("edit_inventory_item")
+    public void linkExternalBarcode(Context ctx) {
     String internalID = ctx.pathParam("internalID");
     Document body = ctx.bodyAsClass(Document.class);
     String barcode = body.getString("barcode");
@@ -154,12 +163,5 @@ public class BarcodeController implements Controller {
 
     ctx.json(updated);
     ctx.status(HttpStatus.OK);
-  }
-  @Override
-  public void addRoutes(Javalin server) {
-    server.get(API_BARCODE_LOOKUP, this::lookupBarcode);
-    server.get(API_BARCODE_NEXT, this::getNextBarcode);
-    server.post(API_BARCODE_QTY, this::updateQuantity);
-    server.patch(API_LINK_EXTERNAL_BARCODE, this::linkExternalBarcode);
   }
 }

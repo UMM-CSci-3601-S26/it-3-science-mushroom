@@ -25,7 +25,6 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -33,12 +32,14 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.http.UploadedFile;
 
 // Misc Imports
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
 import umm3601.Inventory.Inventory;
 import umm3601.Family.FamilyController;
 
 @SuppressWarnings({ "MagicNumber" })
-public class StockReportController implements Controller {
+public class StockReportController {
 
   private static final String API_STOCK_REPORT = "/api/stockreport";
   private static final String API_REPORT_BY_ID = "/api/stockreport/{id}";
@@ -69,6 +70,8 @@ public class StockReportController implements Controller {
    * Get all reports in the system. Does not return content bytes, only name, type, and ID
    * @param ctx the Javalin context containing the report
    */
+  @Route(method = HttpMethod.GET, path = API_STOCK_REPORT)
+  @RequirePermission("view_reports")
   public void getReports(Context ctx) {
     ArrayList<StockReport> matchingReports = stockReportCollection
       .find()
@@ -85,6 +88,8 @@ public class StockReportController implements Controller {
    * @throws IllegalArgumentException if the provided ID is not a valid Mongo Object ID
    * @throws NotFoundResponse if no report with the provided ID exists in the system
    */
+  @Route(method = HttpMethod.GET, path = API_REPORT_BY_ID)
+  @RequirePermission("view_reports")
   public void getReportById(Context ctx) {
     try {
       new ObjectId(ctx.pathParam("id"));
@@ -108,6 +113,8 @@ public class StockReportController implements Controller {
    * @throws IllegalArgumentException if the provided ID is not a valid Mongo Object ID
    * @throws NotFoundResponse if no report with the provided ID exists in the system
    */
+  @Route(method = HttpMethod.GET, path = API_REPORT_BYTES_BY_ID)
+  @RequirePermission("view_reports")
   public void getReportBytesById(Context ctx) {
     try {
       new ObjectId(ctx.pathParam("id"));
@@ -137,6 +144,8 @@ public class StockReportController implements Controller {
    * @param ctx the Javalin context containing the report
    * @throws BadRequestResponse if the uploaded file is missing or cannot be read, or if the report name is missing
    */
+  @Route(method = HttpMethod.POST, path = API_STOCK_REPORT)
+  @RequirePermission("manage_stock_reports")
   public void addNewReport(Context ctx) {
     byte[] fileBytes;
     UploadedFile uploadedFile = ctx.uploadedFile("uploadedReport");
@@ -178,6 +187,8 @@ public class StockReportController implements Controller {
    * @throws IllegalArgumentException if the provided ID is not a valid Mongo Object ID
    * @throws NotFoundResponse if no report with the provided ID exists in the system
    */
+  @Route(method = HttpMethod.DELETE, path = API_REPORT_BY_ID)
+  @RequirePermission("manage_stock_reports")
   public void deleteReport(Context ctx) {
     String id = ctx.pathParam("id");
     DeleteResult deleteResult;
@@ -424,21 +435,15 @@ public class StockReportController implements Controller {
     }
   }
 
-  @Override
-  public void addRoutes(Javalin server) {
-    // GET routes
-    // Generate report and download to client
-    server.get(API_GENERATE_REPORT, ctx -> generateStockReport(ctx, false));
-    // Generate report and save to database
-    server.get(API_GENERATE_REPORT_AND_SAVE, ctx -> generateStockReport(ctx, true));
-    server.get(API_STOCK_REPORT, this::getReports); // All reports (only name and ID)
-    server.get(API_REPORT_BY_ID, this::getReportById); // Report by ID (all fields)
-    server.get(API_REPORT_BYTES_BY_ID, this::getReportBytesById); // Report bytes by ID (no name or ID returned)
+  @Route(method = HttpMethod.GET, path = API_GENERATE_REPORT)
+  @RequirePermission("view_reports")
+  public void generateStockReportPreview(Context ctx) {
+    generateStockReport(ctx, false);
+  }
 
-    // POST routes
-    server.post(API_STOCK_REPORT, this::addNewReport); // Add report
-
-    // DELETE routes
-    server.delete(API_REPORT_BY_ID, this::deleteReport); // Delete report
+  @Route(method = HttpMethod.GET, path = API_GENERATE_REPORT_AND_SAVE)
+  @RequirePermission("manage_stock_reports")
+  public void generateAndSaveStockReport(Context ctx) {
+    generateStockReport(ctx, true);
   }
 }
