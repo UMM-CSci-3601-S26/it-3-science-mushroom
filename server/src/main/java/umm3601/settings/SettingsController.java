@@ -95,8 +95,7 @@ public class SettingsController {
     if (settings.barcodePrintWarningLimit < 1) {
       settings.barcodePrintWarningLimit = DEFAULT_BARCODE_PRINT_WARNING_LIMIT;
     }
-    ctx.json(settings);
-    ctx.status(HttpStatus.OK);
+    return settings;
   }
 
   /**
