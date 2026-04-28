@@ -20,6 +20,9 @@ import { forkJoin } from 'rxjs';
 import { SettingsService } from './settings.service';
 import { SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels } from './settings';
 
+// Family Imports
+import { FamilyService } from '../family/family.service';
+
 // Terms Imports
 import { TermsService } from '../terms/terms.service';
 
@@ -46,6 +49,7 @@ export class SettingsComponent implements OnInit {
   private termsService = inject(TermsService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private familyService = inject(FamilyService);
 
   // Current schools list, loaded from the server on init
   schools: SchoolInfo[] = [];
@@ -196,7 +200,10 @@ export class SettingsComponent implements OnInit {
       ...this.notGivenTerms.map(t => ({ itemTerm: t, status: 'notGiven' as const })),
     ];
     this.settingsService.updateSupplyOrder(order).subscribe({
-      next: () => this.router.navigate(['/checklists'], { queryParams: { generate: 'true' } }),
+      next: () => {
+        this.router.navigate(['/checklists'], { queryParams: { generate: 'true' } });
+        this.snackBar.open('Successfully generated checklist', 'OK', { duration: 2000 })
+      },
       error: () => this.snackBar.open('Failed to save drive order', 'OK', { duration: 3000 })
     });
   }
@@ -226,5 +233,25 @@ export class SettingsComponent implements OnInit {
         error: () => this.snackBar.open('Failed to save available spots', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  scheduleFamilies(): void {
+    this.settingsService.updateAvailableSpots(this.availableSpotsForm.value as number).subscribe({
+      next: () => {
+        this.familyService.scheduleFamilies().subscribe({
+          next: () => {
+            this.router.navigate(['/family']);
+            this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
+          },
+          error: (err) => {
+            console.error('Schedule families error:', err);
+            this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
+          }
+        })
+      },
+      error: () => {
+        this.snackBar.open('Failed to update available spots', 'OK', { duration: 3000 });
+      }
+    });
   }
 }

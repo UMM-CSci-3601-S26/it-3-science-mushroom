@@ -124,10 +124,9 @@
                     <button mat-raised-button color="primary" type="submit" [disabled]="!availableSpotsForm.valid" data-test="saveButton">
                       Save Available Spots
                     </button>
-                    <!-- (click)="scheduleFamilies()" -->
-                    <button mat-raised-button color="accent">
+                    <button mat-raised-button color="accent" type="button" (click)="scheduleFamilies()" >
                       <mat-icon>playlist_add_check</mat-icon>
-                        Schedule Families
+                        Save &amp; Schedule Families
                     </button>
                   </div>
                 </form>
