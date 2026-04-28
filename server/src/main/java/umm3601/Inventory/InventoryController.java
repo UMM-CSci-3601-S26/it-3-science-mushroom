@@ -27,18 +27,19 @@ import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 
 // IO Imports
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 
 // Misc Imports
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
 
 
 // Controller
-public class InventoryController implements Controller {
+public class InventoryController {
 
   private static final String API_INVENTORY = "/api/inventory";
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
@@ -95,7 +96,6 @@ public class InventoryController implements Controller {
     return String.format("ITEM-%05d", n);
   }
 
-
   private int getNextSequence() {
     Inventory maxIdItem = inventoryCollection
     .find(Filters.and(
@@ -111,6 +111,7 @@ public class InventoryController implements Controller {
     int barcodeNum = extractNumber(maxBarcodeItem != null ? maxBarcodeItem.internalBarcode : null);
     return Math.max(idNum, barcodeNum) + 1;
   }
+
   private String generateNextID() { // generates the next available internal ID
       Inventory last = inventoryCollection.find(new Document("internalID", new Document("$exists", true)))
       .sort(Sorts.descending("internalID"))
@@ -127,11 +128,15 @@ public class InventoryController implements Controller {
       return String.format("ID-%05d", next);
   }
 
+  @Route(method = HttpMethod.GET, path = "/api/inventory/nextid")
+  @RequirePermission("add_inventory_item")
   public void generateNextID(Context ctx) {
     ctx.json(generateNextID());
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_INVENTORY)
+  @RequirePermission("add_inventory_item")
   public void addInventory(Context ctx) {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
     newInv.refreshDescription();
@@ -198,6 +203,8 @@ public class InventoryController implements Controller {
     ctx.status(HttpStatus.CREATED);
   }
 
+  @Route(method = HttpMethod.POST, path = API_INVENTORY + "/remove")
+  @RequirePermission("edit_inventory_item")
   public void removeInventory(Context ctx) {
     RemoveInventoryRequest req = ctx.bodyAsClass(RemoveInventoryRequest.class);
 
@@ -255,6 +262,8 @@ public class InventoryController implements Controller {
     return NO_MATCH_SCORE;
   }
 
+  @Route(method = HttpMethod.GET, path = API_INVENTORY_BY_ID)
+  @RequirePermission("view_inventory_item")
   public void getInventory(Context ctx) {
     String id = ctx.pathParam("id");
     Inventory inv;
@@ -274,6 +283,8 @@ public class InventoryController implements Controller {
     }
   }
 
+  @Route(method = HttpMethod.GET, path = API_INVENTORY)
+  @RequirePermission("view_inventory")
   public void getInventories(Context ctx) {
     Bson filter = constructFilter(ctx);
 
@@ -425,12 +436,4 @@ public class InventoryController implements Controller {
     }
   }
 
-  @Override
-  public void addRoutes(Javalin server) {
-    server.get(API_INVENTORY, this::getInventories);
-    server.get(API_INVENTORY_BY_ID, this::getInventory);
-    server.post(API_INVENTORY, this::addInventory);
-    server.post(API_INVENTORY + "/remove", this::removeInventory);
-    server.get("/api/inventory/nextid", this::generateNextID);
-  }
 }

@@ -274,7 +274,7 @@ public class SupplyListControllerSpec {
     assertEquals("The requested supply list item was not found", exception.getMessage());
   }
 
-  // If someone tries to filter by a quantity that isn’t a number,
+  // If someone tries to filter by a quantity that isnâ€™t a number,
   // the controller should reject it instead of ignoring it or crashing.
   @Test
   void getSupplyListsRejectsNonIntegerQuantity() {
@@ -289,8 +289,8 @@ public class SupplyListControllerSpec {
   }
 
   // The following few test checks that filtering works even if the user types the
-  // value with weird capitalization. The controller should treat “pEnCiL” the
-  // same as “pencil” and return the correct matching items.
+  // value with weird capitalization. The controller should treat â€œpEnCiLâ€ the
+  // same as â€œpencilâ€ and return the correct matching items.
   @Test
   void canFilterSupplyListByItemCaseInsensitive() {
     when(ctx.queryParamMap()).thenReturn(Map.of("item", List.of("pEnCiL")));
@@ -797,7 +797,7 @@ public class SupplyListControllerSpec {
   @Test
   void addsRoutes() {
     Javalin mockServer = mock(Javalin.class);
-    supplylistController.addRoutes(mockServer);
+    umm3601.Auth.RouteRegistrar.register(mockServer, supplylistController, null);
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
   }
 

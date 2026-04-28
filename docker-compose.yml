@@ -21,6 +21,7 @@ services:
       MONGO_ADDR: mongo # hostname of the mongo container
       MONGO_DB: prod
       WAIT_HOSTS: mongo:27017 # wait for mongo to start up before starting the server
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET environment variable must be set}"
     depends_on:
       - mongo
   mongo:

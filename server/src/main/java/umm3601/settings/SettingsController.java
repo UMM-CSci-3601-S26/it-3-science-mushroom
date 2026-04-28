@@ -1,5 +1,5 @@
 // Package
-package umm3601.settings;
+package umm3601.Settings;
 
 // Static Imports
 import static com.mongodb.client.model.Filters.eq;
@@ -19,27 +19,28 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 
 // IO Imports
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 // Misc Imports
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
 
 /**
  * Controller for the singleton app settings document.
  *
  * Routes:
- *  - GET  /api/settings                     → returns the full settings document
- *  - PATCH /api/settings/schools            → replaces the schools list
- *  - PATCH /api/settings/timeAvailability   → replaces the time availability labels
- *  - PATCH /api/settings/availableSpots     → replaces the availableSpots integer
+ *  - GET  /api/settings                     â†’ returns the full settings document
+ *  - PATCH /api/settings/schools            â†’ replaces the schools list
+ *  - PATCH /api/settings/timeAvailability   â†’ replaces the time availability labels
+ *  - PATCH /api/settings/availableSpots     â†’ replaces the availableSpots integer
  *
  * Patching by section prevents one tab from overwriting another's changes.
  * All patch operations use upsert so the document is created on first write.
  */
-public class SettingsController implements Controller {
+public class SettingsController {
 
   // The fixed _id used for the singleton settings document
   public static final String SETTINGS_ID = "app-settings";
@@ -68,6 +69,8 @@ public class SettingsController implements Controller {
    * GET /api/settings
    * Returns the settings document, or a safe default if none exists yet.
    */
+  @Route(method = HttpMethod.GET, path = API_SETTINGS)
+  @RequirePermission("view_settings")
   public void getSettings(Context ctx) {
     Settings settings = settingsCollection.find(eq("_id", SETTINGS_ID)).first();
     if (settings == null) {
@@ -92,6 +95,8 @@ public class SettingsController implements Controller {
    * PATCH /api/settings/schools
    * Replaces the schools list. Body: { "schools": [{ "name": "...", "abbreviation": "..." }] }
    */
+  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_SCHOOLS)
+  @RequirePermission("edit_schools")
   public void updateSchools(Context ctx) {
     Settings body = ctx.bodyAsClass(Settings.class);
     if (body.schools == null) {
@@ -116,6 +121,8 @@ public class SettingsController implements Controller {
    * Replaces the supply item ordering used when generating checklists.
    * Body: { "supplyOrder": [{ "supplyId": "...", "status": "staged|unstaged|notGiven" }] }
    */
+  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_SUPPLY_ORDER)
+  @RequirePermission("edit_supply_order")
   public void updateSupplyOrder(Context ctx) {
     // Validate request body
     Settings body = ctx.bodyAsClass(Settings.class);
@@ -142,8 +149,10 @@ public class SettingsController implements Controller {
   /**
    * PATCH /api/settings/timeAvailability
    * Replaces the time availability labels.
-   * Body: { "earlyMorning": "8:00–9:00 AM", "lateMorning": "...", ... }
+   * Body: { "earlyMorning": "8:00â€“9:00 AM", "lateMorning": "...", ... }
    */
+  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_TIME)
+  @RequirePermission("edit_time_availability")
   public void updateTimeAvailability(Context ctx) {
 
     Document taDoc = new Document()
@@ -160,6 +169,8 @@ public class SettingsController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_AVAILABLE_SPOTS)
+  @RequirePermission("edit_available_spots")
   public void updateSpotAvailability(Context ctx) {
     Settings body = ctx.bodyAsClass(Settings.class);
 
@@ -170,7 +181,10 @@ public class SettingsController implements Controller {
 
     ctx.status(HttpStatus.OK);
   }
+    server.patch(API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT, this::updateBarcodePrintWarningLimit);
 
+  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT)
+  @RequirePermission("edit_barcode_print_limit")
   public void updateBarcodePrintWarningLimit(Context ctx) {
     Settings body = ctx.bodyAsClass(Settings.class);
 
@@ -184,15 +198,5 @@ public class SettingsController implements Controller {
         new UpdateOptions().upsert(true));
 
     ctx.status(HttpStatus.OK);
-  }
-
-  @Override
-  public void addRoutes(Javalin server) {
-    server.get(API_SETTINGS, this::getSettings);
-    server.patch(API_SETTINGS_SCHOOLS, this::updateSchools);
-    server.patch(API_SETTINGS_TIME, this::updateTimeAvailability);
-    server.patch(API_SETTINGS_AVAILABLE_SPOTS, this::updateSpotAvailability);
-    server.patch(API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT, this::updateBarcodePrintWarningLimit);
-    server.patch(API_SETTINGS_SUPPLY_ORDER, this::updateSupplyOrder);
   }
 }
