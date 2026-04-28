@@ -86,15 +86,6 @@ export class InventoryService {
   }
 
   /**
-   * Remove one unit of an item from inventory
-   * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
-   * @returns Observable of the updated inventory item after removal
-   */
-  removeOne(identifier: string): Observable<Inventory> {
-    return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/removeQuantity`, { params: { id: identifier } });
-  }
-
-  /**
    * Add an inventory item to the inventory
    * @param item Item to add to inventory
    * @returns Observable of the added inventory item
@@ -131,9 +122,9 @@ export class InventoryService {
    * @param amount Amount of quantity to remove
    * @returns Observable of the updated inventory item
    */
-  removeInventoryById(internalID: string, amount: number): Observable<unknown> {
+  removeItemQuantityById(internalID: string, amount: number): Observable<unknown> {
     return new Observable(observer => {
-      this.httpClient.post(`${this.inventoryUrl}/remove`, { internalID, amount }).subscribe({
+      this.httpClient.post(`${this.inventoryUrl}/removeQuantity`, { internalID, amount }).subscribe({
         next: (result) => {
           this.loadInventory();
           observer.next(result);
@@ -143,6 +134,26 @@ export class InventoryService {
       });
     });
   }
+
+  /**
+   * Delete a specified amount of inventory from an item, referenced by its internalID
+   * @param internalID Internal ID of item to delete amount from
+   * @param amount Amount of quantity to delete
+   * @returns Observable of the updated inventory item
+   */
+  deleteInventoryById(internalID: string): Observable<unknown> {
+    return new Observable(observer => {
+      this.httpClient.delete(`${this.inventoryUrl}/${internalID}`).subscribe({
+        next: (result) => {
+          this.loadInventory();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
+  }
+
 
   // addByScanAndUpdate(barcode: string) {
   //   this.addByScan(barcode).subscribe(updatedItem => {
@@ -158,8 +169,19 @@ export class InventoryService {
   // }
 
   /**
+   * Remove one unit of an item from inventory
+   * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
+   * @returns Observable of the updated inventory item after removal
+   * @note Unused.
+   */
+  removeOne(identifier: string): Observable<Inventory> {
+    return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/removeQuantity`, { params: { id: identifier } });
+  }
+
+  /**
    * Remove one unit of an item from inventory and update the inventory state
    * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
+   * @note Unused.
    */
   removeOneAndUpdate(identifier: string) {
     this.removeOne(identifier).subscribe(item => {

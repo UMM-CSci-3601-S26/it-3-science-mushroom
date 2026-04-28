@@ -2,7 +2,7 @@
 import { Component, effect, inject, signal, viewChild, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,6 +20,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDialog } from '@angular/material/dialog';
 
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
@@ -30,8 +31,11 @@ import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
 
-import { MatDialog } from '@angular/material/dialog';
+// Manul Entry Imports
 import { ManualEntry, ManualEntryResult } from './manual-entry';
+
+// Dialog Imports
+import { DialogService } from '../dialog/dialog.service';
 
 type ScanCard = {
   id: string;
@@ -83,6 +87,7 @@ export class InventoryComponent {
   private inventoryService = inject(InventoryService);
   private inventoryIndex = inject(InventoryIndex);
   private dialog = inject(MatDialog);
+  private dialogService = inject(DialogService);
 
   reload = signal(0);
   showScanner = false;
@@ -192,7 +197,7 @@ export class InventoryComponent {
       return;
     }
 
-    this.inventoryService.removeInventoryById(card.item.internalID, card.removeAmount).subscribe({
+    this.inventoryService.removeItemQuantityById(card.item.internalID, card.removeAmount).subscribe({
       next: () => {
         this.snackBar.open(`Removed ${card.removeAmount} from ${card.item?.item}.`, 'OK', {
           duration: 3000
@@ -205,8 +210,6 @@ export class InventoryComponent {
         if (this.scanCards().length === 0) {
           this.showRemovePanel.set(false);
         }
-
-        this.reload.update(v => v + 1);
       },
       error: (err) => {
         console.error('single remove failed', err);
@@ -216,7 +219,51 @@ export class InventoryComponent {
   }
 
   confirmSingleDelete(cardId: string) {
-    console.log('Delete functionality not implemented yet');
+    const card = this.scanCards().find(c => c.id === cardId);
+
+    if (!card || card.mode !== 'remove' || !card.item) {
+      this.snackBar.open("This card cannot be deleted from inventory", 'OK', { duration : 3000});
+      return;
+    }
+
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Delete Single',
+      itemName: card.item.item,
+      message: `Are you sure you want to delete the item ${card.item.item}?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '400px', '200px');
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (!this.inventoryService || !card.item) return;
+        this.snackBar.open(
+          `Deleting item ${card.item.item}...`,
+          `Okay`,
+          { duration: 2000 }
+        );
+
+        this.inventoryService.deleteInventoryById(card.item.internalID).subscribe({
+          next: () => {
+            this.snackBar.open(`Deleted ${card.item?.item}.`, 'OK', {
+              duration: 3000
+            });
+
+            this.scanCards.update(cards => cards.filter(c => c.id !== cardId));
+
+            this.scannerRef()?.removeScannedItem?.(card.barcode);
+
+            if (this.scanCards().length === 0) {
+              this.showRemovePanel.set(false);
+            }
+          },
+          error: (err) => {
+            console.error('single delete failed', err);
+            this.snackBar.open('Failed to delete inventory item.', 'OK', { duration: 4000 });
+          }
+        });
+      }
+    });
   }
 
   removeCard(cardId: string) {
@@ -274,7 +321,7 @@ export class InventoryComponent {
 
     const requests = validRemoveCards.map(card =>
       firstValueFrom(
-        this.inventoryService.removeInventoryById(card.item!.internalID, card.removeAmount)
+        this.inventoryService.removeItemQuantityById(card.item!.internalID, card.removeAmount)
       )
     );
 
