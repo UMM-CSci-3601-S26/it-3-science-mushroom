@@ -68,6 +68,7 @@ export class FamilyListComponent {
 
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
+  showOptionsMenu = signal<boolean>(false);
 
   families = toSignal <Family[]>(
     this.familyService.getFamilies().pipe(
@@ -82,11 +83,17 @@ export class FamilyListComponent {
   );
 
   gradeSort = (a: { key: string }, b: { key: string }) => {
-    if (a.key === 'PreK') return -2;
-    if (b.key === 'PreK') return -2;
-    if (a.key === 'Kindergarten') return -1;
-    if (b.key === 'Kindergarten') return -1;
+    // PreK comes first
+    if (a.key === 'PreK' && b.key === 'PreK') return 0;
+    if (a.key === 'PreK') return -1;
+    if (b.key === 'PreK') return 1;
 
+    // Kindergarten comes second
+    if (a.key === 'Kindergarten' && b.key === 'Kindergarten') return 0;
+    if (a.key === 'Kindergarten') return -1;
+    if (b.key === 'Kindergarten') return 1;
+
+    // Numeric grades
     return Number(a.key) - Number(b.key);
   };
 
@@ -119,7 +126,7 @@ export class FamilyListComponent {
         catchError((err) => {
           if (!(err.error instanceof ErrorEvent)) {
             this.errMsg.set(
-              `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`
+              `Problem contacting the server - Error Code: ${err.status}\nMessage: ${err.message}`
             );
           }
           this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
@@ -145,6 +152,9 @@ export class FamilyListComponent {
     this.pageSize.set(event.pageSize);
   }
 
+  toggleOptionsMenu() {
+    this.showOptionsMenu.update(value => !value);
+  }
 
   downloadCSV() {
     this.familyService.exportFamilies().subscribe(csvData => {
@@ -157,6 +167,25 @@ export class FamilyListComponent {
       a.click();
 
       window.URL.revokeObjectURL(url);
+      this.showOptionsMenu.set(false);
+    });
+  }
+
+  downloadPDF() {
+    // Reload family data to ensure the PDF has the most up-to-date information
+    this.familyService.getFamilies().subscribe({
+      next: () => {
+        this.familyService.generatePDF();
+        this.showOptionsMenu.set(false);
+      },
+      error: (err) => {
+        if (!(err.error instanceof ErrorEvent)) {
+          this.errMsg.set(
+            `Problem contacting the server - Error Code: ${err.status}\nMessage: ${err.message}`
+          );
+        }
+        this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
+      }
     });
   }
 }

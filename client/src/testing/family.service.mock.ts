@@ -7,7 +7,7 @@ import { FamilyService } from 'src/app/family/family.service';
 @Injectable({
   providedIn: AppComponent
 })
-export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 'familyOptions' | 'getDashboardStats' | 'getFamilies' | 'exportFamilies' | 'addFamily' | 'deleteFamily'> {
+export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 'familyOptions' | 'getDashboardStats' | 'getFamilies' | 'exportFamilies' | 'addFamily' | 'deleteFamily' | 'generatePDF'> {
   //'getFamily' |
   // getFamilies: FamilyService;
   static testFamilies: Family[] = [
@@ -183,5 +183,9 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
 
   exportFamilies(): Observable<string> {
     return of('csv-data');
+  }
+
+  generatePDF(): void {
+    console.log('generatePDF called');
   }
 }

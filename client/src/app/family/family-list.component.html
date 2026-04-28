@@ -1,10 +1,7 @@
 <div class="flex-row">
   <div class="flex-1">
-
     @if (dashboardStats(); as stats) {
       <div class="dashboard-grid">
-
-
         <!-- Total Families and Students Card -->
         <mat-card class="stat-card">
           <mat-card-title>Total Families</mat-card-title>
@@ -72,7 +69,7 @@
 
       <mat-card-content>
         <p class="page-description">
-            Welcome to the family page! Here, you can view all families currently in the system, as well as filter them by name. Above, you can see some key statistics about the families and students in the system, including total counts and breakdowns by school and grade. Use the filter below to find specific families.
+          Welcome to the family page! Here, you can view all families currently in the system, as well as filter them by name. Above, you can see some key statistics about the families and students in the system, including total counts and breakdowns by school and grade. Use the filter below to find specific families.
         </p>
         <hr style="margin: 1rem 0;" />
 
@@ -121,7 +118,7 @@
         </div>
         }
       </div>
-      <div>
+      <div class="paginator-container">
         <mat-paginator
           data-cy="family-paginator"
           [length]=" serverFilteredFamilies().length "
@@ -137,11 +134,25 @@
   </div>
 </div>
 
-<button mat-raised-button (click)="downloadCSV()">
-  Export CSV
-</button>
+<div class="fab-container">
+  <button mat-fab class="export-toggle-fab" matTooltip="Options" matTooltipPosition="left"
+    (click)="toggleOptionsMenu()" [ngClass]="{'expanded': showOptionsMenu()}" data-cy="options-menu-toggle">
+    <mat-icon class="md-24" aria-label="Options">more_vert</mat-icon>
+  </button>
+  @if (showOptionsMenu()) {
+    <button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
+      data-cy="add-family-button">
+      <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
+    </button>
 
-<button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
-  data-test="addFamilyButton">
-  <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
-</button>
+    <button mat-fab class="export-fab" matTooltip="Export CSV" matTooltipPosition="left" (click)="downloadCSV()"
+      data-cy="export-csv-button">
+      <mat-icon class="md-24" aria-label="Export CSV">table_chart</mat-icon>
+    </button>
+
+    <button mat-fab class="export-fab" matTooltip="Export PDF" matTooltipPosition="left" (click)="downloadPDF()"
+      data-cy="export-pdf-button">
+      <mat-icon class="md-24" aria-label="Export PDF">picture_as_pdf</mat-icon>
+    </button>
+  }
+</div>

@@ -16,8 +16,6 @@ export class FamilyListPage {
   //private readonly radioButtonSelector = '[data-test=viewTypeRadio] mat-radio-button';
   //private readonly familyRoleDropdownSelector = '[data-test=familyRoleSelect]';
   private readonly dropdownOptionSelector = 'mat-option';
-  private readonly addFamilyButtonSelector = '[data-test=addFamilyButton]';
-  private readonly familyFilterSelector = '[data-cy="filter-family"]'
   private readonly sideNavButton = '.sidenav-button';
   private readonly sideNav = '.sidenav';
   private readonly sideNavOption = '[routerlink] > .mdc-list-item__content';
@@ -95,8 +93,7 @@ export class FamilyListPage {
    * @returns the value of the element with the ID `.family-list-title`
    */
   getStudentsPerGrade() {
-    return cy.get(this.studentsPerGrade
-    )
+    return cy.get(this.studentsPerGrade)
   }
 
   /**
@@ -114,11 +111,11 @@ export class FamilyListPage {
    * @returns the value of the element with the ID `.family-list-title`
    */
   getStudentCards() {
-    return cy.get(this.studentCardSelector)
+    return cy.get(this.studentCardSelector);
   }
 
   getFilterFamily() {
-    return cy.get(this.familyFilterSelector)
+    return cy.get('[data-cy="filter-family"]');
   }
 
   selectAutoCompleteOption(filterSelector: string, text: string) {
@@ -154,6 +151,18 @@ export class FamilyListPage {
   }
 
   addFamilyButton() {
-    return cy.get(this.addFamilyButtonSelector);
+    return cy.get('[data-cy="add-family-button"]');
+  }
+
+  exportCSVButton() {
+    return cy.get('[data-cy="export-csv-button"]');
+  }
+
+  exportPDFButton() {
+    return cy.get('[data-cy="export-pdf-button"]');
+  }
+
+  toggleOptionsMenu() {
+    return cy.get('[data-cy="options-menu-toggle"]').click();
   }
 }
