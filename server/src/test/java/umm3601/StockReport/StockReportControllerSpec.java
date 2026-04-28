@@ -174,7 +174,7 @@ public class StockReportControllerSpec {
   @Test
   void addsRoutes() {
     Javalin mockServer = mock(Javalin.class);
-    stockReportController.addRoutes(mockServer);
+    umm3601.Auth.RouteRegistrar.register(mockServer, stockReportController, null);
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
   }
 

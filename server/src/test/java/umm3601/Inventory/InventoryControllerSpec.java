@@ -184,7 +184,7 @@ public class InventoryControllerSpec {
   @Test
   void addsRoutes() {
     Javalin mockServer = mock(Javalin.class);
-    inventoryController.addRoutes(mockServer);
+    umm3601.Auth.RouteRegistrar.register(mockServer, inventoryController, null);
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
   }
 

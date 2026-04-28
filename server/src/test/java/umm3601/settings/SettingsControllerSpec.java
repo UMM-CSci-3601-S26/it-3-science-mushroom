@@ -1,5 +1,5 @@
 // Packages
-package umm3601.settings;
+package umm3601.Settings;
 
 // Static Imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -219,7 +219,7 @@ class SettingsControllerSpec {
   @Test
   void addsRoutes() {
     Javalin mockServer = mock(Javalin.class);
-    settingsController.addRoutes(mockServer);
+    umm3601.Auth.RouteRegistrar.register(mockServer, settingsController, null);
 
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
     verify(mockServer, atLeastOnce()).patch(any(), any());

@@ -30,18 +30,19 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 // IO Imports
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 
 // Misc Imports
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
 
 
 // Controller
-public class InventoryController implements Controller {
+public class InventoryController {
 
   private static final String API_INVENTORY = "/api/inventory";
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
@@ -145,6 +146,8 @@ public class InventoryController implements Controller {
   }
 
   // Endpoint to generate the next internal ID
+  @Route(method = HttpMethod.GET, path = "/api/inventory/nextid")
+  @RequirePermission("add_inventory_item")
   public void generateNextID(Context ctx) {
     ctx.json(generateNextID());
     ctx.status(HttpStatus.OK);
@@ -154,6 +157,8 @@ public class InventoryController implements Controller {
    * Endpoint to add inventory, with logic to handle duplicates and quantity updates
    * @param ctx The context for the HTTP request
    */
+  @Route(method = HttpMethod.POST, path = API_INVENTORY)
+  @RequirePermission("add_inventory_item")
   public void addInventory(Context ctx) {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
     newInv.refreshDescription();
@@ -225,9 +230,11 @@ public class InventoryController implements Controller {
    * Endpoint to remove a given quantity from a given inventory
    * @param ctx The context for the HTTP request
    */
-  public void removeQuantity(Context ctx) {
-    RemoveQuantityRequest req = ctx.bodyAsClass(RemoveQuantityRequest.class);
 
+  @Route(method = HttpMethod.POST, path = API_INVENTORY + "/remove")
+  @RequirePermission("edit_inventory_item")
+  public void removeInventory(Context ctx) {
+    RemoveInventoryRequest req = ctx.bodyAsClass(RemoveInventoryRequest.class);
     if (req.internalID == null || req.internalID.isBlank()) {
       throw new BadRequestResponse("internalID is required to update inventory");
     }
@@ -349,6 +356,8 @@ public class InventoryController implements Controller {
    * Endpoint to get a single inventory item by its MongoDB ID
    * @param ctx The context for the HTTP request
    */
+  @Route(method = HttpMethod.GET, path = API_INVENTORY_BY_ID)
+  @RequirePermission("view_inventory_item")
   public void getInventory(Context ctx) {
     String id = ctx.pathParam("id");
     Inventory inv;
@@ -372,6 +381,8 @@ public class InventoryController implements Controller {
    * Endpoint to get inventory items based on query parameters
    * @param ctx The context for the HTTP request
    */
+  @Route(method = HttpMethod.GET, path = API_INVENTORY)
+  @RequirePermission("view_inventory")
   public void getInventories(Context ctx) {
     Bson filter = constructFilter(ctx);
 
@@ -530,23 +541,5 @@ public class InventoryController implements Controller {
       }
       inventoryCollection.updateOne(eq("_id", new ObjectId(inv._id)), Updates.set("stockState", inv.stockState));
     }
-  }
-
-  @Override
-  public void addRoutes(Javalin server) {
-    // GET routes
-    server.get(API_INVENTORY, this::getInventories);
-    server.get("/api/inventory/nextid", this::generateNextID);
-    server.get(API_INVENTORY_BY_ID, this::getInventory);
-
-    // POST routes
-    server.post(API_INVENTORY, this::addInventory);
-    server.post(API_INVENTORY_REMOVE_QUANTITY, this::removeQuantity);
-    server.post(API_INVENTORY_RESET, this::resetQuantities);
-
-    // DELETE routes
-    server.delete(API_INVENTORY_CLEAR, this::clearInventory);
-    server.delete(API_INVENTORY, this::deleteInventories);
-    server.delete(API_INVENTORY_BY_ID, this::deleteInventory);
   }
 }

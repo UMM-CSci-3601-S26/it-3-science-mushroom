@@ -128,7 +128,7 @@ public class BarcodeControllerSpec {
   @Test
   void addsRoutes() {
     Javalin mockServer = mock(Javalin.class);
-    barcodeController.addRoutes(mockServer);
+    umm3601.Auth.RouteRegistrar.register(mockServer, barcodeController, null);
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
     verify(mockServer, Mockito.atLeast(1)).post(any(), any());
   }
