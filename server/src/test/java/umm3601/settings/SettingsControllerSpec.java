@@ -407,13 +407,13 @@ class SettingsControllerSpec {
   @Test
   void updateSpotAvailabilityTest() {
     Settings body = new Settings();
-    // body.availableSpots = 5;
+    body.availableSpots = 10;
 
     when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
 
     settingsController.updateSpotAvailability(ctx);
 
-    assertEquals(body.availableSpots, 5);
+    assertEquals(body.availableSpots, 10);
 
     verify(ctx).status(HttpStatus.OK);
   }
