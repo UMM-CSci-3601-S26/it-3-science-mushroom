@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule, MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
@@ -11,7 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -61,9 +61,10 @@ import { DashboardStats } from '../family/family';
   ],
 })
 
-export class FamilyListComponent {
+export class FamilyListComponent implements OnInit {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
+  private route = inject(ActivatedRoute);
 
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
@@ -156,6 +157,12 @@ export class FamilyListComponent {
       a.click();
 
       window.URL.revokeObjectURL(url);
+    });
+  }
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(() => {
+      this.families = toSignal(this.familyService.getFamilies());
     });
   }
 }
