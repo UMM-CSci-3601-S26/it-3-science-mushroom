@@ -72,14 +72,54 @@ describe('Family list', () => {
     expect(URL.createObjectURL).toHaveBeenCalled();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob-url');
   });
+
+  it('generatePDF() should be called when PDF is downloaded', () => {
+    const generatePDFSpy = spyOn(familyService, 'generatePDF');
+
+    familyList.downloadPDF();
+
+    expect(generatePDFSpy).toHaveBeenCalled();
+  });
+
+  it('should close export menu when PDF is downloaded', () => {
+    spyOn(familyService, 'generatePDF');
+    familyList.showOptionsMenu.set(true);
+
+    familyList.downloadPDF();
+
+    expect(familyList.showOptionsMenu()).toBe(false);
+  });
+
+  it('toggleOptionsMenu() should toggle showOptionsMenu signal from false to true', () => {
+    familyList.showOptionsMenu.set(false);
+
+    familyList.toggleOptionsMenu();
+
+    expect(familyList.showOptionsMenu()).toBe(true);
+  });
+
+  it('toggleOptionsMenu() should toggle showOptionsMenu signal from true to false', () => {
+    familyList.showOptionsMenu.set(true);
+
+    familyList.toggleOptionsMenu();
+
+    expect(familyList.showOptionsMenu()).toBe(false);
+  });
+
+  it('toggleOptionsMenu() should toggle showOptionsMenu multiple times in succession', () => {
+    familyList.showOptionsMenu.set(false);
+
+    familyList.toggleOptionsMenu();
+    expect(familyList.showOptionsMenu()).toBe(true);
+
+    familyList.toggleOptionsMenu();
+    expect(familyList.showOptionsMenu()).toBe(false);
+
+    familyList.toggleOptionsMenu();
+    expect(familyList.showOptionsMenu()).toBe(true);
+  });
 });
 
-/*
-* This test is a little odd, but illustrates how we can use stubs
-* to create mock objects (a service in this case) that be used for
-* testing. Here we set up the mock FamilyService (familyServiceStub) so that
-* _always_ fails (throws an exception) when you request a set of families.
-*/
 describe('Misbehaving Family List', () => {
   let familyList: FamilyListComponent;
   let fixture: ComponentFixture<FamilyListComponent>;
@@ -96,11 +136,11 @@ describe('Misbehaving Family List', () => {
     familyServiceStub = {
       getFamilies: () =>
         new Observable((observer) => {
-          observer.error('getFamilies() Observer generates an error');
+          observer.error({ error: new Error('getFamilies error'), status: 500, message: 'Server error' });
         }),
       getDashboardStats: () =>
         new Observable((observer) => {
-          observer.error('getDashboardStats() Observer generates an error');
+          observer.error({ error: new Error('getDashboardStats error'), status: 500, message: 'Server error' });
         }),
       familyOptions: signal([]),
       exportFamilies: () => of('')
@@ -129,7 +169,7 @@ describe('Misbehaving Family List', () => {
     fixture.detectChanges();
   });
 
-  it('generates an error if we dont set up a Family Service', () => {
+  it('generates an error if we do not set up a Family Service', () => {
     // If the service fails, we expect the `serverFilteredFamilies` signal to
     // be an empty array of families.
     expect(familyList.serverFilteredFamilies())
@@ -140,7 +180,7 @@ describe('Misbehaving Family List', () => {
     // like this; maybe we just want to expect it to be non-empty?)
     expect(familyList.errMsg())
       .withContext('the error message will be')
-      .toContain('Problem contacting the server – Error Code:');
+      .toContain('Problem contacting the server - Error Code:');
   });
 });
 
@@ -252,4 +292,83 @@ describe('Paginator pageChange event', () => {
     expect(component.pageSize()).toBe(25);
   });
 
+});
+
+describe('Grade Sort Comparator', () => {
+  let component: FamilyListComponent;
+  let fixture: ComponentFixture<FamilyListComponent>;
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [FamilyListComponent],
+      providers: [
+        { provide: FamilyService, useClass: MockFamilyService },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(FamilyListComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should return -1 when a is PreK and b is not', () => {
+    const result = component.gradeSort({ key: 'PreK' }, { key: '1' });
+    expect(result).toBe(-1);
+  });
+
+  it('should return 1 when b is PreK and a is not', () => {
+    const result = component.gradeSort({ key: '1' }, { key: 'PreK' });
+    expect(result).toBe(1);
+  });
+
+  it('should return 0 when both a and b are PreK', () => {
+    const result = component.gradeSort({ key: 'PreK' }, { key: 'PreK' });
+    expect(result).toBe(0);
+  });
+
+  it('should return -1 when a is Kindergarten and b is not', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: '1' });
+    expect(result).toBe(-1);
+  });
+
+  it('should return 1 when b is Kindergarten and a is not', () => {
+    const result = component.gradeSort({ key: '1' }, { key: 'Kindergarten' });
+    expect(result).toBe(1);
+  });
+
+  it('should return 0 when both a and b are Kindergarten', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: 'Kindergarten' });
+    expect(result).toBe(0);
+  });
+
+  it('should place PreK before Kindergarten', () => {
+    const result = component.gradeSort({ key: 'PreK' }, { key: 'Kindergarten' });
+    expect(result).toBeLessThan(0);
+  });
+
+  it('should place Kindergarten after PreK', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: 'PreK' });
+    expect(result).toBeGreaterThan(0);
+  });
+
+  it('should sort numeric grades in ascending order', () => {
+    expect(component.gradeSort({ key: '1' }, { key: '2' })).toBeLessThan(0);
+    expect(component.gradeSort({ key: '5' }, { key: '3' })).toBeGreaterThan(0);
+    expect(component.gradeSort({ key: '4' }, { key: '4' })).toBe(0);
+  });
+
+  it('should place Kindergarten before numeric grades', () => {
+    const result = component.gradeSort({ key: 'Kindergarten' }, { key: '1' });
+    expect(result).toBeLessThan(0);
+  });
+
+  it('should place numeric grades after Kindergarten', () => {
+    const result = component.gradeSort({ key: '1' }, { key: 'Kindergarten' });
+    expect(result).toBeGreaterThan(0);
+  });
 });

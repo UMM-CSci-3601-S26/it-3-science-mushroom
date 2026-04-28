@@ -22,6 +22,9 @@ import { StockReport } from '../stock-report';
 // Dialog Imports
 import { DialogComponent } from '../../dialog/dialog.component';
 
+// DateTime Imports
+import { FormatDateTimeService } from '../../format-date-time/format-date-time.service';
+
 // Type for jsPDF with autoTable metadata
 interface jsPDFWithAutoTable extends jsPDFClass {
   lastAutoTable?: {
@@ -46,45 +49,7 @@ export class ReportGeneratorComponent {
   private dialog = inject(MatDialog);
   private dateTime = new Date();
   private snackBar = inject(MatSnackBar);
-
-  /**
-   * Helper method that formats a Date object into a string format of MM-DD-YYYY_HH:MM(AM/PM)
-   * @param date A Date object to format into a string
-   * @returns An array of two strings.
-   * The first (0): The formatted date string in format MM-DD-YYYY HH:MM (AM/PM) for use in the file descriptions.
-   * The second (1): The formatted date string in format MM-DD-YYYY_HH_MM(AM/PM) for use in the file names
-   */
-  formatDateTime(date: Date): string[] {
-    let minute = date.getMinutes().toString();
-    const hour = date.getHours();
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // Months are zero-indexed
-    const year = date.getFullYear();
-    const formattedStrings: string[] = [];
-
-    if (minute.length < 2) {
-      // Add leading zero to minutes if less than 10 for better formatting
-      minute = `0${minute}`;
-    }
-    // Format the date and time as MM-DD-YYYY_HH:MM(AM/PM)
-    if (hour > 12) { // PM hours
-      formattedStrings.push(`${month}-${day}-${year} ${hour-12}:${minute} PM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_${hour-12}-${minute}_PM`); // Format for file name
-      return formattedStrings;
-    } else if (hour < 12 && hour > 0) { // AM hours
-      formattedStrings.push(`${month}-${day}-${year} ${hour}:${minute} AM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute}_AM`); // Format for file name
-      return formattedStrings;
-    } else if (hour === 12) { // Noon
-      formattedStrings.push(`${month}-${day}-${year} ${hour}:${minute} PM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_${hour}-${minute}_PM`); // Format for file name
-      return formattedStrings;
-    } else { // Just assume midnight if its not anything else
-      formattedStrings.push(`${month}-${day}-${year} 12:${minute} AM`); // Format for inside file
-      formattedStrings.push(`${month}-${day}-${year}_12-${minute}_AM`); // Format for file name
-      return formattedStrings;
-    }
-  }
+  private formatDateTimeService = inject(FormatDateTimeService);
 
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
@@ -129,7 +94,7 @@ export class ReportGeneratorComponent {
     doc.text("Stock Report", 10, 10);
     // Description
     doc.setFontSize(12);
-    doc.text("This is a Stock Report of the inventory on ${formattedDate}".replace("${formattedDate}", this.formatDateTime(this.dateTime)[0]), 10, 20);
+    doc.text("This is a Stock Report of the inventory on ${formattedDate}".replace("${formattedDate}", this.formatDateTimeService.formatDateTime(this.dateTime)[0]), 10, 20);
 
     // Table Constants
     const headers = [["Item Description", "Quantity", "Max Quantity", "Min Quantity", "Notes"]];
@@ -207,7 +172,7 @@ export class ReportGeneratorComponent {
     });
 
     // Save PDF with name to client
-    const filename = `StockReport_${this.formatDateTime(this.dateTime)[1]}.pdf`;
+    const filename = `StockReport_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.pdf`;
 
     if(savePdf) {
       // Save PDF to server
@@ -279,7 +244,7 @@ export class ReportGeneratorComponent {
       // Download to client machine
       this.stockReportService.generateAndDownloadXlsxReport().subscribe({
         next: (blob) => {
-          const fileName = `Stock_Report_${this.formatDateTime(this.dateTime)[1]}.xlsx`;
+          const fileName = `Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
           const a = document.createElement('a');
           a.href = window.URL.createObjectURL(blob);
           a.download = fileName;
@@ -434,7 +399,7 @@ export class ReportGeneratorComponent {
    * @param report The report to download
    */
   downloadSingleReport(report: StockReport) {
-    const fileName = `Stock_Report_${this.formatDateTime(this.dateTime)[1]}.xlsx`;
+    const fileName = `Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
     this.stockReportService.downloadSingleReportBlob(report).subscribe({
       next: (blob) => {
         // Create object URL and trigger download
@@ -478,13 +443,13 @@ export class ReportGeneratorComponent {
         const a = document.createElement('a');
         a.href = url;
         if (format === 'PDF') {
-          a.download = `StockReports_PDF_${this.formatDateTime(this.dateTime)[1]}.zip`;
+          a.download = `StockReports_PDF_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         } else if (format === 'XLSX') {
-          a.download = `StockReports_XLSX_${this.formatDateTime(this.dateTime)[1]}.zip`;
+          a.download = `StockReports_XLSX_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         } else if (format === 'All') {
-          a.download = `StockReports_${this.formatDateTime(this.dateTime)[1]}.zip`;
+          a.download = `StockReports_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         } else {
-          a.download = `StockReports_UnknownTypes_${this.formatDateTime(this.dateTime)[1]}.zip`;
+          a.download = `StockReports_UnknownTypes_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         }
         a.click();
         URL.revokeObjectURL(url);

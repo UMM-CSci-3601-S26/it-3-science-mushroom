@@ -3,7 +3,7 @@ import { AddSupplyListPage } from '../support/add-supplylist.po';
 const page = new AddSupplyListPage();
 
 const TARGET_GROUP = {
-  school: 'Hancock Elementary',
+  school: 'Hancock Elementary School',
   grade: 'Kindergarten',
   teacher: 'N/A'
 };
