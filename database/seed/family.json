@@ -319,5 +319,38 @@
         "headphones": true
       }
     ]
+  },
+  {
+    "guardianName": "Patricia Chen",
+    "email": "patricia.chen@email.com",
+    "address": "456 Oak Lane",
+    "accommodations": "None",
+    "timeSlot": "TBD",
+    "timeAvailability": {
+      "earlyMorning": false,
+      "lateMorning": true,
+      "earlyAfternoon": true,
+      "lateAfternoon": true
+    },
+    "students": [
+      {
+        "name": "Oliver",
+        "grade": "PreK",
+        "school": "Morris Area Elementary School",
+        "schoolAbbreviation": "MAES",
+        "teacher": "N/A",
+        "backpack": true,
+        "headphones": false
+      },
+      {
+        "name": "Emma",
+        "grade": "Kindergarten",
+        "school": "Morris Area Elementary School",
+        "schoolAbbreviation": "MAES",
+        "teacher": "N/A",
+        "backpack": false,
+        "headphones": true
+      }
+    ]
   }
 ]
