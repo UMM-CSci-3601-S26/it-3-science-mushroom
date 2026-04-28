@@ -103,7 +103,7 @@ jacocoTestReport {
     // to somehow fake incoming HTTP requests), so we are just
     // leaving it out of the coverage report and the coverage limits.
     classDirectories.setFrom(files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Bootstrap.class'])
+      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Bootstrap.class', 'umm3601/DatabaseConfig.class'])
     }))
   }
 }
@@ -152,7 +152,7 @@ jacocoTestCoverageVerification {
   // leaving it out of the coverage report and the coverage limits.
   afterEvaluate {
     classDirectories.setFrom(files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Bootstrap.class'])
+      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Bootstrap.class', 'umm3601/DatabaseConfig.class'])
     }))
   }
 }
