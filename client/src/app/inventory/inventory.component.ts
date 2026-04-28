@@ -39,7 +39,7 @@ type ScanCard = {
   item: Inventory | null;
   removeAmount: number;
   foundInInventory: boolean;
-  mode: 'add' | 'remove' | 'delete';
+  mode: 'add' | 'remove';
 };
 
 
