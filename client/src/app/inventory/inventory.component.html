@@ -211,7 +211,15 @@
                     type="button"
                     *ngIf="card.mode === 'remove' && card.item"
                     (click)="confirmSingleRemove(card.id)">
-                    Remove From Inventory
+                    Remove Amount From Inventory
+                  </button>
+                  <button
+                    mat-raised-button
+                    color="warn"
+                    type="button"
+                    *ngIf="card.mode === 'remove' && card.item"
+                    (click)="confirmSingleDelete(card.id)">
+                    Permanently Delete Item
                   </button>
                   <button mat-stroked-button type="button" (click)="removeCard(card.id)">
                     Remove Card

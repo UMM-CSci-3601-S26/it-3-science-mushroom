@@ -50,37 +50,87 @@ export class InventoryService {
   brandOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'brand')
   )
+
   colorOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'color')
   )
+
   sizeOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'size')
   )
+
   typeOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'type')
   )
+
   materialOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'material')
   )
 
+  /**
+   * Look up an inventory item by its barcode
+   * @param barcode Barcode to look up in inventory
+   * @returns Observable of the inventory item
+   */
   lookUpByBarcode(barcode:string): Observable<Inventory> {
     return this.httpClient.get<Inventory>(`${environment.apiUrl}barcode/lookup/${barcode}`);
   }
+
+  /**
+   * Add an inventory item manually
+   * @param item Item to add to inventory
+   * @returns Observable of the added inventory item
+   */
   addManually(item: Inventory): Observable<Inventory> {
     return this.httpClient.post<Inventory>(this.inventoryUrl, item);
   }
+
+  /**
+   * Remove one unit of an item from inventory
+   * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
+   * @returns Observable of the updated inventory item after removal
+   */
   removeOne(identifier: string): Observable<Inventory> {
-    return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/remove`, { params: { id: identifier } });
+    return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/removeQuantity`, { params: { id: identifier } });
   }
+
+  /**
+   * Add an inventory item to the inventory
+   * @param item Item to add to inventory
+   * @returns Observable of the added inventory item
+   */
   addInventory(item: Inventory): Observable<Inventory> {
     return this.httpClient.post<Inventory>(this.inventoryUrl, item);
   }
+
+  /**
+   * Update the quantity of an inventory item by adding or removing a specified amount
+   * @param barcode Barcode of the item to update
+   * @param action Action to perform ('add' or 'remove')
+   * @param amount Amount of quantity to add or remove
+   * @returns Observable of the updated inventory item
+   */
   updateQuantity(barcode: string, action: 'add' | 'remove', amount: number = 1): Observable<Inventory> {
     return this.httpClient.post<Inventory>(`${this.inventoryUrl}/${barcode}/quantity`, { action, amount });
   }
+
+  /**
+   * Link an external barcode to an inventory item
+   * @param internalID Internal ID of the item to link the barcode to
+   * @param barcode Barcode to link
+   * @param quantity Quantity of the item
+   * @returns Observable of the updated inventory item
+   */
   linkExternalBarcode(internalID: string, barcode: string, quantity: number = 1): Observable<Inventory> {
     return this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode, quantity });
   }
+
+  /**
+   * Remove a specified amount of inventory from an item, referenced by its internal ID.
+   * @param internalID Internal ID of item to remove amount from
+   * @param amount Amount of quantity to remove
+   * @returns Observable of the updated inventory item
+   */
   removeInventoryById(internalID: string, amount: number): Observable<unknown> {
     return new Observable(observer => {
       this.httpClient.post(`${this.inventoryUrl}/remove`, { internalID, amount }).subscribe({
@@ -107,6 +157,10 @@ export class InventoryService {
   //   );
   // }
 
+  /**
+   * Remove one unit of an item from inventory and update the inventory state
+   * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
+   */
   removeOneAndUpdate(identifier: string) {
     this.removeOne(identifier).subscribe(item => {
       if (item.quantity <= 0) {
@@ -117,6 +171,10 @@ export class InventoryService {
     });
   }
 
+  /**
+   * Sync the inventory state with an updated item. If it exists, it is updated. If it does not, it is added.
+   * @param updatedItem Inventory item with updated information to sync with the inventory state
+   */
   private syncItem(updatedItem: Inventory) {
     const currentInventory = this.inventory();
     const index = currentInventory.findIndex(item => item.internalID === updatedItem.internalID);
@@ -129,6 +187,11 @@ export class InventoryService {
     }
   }
 
+  /**
+   * Get inventory from the server, filtered by optional parameters
+   * @param filters Filters to apply to the API call
+   * @returns The inventory items that match the filters as an Observable
+   */
   getInventory(filters?: {item?: string; description?: string; brand?: string; color?: string;
     count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<Inventory[]> {
 

@@ -39,7 +39,7 @@ type ScanCard = {
   item: Inventory | null;
   removeAmount: number;
   foundInInventory: boolean;
-  mode: 'add' | 'remove';
+  mode: 'add' | 'remove' | 'delete';
 };
 
 
@@ -158,6 +158,7 @@ export class InventoryComponent {
       }
     }
   }
+
   updateCardRemoveAmount(cardId: string, value: number) {
     const safeValue = Number(value);
 
@@ -169,6 +170,7 @@ export class InventoryComponent {
       )
     );
   }
+
   confirmSingleRemove(cardId: string) {
     const card = this.scanCards().find(c => c.id === cardId);
 
@@ -211,6 +213,10 @@ export class InventoryComponent {
         this.snackBar.open('Failed to remove inventory item.', 'OK', { duration: 4000 });
       }
     });
+  }
+
+  confirmSingleDelete(cardId: string) {
+    console.log('Delete functionality not implemented yet');
   }
 
   removeCard(cardId: string) {
@@ -327,6 +333,7 @@ export class InventoryComponent {
   matchItem(barcode: string): Inventory | null {
     return this.inventoryIndex.getByBarcode(barcode);
   }
+
   trackByScanCard(index: number, card: ScanCard): string {
     return card.id;
   }
