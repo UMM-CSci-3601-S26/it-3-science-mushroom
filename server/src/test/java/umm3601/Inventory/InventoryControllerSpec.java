@@ -536,18 +536,18 @@ public class InventoryControllerSpec {
   }
 
   @Test
-  void updateQuantityReducesQuantityWhenEnoughExists() {
+  void removeQuantityReducesQuantityWhenEnoughExists() {
     db.getCollection("inventory").insertOne(new Document()
         .append("internalID", "ID-00050")
         .append("quantity", 6));
 
-    UpdateQuantityRequest request = new UpdateQuantityRequest();
+    RemoveQuantityRequest request = new RemoveQuantityRequest();
     request.internalID = "ID-00050";
     request.amount = 2;
 
-    when(ctx.bodyAsClass(UpdateQuantityRequest.class)).thenReturn(request);
+    when(ctx.bodyAsClass(RemoveQuantityRequest.class)).thenReturn(request);
 
-    inventoryController.updateQuantity(ctx);
+    inventoryController.removeQuantity(ctx);
 
     verify(ctx).json(inventoryCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
@@ -558,64 +558,64 @@ public class InventoryControllerSpec {
   }
 
   @Test
-  void updateQuantityRejectsBlankInternalId() {
-    UpdateQuantityRequest request = new UpdateQuantityRequest();
+  void removeQuantityRejectsBlankInternalId() {
+    RemoveQuantityRequest request = new RemoveQuantityRequest();
     request.internalID = "   ";
     request.amount = 1;
 
-    when(ctx.bodyAsClass(UpdateQuantityRequest.class)).thenReturn(request);
+    when(ctx.bodyAsClass(RemoveQuantityRequest.class)).thenReturn(request);
 
     BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
-      inventoryController.updateQuantity(ctx);
+      inventoryController.removeQuantity(ctx);
     });
 
     assertEquals("internalID is required to update inventory", ex.getMessage());
   }
 
   @Test
-  void updateQuantityRejectsNonPositiveAmount() {
-    UpdateQuantityRequest request = new UpdateQuantityRequest();
+  void removeQuantityRejectsNonPositiveAmount() {
+    RemoveQuantityRequest request = new RemoveQuantityRequest();
     request.internalID = "ID-00052";
     request.amount = 0;
 
-    when(ctx.bodyAsClass(UpdateQuantityRequest.class)).thenReturn(request);
+    when(ctx.bodyAsClass(RemoveQuantityRequest.class)).thenReturn(request);
 
     BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
-      inventoryController.updateQuantity(ctx);
+      inventoryController.removeQuantity(ctx);
     });
 
     assertEquals("amount must be greater than 0", ex.getMessage());
   }
 
   @Test
-  void updateQuantityRejectsUnknownInternalId() {
-    UpdateQuantityRequest request = new UpdateQuantityRequest();
+  void removeQuantityRejectsUnknownInternalId() {
+    RemoveQuantityRequest request = new RemoveQuantityRequest();
     request.internalID = "ID-99999";
     request.amount = 1;
 
-    when(ctx.bodyAsClass(UpdateQuantityRequest.class)).thenReturn(request);
+    when(ctx.bodyAsClass(RemoveQuantityRequest.class)).thenReturn(request);
 
     NotFoundResponse ex = assertThrows(NotFoundResponse.class, () -> {
-      inventoryController.updateQuantity(ctx);
+      inventoryController.removeQuantity(ctx);
     });
 
     assertEquals("No item found for internalID: ID-99999", ex.getMessage());
   }
 
   @Test
-  void updateQuantityRejectsRemovingTooMuch() {
+  void removeQuantityRejectsRemovingTooMuch() {
     db.getCollection("inventory").insertOne(new Document()
         .append("internalID", "ID-00053")
         .append("quantity", 1));
 
-    UpdateQuantityRequest request = new UpdateQuantityRequest();
+    RemoveQuantityRequest request = new RemoveQuantityRequest();
     request.internalID = "ID-00053";
     request.amount = 2;
 
-    when(ctx.bodyAsClass(UpdateQuantityRequest.class)).thenReturn(request);
+    when(ctx.bodyAsClass(RemoveQuantityRequest.class)).thenReturn(request);
 
     BadRequestResponse ex = assertThrows(BadRequestResponse.class, () -> {
-      inventoryController.updateQuantity(ctx);
+      inventoryController.removeQuantity(ctx);
     });
 
     assertEquals("Cannot remove more than current quantity", ex.getMessage());

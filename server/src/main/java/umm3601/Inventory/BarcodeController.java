@@ -93,6 +93,12 @@ public class BarcodeController implements Controller {
     ctx.status(HttpStatus.CREATED);
   }
 
+  /**
+   * Updates quantity of a given inventory item based on provided action by given amount.
+   * @param ctx HTTP request context
+   * @note Removing quantity is currently handled in a separate method in InventoryController.
+   * The client only uses this for adding.
+   */
   public void updateQuantity(Context ctx) {
     String id = ctx.pathParam("id");
     Document body = ctx.bodyAsClass(Document.class);
@@ -122,9 +128,11 @@ public class BarcodeController implements Controller {
 
     Inventory updated = inventoryCollection.findOneAndUpdate(filter, inc("quantity", delta),
      new FindOneAndUpdateOptions().returnDocument(AFTER));
+
     if (updated == null) {
       throw new NotFoundResponse("Inventory item not found for ID: " + id);
     }
+
     ctx.json(updated);
     ctx.status(HttpStatus.OK);
   }

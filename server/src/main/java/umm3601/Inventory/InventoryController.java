@@ -25,6 +25,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
 import io.javalin.Javalin;
@@ -42,6 +43,7 @@ public class InventoryController implements Controller {
 
   private static final String API_INVENTORY = "/api/inventory";
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
+  private static final String API_INVENTORY_REMOVE_QUANTITY = "/api/inventory/removeQuantity";
 
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";
@@ -216,8 +218,8 @@ public class InventoryController implements Controller {
    * Endpoint to update inventory quantity, logic handles updates to prevent negative levels
    * @param ctx The context for the HTTP request
    */
-  public void updateQuantity(Context ctx) {
-    UpdateQuantityRequest req = ctx.bodyAsClass(UpdateQuantityRequest.class);
+  public void removeQuantity(Context ctx) {
+    RemoveQuantityRequest req = ctx.bodyAsClass(RemoveQuantityRequest.class);
 
     if (req.internalID == null || req.internalID.isBlank()) {
       throw new BadRequestResponse("internalID is required to update inventory");
@@ -239,13 +241,6 @@ public class InventoryController implements Controller {
       throw new BadRequestResponse("Cannot remove more than current quantity");
     }
 
-    // if (newQuantity == 0) {
-    //   inventoryCollection.deleteOne(eq("_id", exists._id));
-    //   ctx.json(new Document("deleted", true).append("quantity", 0));
-    //   ctx.status(HttpStatus.OK);
-    //   return;
-    // }
-
     inventoryCollection.updateOne(
       eq("_id", exists._id),
       new Document("$set", new Document(QUANTITY_KEY, newQuantity))
@@ -261,7 +256,26 @@ public class InventoryController implements Controller {
    * @param ctx The HTTP request context
    */
   public void deleteInventory(Context ctx) {
-    return;
+    String id = ctx.pathParam("id");
+    DeleteResult deleteResult;
+
+    // Handle case where ID is not proper
+    try {
+      ObjectId reportId = new ObjectId(id);
+      deleteResult = inventoryCollection.deleteOne(eq("_id", reportId));
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested report id wasn't a legal Mongo Object ID.");
+    }
+
+    if (deleteResult.getDeletedCount() != 1) {
+      ctx.status(HttpStatus.NOT_FOUND);
+      throw new NotFoundResponse(
+        "Was unable to delete Report ID "
+          + id
+          + "; perhaps illegal Report ID or an ID for a Report not in the system?");
+    }
+
+    ctx.status(HttpStatus.OK);
   }
 
   /**
@@ -269,7 +283,34 @@ public class InventoryController implements Controller {
    * @param ctx The HTTP request context
   */
   public void deleteInventories(Context ctx) {
-    return;
+     Bson filter = constructFilter(ctx);
+
+    FindIterable<Inventory> results = inventoryCollection.find(filter);
+
+    ArrayList<Inventory> matching = results.into(new ArrayList<>());
+
+    String itemSearch = ctx.queryParam(ITEM_KEY);
+    if (itemSearch != null) {
+      matching.sort((a, b) -> {
+        int scoreA = getRelevanceScore(a.item, itemSearch);
+        int scoreB = getRelevanceScore(b.item, itemSearch);
+
+        // Higher score first
+        if (scoreA != scoreB) {
+          return Integer.compare(scoreB, scoreA);
+        }
+
+        // Tie-breaker: shorter string first
+        return Integer.compare(a.item.length(), b.item.length());
+      });
+    }
+
+    for (Inventory inv : matching) {
+      updateStockState(inv);
+      generateDescription(inv);
+    }
+    ctx.json(matching);
+    ctx.status(HttpStatus.OK);
   }
 
   /**
@@ -484,10 +525,17 @@ public class InventoryController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
+    // GET routes
     server.get(API_INVENTORY, this::getInventories);
     server.get(API_INVENTORY_BY_ID, this::getInventory);
-    server.post(API_INVENTORY, this::addInventory);
-    server.post(API_INVENTORY + "/updateQuantity", this::updateQuantity);
     server.get("/api/inventory/nextid", this::generateNextID);
+
+    // POST routes
+    server.post(API_INVENTORY, this::addInventory);
+    server.post(API_INVENTORY_REMOVE_QUANTITY, this::removeQuantity);
+
+    // DELETE routes
+    server.delete(API_INVENTORY_BY_ID, this::deleteInventory);
+    server.delete(API_INVENTORY, this::deleteInventories);
   }
 }
