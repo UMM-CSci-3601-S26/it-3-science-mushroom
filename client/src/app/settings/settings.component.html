@@ -103,7 +103,7 @@
         </mat-tab>
 
 
-               <!-- ── Available Spots Tab ── -->
+        <!-- ── Available Spots Tab ── -->
         <mat-tab label="Available Spots">
           <div class="tab-content">
             <p class="tab-description">
@@ -237,8 +237,163 @@
                   }
                 </div>
               </div>
-
             </div>
+          </div>
+        </mat-tab>
+
+        <!--Inventory Mass Clear-->
+        <mat-tab label="Inventory Management">
+          <div class="tab-content">
+            <p class="tab-description">
+              Delete all inventory items or reset their quantities. Filters are available to target specific items.
+            </p>
+
+            <p>
+              <strong>Use with caution!</strong> Neither action can be undone.
+            </p>
+
+            <hr>
+
+            <p class="tab-description">
+              Fill in one or more fields below to target a specific set of inventory items.
+              Matching items can then be reset to zero or deleted outright.
+            </p>
+
+            <form [formGroup]="inventoryFilterForm">
+              <!-- Filter Fields -->
+              <div class="filter-container">
+                <mat-form-field appearance="outline">
+                <mat-label class="filter">Item</mat-label>
+                <input
+                  matInput
+                  formControlName="item"
+                  [matAutocomplete]="itemAuto"
+                  placeholder="contains..."
+                  data-cy="filter-item"
+                />
+                <mat-autocomplete #itemAuto="matAutocomplete">
+                  @for (option of itemOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                <mat-label class="filter">Brand</mat-label>
+                <input
+                  matInput
+                  formControlName="brand"
+                  [matAutocomplete]="brandAuto"
+                  placeholder="contains..."
+                  data-cy="filter-brand"
+                />
+                <mat-autocomplete #brandAuto="matAutocomplete">
+                  @for (option of brandOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                <mat-label class="filter">Color</mat-label>
+                <input
+                  matInput
+                  formControlName="color"
+                  [matAutocomplete]="colorAuto"
+                  placeholder="contains..."
+                  data-cy="filter-color"
+                />
+                <mat-autocomplete #colorAuto="matAutocomplete">
+                  @for (option of colorOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                <mat-label class="filter">Size</mat-label>
+                <input
+                  matInput
+                  formControlName="size"
+                  [matAutocomplete]="sizeAuto"
+                  placeholder="contains..."
+                  data-cy="filter-size"
+                />
+                <mat-autocomplete #sizeAuto="matAutocomplete">
+                  @for (option of sizeOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                <mat-label class="filter">Type</mat-label>
+                <input
+                  matInput
+                  formControlName="type"
+                  [matAutocomplete]="typeAuto"
+                  placeholder="contains..."
+                  data-cy="filter-type"
+                />
+                <mat-autocomplete #typeAuto="matAutocomplete">
+                  @for (option of typeOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                <mat-label class="filter">Material</mat-label>
+                <input
+                  matInput
+                  formControlName="material"
+                  [matAutocomplete]="matAuto"
+                  placeholder="contains..."
+                  data-cy="filter-material"
+                />
+                <mat-autocomplete #matAuto="matAutocomplete">
+                  @for (option of materialOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+                </mat-form-field>
+              </div>
+            </form>
+
+            <!-- Clear Filters Button -->
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="clearInventoryTargetFilters()"
+              data-cy="filter-clear"
+              class="clear-button"
+              >
+              Clear Filters
+            </button>
+
+            <hr>
+
+              <div class="flex-row">
+                  <button mat-raised-button color="warn" (click)="clearInventory()">
+                    <mat-icon>delete_sweep</mat-icon>
+                    Delete All Items
+                  </button>
+
+                  <button mat-raised-button color="warn" (click)="deleteMatchingInventory()">
+                    <mat-icon>delete_forever</mat-icon>
+                    Delete Matching Items
+                  </button>
+
+                  <button mat-raised-button color="primary" (click)="resetQuantities()">
+                    <mat-icon>refresh</mat-icon>
+                    Reset All Quantities
+                  </button>
+
+                  <button mat-raised-button color="primary" (click)="resetMatchingQuantities()">
+                    <mat-icon>refresh</mat-icon>
+                    Reset Matching Quantities
+                  </button>
+              </div>
           </div>
         </mat-tab>
 

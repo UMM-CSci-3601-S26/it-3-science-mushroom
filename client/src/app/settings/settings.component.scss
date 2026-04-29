@@ -36,8 +36,42 @@
   max-width: 400px;
 }
 
+.flex-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
 .save-button {
   margin-top: 8px;
+}
+
+.inventory-target-form {
+  margin-bottom: 12px;
+}
+
+.inventory-target-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+
+  mat-form-field {
+    flex: 1 1 220px;
+    min-width: 180px;
+  }
+}
+
+.filter-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+
+  mat-form-field {
+    width: 100%;
+  }
 }
 
 // ── Drive Order ───

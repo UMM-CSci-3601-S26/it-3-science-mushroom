@@ -11,6 +11,9 @@ import { SettingsService } from './settings.service';
 import { TermsService } from '../terms/terms.service';
 import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
+import { InventoryService } from '../inventory/inventory.service';
+import { DialogService } from '../dialog/dialog.service';
+import { Inventory } from '../inventory/inventory';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
@@ -18,6 +21,8 @@ describe('SettingsComponent', () => {
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
   let termsServiceSpy: jasmine.SpyObj<TermsService>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
+  let dialogServiceSpy: jasmine.SpyObj<DialogService>;
 
   const mockTerms: Terms = {
     item: ['folder', 'notebook', 'pencil'],
@@ -50,11 +55,25 @@ describe('SettingsComponent', () => {
     ]);
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    inventoryServiceSpy = jasmine.createSpyObj('InventoryService', [
+      'getInventory',
+      'removeItemQuantityById',
+      'deleteInventories',
+      'clearInventory',
+      'resetQuantities'
+    ]);
+    dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
 
     // Default: return empty settings and the three mock terms
     settingsServiceSpy.getSettings.and.returnValue(of(mockSettings));
     termsServiceSpy.getTerms.and.returnValue(of(mockTerms));
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
+    inventoryServiceSpy.getInventory.and.returnValue(of([]));
+    inventoryServiceSpy.removeItemQuantityById.and.returnValue(of(undefined));
+    inventoryServiceSpy.deleteInventories.and.returnValue(of(undefined));
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
 
     await TestBed.configureTestingModule({
       imports: [SettingsComponent],
@@ -63,6 +82,8 @@ describe('SettingsComponent', () => {
         provideHttpClientTesting(),
         { provide: SettingsService, useValue: settingsServiceSpy },
         { provide: TermsService, useValue: termsServiceSpy },
+        { provide: InventoryService, useValue: inventoryServiceSpy },
+        { provide: DialogService, useValue: dialogServiceSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
       ],
     }).compileComponents();
@@ -425,5 +446,30 @@ describe('SettingsComponent', () => {
     component.saveAvailableSpots();
 
     expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
+  });
+
+  it('resetMatchingQuantities resets quantities for matched inventory items', () => {
+    const matchedItems: Inventory[] = [
+      { internalID: 'INV-1', internalBarcode: '', externalBarcode: [], item: 'Pencil', description: '', brand: 'Acme', color: '', packageSize: 1, size: '', type: '', material: '', quantity: 4, notes: '', maxQuantity: 0, minQuantity: 0, stockState: '' },
+      { internalID: 'INV-2', internalBarcode: '', externalBarcode: [], item: 'Pencil', description: '', brand: 'Acme', color: '', packageSize: 1, size: '', type: '', material: '', quantity: 2, notes: '', maxQuantity: 0, minQuantity: 0, stockState: '' },
+    ];
+    inventoryServiceSpy.getInventory.and.returnValue(of(matchedItems));
+    component.inventoryFilterForm.setValue({ item: 'Pencil', brand: 'Acme', color: '', size: '', type: '', material: '' });
+
+    component.resetMatchingQuantities();
+
+    expect(inventoryServiceSpy.getInventory).toHaveBeenCalledWith({ item: 'Pencil', brand: 'Acme' });
+    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledWith('INV-1', 4);
+    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledWith('INV-2', 2);
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Reset quantities for 2 matching item(s).', 'OK', { duration: 3000 });
+  });
+
+  it('deleteMatchingInventory deletes matched inventory items', () => {
+    component.inventoryFilterForm.setValue({ item: 'Notebook', brand: 'BrandX', color: '', size: '', type: '', material: '' });
+
+    component.deleteMatchingInventory();
+
+    expect(inventoryServiceSpy.deleteInventories).toHaveBeenCalledWith({ item: 'Notebook', brand: 'BrandX' });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Deleted matching inventory items.', 'OK', { duration: 3000 });
   });
 });

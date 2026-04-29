@@ -2,6 +2,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,6 +24,12 @@ import { SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels } from './settings'
 // Terms Imports
 import { TermsService } from '../terms/terms.service';
 
+// Inventory Imports
+import { InventoryService } from '../inventory/inventory.service';
+
+// Dialog Imports
+import { DialogService } from '../dialog/dialog.service';
+
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
@@ -31,6 +38,7 @@ import { TermsService } from '../terms/terms.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MatAutocompleteModule,
     MatCardModule,
     MatTabsModule,
     MatFormFieldModule,
@@ -39,13 +47,23 @@ import { TermsService } from '../terms/terms.service';
     MatIconModule,
     MatListModule,
     DragDropModule,
+
   ]
 })
 export class SettingsComponent implements OnInit {
   private settingsService = inject(SettingsService);
   private termsService = inject(TermsService);
+  private inventoryService = inject(InventoryService);
+  private dialogService = inject(DialogService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+
+  readonly itemOptions = this.inventoryService.itemOptions;
+  readonly brandOptions = this.inventoryService.brandOptions;
+  readonly colorOptions = this.inventoryService.colorOptions;
+  readonly sizeOptions = this.inventoryService.sizeOptions;
+  readonly typeOptions = this.inventoryService.typeOptions;
+  readonly materialOptions = this.inventoryService.materialOptions;
 
   // Current schools list, loaded from the server on init
   schools: SchoolInfo[] = [];
@@ -75,6 +93,15 @@ export class SettingsComponent implements OnInit {
   availableSpotsForm = new FormGroup({
     availableSpots: new FormControl<number>(5, [Validators.required, Validators.min(1)])
   })
+
+  inventoryFilterForm = new FormGroup({
+    item: new FormControl(''),
+    brand: new FormControl(''),
+    color: new FormControl(''),
+    size: new FormControl(''),
+    type: new FormControl(''),
+    material: new FormControl(''),
+  });
 
   // Drive Order: three buckets of item terms (e.g. "notebook", "folder")
   stagedTerms: string[] = [];    // included in the drive, checklist order matches this list
@@ -226,5 +253,187 @@ export class SettingsComponent implements OnInit {
         error: () => this.snackBar.open('Failed to save available spots', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  clearInventoryTargetFilters(): void {
+    this.inventoryFilterForm.reset({
+      item: '',
+      brand: '',
+      color: '',
+      size: '',
+      type: '',
+      material: '',
+    });
+  }
+
+  private getInventoryTargetFilters(): { item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string } {
+    const values = this.inventoryFilterForm.value;
+    const filters: { item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string } = {};
+
+    (['item', 'brand', 'color', 'size', 'type', 'material'] as const).forEach(key => {
+      const value = (values[key] ?? '').trim();
+      if (value) {
+        filters[key] = value;
+      }
+    });
+
+    return filters;
+  }
+
+  /**
+   * Resets quantity to 0 for all matching inventory items.
+   */
+  resetMatchingQuantities(): void {
+    const filters = this.getInventoryTargetFilters();
+
+    if (Object.keys(filters).length === 0) {
+      this.snackBar.open('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
+      return;
+    }
+
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Reset Matching Quantities',
+      message: 'Are you sure you want to reset quantities for all matching inventory items?',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '420px', '220px');
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+
+      this.snackBar.open('Finding matching inventory items...', 'OK', { duration: 1500 });
+
+      this.inventoryService.getInventory(filters).subscribe({
+        next: items => {
+          if (!items.length) {
+            this.snackBar.open('No inventory items matched those fields.', 'OK', { duration: 3000 });
+            return;
+          }
+
+          forkJoin(items.map(item => this.inventoryService.removeItemQuantityById(item.internalID, item.quantity))).subscribe({
+            next: () => {
+              this.snackBar.open(`Reset quantities for ${items.length} matching item(s).`, 'OK', { duration: 3000 });
+            },
+            error: (err) => {
+              console.error('inventory reset matching quantities failed', err);
+              this.snackBar.open('Failed to reset matching quantities.', 'OK', { duration: 4000 });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('inventory lookup failed', err);
+          this.snackBar.open('Failed to look up matching inventory items.', 'OK', { duration: 4000 });
+        }
+      });
+    });
+  }
+
+  /**
+   * Deletes all matching inventory items.
+   */
+  deleteMatchingInventory(): void {
+    const filters = this.getInventoryTargetFilters();
+
+    if (Object.keys(filters).length === 0) {
+      this.snackBar.open('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
+      return;
+    }
+
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Delete Matching Inventory',
+      message: 'Are you sure you want to delete all matching inventory items?',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '420px', '220px');
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+
+      this.snackBar.open('Deleting matching inventory items...', 'OK', { duration: 1500 });
+
+      this.inventoryService.deleteInventories(filters).subscribe({
+        next: () => {
+          this.snackBar.open('Deleted matching inventory items.', 'OK', { duration: 3000 });
+        },
+        error: (err) => {
+          console.error('inventory delete matching items failed', err);
+          this.snackBar.open('Failed to delete matching inventory items.', 'OK', { duration: 4000 });
+        }
+      });
+    });
+  }
+
+  /**
+   * Clears inventory entirely. Confirms with dialog-service first. Uses inventory service for logic.
+   */
+  clearInventory(): void {
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Clear Inventory',
+      message: `Are you sure you want to delete all inventory items?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '400px', '200px');
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (!this.inventoryService) return;
+        this.snackBar.open(
+          `Clearing inventory...`,
+          `Okay`,
+          { duration: 2000 }
+        );
+
+        this.inventoryService.clearInventory().subscribe({
+          next: () => {
+            this.snackBar.open(`Cleared inventory.`, 'OK', {
+              duration: 3000
+            });
+          },
+          error: (err) => {
+            console.error('inventory clear failed', err);
+            this.snackBar.open('Failed to clear inventory.', 'OK', { duration: 4000 });
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Resets quantity of all items to 0. Confirms with dialog-service first. Uses inventory service for logic.
+   */
+  resetQuantities(): void {
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Reset Quantities',
+      message: `Are you sure you want to reset quantities for all inventory items?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '400px', '200px');
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (!this.inventoryService) return;
+        this.snackBar.open(
+          `Resetting quantities...`,
+          `Okay`,
+          { duration: 2000 }
+        );
+
+        this.inventoryService.resetQuantities().subscribe({
+          next: () => {
+            this.snackBar.open(`Quantities reset.`, 'OK', {
+              duration: 3000
+            });
+          },
+          error: (err) => {
+            console.error('inventory reset failed', err);
+            this.snackBar.open('Failed to reset quantities.', 'OK', { duration: 4000 });
+          }
+        });
+      }
+    });
   }
 }
