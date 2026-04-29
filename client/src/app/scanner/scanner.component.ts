@@ -1,21 +1,35 @@
+// Angular Imports
 import { Component, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, Input } from '@angular/core';
-import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
+import { CommonModule } from '@angular/common';
 import { OnDestroy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInput } from '@angular/material/input';
+import { MatFormField } from '@angular/material/form-field';
+
+// RxJS Imports
+import { firstValueFrom } from 'rxjs';
+
+// Scan Imports
+import { ScanService } from './scan-service';
+
+// Other Imports
+import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
+
+// Inventory Imports
+import { Inventory } from '../inventory/inventory';
 import { InventoryIndex } from '../inventory/inventory-index';
 import { InventoryService } from '../inventory/inventory.service'
-import { firstValueFrom } from 'rxjs';
-import { Inventory } from '../inventory/inventory';
-import { ScanService } from './scan-service';
-import { CommonModule } from '@angular/common';
 import { ManualEntryResult } from '../inventory/manual-entry';
-import { FormsModule } from '@angular/forms';
+
 
 type ScanMode = "camera" | "handheld";
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
+  styleUrls: ['./scanner.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, MatButtonModule, MatInput, MatFormField],
 })
 export class ScannerComponent implements AfterViewInit, OnDestroy {
   // holds the raw barcodes during the scan phase
@@ -54,6 +68,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   @Output() manualEntryNeeded = new EventEmitter<{ barcode: string, quantity: number }>();
   @Output() processingStarted = new EventEmitter<void>();
   @Output() done = new EventEmitter<void>();
+  @Output() activeModeChanged = new EventEmitter<ScanMode | null>();
   @Input() processOnDone = true;
 
   private codeReader = new BrowserMultiFormatReader();
@@ -94,6 +109,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
 
     this.stopScanner();
     this.activeMode = mode;
+    this.activeModeChanged.emit(mode);
     this.isScanning = true;
 
     if (mode === 'camera') {
@@ -107,6 +123,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   deactivateMode() {
     this.stopScanner();
     this.activeMode = null;
+    this.activeModeChanged.emit(null);
     this.isScanning = false;
     this.handheldInputValue = '';
   }
