@@ -1358,6 +1358,152 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void privateSimilarityHelpersCoverScoreBranches() throws Exception {
+    Inventory inventory = new Inventory();
+    inventory.item = "Yellow Pencil";
+    inventory.description = "Plastic writing pencil";
+    inventory.brand = "Ticonderoga";
+    inventory.color = "Yellow";
+    inventory.material = "Wood";
+
+    SupplyList exactItemSupplyList = new SupplyList();
+    exactItemSupplyList.item = List.of("Yellow Pencil");
+    assertEquals(100, invokeItemSimilarityScore(inventory, exactItemSupplyList));
+
+    SupplyList searchableItemSupplyList = new SupplyList();
+    searchableItemSupplyList.item = List.of("Plastic");
+    assertEquals(75, invokeItemSimilarityScore(inventory, searchableItemSupplyList));
+
+    SupplyList partialItemSupplyList = new SupplyList();
+    partialItemSupplyList.item = List.of("Classroom Pencil");
+    assertEquals(50, invokeItemSimilarityScore(inventory, partialItemSupplyList));
+
+    SupplyList blankItemSupplyList = new SupplyList();
+    blankItemSupplyList.item = List.of(" ");
+    assertEquals(0, invokeItemSimilarityScore(inventory, blankItemSupplyList));
+
+    SupplyList emptyItemSupplyList = new SupplyList();
+    emptyItemSupplyList.item = List.of();
+    assertEquals(0, invokeItemSimilarityScore(inventory, emptyItemSupplyList));
+
+    SupplyList nullItemSupplyList = new SupplyList();
+    nullItemSupplyList.item = null;
+    assertEquals(0, invokeItemSimilarityScore(inventory, nullItemSupplyList));
+
+    SupplyList shortPartialItemSupplyList = new SupplyList();
+    shortPartialItemSupplyList.item = List.of("No 2");
+    assertEquals(0, invokeItemSimilarityScore(inventory, shortPartialItemSupplyList));
+
+    SupplyList.AttributeOptions requiredBrand = new SupplyList.AttributeOptions();
+    requiredBrand.allOf = "Ticonderoga";
+    assertEquals(5, invokeAttributeSimilarityScore(requiredBrand, inventory.brand));
+
+    SupplyList.AttributeOptions requiredBrandMiss = new SupplyList.AttributeOptions();
+    requiredBrandMiss.allOf = "Crayola";
+    assertEquals(0, invokeAttributeSimilarityScore(requiredBrandMiss, inventory.brand));
+
+    SupplyList.AttributeOptions optionalBrand = new SupplyList.AttributeOptions();
+    optionalBrand.anyOf = List.of("Crayola", "Ticonderoga");
+    assertEquals(3, invokeAttributeSimilarityScore(optionalBrand, inventory.brand));
+
+    SupplyList.AttributeOptions missingBrand = new SupplyList.AttributeOptions();
+    missingBrand.allOf = "";
+    missingBrand.anyOf = List.of("Crayola");
+    assertEquals(0, invokeAttributeSimilarityScore(missingBrand, inventory.brand));
+    assertEquals(0, invokeAttributeSimilarityScore(null, inventory.brand));
+
+    SupplyList.ColorAttributeOptions requiredColor = new SupplyList.ColorAttributeOptions();
+    requiredColor.allOf = List.of("Yellow");
+    assertEquals(5, invokeColorSimilarityScore(requiredColor, inventory.color));
+
+    SupplyList.ColorAttributeOptions requiredColorMiss = new SupplyList.ColorAttributeOptions();
+    requiredColorMiss.allOf = List.of("Blue");
+    assertEquals(0, invokeColorSimilarityScore(requiredColorMiss, inventory.color));
+
+    SupplyList.ColorAttributeOptions optionalColor = new SupplyList.ColorAttributeOptions();
+    optionalColor.anyOf = List.of("Blue", "Yellow");
+    assertEquals(3, invokeColorSimilarityScore(optionalColor, inventory.color));
+
+    SupplyList.ColorAttributeOptions missingColor = new SupplyList.ColorAttributeOptions();
+    missingColor.allOf = List.of("Blue");
+    missingColor.anyOf = List.of("Red");
+    assertEquals(0, invokeColorSimilarityScore(missingColor, inventory.color));
+    assertEquals(0, invokeColorSimilarityScore(null, inventory.color));
+  }
+
+  @Test
+  void privateBestInventoryDescriptionFallsBackToItemString() throws Exception {
+    Inventory inventoryWithDescription = new Inventory();
+    inventoryWithDescription.item = "Backpack";
+    inventoryWithDescription.description = "Blue student backpack";
+
+    Inventory inventoryWithoutDescription = new Inventory();
+    inventoryWithoutDescription.item = "Notebook";
+    inventoryWithoutDescription.description = "";
+
+    assertEquals("Blue student backpack", invokeBestInventoryDescription(inventoryWithDescription));
+    assertEquals("Notebook", invokeBestInventoryDescription(inventoryWithoutDescription));
+  }
+
+  @Test
+  void deleteRequestRequesterHelpersCoverMissingAndHydratedBranches() throws Exception {
+    Family nullFamily = null;
+    invokeHydrateDeleteRequestRequester(nullFamily);
+
+    Family noRequest = new Family();
+    invokeHydrateDeleteRequestRequester(noRequest);
+
+    Family noRequesterId = new Family();
+    noRequesterId.deleteRequest = new Family.DeleteRequest();
+    invokeHydrateDeleteRequestRequester(noRequesterId);
+
+    Family missingRequester = new Family();
+    missingRequester.deleteRequest = new Family.DeleteRequest();
+    missingRequester.deleteRequest.requestedByUserId = new ObjectId().toHexString();
+    invokeHydrateDeleteRequestRequester(missingRequester);
+    assertNull(missingRequester.deleteRequest.requestedByUserName);
+
+    UsersService usersService = new UsersService(db);
+    usersService.createUser(
+      "helper.user",
+      "hash",
+      "Helper User",
+      "helper@example.com",
+      Role.VOLUNTEER,
+      "volunteer_base");
+    Users helper = usersService.findByUsername("helper.user");
+
+    Family hydrated = new Family();
+    hydrated.deleteRequest = new Family.DeleteRequest();
+    hydrated.deleteRequest.requestedByUserId = helper._id;
+
+    invokeHydrateDeleteRequestRequester(hydrated);
+
+    assertEquals("Helper User", hydrated.deleteRequest.requestedByUserName);
+    assertEquals("VOLUNTEER", hydrated.deleteRequest.requestedBySystemRole);
+  }
+
+  @Test
+  void userLookupAndDisplayNameHelpersCoverFallbackBranches() throws Exception {
+    assertNull(invokeFindUserById(null));
+    assertNull(invokeFindUserById("   "));
+    assertNull(invokeFindUserById("not-a-real-object-id"));
+    assertNull(invokeDisplayNameForUser(null));
+
+    Users usernameOnly = new Users();
+    usernameOnly.username = "fallback.user";
+    usernameOnly.fullName = "   ";
+
+    assertEquals("fallback.user", invokeDisplayNameForUser(usernameOnly));
+
+    Users fullNameUser = new Users();
+    fullNameUser.username = "named.user";
+    fullNameUser.fullName = "Named User";
+
+    assertEquals("Named User", invokeDisplayNameForUser(fullNameUser));
+  }
+
+  @Test
   void privateValidateChecklistItemCoversAdditionalBranches() throws Exception {
     Family.ChecklistItem unavailableSelected = new Family.ChecklistItem();
     unavailableSelected.selected = true;
