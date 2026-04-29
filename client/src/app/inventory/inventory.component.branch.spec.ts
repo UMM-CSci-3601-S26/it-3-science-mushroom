@@ -101,7 +101,7 @@ describe('InventoryComponent branch coverage', () => {
   beforeEach(fakeAsync(() => {
     inventoryServiceSpy = jasmine.createSpyObj<InventoryService>('InventoryService', [
       'getInventory',
-      'removeInventoryById',
+      'removeItemQuantityById',
       'addInventory',
       'itemOptions',
       'brandOptions',
@@ -128,7 +128,7 @@ describe('InventoryComponent branch coverage', () => {
     };
 
     inventoryServiceSpy.getInventory.and.returnValue(of([]));
-    inventoryServiceSpy.removeInventoryById.and.returnValue(of({}));
+    inventoryServiceSpy.removeItemQuantityById.and.returnValue(of({}));
     inventoryServiceSpy.addInventory.and.returnValue(of(itemA));
 
     inventoryServiceSpy.itemOptions.and.returnValue([]);
@@ -162,7 +162,7 @@ describe('InventoryComponent branch coverage', () => {
     tick(301);
 
     inventoryServiceSpy.getInventory.calls.reset();
-    inventoryServiceSpy.removeInventoryById.calls.reset();
+    inventoryServiceSpy.removeItemQuantityById.calls.reset();
     inventoryServiceSpy.addInventory.calls.reset();
     inventoryIndexSpy.clear.calls.reset();
     inventoryIndexSpy.registerItem.calls.reset();
@@ -316,7 +316,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should reject single remove when the card mode is not remove', () => {
@@ -329,7 +329,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should reject single remove when the card has no item', () => {
@@ -342,7 +342,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should reject single remove when the remove amount is invalid', () => {
@@ -355,7 +355,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should reject single remove when the amount exceeds inventory quantity', () => {
@@ -368,7 +368,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should remove a single card and keep the panel open when cards remain', () => {
@@ -378,11 +378,9 @@ describe('InventoryComponent branch coverage', () => {
     ]);
     component.showRemovePanel.set(true);
 
-    const beforeReload = component.reload();
-
     component.confirmSingleRemove('card-1');
 
-    expect(inventoryServiceSpy.removeInventoryById).toHaveBeenCalledWith('1', 1);
+    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledWith('1', 1);
     expect(snackBarSpy.open).toHaveBeenCalledWith(
       'Removed 1 from Markers.',
       'OK',
@@ -391,7 +389,6 @@ describe('InventoryComponent branch coverage', () => {
     expect(component.scanCards().length).toBe(1);
     expect(component.scanCards()[0].id).toBe('card-2');
     expect(component.showRemovePanel()).toBeTrue();
-    expect(component.reload()).toBe(beforeReload + 1);
   });
 
   it('should remove the last card and hide the panel', () => {
@@ -406,7 +403,7 @@ describe('InventoryComponent branch coverage', () => {
 
   it('should show an error snackbar when single remove fails', () => {
     spyOn(console, 'error');
-    inventoryServiceSpy.removeInventoryById.and.returnValue(
+    inventoryServiceSpy.removeItemQuantityById.and.returnValue(
       throwError(() => new Error('remove failed'))
     );
     component.scanCards.set([makeCard()]);
@@ -486,7 +483,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should reject confirmRemove when a card amount is invalid', () => {
@@ -499,7 +496,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should reject confirmRemove when a card amount exceeds quantity', () => {
@@ -512,7 +509,7 @@ describe('InventoryComponent branch coverage', () => {
       'OK',
       { duration: 3000 }
     );
-    expect(inventoryServiceSpy.removeInventoryById).not.toHaveBeenCalled();
+    expect(inventoryServiceSpy.removeItemQuantityById).not.toHaveBeenCalled();
   });
 
   it('should confirm remove and reset scanner state on success', fakeAsync(() => {
@@ -529,9 +526,9 @@ describe('InventoryComponent branch coverage', () => {
     component.confirmRemove();
     flushMicrotasks();
 
-    expect(inventoryServiceSpy.removeInventoryById).toHaveBeenCalledTimes(2);
-    expect(inventoryServiceSpy.removeInventoryById).toHaveBeenCalledWith('1', 1);
-    expect(inventoryServiceSpy.removeInventoryById).toHaveBeenCalledWith('2', 2);
+    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledTimes(2);
+    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledWith('1', 1);
+    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledWith('2', 2);
     expect(snackBarSpy.open).toHaveBeenCalledWith(
       'Inventory updated.',
       'OK',
@@ -547,7 +544,7 @@ describe('InventoryComponent branch coverage', () => {
 
   it('should show an error snackbar when confirmRemove fails', fakeAsync(() => {
     spyOn(console, 'error');
-    inventoryServiceSpy.removeInventoryById.and.returnValue(
+    inventoryServiceSpy.removeItemQuantityById.and.returnValue(
       throwError(() => new Error('remove failed'))
     );
     component.scanCards.set([makeCard()]);

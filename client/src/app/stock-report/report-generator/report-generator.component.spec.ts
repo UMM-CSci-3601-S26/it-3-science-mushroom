@@ -92,6 +92,38 @@ describe('ReportGeneratorComponent', () => {
       expect(understockedItems.length).toBe(1);
       expect(understockedItems[0]).toEqual(['Understocked Pants', 5, 10, 7, '']);
     });
+
+    it('should convert N/A notes to empty string in all filtered item computations', () => {
+      const itemsWithNA: Inventory[] = [
+        { ...mockInventory[0], notes: 'N/A', stockState: 'Stocked' },
+        { ...mockInventory[1], notes: 'N/A', stockState: 'Under-Stocked' },
+        { ...mockInventory[2], notes: 'N/A', stockState: 'Over-Stocked' },
+        { ...mockInventory[3], notes: 'N/A', stockState: 'Out of Stock' }
+      ];
+      (inventoryService.getInventory as jasmine.Spy).and.returnValue(of(itemsWithNA));
+      fixture.detectChanges();
+
+      expect(component.stockedItems()[0][4]).toBe('');
+      expect(component.understockedItems()[0][4]).toBe('');
+      expect(component.overstockedItems()[0][4]).toBe('');
+      expect(component.outOfStockItems()[0][4]).toBe('');
+    });
+
+    it('should return empty array fallback when inventory signal is null or undefined', () => {
+      // Create a fresh component with spy returning null
+      (inventoryService.getInventory as jasmine.Spy).and.returnValue(of(null as unknown as Inventory[]));
+      const freshFixture = TestBed.createComponent(ReportGeneratorComponent);
+      const freshComponent = freshFixture.componentInstance;
+      freshFixture.detectChanges();
+
+      expect(freshComponent.stockedItems()).toEqual([]);
+      expect(freshComponent.understockedItems()).toEqual([]);
+      expect(freshComponent.overstockedItems()).toEqual([]);
+      expect(freshComponent.outOfStockItems()).toEqual([]);
+
+      // Restore spy to original for other tests
+      (inventoryService.getInventory as jasmine.Spy).and.returnValue(of(mockInventory));
+    });
   });
 
   describe('Report Generation', () => {
@@ -208,6 +240,38 @@ describe('ReportGeneratorComponent', () => {
 
         expect(snackBarSpy).toHaveBeenCalledWith(
           'Generating and downloading report as XLSX file...',
+          'Okay',
+          { duration: 2000 }
+        );
+      });
+
+      it('should show error snackbar when saving XLSX to server fails', () => {
+        const generateSpy = spyOn(stockReportService, 'generateNewXlsxReport').and.returnValue(
+          throwError(() => new Error('Server error'))
+        );
+        const snackBarSpy = spyOn(matSnackBar, 'open');
+
+        component.saveXlsxReport();
+
+        expect(generateSpy).toHaveBeenCalled();
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          jasmine.stringContaining('Error generating/saving report as XLSX file'),
+          'Okay',
+          { duration: 2000 }
+        );
+      });
+
+      it('should show error snackbar when downloading XLSX fails', () => {
+        const generateSpy = spyOn(stockReportService, 'generateAndDownloadXlsxReport').and.returnValue(
+          throwError(() => new Error('Download error'))
+        );
+        const snackBarSpy = spyOn(matSnackBar, 'open');
+
+        component.downloadNewXlsxReport();
+
+        expect(generateSpy).toHaveBeenCalled();
+        expect(snackBarSpy).toHaveBeenCalledWith(
+          jasmine.stringContaining('Error generating report as XLSX file'),
           'Okay',
           { duration: 2000 }
         );
