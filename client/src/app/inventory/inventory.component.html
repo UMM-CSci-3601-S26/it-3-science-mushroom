@@ -121,15 +121,10 @@
         </div>
         <div class="filter-extra">
           <div class="filter-actions">
-          <!-- N/A Values Toggle -->
-            <mat-slide-toggle
-              [ngModel]="showNAValues()"
-              (ngModelChange)="showNAValues.set($event)"
-              data-cy="toggle-na-values"
-            >
-              Show N/A values
-            </mat-slide-toggle>
-          <!-- Clear Filters Button -->
+            <button mat-stroked-button class="count-display" disabled>
+              Items: {{ displayedInventory().length }}
+            </button>
+            <!-- Clear Filters Button -->
             <button
               mat-stroked-button
               type="button"
@@ -138,11 +133,7 @@
               data-cy="filter-clear"
               class="clear-button"
               >
-              Clear
-            </button>
-
-            <button mat-stroked-button class="count-display">
-            Items: {{ displayedInventory().length }}
+              Clear Filters
             </button>
 
             <div class="scanner-actions">
@@ -170,6 +161,35 @@
               <mat-button-toggle value="detailed" data-test="detailed-view">Detailed</mat-button-toggle>
             </mat-button-toggle-group>
           </div>
+
+          <div class="display-toggles">
+                <!-- N/A Values Toggle -->
+              <mat-slide-toggle
+                [ngModel]="showNAValues()"
+                (ngModelChange)="showNAValues.set($event)"
+                data-cy="toggle-na-values"
+              >
+                Show N/A values
+              </mat-slide-toggle>
+
+              <!-- Out of Stock Items Toggle -->
+              <mat-slide-toggle
+                [ngModel]="showZeroQuantityItems()"
+                (ngModelChange)="showZeroQuantityItems.set($event)"
+                data-cy="toggle-outofstock-quantities"
+              >
+                Show Out of Stock Items
+              </mat-slide-toggle>
+
+              <!-- Only Out of Stock Items Toggle -->
+              <mat-slide-toggle
+                [ngModel]="showOnlyZeroQuantityItems()"
+                (ngModelChange)="showOnlyZeroQuantityItems.set($event)"
+                data-cy="toggle-only-outofstock-quantities"
+              >
+                Show Only Out of Stock Items
+              </mat-slide-toggle>
+            </div>
 
           <div class="scanner-wrapper" *ngIf="showScanner">
             <p>Scanner is open</p>

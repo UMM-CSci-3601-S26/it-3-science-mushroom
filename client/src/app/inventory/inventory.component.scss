@@ -92,6 +92,14 @@
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+// Toggles
+.display-toggles {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 /* Buttons */
@@ -100,7 +108,13 @@
 }
 
 .count-display {
-  font-weight: 600;
+  cursor: not-allowed;
+
+  &:disabled {
+    color: var(--inventory-body-text) !important;
+    opacity: 1 !important;
+    font-weight: normal !important;
+  }
 }
 
 /* Scanner wrapper */

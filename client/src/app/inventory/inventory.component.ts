@@ -116,6 +116,8 @@ export class InventoryComponent {
   description = signal<string | undefined>(undefined);
   quantity = signal<number | undefined>(undefined);
   showNAValues = signal(true);
+  showZeroQuantityItems = signal(true);
+  showOnlyZeroQuantityItems = signal(false);
   viewType = signal<'detailed' | 'simple'>('detailed');
 
   errMsg = signal<string | undefined>(undefined);
@@ -419,15 +421,38 @@ export class InventoryComponent {
   );
 
   displayedInventory = computed(() => {
-    return this.serverFilteredInventory();
+    return this.showOnlyOutofStock(this.showOutofStockItems(this.serverFilteredInventory()));
   });
 
+  /**
+   * Adjust which cells get displayed based on the appropriate showXValues signals.
+   */
   displayCellValue(value: string | number | null | undefined): string | number {
     if (typeof value === 'string' && !this.showNAValues() && value.trim().toLowerCase() === 'n/a') {
       return '';
     }
 
     return value ?? '';
+  }
+
+  /**
+   * Filters displayed inventory based on showOutofStockQuantities
+   */
+  showOutofStockItems(inventory: Inventory[]): Inventory[] {
+    if (this.showZeroQuantityItems()) {
+      return inventory;
+    }
+    return inventory.filter(item => item.quantity !== 0);
+  }
+
+  /**
+   * Filters displayed inventory to only show 0 quantity items
+   */
+  showOnlyOutofStock(inventory: Inventory[]): Inventory[] {
+    if (!this.showOnlyZeroQuantityItems()) {
+      return inventory;
+    }
+    return inventory.filter(item => item.quantity === 0);
   }
 
   private item$ = toObservable(this.item);
