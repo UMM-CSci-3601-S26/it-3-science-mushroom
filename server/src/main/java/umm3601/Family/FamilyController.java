@@ -47,6 +47,7 @@ import umm3601.Common.AuthContext;
 import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.SupplyList.SupplyList;
+import umm3601.Users.Users;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -106,6 +107,7 @@ public class FamilyController {
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
+  private final JacksonMongoCollection<Users> usersCollection;
 
 
   // Database Constructor
@@ -130,6 +132,11 @@ public class FamilyController {
       "settings",
       Settings.class,
       UuidRepresentation.STANDARD);
+    usersCollection = JacksonMongoCollection.builder().build(
+        database,
+        "users",
+        Users.class,
+        UuidRepresentation.STANDARD);
   }
 
   // GET all families
@@ -482,14 +489,19 @@ public class FamilyController {
       ? new FamilyDeleteRequest()
       : ctx.bodyAsClass(FamilyDeleteRequest.class);
     String message = deleteRequest.message == null || deleteRequest.message.isBlank()
-      ? "Requested by volunteer"
+      ? "Delete requested"
       : deleteRequest.message.trim();
+    Users requester = findUserById(authContext.userId());
 
     Bson update = new Document("$set", new Document()
       .append("deleteRequest", new Document()
         .append("requested", true)
         .append("message", message)
         .append("requestedByUserId", authContext.userId())
+        .append("requestedByUserName", displayNameForUser(requester))
+        .append("requestedBySystemRole", requester == null || requester.systemRole == null
+          ? authContext.role().name()
+          : requester.systemRole.name())
         .append("requestedAt", Instant.now().toString())
       )
     );
@@ -513,6 +525,7 @@ public class FamilyController {
     List<Family> familiesWithDeleteRequests = familyCollection
       .find(eq("deleteRequest.requested", true))
       .into(new ArrayList<>());
+    familiesWithDeleteRequests.forEach(this::hydrateDeleteRequestRequester);
     ctx.json(familiesWithDeleteRequests);
     ctx.status(HttpStatus.OK);
   }
@@ -1684,7 +1697,48 @@ public class FamilyController {
       .append("requested", deleteRequest.requested)
       .append("message", deleteRequest.message)
       .append("requestedByUserId", deleteRequest.requestedByUserId)
+      .append("requestedByUserName", deleteRequest.requestedByUserName)
+      .append("requestedBySystemRole", deleteRequest.requestedBySystemRole)
       .append("requestedAt", deleteRequest.requestedAt);
+  }
+
+  private void hydrateDeleteRequestRequester(Family family) {
+    if (family == null
+        || family.deleteRequest == null
+        || family.deleteRequest.requestedByUserId == null) {
+      return;
+    }
+
+    Users requester = findUserById(family.deleteRequest.requestedByUserId);
+    if (requester == null) {
+      return;
+    }
+
+    family.deleteRequest.requestedByUserName = displayNameForUser(requester);
+    if (requester.systemRole != null) {
+      family.deleteRequest.requestedBySystemRole = requester.systemRole.name();
+    }
+  }
+
+  private Users findUserById(String userId) {
+    if (userId == null || userId.isBlank()) {
+      return null;
+    }
+    try {
+      return usersCollection.find(eq("_id", new ObjectId(userId))).first();
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private String displayNameForUser(Users user) {
+    if (user == null) {
+      return null;
+    }
+    if (user.fullName != null && !user.fullName.isBlank()) {
+      return user.fullName;
+    }
+    return user.username;
   }
 
 }
