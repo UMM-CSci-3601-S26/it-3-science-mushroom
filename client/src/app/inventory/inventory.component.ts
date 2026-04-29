@@ -356,7 +356,7 @@ export class InventoryComponent {
   }
 
   toggleScanner() {
-    if (this.showScanner) {
+    if (this.showScanner && this.scannerAction() === 'add') {
       this.showScanner = false;
       return;
     }

@@ -144,16 +144,16 @@
                 (click)="toggleScanner()"
                 data-cy="scan-button"
                 >
-                {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
+                {{ showScanner && scannerAction() === 'add' ? 'Close Scanner' : 'Scan Item - Add' }}
               </button>
 
               <button
                 mat-stroked-button
                 type="button"
-                (click)="openRemoveScanner()"
+                (click)="showScanner && scannerAction() === 'remove' ? (showScanner = false) : openRemoveScanner()"
                 data-cy="remove-scan-button"
                 >
-                  Remove Item
+                  {{ showScanner && scannerAction() === 'remove' ? 'Close Scanner' : 'Scan Item - Remove' }}
               </button>
             </div>
             <mat-button-toggle-group class="view-toggle" [(ngModel)]="viewType" data-test="viewTypeToggle">
@@ -194,6 +194,7 @@
           <div class="scanner-wrapper" *ngIf="showScanner">
             <p>Scanner is open</p>
             <app-scanner
+            [currentScannerAction]="scannerAction()"
             (scanned)="onScanned($event)"
             (manualEntryNeeded)="onManualEntryNeeded($event)"
             (processingStarted)="scannerProcessing = true"
