@@ -536,8 +536,8 @@ public class InventoryController implements Controller {
   public void addRoutes(Javalin server) {
     // GET routes
     server.get(API_INVENTORY, this::getInventories);
-    server.get(API_INVENTORY_BY_ID, this::getInventory);
     server.get("/api/inventory/nextid", this::generateNextID);
+    server.get(API_INVENTORY_BY_ID, this::getInventory);
 
     // POST routes
     server.post(API_INVENTORY, this::addInventory);
@@ -545,8 +545,8 @@ public class InventoryController implements Controller {
     server.post(API_INVENTORY_RESET, this::resetQuantities);
 
     // DELETE routes
-    server.delete(API_INVENTORY_BY_ID, this::deleteInventory);
-    server.delete(API_INVENTORY, this::deleteInventories);
     server.delete(API_INVENTORY_CLEAR, this::clearInventory);
+    server.delete(API_INVENTORY, this::deleteInventories);
+    server.delete(API_INVENTORY_BY_ID, this::deleteInventory);
   }
 }
