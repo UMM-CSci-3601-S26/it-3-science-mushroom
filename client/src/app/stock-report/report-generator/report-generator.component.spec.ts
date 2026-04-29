@@ -34,6 +34,8 @@ describe('ReportGeneratorComponent', () => {
   ];
 
   beforeEach(async () => {
+    sessionStorage.setItem('auth_system_role', 'ADMIN');
+
     await TestBed.configureTestingModule({
       imports: [ReportGeneratorComponent],
       providers: [
@@ -58,6 +60,10 @@ describe('ReportGeneratorComponent', () => {
     fixture = TestBed.createComponent(ReportGeneratorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    sessionStorage.clear();
   });
 
   it('should create', () => {

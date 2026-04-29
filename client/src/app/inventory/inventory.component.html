@@ -146,24 +146,28 @@
             </button>
 
             <div class="scanner-actions">
-              <button
-                mat-stroked-button
-                type="button"
-                [disabled]="scannerProcessing"
-                (click)="toggleScanner()"
-                data-cy="scan-button"
-                >
-                {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
-              </button>
+              @if (canAddInventoryItem) {
+                <button
+                  mat-stroked-button
+                  type="button"
+                  [disabled]="scannerProcessing"
+                  (click)="toggleScanner()"
+                  data-cy="scan-button"
+                  >
+                  {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
+                </button>
+              }
 
-              <button
-                mat-stroked-button
-                type="button"
-                (click)="openRemoveScanner()"
-                data-cy="remove-scan-button"
-                >
-                  Remove Item
-              </button>
+              @if (canEditInventoryItem) {
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="openRemoveScanner()"
+                  data-cy="remove-scan-button"
+                  >
+                    Remove Item
+                </button>
+              }
             </div>
 
             <div class="print-barcode" data-cy="barcode-print">
@@ -216,23 +220,26 @@
                 </mat-form-field>
 
                 <div class="remove-actions">
-                  <button
-                    mat-raised-button
-                    color="warn"
-                    type="button"
-                    *ngIf="card.mode === 'remove' && card.item"
-                    (click)="confirmSingleRemove(card.id)">
-                    Remove From Inventory
-                  </button>
+                  @if (canEditInventoryItem && card.mode === 'remove' && card.item) {
+                    <button
+                      mat-raised-button
+                      color="warn"
+                      type="button"
+                      (click)="confirmSingleRemove(card.id)">
+                      Remove From Inventory
+                    </button>
+                  }
                   <button mat-stroked-button type="button" (click)="removeCard(card.id)">
                     Remove Card
                   </button>
                 </div>
               </div>
               <div class="remove-actions global-remove-actions">
-              <button mat-raised-button color="warn" type="button" (click)="confirmRemove()">
-                Remove All Valid Inventory Items
-              </button>
+              @if (canEditInventoryItem) {
+                <button mat-raised-button color="warn" type="button" (click)="confirmRemove()">
+                  Remove All Valid Inventory Items
+                </button>
+              }
 
               <button mat-stroked-button type="button" (click)="clearAllCards()">
                 Clear All Cards

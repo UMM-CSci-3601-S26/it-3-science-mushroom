@@ -11,6 +11,7 @@ import { SettingsService } from './settings.service';
 import { TermsService } from '../terms/terms.service';
 import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
+import { AuthService } from '../auth/auth-service';
 import { FamilyService } from '../family/family.service';
 
 describe('SettingsComponent', () => {
@@ -21,6 +22,7 @@ describe('SettingsComponent', () => {
   let familyServiceSpy: jasmine.SpyObj<FamilyService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   const mockTerms: Terms = {
     item: ['folder', 'notebook', 'pencil'],
@@ -57,6 +59,7 @@ describe('SettingsComponent', () => {
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
     familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission', 'isAdmin']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
 
@@ -64,6 +67,8 @@ describe('SettingsComponent', () => {
     settingsServiceSpy.getSettings.and.returnValue(of(mockSettings));
     termsServiceSpy.getTerms.and.returnValue(of(mockTerms));
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
+    authServiceSpy.hasPermission.and.returnValue(true);
+    authServiceSpy.isAdmin.and.returnValue(true);
 
     await TestBed.configureTestingModule({
       imports: [SettingsComponent],
@@ -75,6 +80,7 @@ describe('SettingsComponent', () => {
         { provide: FamilyService, useValue: familyServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
+        { provide: AuthService, useValue: authServiceSpy },
       ],
     }).compileComponents();
 

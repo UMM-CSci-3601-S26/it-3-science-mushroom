@@ -34,6 +34,7 @@ import { BarcodePrintDialog } from './barcode-print-dialog';
 import { BarcodePrintQuantityDialog } from './barcode-print-quantity-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
+import { AuthService } from '../auth/auth-service';
 import JsBarcode from 'jsbarcode';
 import { BarcodePrintWindowService } from './barcode-print-window.service';
 import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode-print-item';
@@ -89,8 +90,17 @@ export class InventoryComponent {
   private inventoryService = inject(InventoryService);
   private inventoryIndex = inject(InventoryIndex);
   private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
   private barcodePrintWindow = inject(BarcodePrintWindowService);
   private settingsService = inject(SettingsService);
+
+  get canAddInventoryItem(): boolean {
+    return this.authService.hasPermission('add_inventory_item');
+  }
+
+  get canEditInventoryItem(): boolean {
+    return this.authService.hasPermission('edit_inventory_item');
+  }
 
   reload = signal(0);
   showScanner = false;
@@ -218,6 +228,15 @@ export class InventoryComponent {
   }
 
   async onScanned(code: string) {
+    if (this.scannerAction() === 'add' && !this.canAddInventoryItem) {
+      this.snackBar.open('You do not have permission to add inventory items.', 'OK', { duration: 3000 });
+      return;
+    }
+    if (this.scannerAction() === 'remove' && !this.canEditInventoryItem) {
+      this.snackBar.open('You do not have permission to remove inventory items.', 'OK', { duration: 3000 });
+      return;
+    }
+
     console.log('scanned item', code);
 
     if (this.scannerAction() === 'remove') {
@@ -267,6 +286,11 @@ export class InventoryComponent {
     );
   }
   confirmSingleRemove(cardId: string) {
+    if (!this.canEditInventoryItem) {
+      this.snackBar.open('You do not have permission to remove inventory items.', 'OK', { duration: 3000 });
+      return;
+    }
+
     const card = this.scanCards().find(c => c.id === cardId);
 
     if (!card || card.mode !== 'remove' || !card.item) {
@@ -327,6 +351,11 @@ export class InventoryComponent {
   }
 
   openRemoveScanner() {
+    if (!this.canEditInventoryItem) {
+      this.snackBar.open('You do not have permission to remove inventory items.', 'OK', { duration: 3000 });
+      return;
+    }
+
     this.scannerAction.set('remove');
     this.showScanner = true;
     this.scannerProcessing = false;
@@ -336,6 +365,11 @@ export class InventoryComponent {
   }
 
   confirmRemove() {
+    if (!this.canEditInventoryItem) {
+      this.snackBar.open('You do not have permission to remove inventory items.', 'OK', { duration: 3000 });
+      return;
+    }
+
     const validRemoveCards = this.scanCards().filter(
       card => card.mode === 'remove' && card.foundInInventory && card.item
     );
@@ -391,6 +425,12 @@ export class InventoryComponent {
   }
 
   async onManualEntryNeeded(event: { barcode: string; quantity: number}) {
+    if (!this.canAddInventoryItem) {
+      this.snackBar.open('You do not have permission to add inventory items.', 'OK', { duration: 3000 });
+      this.scannerRef()?.resolveManualEntry(undefined);
+      return;
+    }
+
     const dialogRef = this.dialog.open(ManualEntry, { data: { barcode: event.barcode, quantity: event.quantity}});
     const result: ManualEntryResult | null = await firstValueFrom(dialogRef.afterClosed());
     this.scannerRef()?.resolveManualEntry(result ?? undefined);
@@ -400,6 +440,10 @@ export class InventoryComponent {
   toggleScanner() {
     if (this.showScanner) {
       this.showScanner = false;
+      return;
+    }
+    if (!this.canAddInventoryItem) {
+      this.snackBar.open('You do not have permission to add inventory items.', 'OK', { duration: 3000 });
       return;
     }
     this.scannerAction.set('add');
@@ -416,6 +460,11 @@ export class InventoryComponent {
   }
 
   addItem(item: Inventory) {
+    if (!this.canAddInventoryItem) {
+      this.snackBar.open('You do not have permission to add inventory items.', 'OK', { duration: 3000 });
+      return;
+    }
+
     this.inventoryService.addInventory(item).subscribe(() => {
       this.reload.update(v => v + 1);
     })

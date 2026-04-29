@@ -40,6 +40,8 @@ describe('StockReportComponent', () => {
   ];
 
   beforeEach(async () => {
+    sessionStorage.setItem('auth_system_role', 'ADMIN');
+
     await TestBed.configureTestingModule({
       imports: [StockReportComponent],
       providers: [
@@ -67,6 +69,10 @@ describe('StockReportComponent', () => {
     fixture = TestBed.createComponent(StockReportComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    sessionStorage.clear();
   });
 
   it('should create', () => {
