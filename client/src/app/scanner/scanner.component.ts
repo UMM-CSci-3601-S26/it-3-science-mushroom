@@ -20,7 +20,7 @@ import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { Inventory } from '../inventory/inventory';
 import { InventoryIndex } from '../inventory/inventory-index';
 import { InventoryService } from '../inventory/inventory.service'
-import { ManualEntryResult } from '../inventory/manual-entry';
+import { ManualEntryResult } from '../inventory/manual-entry/manual-entry';
 
 
 type ScanMode = "camera" | "handheld";

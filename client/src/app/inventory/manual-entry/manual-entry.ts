@@ -5,8 +5,8 @@ import { MatInputModule } from '@angular/material/input';
 import { Inject, Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatError, MatFormField, MatLabel } from "@angular/material/form-field";
-import { Inventory } from "./inventory";
-import { InventoryService } from "./inventory.service";
+import { Inventory } from "../inventory";
+import { InventoryService } from "../inventory.service";
 import { MatButtonModule } from "@angular/material/button";
 import { ScrollingModule } from '@angular/cdk/scrolling';
 

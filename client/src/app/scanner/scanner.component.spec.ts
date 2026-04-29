@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 import { Inventory } from '../inventory/inventory';
 import { InventoryIndex } from '../inventory/inventory-index';
 import { InventoryService } from '../inventory/inventory.service';
-import { ManualEntryResult } from '../inventory/manual-entry';
+import { ManualEntryResult } from '../inventory/manual-entry/manual-entry';
 import { ScanService } from './scan-service';
 import { ScannerComponent } from './scanner.component';
 

@@ -31,11 +31,11 @@ import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
 
 // Barcode, Manual Entry, Dialog, and Settings Imports
-import { BarcodePrintDialog } from './barcode-print-dialog';
-import { BarcodePrintQuantityDialog } from './barcode-print-quantity-dialog';
-import { ManualEntry, ManualEntryResult } from './manual-entry';
-import { BarcodePrintWindowService } from './barcode-print-window.service';
-import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode-print-item';
+import { BarcodePrintDialog } from './barcode/barcode-print-dialog';
+import { BarcodePrintQuantityDialog } from './barcode/barcode-print-quantity-dialog';
+import { ManualEntry, ManualEntryResult } from './manual-entry/manual-entry';
+import { BarcodePrintWindowService } from './barcode/barcode-print-window.service';
+import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode/barcode-print-item';
 import { SettingsService } from '../settings/settings.service';
 import { DialogService } from '../dialog/dialog.service';
 import { MatDialog } from '@angular/material/dialog';

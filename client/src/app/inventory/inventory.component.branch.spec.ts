@@ -9,7 +9,7 @@ import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
 import { SelectOption } from './inventory';
 import { SettingsService } from '../settings/settings.service';
-import { ManualEntryResult } from './manual-entry';
+import { ManualEntryResult } from './manual-entry/manual-entry';
 
 type ScanCard = {
   id: string;

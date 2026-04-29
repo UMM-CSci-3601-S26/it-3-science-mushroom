@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { BarcodePrintWindowService } from './barcode-print-window.service';
 import { PrintableBarcodeItem } from './barcode-print-item';
-import { Inventory } from './inventory';
+import { Inventory } from '../inventory';
 
 describe('BarcodePrintWindowService', () => {
   let service: BarcodePrintWindowService;

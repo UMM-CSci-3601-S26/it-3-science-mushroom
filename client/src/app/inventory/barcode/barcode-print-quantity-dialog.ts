@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BarcodePrintQuantitySelection } from './barcode-print-item';
-import { Inventory } from './inventory';
+import { Inventory } from '../inventory';
 
 type BarcodePrintQuantityRow = {
   item: Inventory;

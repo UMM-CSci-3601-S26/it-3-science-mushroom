@@ -1,9 +1,9 @@
 import { FormBuilder, FormControl, ValidationErrors } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
-import { Inventory } from './inventory';
+import { Inventory } from '../inventory';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
-import { InventoryService } from './inventory.service';
+import { InventoryService } from '../inventory.service';
 
 describe('ManualEntry', () => {
   let component: ManualEntry;

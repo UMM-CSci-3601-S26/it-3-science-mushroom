@@ -20,7 +20,7 @@ import { MockInventoryService } from 'src/testing/inventory.service.mock';
 import { Inventory, SelectOption } from './inventory';
 import { InventoryComponent } from './inventory.component';
 import { By } from '@angular/platform-browser';
-import { BarcodePrintWindowService } from './barcode-print-window.service';
+import { BarcodePrintWindowService } from './barcode/barcode-print-window.service';
 import { SettingsService } from '../settings/settings.service';
 
 const mockSettingsService = {
@@ -467,8 +467,8 @@ describe('Inventory Table', () => {
     const snackBar = TestBed.inject(MatSnackBar);
     const snackSpy = spyOn(snackBar, 'open');
     (inventoryService as InventoryService & {
-      removeInventoryById: jasmine.Spy;
-    }).removeInventoryById = jasmine.createSpy().and.returnValue(of({}));
+      removeItemQuantityById: jasmine.Spy;
+    }).removeItemQuantityById = jasmine.createSpy().and.returnValue(of({}));
     inventoryTable.showRemovePanel.set(true);
     inventoryTable.scanCards.set([
       {
@@ -483,7 +483,7 @@ describe('Inventory Table', () => {
 
     inventoryTable.confirmSingleRemove('card-one');
 
-    expect(inventoryService.removeInventoryById).toHaveBeenCalledWith('markers-id', 1);
+    expect(inventoryService.removeItemQuantityById).toHaveBeenCalledWith('markers-id', 1);
     expect(inventoryTable.scanCards()).toEqual([]);
     expect(inventoryTable.showRemovePanel()).toBeFalse();
     expect(snackSpy).toHaveBeenCalledWith('Removed 1 from Markers.', 'OK', {
@@ -496,8 +496,8 @@ describe('Inventory Table', () => {
     const snackSpy = spyOn(snackBar, 'open');
     spyOn(console, 'error');
     (inventoryService as InventoryService & {
-      removeInventoryById: jasmine.Spy;
-    }).removeInventoryById = jasmine.createSpy().and.returnValue(throwError(() => new Error('remove failed')));
+      removeItemQuantityById: jasmine.Spy;
+    }).removeItemQuantityById = jasmine.createSpy().and.returnValue(throwError(() => new Error('remove failed')));
     inventoryTable.scanCards.set([
       {
         id: 'card-one',
@@ -555,8 +555,8 @@ describe('Inventory Table', () => {
 
   it('should clear the scanner state after successful confirm remove', fakeAsync(() => {
     (inventoryService as InventoryService & {
-      removeInventoryById: jasmine.Spy;
-    }).removeInventoryById = jasmine.createSpy().and.returnValue(of({}));
+      removeItemQuantityById: jasmine.Spy;
+    }).removeItemQuantityById = jasmine.createSpy().and.returnValue(of({}));
     inventoryTable.showScanner = true;
     inventoryTable.scannerProcessing = true;
     inventoryTable.showRemovePanel.set(true);
@@ -574,7 +574,7 @@ describe('Inventory Table', () => {
     inventoryTable.confirmRemove();
     tick();
 
-    expect(inventoryService.removeInventoryById).toHaveBeenCalledWith('markers-id', 1);
+    expect(inventoryService.removeItemQuantityById).toHaveBeenCalledWith('markers-id', 1);
     expect(inventoryTable.scanCards()).toEqual([]);
     expect(inventoryTable.showRemovePanel()).toBeFalse();
     expect(inventoryTable.showScanner).toBeFalse();
@@ -586,8 +586,8 @@ describe('Inventory Table', () => {
     const snackSpy = spyOn(snackBar, 'open');
     spyOn(console, 'error');
     (inventoryService as InventoryService & {
-      removeInventoryById: jasmine.Spy;
-    }).removeInventoryById = jasmine.createSpy().and.returnValue(throwError(() => new Error('remove failed')));
+      removeItemQuantityById: jasmine.Spy;
+    }).removeItemQuantityById = jasmine.createSpy().and.returnValue(throwError(() => new Error('remove failed')));
     inventoryTable.scanCards.set([
       {
         id: 'card-one',

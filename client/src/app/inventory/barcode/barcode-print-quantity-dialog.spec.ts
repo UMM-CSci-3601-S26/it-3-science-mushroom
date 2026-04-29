@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BarcodePrintQuantityDialog } from './barcode-print-quantity-dialog';
-import { Inventory } from './inventory';
+import { Inventory } from '../inventory';
 
 describe('BarcodePrintQuantityDialog', () => {
   let fixture: ComponentFixture<BarcodePrintQuantityDialog>;

@@ -102,10 +102,10 @@ export class SettingsComponent implements OnInit {
     type: new FormControl(''),
     material: new FormControl(''),
   });
-  
+
   barcodePrintForm = new FormGroup({
     barcodePrintWarningLimit: new FormControl<number>(25, [Validators.required, Validators.min(1)])
-
+  });
   // Drive Order: three buckets of item terms (e.g. "notebook", "folder")
   stagedTerms: string[] = [];    // included in the drive, checklist order matches this list
   unstagedTerms: string[] = []; // included in the drive, appended after staged items
@@ -428,6 +428,8 @@ export class SettingsComponent implements OnInit {
         });
       }
     });
+  }
+
   saveBarcodePrintSettings(): void {
     if (this.barcodePrintForm.valid) {
       const warningLimit = this.barcodePrintForm.value.barcodePrintWarningLimit ?? 25;
