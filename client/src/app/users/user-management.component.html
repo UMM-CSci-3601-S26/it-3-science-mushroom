@@ -1,0 +1,177 @@
+<div class="admin-shell" *ngIf="isAdmin; else noAccess">
+  <div class="admin-header">
+    <div>
+      <h2>{{ showUsersSection && !showPermissionsSection ? 'Users' : showPermissionsSection && !showUsersSection ? 'Volunteer Permissions' : 'User Management' }}</h2>
+      <p>Manage staff accounts and volunteer job-role access.</p>
+    </div>
+    <button type="button" class="secondary-button" (click)="loadAdminData()">Refresh</button>
+  </div>
+
+  <ng-container *ngIf="!isLoading; else loading">
+    <div *ngIf="showUsersSection" class="panel-grid">
+      <section class="form-panel">
+        <div class="panel-title-row">
+          <h3>{{ editingUser ? 'Update User Role' : 'Select a User' }}</h3>
+          <button *ngIf="editingUser" type="button" class="secondary-button" (click)="cancelEdit()">Clear</button>
+        </div>
+
+        <ng-container *ngIf="editingUser; else chooseUserHint">
+          <div class="user-summary">
+            <div class="user-name">{{ editingUser.fullName }}</div>
+            <div class="user-meta">@{{ editingUser.username }}</div>
+            <div class="user-meta">{{ editingUser.email || 'No email on file yet' }}</div>
+          </div>
+
+          <form [formGroup]="userForm" (ngSubmit)="submit()" class="user-form">
+            <mat-form-field appearance="outline" class="full-width-field">
+              <mat-label>System role</mat-label>
+              <mat-select formControlName="systemRole">
+                <mat-option *ngFor="let role of availableSystemRoles" [value]="role">{{ formatSystemRole(role) }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <p *ngIf="isEditingOnlyAdmin" class="panel-copy">
+              This account is currently the only admin. It must stay an admin until another admin account exists.
+            </p>
+
+            <mat-form-field *ngIf="isVolunteerForm" appearance="outline" class="full-width-field">
+              <mat-label>Volunteer job role</mat-label>
+              <mat-select formControlName="jobRole">
+                <mat-option *ngFor="let role of jobRoles" [value]="role.name">{{ formatRoleName(role.name) }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button type="submit" class="primary-button">Save Role</button>
+              <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </form>
+        </ng-container>
+
+        <ng-template #chooseUserHint>
+          <div class="empty-state">
+            Choose a user from the list to adjust their system role or volunteer job role.
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="list-panel">
+        <h3>Current Staff Users</h3>
+        <p class="panel-copy">Guardians are intentionally excluded here so this view stays focused on internal users.</p>
+
+        <div *ngIf="users.length === 0" class="empty-state">No admin or volunteer users found.</div>
+
+        <div *ngFor="let user of users; trackBy: trackByUserId" class="user-card">
+          <div>
+            <div class="user-name">{{ user.fullName }}</div>
+            <div class="user-meta">@{{ user.username }}</div>
+            <div class="user-meta">{{ user.email || 'No email on file' }}</div>
+            <div class="user-badges">
+              <span class="badge">{{ formatSystemRole(user.systemRole) }}</span>
+              <span class="badge" *ngIf="user.jobRole">{{ formatRoleName(user.jobRole) }}</span>
+              <span class="badge" *ngIf="isOnlyAdmin(user)">Last admin</span>
+            </div>
+          </div>
+          <div class="user-actions">
+            <button type="button" class="secondary-button" (click)="startEdit(user)">Change Role</button>
+            <button
+              type="button"
+              class="danger-button"
+              (click)="deleteUser(user)"
+              [disabled]="!canDeleteUser(user)">
+              Delete User
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div *ngIf="showPermissionsSection" class="panel-grid">
+      <section class="list-panel">
+        <div class="panel-title-row">
+          <h3>Volunteer Job Roles</h3>
+        </div>
+
+        <div class="create-role-row">
+          <input
+            type="text"
+            [(ngModel)]="newJobRoleName"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="New volunteer job role, like Delivery Helper"
+          />
+          <button type="button" class="primary-button" (click)="createJobRole()">Add Role</button>
+        </div>
+
+        <div *ngFor="let role of jobRoles; trackBy: trackByRoleName" class="role-card">
+          <div>
+            <div class="user-name">{{ formatRoleName(role.name) }}</div>
+            <div class="role-key">{{ role.name }}</div>
+            <div class="user-meta">{{ role.permissions.length }} direct permission{{ role.permissions.length === 1 ? '' : 's' }}</div>
+          </div>
+          <div class="user-actions">
+            <button type="button" class="secondary-button" (click)="selectJobRole(role)">Edit</button>
+            <button
+              type="button"
+              class="danger-button"
+              (click)="deleteJobRole(role.name)"
+              [disabled]="role.name === 'volunteer_base'">
+              Delete
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-panel" *ngIf="selectedJobRole; else selectRoleHint">
+        <div class="panel-title-row">
+          <h3>Edit {{ formatRoleName(selectedJobRole.name) }}</h3>
+          <button type="button" class="secondary-button" (click)="selectedJobRole = null">Close</button>
+        </div>
+
+        <p class="panel-copy">
+          Inherits:
+          <strong>{{ formatRoleList(selectedJobRole.inherits) }}</strong>
+        </p>
+
+        <div *ngFor="let group of groupedPermissions" class="permission-group">
+          <h4>{{ group.group }}</h4>
+          <mat-label
+            *ngFor="let permission of group.permissions"
+            class="permission-row"
+            [class.permission-row-inherited]="isInheritedPermission(permission.permission)">
+            <mat-checkbox
+              class="permission-checkbox"
+              [checked]="isSelectedPermission(permission.permission) || isInheritedPermission(permission.permission)"
+              [disabled]="isInheritedPermission(permission.permission)"
+              (change)="togglePermission(permission.permission, $event.checked)"
+            ></mat-checkbox>
+            <div class="permission-copy">
+              <span class="permission-label">{{ permission.label }}</span>
+            </div>
+            <span *ngIf="isInheritedPermission(permission.permission)" class="permission-chip">Included by volunteer base</span>
+          </mat-label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="primary-button" (click)="saveSelectedJobRole()">Save Permissions</button>
+        </div>
+      </section>
+
+      <ng-template #selectRoleHint>
+        <section class="form-panel empty-state">
+          Select a job role to edit its permissions.
+        </section>
+      </ng-template>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #loading>
+  <div class="loading-state">Loading user management data...</div>
+</ng-template>
+
+<ng-template #noAccess>
+  <div class="user-management-denied">
+    <h2>Access Denied</h2>
+    <p>You do not have permission to view this page.</p>
+  </div>
+</ng-template>
