@@ -92,6 +92,7 @@ export class InventoryComponent {
   reload = signal(0);
   showScanner = false;
   scannerProcessing = false;
+  activeScannerMode: 'camera' | 'handheld' | null = null;
   constructor() {
     effect(() => {
       const items = this.displayedInventory();
@@ -370,6 +371,7 @@ export class InventoryComponent {
   onScannerDone() {
     this.scannerProcessing = false;
     this.showScanner = false;
+    this.activeScannerMode = null;
     this.reload.update(v => v + 1);
   }
 

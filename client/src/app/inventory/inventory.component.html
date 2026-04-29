@@ -122,7 +122,7 @@
         <div class="filter-extra">
           <div class="filter-actions">
             <button mat-stroked-button class="count-display" disabled>
-              Items: {{ displayedInventory().length }}
+              <strong>Items: {{ displayedInventory().length }}</strong>
             </button>
             <!-- Clear Filters Button -->
             <button
@@ -192,12 +192,13 @@
             </div>
 
           <div class="scanner-wrapper" *ngIf="showScanner">
-            <p>Scanner is open</p>
+            <p>{{ activeScannerMode === 'camera' ? 'Camera' : activeScannerMode === 'handheld' ? 'Hand Held' : '' }} Scanner is ready</p>
             <app-scanner
             [currentScannerAction]="scannerAction()"
             (scanned)="onScanned($event)"
             (manualEntryNeeded)="onManualEntryNeeded($event)"
             (processingStarted)="scannerProcessing = true"
+            (activeModeChanged)="activeScannerMode = $event"
             (done)="onScannerDone()"></app-scanner>
           </div>
           <div *ngIf="showRemovePanel() && scanCards().length > 0" class="remove-panel">
@@ -215,7 +216,7 @@
                 </div>
 
                 <mat-form-field appearance="outline">
-                  <mat-label> Amount to remove</mat-label>
+                  <mat-label>Amount to remove</mat-label>
                   <input
                     matInput
                     type="number"
