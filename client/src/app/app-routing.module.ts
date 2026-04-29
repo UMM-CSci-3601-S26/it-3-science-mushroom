@@ -1,45 +1,71 @@
 // Angular Imports
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-
-// Inventory/Supply List Imports
-import { InventoryComponent } from './inventory/inventory.component';
-import { SupplyListComponent } from './supplylist/supplylist.component';
-import { AddSupplyListComponent } from './supplylist/add-supplylist.component';
-
-// Family Imports
-import { FamilyListComponent } from './family/family-list.component';
-import { AddFamilyComponent } from './family/add-family.component';
-import { EditFamilyComponent } from './family/edit-family.component';
-
-// Stock Report Imports
-import { StockReportComponent } from './stock-report/stock-report.component';
-
-// PDF Generator Imports
-import { ReportGeneratorComponent } from './stock-report/report-generator/report-generator.component';
-
-import { SettingsComponent } from './settings/settings.component';
-import { PointOfSaleComponent } from './PointOfSale/PointOfSale.component';
+import { AuthGuard } from './auth/auth.guard';
+import { RoleGuard } from './auth/role.guard';
 
 // Note: Any routes for adding new items need to come before the routes for getting an item by an individual ID
 // Ie: 'user/new' comes before 'users/:id'
+
 const routes: Routes = [
-  {path: '', component: HomeComponent, title: 'Home'},
-  {path: 'family', component: FamilyListComponent, title: 'Family'},
-  {path: 'family/new', component: AddFamilyComponent, title: 'Add Family'},
-  {path: 'family/:id', component: EditFamilyComponent, title: 'Edit Family'},
-  {path: 'inventory', component: InventoryComponent, title: 'Inventory'},
-  {path: 'supplylist/new', component: AddSupplyListComponent, title: 'Add Supply List Item'},
-  {path: 'supplylist', component: SupplyListComponent, title: 'Supply List'},
-  {path: 'stock-report', component: StockReportComponent, title: 'Stock Report'},
-  {path: 'pdf-generator', component: ReportGeneratorComponent, title: 'PDF Generator'},
-  {path: 'settings', component: SettingsComponent, title: 'Settings'},
-  {path: 'point-of-sale', component: PointOfSaleComponent, title: 'Point Of Sale'},
+  // Home page
+  {path: '', loadComponent: () => import('./home/home.component').then(m => m.HomeComponent), title: 'Home'},
+
+  // Sign up/Login pages
+  {path: 'login', loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent), title: 'Login'},
+  {path: 'sign-up', loadComponent: () => import('./auth/sign-up/sign-up.component').then(m => m.SignUpComponent), title: 'Volunteer Sign Up'},
+  {path: 'guardian-sign-up', loadComponent: () => import('./auth/sign-up/sign-up.component').then(m => m.SignUpComponent), title: 'Guardian Sign Up'},
+
+  // Family Portal
+  {path: 'family-portal', loadComponent: () => import('./family/family-portal-home.component').then(m => m.FamilyPortalHomeComponent), title: 'Family Portal',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['GUARDIAN'], permissions: ['family_portal_access'] }},
+  {path: 'family-portal/form', loadComponent: () => import('./family/family-portal-form.component').then(m => m.FamilyPortalFormComponent), title: 'Family Form',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['GUARDIAN'], permissions: ['family_portal_access'] }},
+
+  // Family Pages (Volunteer and Admin view)
+  {path: 'family', loadComponent: () => import('./family/family-list.component').then(m => m.FamilyListComponent), title: 'Family',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_families', 'view_dashboard_stats'] }},
+  {path: 'family/new', loadComponent: () => import('./family/add-family.component').then(m => m.AddFamilyComponent), title: 'Add Family',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['add_family'] }},
+  {path: 'family/:id', loadComponent: () => import('./family/edit-family.component').then(m => m.EditFamilyComponent), title: 'Edit Family',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_family', 'edit_family'] }},
+
+  // Inventory/Supplylist
+  {path: 'inventory', loadComponent: () => import('./inventory/inventory.component').then(m => m.InventoryComponent), title: 'Inventory',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_inventory'] }},
+  {path: 'supplylist', loadComponent: () => import('./supplylist/supplylist.component').then(m => m.SupplyListComponent), title: 'Supply List',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_supply_lists'] }},
+  {path: 'supplylist/new', loadComponent: () => import('./supplylist/add-supplylist.component').then(m => m.AddSupplyListComponent), title: 'Add Supply List Item',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['add_supply_list'] }},
+
+  // PDF generator
+  {path: 'pdf-generator', loadComponent: () => import('./stock-report/report-generator/report-generator.component').then(m => m.ReportGeneratorComponent), title: 'PDF Generator',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_inventory', 'view_reports'] }},
+
+  // Stock Report
+  {path: 'stock-report', loadComponent: () => import('./stock-report/stock-report.component').then(m => m.StockReportComponent), title: 'Stock Report',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_inventory', 'view_reports'] }},
+
+  // Settings
+  {path: 'settings', loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent), title: 'Settings',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_settings'] }},
+
+  // Point of Sale
+  {path: 'point-of-sale', loadComponent: () => import('./PointOfSale/PointOfSale.component').then(m => m.PointOfSaleComponent), title: 'Point Of Sale',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['access_point_of_sale'] }},  
+
+  // User management
+  {path: 'users', loadComponent: () => import('./users/users.component').then(m => m.UsersComponent), title: 'Users',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN'] }},
+
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  imports: [
+    RouterModule.forRoot(routes)
+  ],
+  exports: [
+    RouterModule
+  ]
 })
 export class AppRoutingModule { }

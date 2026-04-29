@@ -11,36 +11,55 @@
         Home
       </a>
 
-      <a mat-list-item routerLink="/family" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>group</mat-icon>
-        Families
-      </a>
+      @if (canAccessPath('/family')) {
+        <a mat-list-item routerLink="/family" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+          <mat-icon matListItemIcon>group</mat-icon>
+          Families
+        </a>
+      }
 
-      <a mat-list-item routerLink="/point-of-sale" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>shopping_cart</mat-icon>
-        Point of Sale
-      </a>
+      @if (canAccessPath('/point-of-sale')){
+        <a mat-list-item routerLink="/point-of-sale" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+            <mat-icon matListItemIcon>shopping_cart</mat-icon>
+            Point of Sale
+        </a>
+      }
 
-      <a mat-list-item routerLink="/inventory" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>inventory</mat-icon>
-        Inventory
-      </a>
+      @if (canAccessPath('/inventory')) {
+        <a mat-list-item routerLink="/inventory" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+          <mat-icon matListItemIcon>inventory</mat-icon>
+          Inventory
+        </a>
+      }
 
-      <a mat-list-item routerLink="/stock-report" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>assessment</mat-icon>
-        Stock Report
-      </a>
+      @if (canAccessPath('/stock-report')) {
+        <a mat-list-item routerLink="/stock-report" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+          <mat-icon matListItemIcon>assessment</mat-icon>
+          Stock Report
+        </a>
+      }
+      
+      @if (canAccessPath('/supplylist')) {
+        <a mat-list-item routerLink="/supplylist" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+          <mat-icon matListItemIcon>list</mat-icon>
+          Supply List
+        </a>
+      }
 
-      <a mat-list-item routerLink="/supplylist" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>list</mat-icon>
-        Supply List
-      </a>
+      @if (canAccessPath('/settings')) {
+        <a mat-list-item routerLink="/settings" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+          <mat-icon matListItemIcon>settings</mat-icon>
+          Settings
+        </a>
+      }
 
-      <a mat-list-item routerLink="/settings" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>settings</mat-icon>
-        Settings
-      </a>
-
+      @if (canAccessPath('/users')) {
+        <a mat-list-item routerLink="/users" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+          <mat-icon matListItemIcon>supervisor_account</mat-icon>
+          Users
+        </a>
+      }
+      
     </mat-nav-list>
 
   </mat-sidenav>
@@ -51,6 +70,97 @@
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
       <span class="app-title">{{title}}</span>
+      <span class="toolbar-spacer"></span>
+      @if (authService.loggedIn) {
+        <button
+          mat-button
+          [matMenuTriggerFor]="accountMenu"
+          [matBadge]="pendingDeleteRequestCount"
+          [matBadgeHidden]="pendingDeleteRequestCount === 0"
+          matBadgeColor="warn"
+          matBadgeSize="small"
+          class="account-button"
+          aria-label="Account menu">
+          <mat-icon>account_circle</mat-icon>
+          {{ authService.displayName }}
+          <mat-icon>expand_more</mat-icon>
+        </button>
+        <mat-menu #accountMenu="matMenu">
+          <button mat-menu-item [matMenuTriggerFor]="accountDetailsMenu">
+            <mat-icon>badge</mat-icon>
+            <span>View Account</span>
+          </button>
+          @if (canAccessPath('/users')) {
+            <button mat-menu-item [matMenuTriggerFor]="adminMenu">
+              <mat-icon
+                aria-hidden="false"
+                [matBadge]="pendingDeleteRequestCount"
+                [matBadgeHidden]="pendingDeleteRequestCount === 0"
+                matBadgeColor="warn"
+                matBadgeSize="small">
+                admin_panel_settings
+              </mat-icon>
+              <span>Management</span>
+            </button>
+          }
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+        <mat-menu #accountDetailsMenu="matMenu" class="account-details-menu">
+          <div class="account-menu-panel" role="group" aria-label="Account details">
+            <div class="account-menu-title">Account Details</div>
+            <div class="account-detail-row">
+              <mat-icon>person</mat-icon>
+              <div>
+                <div class="account-detail-label">Name</div>
+                <div class="account-menu-name">{{ authService.fullName || 'No name on file' }}</div>
+              </div>
+            </div>
+            <div class="account-detail-row">
+              <mat-icon>alternate_email</mat-icon>
+              <div>
+                <div class="account-detail-label">Username</div>
+                <div class="account-menu-detail">@{{ authService.username || 'unknown' }}</div>
+              </div>
+            </div>
+            <div class="account-detail-row">
+              <mat-icon>mail</mat-icon>
+              <div>
+                <div class="account-detail-label">Connected Email</div>
+                <div class="account-menu-detail">{{ authService.email || 'No connected email' }}</div>
+              </div>
+            </div>
+          </div>
+        </mat-menu>
+        <mat-menu #adminMenu="matMenu">
+          <a mat-menu-item routerLink="/users" [queryParams]="{ tab: 'requests' }" (click)="refreshDeleteRequestCount()">
+            <mat-icon
+              aria-hidden="false"
+              [matBadge]="pendingDeleteRequestCount"
+              [matBadgeHidden]="pendingDeleteRequestCount === 0"
+              matBadgeColor="warn"
+              matBadgeSize="small">
+              notification_important
+            </mat-icon>
+            <span>Delete Requests</span>
+          </a>
+          <a mat-menu-item routerLink="/users" [queryParams]="{ tab: 'users' }">
+            <mat-icon>group</mat-icon>
+            <span>Users</span>
+          </a>
+          <a mat-menu-item routerLink="/users" [queryParams]="{ tab: 'permissions' }">
+            <mat-icon>security</mat-icon>
+            <span>Volunteer Permissions</span>
+          </a>
+        </mat-menu>
+      } @else {
+        <a mat-button routerLink="/login">
+          <mat-icon>login</mat-icon>
+          Login
+        </a>
+      }
     </mat-toolbar>
     <div class="main-content mat-typography">
       <router-outlet></router-outlet>
