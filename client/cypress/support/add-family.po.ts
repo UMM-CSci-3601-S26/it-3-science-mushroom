@@ -52,11 +52,19 @@ export class AddFamilyPage {
   }
 
   getStudentGradeField(index: number) {
-    cy.get('[formcontrolname="grade"]').eq(index).click();
+    return cy.get('[formarrayname="students"] [formcontrolname="grade"]')
+      .eq(index)
+      .scrollIntoView()
+      .find('.mat-mdc-select-trigger')
+      .click();
   }
 
   getStudentSchoolField(index: number) {
-    cy.get('[formcontrolname="school"]').eq(index).click();
+    return cy.get('[formarrayname="students"] [formcontrolname="school"]')
+      .eq(index)
+      .scrollIntoView()
+      .find('.mat-mdc-select-trigger')
+      .click();
   }
 
   addStudentButton() {
@@ -100,11 +108,13 @@ export class AddFamilyPage {
       this.getStudentField(i, 'name').type(student.name);
 
       this.getStudentGradeField(i);
-      cy.get('mat-option').contains(student.grade).click();
+      cy.get('mat-option', { timeout: 10000 }).contains(student.grade).click({ force: true });
+      cy.get('.cdk-overlay-pane').should('not.exist');
 
       this.getStudentSchoolField(i);
       const schoolAndAbbrevation = `${student.school} (${student.schoolAbbreviation})`;
-      cy.get('mat-option').contains(schoolAndAbbrevation).click();
+      cy.get('mat-option', { timeout: 10000 }).contains(schoolAndAbbrevation).click({ force: true });
+      cy.get('.cdk-overlay-pane').should('not.exist');
 
       this.getStudentField(i, 'teacher').type(student.teacher, {force:true});
 
