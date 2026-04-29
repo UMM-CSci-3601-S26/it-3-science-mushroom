@@ -137,6 +137,11 @@ export class FamilyService {
     });
   }
 
+  // Calls the backend to schedule families based on available spots
+  scheduleFamilies(): Observable<Family[]> {
+    return this.httpClient.post<Family[]>(`${this.familyUrl}/schedule`, {});
+  }
+
   getDashboardStats(): Observable<DashboardStats> {
     const httpParams: HttpParams = new HttpParams();
     return this.httpClient.get<DashboardStats>(this.dashboardUrl, {

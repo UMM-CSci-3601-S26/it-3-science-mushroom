@@ -51,6 +51,35 @@ describe('Settings', () => {
         .should('be.visible')
         .and('contain.text', 'Available spots setting saved');
     });
+
+    it('Should schedule families', () => {
+      page.getTab().click();
+
+      page.getFormField('availableSpots').clear();
+
+      page.getFormField('availableSpots').type('84');
+      cy.get('[data-test="scheduleFamiliesButton"]').click();
+
+      cy.get('.mat-mdc-simple-snack-bar')
+        .should('be.visible')
+        .and('contain.text', 'Families scheduled');
+
+      cy.get('.mat-mdc-card-title').should('have.text', 'Families');
+
+    });
+
+    it('Should have error when scheduling families with low capacity', () => {
+      page.getTab().click();
+
+      page.getFormField('availableSpots').clear();
+
+      page.getFormField('availableSpots').type('2');
+      cy.get('[data-test="scheduleFamiliesButton"]').click();
+
+      cy.get('.mat-mdc-simple-snack-bar')
+        .should('be.visible')
+        .and('contain.text', 'Your capacity is too low for the number of families');
+    });
   });
 
   describe('Inventory Management Tab', () => {

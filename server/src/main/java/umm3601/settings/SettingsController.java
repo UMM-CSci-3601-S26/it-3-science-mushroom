@@ -145,13 +145,12 @@ public class SettingsController implements Controller {
    * Body: { "earlyMorning": "8:00–9:00 AM", "lateMorning": "...", ... }
    */
   public void updateTimeAvailability(Context ctx) {
-    Settings.TimeAvailabilityLabels labels = ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class);
 
     Document taDoc = new Document()
-        .append("earlyMorning", labels.earlyMorning)
-        .append("lateMorning", labels.lateMorning)
-        .append("earlyAfternoon", labels.earlyAfternoon)
-        .append("lateAfternoon", labels.lateAfternoon);
+        .append("earlyMorning", ctx.formParam("earlyMorning"))
+        .append("lateMorning", ctx.formParam("lateMorning"))
+        .append("earlyAfternoon", ctx.formParam("earlyAfternoon"))
+        .append("lateAfternoon", ctx.formParam("lateAfternoon"));
 
     settingsCollection.updateOne(
         eq("_id", SETTINGS_ID),

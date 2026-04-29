@@ -21,6 +21,9 @@ import { forkJoin } from 'rxjs';
 import { SettingsService } from './settings.service';
 import { SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels } from './settings';
 
+// Family Imports
+import { FamilyService } from '../family/family.service';
+
 // Terms Imports
 import { TermsService } from '../terms/terms.service';
 
@@ -57,6 +60,7 @@ export class SettingsComponent implements OnInit {
   private dialogService = inject(DialogService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private familyService = inject(FamilyService);
 
   readonly itemOptions = this.inventoryService.itemOptions;
   readonly brandOptions = this.inventoryService.brandOptions;
@@ -229,7 +233,10 @@ export class SettingsComponent implements OnInit {
       ...this.notGivenTerms.map(t => ({ itemTerm: t, status: 'notGiven' as const })),
     ];
     this.settingsService.updateSupplyOrder(order).subscribe({
-      next: () => this.router.navigate(['/checklists'], { queryParams: { generate: 'true' } }),
+      next: () => {
+        this.router.navigate(['/checklists'], { queryParams: { generate: 'true' } });
+        this.snackBar.open('Successfully generated checklist', 'OK', { duration: 2000 })
+      },
       error: () => this.snackBar.open('Failed to save drive order', 'OK', { duration: 3000 })
     });
   }
@@ -426,6 +433,27 @@ export class SettingsComponent implements OnInit {
             this.snackBar.open('Failed to reset quantities.', 'OK', { duration: 4000 });
           }
         });
+  scheduleFamilies(): void {
+    this.settingsService.updateAvailableSpots(this.availableSpotsForm.value as number).subscribe({
+      next: () => {
+        this.familyService.scheduleFamilies().subscribe({
+          next: () => {
+            this.router.navigate(['/family']);
+            this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
+          },
+          error: (err) => {
+            console.error('Schedule families error:', err);
+            console.log('Error content:', err.error);
+            if (err.error.title === 'Not all families were able to be sorted, your event capacity may be too low') {
+              this.snackBar.open('Your capacity is too low for the number of families', 'OK', {duration: 3000});
+            } else {
+              this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
+            }
+          }
+        })
+      },
+      error: () => {
+        this.snackBar.open('Failed to update available spots', 'OK', { duration: 3000 });
       }
     });
   }
