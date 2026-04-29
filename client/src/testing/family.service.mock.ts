@@ -14,6 +14,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
     {
       //family with one kid
       _id: 'john_id',
+      ownerUserId: 'john-user-id',
       guardianName: 'John Johnson',
       email: 'jjohnson@email.com',
       address: '713 Broadway',
@@ -75,6 +76,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
     {
       //family with three kids
       _id: 'george_id',
+      ownerUserId: 'george-user-id',
       guardianName: 'George Peterson',
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
@@ -187,5 +189,19 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
 
   generatePDF(): void {
     console.log('generatePDF called');
+  }
+
+  requestFamilyDelete(id: string, message: string): Observable<unknown> {
+    console.log('requestFamilyDelete called with', id, message);
+    return of({ success: true });
+  }
+
+  getDeleteRequests(): Observable<Family[]> {
+    return of(MockFamilyService.testFamilies.filter(f => f.deleteRequest?.requested));
+  }
+
+  restoreDeleteRequest(id: string): Observable<unknown> {
+    console.log('restoreDeleteRequest called with', id);
+    return of({ success: true });
   }
 }
