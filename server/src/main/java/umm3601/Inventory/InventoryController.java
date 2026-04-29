@@ -44,6 +44,8 @@ public class InventoryController implements Controller {
   private static final String API_INVENTORY = "/api/inventory";
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
   private static final String API_INVENTORY_REMOVE_QUANTITY = "/api/inventory/removeQuantity";
+  private static final String API_INVENTORY_CLEAR = "/api/inventory/clear";
+  private static final String API_INVENTORY_RESET = "/api/inventory/reset";
 
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";
@@ -271,6 +273,7 @@ public class InventoryController implements Controller {
    * @param ctx The HTTP request context
   */
   public void deleteInventories(Context ctx) {
+
     Bson filter = constructFilter(ctx);
 
     FindIterable<Inventory> results = inventoryCollection.find(filter);
@@ -280,6 +283,22 @@ public class InventoryController implements Controller {
     matching.forEach(inv -> inventoryCollection.deleteOne(eq("_id", inv._id)));
 
     ctx.json(matching);
+    ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Deletes all inventory items from the database.
+   */
+  public void clearInventory(Context ctx) {
+    inventoryCollection.deleteMany(new Document());
+    ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Sets the quantity of all inventory items to 0.
+   */
+  public void resetQuantities(Context ctx) {
+    inventoryCollection.updateMany(new Document(), Updates.set(QUANTITY_KEY, 0));
     ctx.status(HttpStatus.OK);
   }
 
@@ -503,9 +522,11 @@ public class InventoryController implements Controller {
     // POST routes
     server.post(API_INVENTORY, this::addInventory);
     server.post(API_INVENTORY_REMOVE_QUANTITY, this::removeQuantity);
+    server.post(API_INVENTORY_RESET, this::resetQuantities);
 
     // DELETE routes
     server.delete(API_INVENTORY_BY_ID, this::deleteInventory);
     server.delete(API_INVENTORY, this::deleteInventories);
+    server.delete(API_INVENTORY_CLEAR, this::clearInventory);
   }
 }
