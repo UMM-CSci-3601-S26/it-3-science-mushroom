@@ -51,7 +51,7 @@ describe('SettingsComponent', () => {
       'updateTimeAvailability',
       'updateSupplyOrder',
       'updateAvailableSpots',
-      'scheduleFamilies'
+      'scheduleFamilies',
       'updateBarcodePrintWarningLimit'
     ]);
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);

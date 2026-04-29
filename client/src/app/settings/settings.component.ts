@@ -265,6 +265,8 @@ export class SettingsComponent implements OnInit {
         this.snackBar.open('Failed to update available spots', 'OK', { duration: 3000 });
       }
     });
+  }
+
   saveBarcodePrintSettings(): void {
     if (this.barcodePrintForm.valid) {
       const warningLimit = this.barcodePrintForm.value.barcodePrintWarningLimit ?? 25;
