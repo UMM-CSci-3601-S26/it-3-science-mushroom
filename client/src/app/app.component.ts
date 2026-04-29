@@ -1,5 +1,7 @@
 // Angular Imports
 import { Component, DestroyRef, HostListener, inject, OnInit } from '@angular/core';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -29,7 +31,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     MatButtonModule,
     MatBadgeModule,
     MatMenuModule,
-    RouterOutlet]
+    RouterOutlet,
+    MatSnackBarModule
+  ]
 })
 
 export class AppComponent implements OnInit {
@@ -38,6 +42,14 @@ export class AppComponent implements OnInit {
   router = inject(Router);
   private http = inject(HttpClient);
   private destroyRef = inject(DestroyRef);
+  private clipboard = inject(Clipboard);
+  private snackBar = inject(MatSnackBar);
+
+  copyVolunteerSignUpLink() {
+    const link = window.location.origin + '/sign-up';
+    this.clipboard.copy(link);
+    this.snackBar.open('Volunteer sign-up link copied!', 'Close', { duration: 2500 });
+  }
   private deleteRequestNotifications = inject(DeleteRequestNotificationService);
   pendingDeleteRequestCount = 0;
 
@@ -114,6 +126,10 @@ export class AppComponent implements OnInit {
     if (access === 'deny') {
       this.router.navigate(['/']);
     }
+  }
+
+  get isAdmin() {
+    return this.authService.systemRole === 'ADMIN';
   }
 
   canAccessPath(path: string): boolean {

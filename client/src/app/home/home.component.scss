@@ -1,0 +1,15 @@
+.login-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+
+  a[mat-raised-button] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 48px;
+    font-size: 1rem;
+  }
+}

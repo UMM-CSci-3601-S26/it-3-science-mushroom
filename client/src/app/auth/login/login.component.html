@@ -1,0 +1,45 @@
+<div class="auth-page">
+  <mat-card class="auth-card">
+    <mat-card-header>
+      <mat-card-title>Login</mat-card-title>
+      <mat-card-subtitle>Welcome back — please log in to continue</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" class="auth-form">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" type="text" autocomplete="username">
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" autocomplete="current-password">
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword" [attr.aria-label]="'Toggle password'">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        @if (error) {
+          <mat-error class="auth-error">{{ error }}</mat-error>
+        }
+
+        <button mat-raised-button color="primary" type="submit"
+          [disabled]="!loginForm.valid || isLoading" class="full-width submit-btn">
+          @if (isLoading) {
+            <mat-progress-spinner diameter="20" mode="indeterminate" />
+          } @else {
+            Sign In
+          }
+        </button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions class="auth-actions">
+      <span class="auth-link-label">Don't have an account?</span>
+      <a mat-button color="primary" routerLink="/sign-up">Sign Up</a>
+    </mat-card-actions>
+  </mat-card>
+</div>
