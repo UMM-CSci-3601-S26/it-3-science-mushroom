@@ -204,13 +204,22 @@ export class ReportGeneratorComponent {
       });
     } else {
       // Save to client machine
-      doc.save(filename);
+      this.downloadPdfToClient(filename, doc);
       this.snackBar.open(
         `Generating and downloading report as PDF file...`,
         `Okay`,
         { duration: 2000 }
       );
     }
+  }
+
+  /**
+   * Helper method to download a PDF to the client machine
+   * @param filename Name of the file to download
+   * @param doc The jsPDF document to download
+   */
+  private downloadPdfToClient(filename: string, doc: jsPDFWithAutoTable) {
+    doc.save(filename);
   }
 
   /**
@@ -245,11 +254,7 @@ export class ReportGeneratorComponent {
       this.stockReportService.generateAndDownloadXlsxReport().subscribe({
         next: (blob) => {
           const fileName = `Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
-          const a = document.createElement('a');
-          a.href = window.URL.createObjectURL(blob);
-          a.download = fileName;
-          a.click();
-          window.URL.revokeObjectURL(a.href);
+          this.downloadFile(blob, fileName);
           this.snackBar.open(
             `Generating and downloading report as XLSX file...`,
             `Okay`,
@@ -395,20 +400,28 @@ export class ReportGeneratorComponent {
   }
 
   /**
+   * Helper method to handle downloads
+   * @param blob The Blob data to be downloaded as a file
+   * @param fileName Name of file
+   */
+  downloadFile(blob: Blob, fileName: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  /**
    * Download a single report from the server.
    * @param report The report to download
    */
   downloadSingleReport(report: StockReport) {
-    const fileName = `Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
+    const fileName = `Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.${report.reportType === 'PDF' ? 'pdf' : report.reportType === 'XLSX' ? 'xlsx' : 'dat'}`;
     this.stockReportService.downloadSingleReportBlob(report).subscribe({
       next: (blob) => {
-        // Create object URL and trigger download
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        window.URL.revokeObjectURL(url);
+        this.downloadFile(blob, fileName);
       },
       error: (error) => {
         console.error("Error downloading report:", error);
@@ -439,20 +452,28 @@ export class ReportGeneratorComponent {
         }
 
         // Create object URL and trigger download
-        const url = URL.createObjectURL(zipBlob);
-        const a = document.createElement('a');
-        a.href = url;
+        //const url = URL.createObjectURL(zipBlob);
+        //const a = document.createElement('a');
+        //a.href = url;
         if (format === 'PDF') {
-          a.download = `StockReports_PDF_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
+          this.downloadFile(zipBlob, `StockReports_PDF_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`);
+
+          //a.download = `StockReports_PDF_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         } else if (format === 'XLSX') {
-          a.download = `StockReports_XLSX_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
+          this.downloadFile(zipBlob, `StockReports_XLSX_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`);
+
+          //a.download = `StockReports_XLSX_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         } else if (format === 'All') {
-          a.download = `StockReports_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
+          this.downloadFile(zipBlob, `StockReports_All_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`);
+
+          //a.download = `StockReports_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         } else {
-          a.download = `StockReports_UnknownTypes_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
+          this.downloadFile(zipBlob, `StockReports_UnknownTypes_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`);
+
+          //a.download = `StockReports_UnknownTypes_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.zip`;
         }
-        a.click();
-        URL.revokeObjectURL(url);
+        //a.click();
+        //URL.revokeObjectURL(url);
 
         // Show success message
         this.snackBar.open(

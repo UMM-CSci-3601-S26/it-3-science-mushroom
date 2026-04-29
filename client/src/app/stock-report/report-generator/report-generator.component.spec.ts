@@ -129,13 +129,13 @@ describe('ReportGeneratorComponent', () => {
   describe('Report Generation', () => {
     describe('PDF Generation', () => {
       it('should download PDF when savePdf is false', () => {
-        spyOn(component, 'generatePDF').and.callThrough();
+        spyOn(component, 'generatePDF');
         component.downloadNewPdfReport();
         expect(component.generatePDF).toHaveBeenCalledWith(false);
       });
 
       it('should save PDF when savePdf is true', () => {
-        spyOn(component, 'generatePDF').and.callThrough();
+        spyOn(component, 'generatePDF');
         component.savePdfReport();
         expect(component.generatePDF).toHaveBeenCalledWith(true);
       });
@@ -211,19 +211,13 @@ describe('ReportGeneratorComponent', () => {
       it('should download XLSX report with correct filename', () => {
         const mockBlob = new Blob(['XLSX content'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         spyOn(stockReportService, 'generateAndDownloadXlsxReport').and.returnValue(of(mockBlob));
-        spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
-
-        const mockAnchor = document.createElement('a');
-        const createElementSpy = spyOn(document, 'createElement').and.returnValue(mockAnchor);
+        const downloadFileSpy = spyOn(component, 'downloadFile');
         spyOn(matSnackBar, 'open');
 
         component.downloadNewXlsxReport();
 
         expect(stockReportService.generateAndDownloadXlsxReport).toHaveBeenCalled();
-        expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
-        expect(createElementSpy).toHaveBeenCalledWith('a');
-        expect(mockAnchor.download).toContain('Stock_Report_');
-        expect(mockAnchor.download).toContain('.xlsx');
+        expect(downloadFileSpy).toHaveBeenCalledWith(mockBlob, jasmine.stringContaining('Stock_Report_'));
       });
 
       it('should show success snackbar when XLSX is downloaded', () => {
@@ -285,14 +279,12 @@ describe('ReportGeneratorComponent', () => {
       const mockReport: StockReport = { _id: '1', reportName: 'Test Report.pdf', reportType: 'PDF', reportData: 'base64data' };
 
       spyOn(stockReportService, 'downloadSingleReportBlob').and.returnValue(of(mockBlob));
-      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
-      spyOn(window.URL, 'revokeObjectURL');
+      const downloadFileSpy = spyOn(component, 'downloadFile');
 
       component.downloadSingleReport(mockReport);
 
       expect(stockReportService.downloadSingleReportBlob).toHaveBeenCalledWith(mockReport);
-      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
-      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+      expect(downloadFileSpy).toHaveBeenCalledWith(mockBlob, jasmine.any(String));
     });
 
     it('should download single XLSX report correctly', () => {
@@ -300,14 +292,12 @@ describe('ReportGeneratorComponent', () => {
       const mockReport: StockReport = { _id: '1', reportName: 'Test Report.xlsx', reportType: 'XLSX', reportData: 'base64data' };
 
       spyOn(stockReportService, 'downloadSingleReportBlob').and.returnValue(of(mockBlob));
-      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
-      spyOn(window.URL, 'revokeObjectURL');
+      const downloadFileSpy = spyOn(component, 'downloadFile');
 
       component.downloadSingleReport(mockReport);
 
       expect(stockReportService.downloadSingleReportBlob).toHaveBeenCalledWith(mockReport);
-      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
-      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+      expect(downloadFileSpy).toHaveBeenCalledWith(mockBlob, jasmine.any(String));
     });
 
     it('should show error snackbar when single report download fails', () => {
@@ -333,14 +323,13 @@ describe('ReportGeneratorComponent', () => {
       const mockZipBlob = new Blob(['ZIP content'], { type: 'application/zip' });
 
       spyOn(stockReportService, 'downloadAllReportsAsZip').and.returnValue(of(mockZipBlob));
-      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
-      spyOn(window.URL, 'revokeObjectURL');
+      const downloadFileSpy = spyOn(component, 'downloadFile');
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
       component.downloadAllReports('PDF');
 
       expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalledWith('PDF');
-      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockZipBlob);
+      expect(downloadFileSpy).toHaveBeenCalledWith(mockZipBlob, jasmine.stringContaining('PDF'));
       expect(snackBarSpy).toHaveBeenCalledWith(
         'Downloaded all "PDF" report(s) as ZIP file.',
         'Okay',
@@ -352,14 +341,13 @@ describe('ReportGeneratorComponent', () => {
       const mockZipBlob = new Blob(['ZIP content'], { type: 'application/zip' });
 
       spyOn(stockReportService, 'downloadAllReportsAsZip').and.returnValue(of(mockZipBlob));
-      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
-      spyOn(window.URL, 'revokeObjectURL');
+      const downloadFileSpy = spyOn(component, 'downloadFile');
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
       component.downloadAllReports('XLSX');
 
       expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalledWith('XLSX');
-      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockZipBlob);
+      expect(downloadFileSpy).toHaveBeenCalledWith(mockZipBlob, jasmine.stringContaining('XLSX'));
       expect(snackBarSpy).toHaveBeenCalledWith(
         'Downloaded all "XLSX" report(s) as ZIP file.',
         'Okay',
@@ -371,14 +359,13 @@ describe('ReportGeneratorComponent', () => {
       const mockZipBlob = new Blob(['ZIP content'], { type: 'application/zip' });
 
       spyOn(stockReportService, 'downloadAllReportsAsZip').and.returnValue(of(mockZipBlob));
-      spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
-      spyOn(window.URL, 'revokeObjectURL');
+      const downloadFileSpy = spyOn(component, 'downloadFile');
       const snackBarSpy = spyOn(matSnackBar, 'open');
 
       component.downloadAllReports('All');
 
       expect(stockReportService.downloadAllReportsAsZip).toHaveBeenCalledWith('All');
-      expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockZipBlob);
+      expect(downloadFileSpy).toHaveBeenCalledWith(mockZipBlob, jasmine.stringContaining('All'));
       expect(snackBarSpy).toHaveBeenCalledWith(
         'Downloaded all "All" report(s) as ZIP file.',
         'Okay',

@@ -690,6 +690,12 @@ describe('FamilyService', () => {
       }
     };
 
+    beforeEach(() => {
+      // Mock downloadPdfToClient method to prevent actual file downloads
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      spyOn(familyService as any, 'downloadPdfToClient');
+    });
+
     it('should call getDashboardStats when generating PDF', fakeAsync(() => {
       const getDashboardStatsSpy = spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
       spyOn(familyService['snackBar'], 'open');

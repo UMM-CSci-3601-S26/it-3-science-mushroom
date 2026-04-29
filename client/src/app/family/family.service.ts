@@ -468,7 +468,7 @@ export class FamilyService {
           const fileName = `FamilyReport_${this.formatDateTimeService.formatDateTime(dateTime)[1]}.pdf`;
 
           // Save to client machine
-          doc.save(fileName);
+          this.downloadPdfToClient(fileName, doc);
           this.snackBar.open(
             `Generating and downloading report as PDF file...`,
             `Okay`,
@@ -492,5 +492,14 @@ export class FamilyService {
         );
       }
     });
+  }
+
+  /**
+   * Helper method to download a PDF to the client machine
+   * @param filename Name of the file to download
+   * @param doc The jsPDF document to download
+   */
+  private downloadPdfToClient(filename: string, doc: jsPDFWithAutoTable) {
+    doc.save(filename);
   }
 }
