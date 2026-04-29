@@ -27,6 +27,9 @@ import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
 import { SupplyList, AttributeOptions, ColorAttributeOptions } from './supplylist';
 import { SupplyListService } from './supplylist.service';
 
+// Auth
+import { AuthService } from '../auth/auth-service';
+
 @Component({
   selector: 'app-supplylist-component',
   standalone: true,
@@ -55,6 +58,7 @@ import { SupplyListService } from './supplylist.service';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+
 export class SupplyListComponent {
   // Define the columns to be displayed in the table, including an 'actions' column for the menu
   displayedColumns: string[] = [
@@ -79,6 +83,19 @@ export class SupplyListComponent {
   // Inject the MatSnackBar for displaying error messages and the InventoryService for fetching inventory data
   private snackBar = inject(MatSnackBar);
   private supplylistService = inject(SupplyListService);
+  private authService = inject(AuthService);
+
+  get canAddSupplyList(): boolean {
+    return this.authService.hasPermission('add_supply_list');
+  }
+
+  get canEditSupplyList(): boolean {
+    return this.authService.hasPermission('edit_supply_list');
+  }
+
+  get canDeleteSupplyList(): boolean {
+    return this.authService.hasPermission('delete_supply_list');
+  }
 
   // Constructor sets up an effect to update the table data whenever the serverFilteredSupplyList signal changes, and assigns the sorting and pagination components to the data source
   constructor() {

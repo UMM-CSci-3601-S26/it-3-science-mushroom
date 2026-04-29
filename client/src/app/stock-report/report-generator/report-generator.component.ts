@@ -21,6 +21,7 @@ import { StockReport } from '../stock-report';
 
 // Dialog Imports
 import { DialogComponent } from '../../dialog/dialog.component';
+import { AuthService } from '../../auth/auth-service';
 
 // Type for jsPDF with autoTable metadata
 interface jsPDFWithAutoTable extends jsPDFClass {
@@ -46,6 +47,15 @@ export class ReportGeneratorComponent {
   private dialog = inject(MatDialog);
   private dateTime = new Date();
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+
+  get canViewReports(): boolean {
+    return this.authService.hasPermission('view_reports');
+  }
+
+  get canManageStockReports(): boolean {
+    return this.authService.hasPermission('manage_stock_reports');
+  }
 
   /**
    * Helper method that formats a Date object into a string format of MM-DD-YYYY_HH:MM(AM/PM)
@@ -123,6 +133,15 @@ export class ReportGeneratorComponent {
    * @param savePdf boolean indicating whether to save PDF to server (true) or download to client machine (false)
   */
   generatePDF(savePdf: boolean) {
+    if (savePdf && !this.canManageStockReports) {
+      this.snackBar.open('You do not have permission to save stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+    if (!savePdf && !this.canViewReports) {
+      this.snackBar.open('You do not have permission to download stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+
     const doc = new jsPDF() as jsPDFWithAutoTable;
     // Title
     doc.setFontSize(16);
@@ -254,6 +273,15 @@ export class ReportGeneratorComponent {
    * @param saveXlsx boolean indicating whether to save XLSX to server (true) or download to client machine (false)
    */
   generateXlsx(saveXlsx: boolean) {
+    if (saveXlsx && !this.canManageStockReports) {
+      this.snackBar.open('You do not have permission to save stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+    if (!saveXlsx && !this.canViewReports) {
+      this.snackBar.open('You do not have permission to download stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+
     if (saveXlsx) {
       // Save to server
       this.stockReportService.generateNewXlsxReport().subscribe({
@@ -328,6 +356,11 @@ export class ReportGeneratorComponent {
    * @param report Report to delete from the server
    */
   deleteSingleReport(report: StockReport) {
+    if (!this.canManageStockReports) {
+      this.snackBar.open('You do not have permission to delete stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+
     // Call deleteReport and handle response
     this.stockReportService.deleteSingleReport(report).subscribe({
       // If successful, show success message with report name
@@ -356,6 +389,11 @@ export class ReportGeneratorComponent {
    * @param format The format of reports to delete ('PDF' | 'XLSX' | 'All')
    */
   deleteAllReports(format: 'PDF' | 'XLSX' | 'All') {
+    if (!this.canManageStockReports) {
+      this.snackBar.open('You do not have permission to delete stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+
     // Get all reports
     this.stockReportService.getReports().subscribe({
       next: (response) => {
@@ -434,6 +472,11 @@ export class ReportGeneratorComponent {
    * @param report The report to download
    */
   downloadSingleReport(report: StockReport) {
+    if (!this.canViewReports) {
+      this.snackBar.open('You do not have permission to download stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+
     const fileName = `Stock_Report_${this.formatDateTime(this.dateTime)[1]}.xlsx`;
     this.stockReportService.downloadSingleReportBlob(report).subscribe({
       next: (blob) => {
@@ -460,6 +503,11 @@ export class ReportGeneratorComponent {
    * Downloads all reports from the server as a ZIP file. The actual logic is handled in the service.
    */
   downloadAllReports(format: 'PDF' | 'XLSX' | 'All') {
+    if (!this.canViewReports) {
+      this.snackBar.open('You do not have permission to download stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+
     this.stockReportService.downloadAllReportsAsZip(format).subscribe({
       next: (zipBlob) => {
         // Handle case of no reports

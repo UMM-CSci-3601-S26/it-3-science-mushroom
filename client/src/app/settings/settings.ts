@@ -23,6 +23,12 @@ export interface AppSettings {
   timeAvailability: TimeAvailabilityLabels;
   supplyOrder: SupplyItemOrder[];
   availableSpots: number;
+  driveDay?: DriveDay;
+}
+
+export interface DriveDay {
+  date: string;
+  location?: string;
 }
 
 // Service for managing application settings, including schools, time availability labels, and supply order.

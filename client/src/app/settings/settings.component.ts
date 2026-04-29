@@ -12,13 +12,14 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
+import { AuthService } from '../auth/auth-service';
 
 // RxJS Imports
 import { forkJoin } from 'rxjs';
 
 // Settings Service and Type Imports
 import { SettingsService } from './settings.service';
-import { SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels } from './settings';
+import { SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels, DriveDay } from './settings';
 
 // Terms Imports
 import { TermsService } from '../terms/terms.service';
@@ -46,6 +47,27 @@ export class SettingsComponent implements OnInit {
   private termsService = inject(TermsService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private authService = inject(AuthService);
+
+  get canEditSchools(): boolean {
+    return this.authService.hasPermission('edit_schools');
+  }
+
+  get canEditTimeAvailability(): boolean {
+    return this.authService.hasPermission('edit_time_availability');
+  }
+
+  get canEditSupplyOrder(): boolean {
+    return this.authService.hasPermission('edit_supply_order');
+  }
+
+  get canEditAvailableSlots(): boolean {
+    return this.authService.hasPermission('edit_available_slots')
+  }
+
+  get canEditDriveDay(): boolean {
+    return this.authService.isAdmin();
+  }
 
   // Current schools list, loaded from the server on init
   schools: SchoolInfo[] = [];
@@ -76,6 +98,12 @@ export class SettingsComponent implements OnInit {
     availableSpots: new FormControl<number>(5, [Validators.required, Validators.min(1)])
   })
 
+  // Form for setting drive-day announcement details shown in the family portal
+  driveDayForm = new FormGroup({
+    date: new FormControl('', Validators.required),
+    message: new FormControl('')
+  });
+
   // Drive Order: three buckets of item terms (e.g. "notebook", "folder")
   stagedTerms: string[] = [];    // included in the drive, checklist order matches this list
   unstagedTerms: string[] = []; // included in the drive, appended after staged items
@@ -88,7 +116,15 @@ export class SettingsComponent implements OnInit {
       if (settings.timeAvailability) {
         this.timeAvailabilityForm.patchValue(settings.timeAvailability);
       }
+
       this.availableSpotsForm.patchValue({ availableSpots: settings.availableSpots});
+
+      if (settings.driveDay) {
+        this.driveDayForm.patchValue({
+          date: settings.driveDay.date,
+          message: settings.driveDay.location ?? ''
+        });
+      }
     });
 
     this.loadDriveOrder();
@@ -155,6 +191,10 @@ export class SettingsComponent implements OnInit {
 
   // Persists the full drive order to the server
   saveSupplyOrder(): void {
+    if (!this.canEditSupplyOrder) {
+      return;
+    }
+
     const order: SupplyItemOrder[] = [
       ...this.stagedTerms.map(t => ({ itemTerm: t, status: 'staged' as const })),
       ...this.unstagedTerms.map(t => ({ itemTerm: t, status: 'unstaged' as const })),
@@ -168,6 +208,10 @@ export class SettingsComponent implements OnInit {
 
   // Adds a school to the list and immediately persists to the server
   addSchool(): void {
+    if (!this.canEditSchools) {
+      return;
+    }
+
     if (this.addSchoolForm.valid) {
       this.schools = [...this.schools, { name: this.addSchoolForm.value.name!, abbreviation: this.addSchoolForm.value.abbreviation! }];
       this.saveSchools();
@@ -177,6 +221,10 @@ export class SettingsComponent implements OnInit {
 
   // Removes a school at the given index and immediately persists to the server
   removeSchool(index: number): void {
+    if (!this.canEditSchools) {
+      return;
+    }
+
     this.schools = this.schools.filter((_, i) => i !== index);
     this.saveSchools();
   }
@@ -190,6 +238,10 @@ export class SettingsComponent implements OnInit {
 
   // Saves the drive order then navigates to the checklist page to regenerate checklists
   saveAndGenerateChecklists(): void {
+    if (!this.canEditSupplyOrder) {
+      return;
+    }
+
     const order: SupplyItemOrder[] = [
       ...this.stagedTerms.map(t => ({ itemTerm: t, status: 'staged' as const })),
       ...this.unstagedTerms.map(t => ({ itemTerm: t, status: 'unstaged' as const })),
@@ -203,6 +255,10 @@ export class SettingsComponent implements OnInit {
 
   // Persists the time availability labels when the operator clicks Save
   saveTimeAvailability(): void {
+    if (!this.canEditTimeAvailability) {
+      return;
+    }
+
     if (this.timeAvailabilityForm.valid) {
       this.settingsService.updateTimeAvailability(
         this.timeAvailabilityForm.value as TimeAvailabilityLabels
@@ -213,7 +269,25 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  saveDriveDay(): void {
+    if (!this.canEditDriveDay) {
+      return;
+    }
+    if (!this.driveDayForm.valid) {
+      return;
+    }
+
+    this.settingsService.updateDriveDay(this.driveDayForm.value as DriveDay).subscribe({
+      next: () => this.snackBar.open('Drive day saved', 'OK', { duration: 2000 }),
+      error: () => this.snackBar.open('Failed to save drive day', 'OK', { duration: 3000 })
+    });
+  }
+
   saveAvailableSpots(): void {
+    if (!this.canEditAvailableSlots) {
+      return;
+    }
+
     if (this.availableSpotsForm.valid) {
       this.settingsService.updateAvailableSpots(
         this.availableSpotsForm.value as number

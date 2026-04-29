@@ -283,7 +283,10 @@ describe('Misbehaving Inventory Table', () => {
       providers: [{
         provide: InventoryService,
         useValue: inventoryServiceStub
-      }, provideRouter([])],
+      },
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideRouter([])],
     })
       .compileComponents();
   }));

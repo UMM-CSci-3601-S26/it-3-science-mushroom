@@ -33,6 +33,7 @@ import { ReportGeneratorComponent } from './report-generator/report-generator.co
 
 // Dialog Imports
 import { DialogService } from '../dialog/dialog.service';
+import { AuthService } from '../auth/auth-service';
 
 /**
  * StockReportComponent is responsible for displaying the Stock Reports and inventory data in a tree structure.
@@ -66,6 +67,11 @@ export class StockReportComponent {
   private dialogService = inject(DialogService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+
+  get canManageStockReports(): boolean {
+    return this.authService.hasPermission('manage_stock_reports');
+  }
 
   @ViewChild('reportGenerator') reportGenerator!: ReportGeneratorComponent;
 
@@ -136,6 +142,11 @@ export class StockReportComponent {
    * @param report The report to delete
    */
   deleteSingleReport(report: StockReport) {
+    if (!this.canManageStockReports) {
+      this.snackBar.open('You do not have permission to delete stock reports.', 'Okay', { duration: 3000 });
+      return;
+    }
+
     const dialogRef = this.dialogService.openDialog({
       title: 'Confirm Delete Single',
       reportName: report.reportName,
