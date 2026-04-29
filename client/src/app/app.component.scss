@@ -18,7 +18,7 @@ mat-sidenav-content {
 mat-toolbar.mat-primary {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 1;
   background: var(--mat-toolbar-container-background-color, inherit);
   box-shadow: 0 2px 12px color-mix(in srgb, var(--app-divider-color) 35%, transparent);
 }
