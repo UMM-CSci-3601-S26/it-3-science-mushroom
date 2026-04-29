@@ -16,7 +16,7 @@ describe('Barcode / Scanner Feature', () => {
     barcode.getScanButton().click();
 
     barcode.getScannerWrapper().should('exist');
-    barcode.getScannerStatus().should('contain', 'Scanner is open');
+    barcode.getScannerStatus().should('contain', 'Scanner is ready');
 
     // Toggle off
     barcode.getScanButton().click();

@@ -9,7 +9,7 @@ export class BarcodePage {
   }
 
   getScannerStatus() {
-    return cy.contains('Scanner is open');
+    return cy.contains('Scanner is ready');
   }
 
   // Manual Entry Dialog
