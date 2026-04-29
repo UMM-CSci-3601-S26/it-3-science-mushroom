@@ -59,7 +59,7 @@ describe('SettingsComponent', () => {
       'removeItemQuantityById',
       'deleteInventories',
       'clearInventory',
-      'resetQuantities',
+      'resetAllQuantities',
       'resetMatchingQuantities'
     ], {
       itemOptions: () => [],
@@ -462,7 +462,50 @@ describe('SettingsComponent', () => {
     expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
   });
 
-  it('resetMatchingQuantities uses backend response message', () => {
+  // ---- resetMatchingQuantities ----
+
+  it('resetMatchingQuantities shows error when no filters entered', () => {
+    component.inventoryFilterForm.setValue({ item: '', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.resetMatchingQuantities();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
+    expect(inventoryServiceSpy.resetMatchingQuantities).not.toHaveBeenCalled();
+  });
+
+  it('resetMatchingQuantities does not proceed if dialog is cancelled', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
+    component.inventoryFilterForm.setValue({ item: 'Pencil', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.resetMatchingQuantities();
+    tick();
+
+    expect(inventoryServiceSpy.resetMatchingQuantities).not.toHaveBeenCalled();
+  }));
+
+  it('resetMatchingQuantities shows loading message when dialog confirmed', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+      matchedCount: 2,
+      message: 'Reset quantities for 2 matching inventory item(s).'
+    }));
+    component.inventoryFilterForm.setValue({ item: 'Pencil', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.resetMatchingQuantities();
+    tick();
+
+    // Should show loading message first
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Resetting matching inventory items...', 'OK', { duration: 1500 });
+  }));
+
+  it('resetMatchingQuantities with matching filters shows backend response on success', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
       matchedCount: 2,
       message: 'Reset quantities for 2 matching inventory item(s).'
@@ -470,12 +513,85 @@ describe('SettingsComponent', () => {
     component.inventoryFilterForm.setValue({ item: 'Pencil', brand: 'Acme', color: '', size: '', type: '', material: '' });
 
     component.resetMatchingQuantities();
+    tick();
 
     expect(inventoryServiceSpy.resetMatchingQuantities).toHaveBeenCalledWith({ item: 'Pencil', brand: 'Acme' });
     expect(snackBarSpy.open).toHaveBeenCalledWith('Reset quantities for 2 matching inventory item(s).', 'OK', { duration: 3000 });
+  }));
+
+  it('resetMatchingQuantities with non-matching filters shows no-match response from backend', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+      matchedCount: 0,
+      message: 'No inventory items matched the provided filters.'
+    }));
+    component.inventoryFilterForm.setValue({ item: 'NonExistent', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.resetMatchingQuantities();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('No inventory items matched the provided filters.', 'OK', { duration: 3000 });
+  }));
+
+  it('resetMatchingQuantities shows error snack bar on backend failure', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.resetMatchingQuantities.and.returnValue(throwError(() => new Error('Network error')));
+    component.inventoryFilterForm.setValue({ item: 'Pencil', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.resetMatchingQuantities();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to reset matching quantities.', 'OK', { duration: 4000 });
+  }));
+
+  // ---- deleteMatchingInventory ----
+
+  it('deleteMatchingInventory shows error when no filters entered', () => {
+    component.inventoryFilterForm.setValue({ item: '', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.deleteMatchingInventory();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
+    expect(inventoryServiceSpy.deleteInventories).not.toHaveBeenCalled();
   });
 
-  it('deleteMatchingInventory uses backend response message', () => {
+  it('deleteMatchingInventory does not proceed if dialog is cancelled', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
+    component.inventoryFilterForm.setValue({ item: 'Notebook', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.deleteMatchingInventory();
+    tick();
+
+    expect(inventoryServiceSpy.deleteInventories).not.toHaveBeenCalled();
+  }));
+
+  it('deleteMatchingInventory shows loading message when dialog confirmed', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.deleteInventories.and.returnValue(of({
+      matchedCount: 2,
+      message: 'Deleted 2 matching inventory item(s).'
+    }));
+    component.inventoryFilterForm.setValue({ item: 'Notebook', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.deleteMatchingInventory();
+    tick();
+
+    // Should show loading message first
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Deleting matching inventory items...', 'OK', { duration: 1500 });
+  }));
+
+  it('deleteMatchingInventory with matching filters shows backend response on success', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     inventoryServiceSpy.deleteInventories.and.returnValue(of({
       matchedCount: 2,
       message: 'Deleted 2 matching inventory item(s).'
@@ -483,8 +599,136 @@ describe('SettingsComponent', () => {
     component.inventoryFilterForm.setValue({ item: 'Notebook', brand: 'BrandX', color: '', size: '', type: '', material: '' });
 
     component.deleteMatchingInventory();
+    tick();
 
     expect(inventoryServiceSpy.deleteInventories).toHaveBeenCalledWith({ item: 'Notebook', brand: 'BrandX' });
     expect(snackBarSpy.open).toHaveBeenCalledWith('Deleted 2 matching inventory item(s).', 'OK', { duration: 3000 });
-  });
+  }));
+
+  it('deleteMatchingInventory with non-matching filters shows no-match response from backend', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.deleteInventories.and.returnValue(of({
+      matchedCount: 0,
+      message: 'No inventory items matched the provided filters.'
+    }));
+    component.inventoryFilterForm.setValue({ item: 'NonExistent', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.deleteMatchingInventory();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('No inventory items matched the provided filters.', 'OK', { duration: 3000 });
+  }));
+
+  it('deleteMatchingInventory shows error snack bar on backend failure', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.deleteInventories.and.returnValue(throwError(() => new Error('Network error')));
+    component.inventoryFilterForm.setValue({ item: 'Notebook', brand: '', color: '', size: '', type: '', material: '' });
+
+    component.deleteMatchingInventory();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to delete matching inventory items.', 'OK', { duration: 4000 });
+  }));
+
+  // ---- clearInventory ----
+
+  it('clearInventory does not proceed if dialog is cancelled', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
+
+    component.clearInventory();
+    tick();
+
+    expect(inventoryServiceSpy.clearInventory).not.toHaveBeenCalled();
+  }));
+
+  it('clearInventory shows loading message when dialog confirmed', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.clearInventory.and.returnValue(of(undefined));
+
+    component.clearInventory();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Clearing inventory...', 'Okay', { duration: 2000 });
+  }));
+
+  it('clearInventory shows success message on completion', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.clearInventory.and.returnValue(of(undefined));
+
+    component.clearInventory();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Cleared inventory.', 'OK', { duration: 3000 });
+  }));
+
+  it('clearInventory shows error snack bar on backend failure', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.clearInventory.and.returnValue(throwError(() => new Error('Network error')));
+
+    component.clearInventory();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to clear inventory.', 'OK', { duration: 4000 });
+  }));
+
+  // ---- resetAllQuantities ----
+
+  it('resetAllQuantities does not proceed if dialog is cancelled', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
+
+    component.resetAllQuantities();
+    tick();
+
+    expect(inventoryServiceSpy.resetAllQuantities).not.toHaveBeenCalled();
+  }));
+
+  it('resetAllQuantities shows loading message when dialog confirmed', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.resetAllQuantities.and.returnValue(of(undefined));
+
+    component.resetAllQuantities();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Resetting quantities...', 'Okay', { duration: 2000 });
+  }));
+
+  it('resetAllQuantities shows success message on completion', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.resetAllQuantities.and.returnValue(of(undefined));
+
+    component.resetAllQuantities();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Quantities reset.', 'OK', { duration: 3000 });
+  }));
+
+  it('resetAllQuantities shows error snack bar on backend failure', fakeAsync(() => {
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    inventoryServiceSpy.resetAllQuantities.and.returnValue(throwError(() => new Error('Network error')));
+
+    component.resetAllQuantities();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to reset quantities.', 'OK', { duration: 4000 });
+  }));
 });

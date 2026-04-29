@@ -173,7 +173,7 @@ export class InventoryService {
   /**
    * Resets the quantity of all inventory items to 0
    */
-  resetQuantities(): Observable<unknown> {
+  resetAllQuantities(): Observable<unknown> {
     return new Observable(observer => {
       this.httpClient.post(`${this.inventoryUrl}/reset`, {}).subscribe({
         next: (result) => {

@@ -392,7 +392,7 @@ export class SettingsComponent implements OnInit {
   /**
    * Resets quantity of all items to 0. Confirms with dialog-service first. Uses inventory service for logic.
    */
-  resetQuantities(): void {
+  resetAllQuantities(): void {
     const dialogRef = this.dialogService.openDialog({
       title: 'Confirm Reset Quantities',
       message: `Are you sure you want to reset quantities for all inventory items?`,
@@ -409,7 +409,7 @@ export class SettingsComponent implements OnInit {
           { duration: 2000 }
         );
 
-        this.inventoryService.resetQuantities().subscribe({
+        this.inventoryService.resetAllQuantities().subscribe({
           next: () => {
             this.snackBar.open(`Quantities reset.`, 'OK', {
               duration: 3000
