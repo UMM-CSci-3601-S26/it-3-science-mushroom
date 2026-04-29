@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 // Family Imports
 import { Family } from './family';
 import { FamilyService } from './family.service';
+import { DeleteRequestNotificationService } from './delete-request-notification.service';
 
 describe('FamilyService', () => {
   // A small collection of test families
@@ -122,6 +123,7 @@ describe('FamilyService', () => {
   let familyService: FamilyService;
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
+  let deleteRequestNotifications: DeleteRequestNotificationService;
 
   beforeEach(() => {
     // Set up the mock handling of the HTTP requests
@@ -133,6 +135,7 @@ describe('FamilyService', () => {
     // HTTP client.
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
+    deleteRequestNotifications = TestBed.inject(DeleteRequestNotificationService);
     familyService = TestBed.inject(FamilyService);
 
     const initReq = httpTestingController.expectOne(familyService.familyUrl);
@@ -385,6 +388,33 @@ describe('FamilyService', () => {
           .toHaveBeenCalledTimes(2);
       });
     }));
+  });
+
+  describe('Delete request notifications', () => {
+    it('notifies after requesting a family delete', () => {
+      const notifySpy = spyOn(deleteRequestNotifications, 'notifyChanged');
+
+      familyService.requestFamilyDelete('john_id', 'duplicate').subscribe();
+
+      const req = httpTestingController.expectOne(`${familyService.familyUrl}/john_id/delete-request`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ message: 'duplicate' });
+      req.flush({});
+
+      expect(notifySpy).toHaveBeenCalled();
+    });
+
+    it('notifies after restoring a delete request', () => {
+      const notifySpy = spyOn(deleteRequestNotifications, 'notifyChanged');
+
+      familyService.restoreDeleteRequest('john_id').subscribe();
+
+      const req = httpTestingController.expectOne(`${familyService.familyUrl}/john_id/delete-request`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush({});
+
+      expect(notifySpy).toHaveBeenCalled();
+    });
   });
 
   describe('When getDashboardStats() is called with parameters, it correctly forms the HTTP request (Javalin/Server filtering)', () => {

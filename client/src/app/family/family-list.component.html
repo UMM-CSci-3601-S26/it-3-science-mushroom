@@ -79,6 +79,9 @@
         <p class="filters-description">
           Use the field below to filter the families by name. The filter will be applied as you type. You can also add a new family by clicking the "+" button in the bottom right corner or view and edit an existing family by clicking on the pencil icon on the family card.
         </p>
+        <p class="filters-description">
+          Filter by guardian account link status.
+        </p>
       </mat-card-content>
       <div class="filter-container">
           <mat-form-field appearance="outline">
@@ -97,6 +100,22 @@
               }
             </mat-autocomplete>
           </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Guardian Link Status</mat-label>
+            <mat-select
+              [ngModel]="linkStatusFilter()"
+              (ngModelChange)="linkStatusFilter.set($event); pageNum.set(0)"
+              data-test="guardianLinkStatusFilter">
+              <mat-option value="all">All Families</mat-option>
+              <mat-option value="linked">Linked Guardian Account</mat-option>
+              <mat-option value="manual">Manually Added Only</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-stroked-button type="button" (click)="clearFamilyFilters()" data-test="clearFamilyFiltersButton">
+            Clear Filters
+          </button>
       </div>
 
 
@@ -105,7 +124,13 @@
         <div class="flex-1">
             <div class="family-cards-container flex-row gap-8 flex-wrap">
               @for (family of familiesPerPage(); track family._id) {
-              <app-family-card class="family-card" [family]="family"></app-family-card>
+              <app-family-card
+                class="family-card"
+                [family]="family"
+                [canEditFamily]="canEditFamily"
+                [compact]="linkStatusFilter() !== 'all'"
+                (requestDelete)="submitDeleteRequest(family)">
+              </app-family-card>
               }
             </div>
           </div>
@@ -124,7 +149,7 @@
       <div>
         <mat-paginator
           data-cy="family-paginator"
-          [length]=" serverFilteredFamilies().length "
+          [length]="filteredFamilies.length"
           [pageSize]="8"
           [pageSizeOptions]="[6, 8, 10]"
           (page)="pageChange($event)"
@@ -137,11 +162,15 @@
   </div>
 </div>
 
-<button mat-raised-button (click)="downloadCSV()">
-  Export CSV
-</button>
+@if (canExportFamilies) {
+  <button mat-raised-button (click)="downloadCSV()">
+    Export CSV
+  </button>
+}
 
-<button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
-  data-test="addFamilyButton">
-  <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
-</button>
+@if (canAddFamily) {
+  <button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
+    data-test="addFamilyButton">
+    <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
+  </button>
+}

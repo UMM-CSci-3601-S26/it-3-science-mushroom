@@ -1,15 +1,17 @@
 // Angular Imports
 import { CommonModule } from '@angular/common';
-import { Component, input} from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDivider, MatListModule } from '@angular/material/list';
+import { MatListModule } from '@angular/material/list';
 import { RouterLink } from '@angular/router';
 import { MatTooltip } from '@angular/material/tooltip';
 
 // Family Imports
 import { Family } from './family';
+import { AuthService } from '../auth/auth-service';
 
 
 @Component({
@@ -20,9 +22,9 @@ import { Family } from './family';
     MatCardModule,
     MatButtonModule,
     MatListModule,
+    MatDividerModule,
     CommonModule,
     MatIconModule,
-    MatDivider,
     RouterLink,
     MatTooltip
   ]
@@ -30,6 +32,39 @@ import { Family } from './family';
 
 export class FamilyCardComponent {
   family = input.required<Family>();
+  canEditFamily = input(false);
+  compact = input(false);
+  showRequestDeleteAction = input(true);
+  requestDelete = output<void>();
+  authService = inject(AuthService);
+
+  get canRequestDelete(): boolean {
+    return this.authService.hasPermission('request_family_delete');
+  }
+
+  get hasLinkedGuardianAccount(): boolean {
+    return !!this.family().ownerUserId?.trim();
+  }
+
+  get guardianLinkStatusLabel(): string {
+    return this.hasLinkedGuardianAccount ? 'Linked Guardian Account' : 'Manually Added (No Guardian Login)';
+  }
+
+  get hasPendingDeleteRequest(): boolean {
+    return !!this.family().deleteRequest?.requested;
+  }
+
+  get studentNames(): string {
+    const students = this.family().students ?? [];
+    if (students.length === 0) {
+      return 'No students listed';
+    }
+    return students.map(student => student.name).join(', ');
+  }
+
+  onRequestDelete(): void {
+    this.requestDelete.emit();
+  }
 
   getAvailableTimes(): string {
     const a = this.family().timeAvailability;

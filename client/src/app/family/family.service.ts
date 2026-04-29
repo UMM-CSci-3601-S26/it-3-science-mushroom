@@ -4,11 +4,12 @@ import { Injectable, inject, computed, signal  } from '@angular/core';
 
 // RxJS Imports
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 // Family Imports
 import { environment } from '../../environments/environment';
 import { Family, DashboardStats, SelectOption } from './family';
+import { DeleteRequestNotificationService } from './delete-request-notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ import { Family, DashboardStats, SelectOption } from './family';
 
 export class FamilyService {
   private httpClient = inject(HttpClient);
+  private deleteRequestNotifications = inject(DeleteRequestNotificationService);
 
   readonly familyUrl: string = `${environment.apiUrl}family`;
   readonly dashboardUrl: string = `${environment.apiUrl}dashboard`;
@@ -57,42 +59,42 @@ export class FamilyService {
   }
 
   addFamily(newFamily: Partial<Family>): Observable<string> {
-    return new Observable(observer => {
-      this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(map(response => response.id)).subscribe({
-        next: (result) => {
-          this.loadFamilies();
-          observer.next(result);
-          observer.complete();
-        },
-        error: (err) => observer.error(err)
-      });
-    });
+    return this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(
+      map(response => response.id),
+      tap(() => this.loadFamilies())
+    );
   }
 
   updateFamily(id: string, updatedFamily: Partial<Family>): Observable<string> {
-    return new Observable(observer => {
-      this.httpClient.put<{id: string}>(`${this.familyUrl}/${id}`, updatedFamily).pipe(map(response => response.id)).subscribe({
-        next: (result) => {
-          this.loadFamilies();
-          observer.next(result);
-          observer.complete();
-        },
-        error: (err) => observer.error(err)
-      });
-    });
+    return this.httpClient.put<{id: string}>(`${this.familyUrl}/${id}`, updatedFamily).pipe(
+      map(response => response.id),
+      tap(() => this.loadFamilies())
+    );
   }
 
   deleteFamily(id: string): Observable<void> {
-    return new Observable(observer => {
-      this.httpClient.delete<void>(`${this.familyUrl}/${id}`).subscribe({
-        next: (result) => {
-          this.loadFamilies();
-          observer.next(result);
-          observer.complete();
-        },
-        error: (err) => observer.error(err)
-      });
-    });
+    return this.httpClient.delete<void>(`${this.familyUrl}/${id}`).pipe(
+      tap(() => {
+        this.loadFamilies();
+        this.deleteRequestNotifications.notifyChanged();
+      })
+    );
+  }
+
+  requestFamilyDelete(id: string, message: string): Observable<unknown> {
+    return this.httpClient.post<void>(`${this.familyUrl}/${id}/delete-request`, { message }).pipe(
+      tap(() => this.deleteRequestNotifications.notifyChanged())
+    );
+  }
+
+  getDeleteRequests(): Observable<Family[]> {
+    return this.httpClient.get<Family[]>(`${this.familyUrl}/delete-requests`);
+  }
+
+  restoreDeleteRequest(id: string): Observable<unknown> {
+    return this.httpClient.delete<void>(`${this.familyUrl}/${id}/delete-request`).pipe(
+      tap(() => this.deleteRequestNotifications.notifyChanged())
+    );
   }
 
   getDashboardStats(): Observable<DashboardStats> {

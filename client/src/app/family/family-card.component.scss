@@ -21,6 +21,104 @@
   cursor: pointer; /* Change cursor to pointer on hover */
 }
 
+.family-card {
+  border-left: 6px solid transparent;
+  position: relative;
+}
+
+.family-card-linked {
+  border-left-color: #4394c4;
+}
+
+.family-card-manual {
+  border-left-color: #e8d43f;
+}
+
+.family-card-compact {
+  min-width: 320px;
+}
+
+.family-card-compact-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.family-card-compact-chip,
+.guardian-link-status {
+  align-items: center;
+  border-radius: 16px;
+  display: inline-flex;
+  font-size: 0.85rem;
+  gap: 6px;
+  line-height: 1.2;
+  padding: 4px 10px;
+}
+
+.family-card-compact-chip {
+  border: 1px solid var(--app-divider-color);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  color: var(--app-text-color);
+}
+
+.guardian-link-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 12px 16px;
+  padding: 6px 12px;
+  border: 1px solid var(--app-divider-color);
+  color: var(--app-text-color);
+}
+
+.guardian-link-status-linked {
+  color: #4394c4;
+}
+
+.guardian-link-status-manual {
+  color: #e8d43f;
+}
+
+.family-compact-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.family-compact-item {
+  border: 1px solid var(--app-divider-color);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--app-hover-color) 10%, transparent);
+}
+
+.family-compact-item-full {
+  grid-column: 1 / -1;
+}
+
+.family-compact-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--app-text-color) 68%, transparent);
+}
+
+.family-compact-value {
+  overflow-wrap: anywhere;
+}
+
+.family-card-actions {
+  justify-content: flex-end;
+}
+
 // Rules for how the cards should be displayed and the space in-between
 .student-card-container {
   display: grid;

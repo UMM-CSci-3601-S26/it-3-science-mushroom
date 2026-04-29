@@ -17,6 +17,8 @@ export interface AvailabilityOptions {
 
 export interface Family {
   _id?: string;
+  ownerUserId?: string;
+  profileComplete?: boolean;
   guardianName: string;
   email: string;
   address: string;
@@ -24,6 +26,16 @@ export interface Family {
   timeSlot: string;
   timeAvailability: AvailabilityOptions;
   students: StudentInfo[];
+  deleteRequest?: FamilyDeleteRequest;
+}
+
+export interface FamilyDeleteRequest {
+  requested: boolean;
+  message?: string;
+  requestedByUserId?: string;
+  requestedByUserName?: string;
+  requestedBySystemRole?: string;
+  requestedAt?: string;
 }
 
 export interface DashboardStats {
