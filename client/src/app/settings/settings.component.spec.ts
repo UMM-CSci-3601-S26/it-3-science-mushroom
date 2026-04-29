@@ -15,6 +15,7 @@ import { Terms } from '../terms/terms';
 import { InventoryService } from '../inventory/inventory.service';
 import { SelectOption } from '../inventory/inventory';
 import { DialogService } from '../dialog/dialog.service';
+import { AuthService } from '../auth/auth-service';
 import { FamilyService } from '../family/family.service';
 
 describe('SettingsComponent', () => {
@@ -33,6 +34,7 @@ describe('SettingsComponent', () => {
   let sizeOptionsSignal: WritableSignal<SelectOption[]>;
   let typeOptionsSignal: WritableSignal<SelectOption[]>;
   let materialOptionsSignal: WritableSignal<SelectOption[]>;
+  let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   const mockTerms: Terms = {
     item: ['folder', 'notebook', 'pencil'],
@@ -69,6 +71,7 @@ describe('SettingsComponent', () => {
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
     familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission', 'isAdmin']);
     itemOptionsSignal = signal<SelectOption[]>([]);
     brandOptionsSignal = signal<SelectOption[]>([]);
     colorOptionsSignal = signal<SelectOption[]>([]);
@@ -99,6 +102,8 @@ describe('SettingsComponent', () => {
     settingsServiceSpy.getSettings.and.returnValue(of(mockSettings));
     termsServiceSpy.getTerms.and.returnValue(of(mockTerms));
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
+    authServiceSpy.hasPermission.and.returnValue(true);
+    authServiceSpy.isAdmin.and.returnValue(true);
     inventoryServiceSpy.getInventory.and.returnValue(of([]));
     inventoryServiceSpy.removeItemQuantityById.and.returnValue(of(undefined));
     inventoryServiceSpy.deleteInventories.and.returnValue(of({
@@ -125,6 +130,7 @@ describe('SettingsComponent', () => {
         { provide: FamilyService, useValue: familyServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
+        { provide: AuthService, useValue: authServiceSpy },
       ],
     }).compileComponents();
 

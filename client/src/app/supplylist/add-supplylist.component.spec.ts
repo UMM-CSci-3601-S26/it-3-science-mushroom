@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MockSupplyListService } from 'src/testing/supplylist.service.mock';
 import { AddSupplyListComponent } from './add-supplylist.component';
@@ -23,11 +24,16 @@ const testTerms = {
   material: ['plastic', 'paper']
 };
 
+@Component({ template: '', standalone: true })
+class DummyRouteComponent {}
+
 // ─── Shared provider array ────────────────────────────────────────────────────
 const sharedProviders = [
   provideHttpClient(),
   provideHttpClientTesting(),
-  provideRouter([]),
+  provideRouter([
+    { path: 'supplylist', component: DummyRouteComponent }
+  ]),
   { provide: SupplyListService, useClass: MockSupplyListService }
 ];
 

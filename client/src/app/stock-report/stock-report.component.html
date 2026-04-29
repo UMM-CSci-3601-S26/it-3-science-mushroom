@@ -42,9 +42,11 @@
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-pdf-button">
                 <mat-icon>download</mat-icon>
               </button>
-              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-pdf-button">
-                <mat-icon>delete_forever</mat-icon>
-              </button>
+              @if (canManageStockReports) {
+                <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-pdf-button">
+                  <mat-icon>delete_forever</mat-icon>
+                </button>
+              }
             </div>
           </div>
         }
@@ -65,9 +67,11 @@
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-xlsx-button">
                 <mat-icon>download</mat-icon>
               </button>
-              <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-xlsx-button">
-                <mat-icon>delete_forever</mat-icon>
-              </button>
+              @if (canManageStockReports) {
+                <button mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-xlsx-button">
+                  <mat-icon>delete_forever</mat-icon>
+                </button>
+              }
             </div>
           </div>
         }
