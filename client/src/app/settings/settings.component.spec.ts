@@ -13,7 +13,6 @@ import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
 import { InventoryService } from '../inventory/inventory.service';
 import { DialogService } from '../dialog/dialog.service';
-import { Inventory } from '../inventory/inventory';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
@@ -60,7 +59,8 @@ describe('SettingsComponent', () => {
       'removeItemQuantityById',
       'deleteInventories',
       'clearInventory',
-      'resetQuantities'
+      'resetQuantities',
+      'resetMatchingQuantities'
     ], {
       itemOptions: () => [],
       brandOptions: () => [],
@@ -77,7 +77,14 @@ describe('SettingsComponent', () => {
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
     inventoryServiceSpy.getInventory.and.returnValue(of([]));
     inventoryServiceSpy.removeItemQuantityById.and.returnValue(of(undefined));
-    inventoryServiceSpy.deleteInventories.and.returnValue(of(undefined));
+    inventoryServiceSpy.deleteInventories.and.returnValue(of({
+      matchedCount: 1,
+      message: 'Deleted 1 matching inventory item(s).'
+    }));
+    inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+      matchedCount: 1,
+      message: 'Reset quantities for 1 matching inventory item(s).'
+    }));
     dialogServiceSpy.openDialog.and.returnValue({
       afterClosed: () => of(true)
     } as never);
@@ -455,28 +462,29 @@ describe('SettingsComponent', () => {
     expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
   });
 
-  it('resetMatchingQuantities resets quantities for matched inventory items', () => {
-    const matchedItems: Inventory[] = [
-      { internalID: 'INV-1', internalBarcode: '', externalBarcode: [], item: 'Pencil', description: '', brand: 'Acme', color: '', packageSize: 1, size: '', type: '', material: '', quantity: 4, notes: '', maxQuantity: 0, minQuantity: 0, stockState: '' },
-      { internalID: 'INV-2', internalBarcode: '', externalBarcode: [], item: 'Pencil', description: '', brand: 'Acme', color: '', packageSize: 1, size: '', type: '', material: '', quantity: 2, notes: '', maxQuantity: 0, minQuantity: 0, stockState: '' },
-    ];
-    inventoryServiceSpy.getInventory.and.returnValue(of(matchedItems));
+  it('resetMatchingQuantities uses backend response message', () => {
+    inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+      matchedCount: 2,
+      message: 'Reset quantities for 2 matching inventory item(s).'
+    }));
     component.inventoryFilterForm.setValue({ item: 'Pencil', brand: 'Acme', color: '', size: '', type: '', material: '' });
 
     component.resetMatchingQuantities();
 
-    expect(inventoryServiceSpy.getInventory).toHaveBeenCalledWith({ item: 'Pencil', brand: 'Acme' });
-    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledWith('INV-1', 4);
-    expect(inventoryServiceSpy.removeItemQuantityById).toHaveBeenCalledWith('INV-2', 2);
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Reset quantities for 2 matching item(s).', 'OK', { duration: 3000 });
+    expect(inventoryServiceSpy.resetMatchingQuantities).toHaveBeenCalledWith({ item: 'Pencil', brand: 'Acme' });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Reset quantities for 2 matching inventory item(s).', 'OK', { duration: 3000 });
   });
 
-  it('deleteMatchingInventory deletes matched inventory items', () => {
+  it('deleteMatchingInventory uses backend response message', () => {
+    inventoryServiceSpy.deleteInventories.and.returnValue(of({
+      matchedCount: 2,
+      message: 'Deleted 2 matching inventory item(s).'
+    }));
     component.inventoryFilterForm.setValue({ item: 'Notebook', brand: 'BrandX', color: '', size: '', type: '', material: '' });
 
     component.deleteMatchingInventory();
 
     expect(inventoryServiceSpy.deleteInventories).toHaveBeenCalledWith({ item: 'Notebook', brand: 'BrandX' });
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Deleted matching inventory items.', 'OK', { duration: 3000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Deleted 2 matching inventory item(s).', 'OK', { duration: 3000 });
   });
 });

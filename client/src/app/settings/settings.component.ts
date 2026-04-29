@@ -303,28 +303,15 @@ export class SettingsComponent implements OnInit {
         return;
       }
 
-      this.snackBar.open('Finding matching inventory items...', 'OK', { duration: 1500 });
+      this.snackBar.open('Resetting matching inventory items...', 'OK', { duration: 1500 });
 
-      this.inventoryService.getInventory(filters).subscribe({
-        next: items => {
-          if (!items.length) {
-            this.snackBar.open('No inventory items matched those fields.', 'OK', { duration: 3000 });
-            return;
-          }
-
-          forkJoin(items.map(item => this.inventoryService.removeItemQuantityById(item.internalID, item.quantity))).subscribe({
-            next: () => {
-              this.snackBar.open(`Reset quantities for ${items.length} matching item(s).`, 'OK', { duration: 3000 });
-            },
-            error: (err) => {
-              console.error('inventory reset matching quantities failed', err);
-              this.snackBar.open('Failed to reset matching quantities.', 'OK', { duration: 4000 });
-            }
-          });
+      this.inventoryService.resetMatchingQuantities(filters).subscribe({
+        next: response => {
+          this.snackBar.open(response.message, 'OK', { duration: 3000 });
         },
         error: (err) => {
-          console.error('inventory lookup failed', err);
-          this.snackBar.open('Failed to look up matching inventory items.', 'OK', { duration: 4000 });
+          console.error('inventory reset matching quantities failed', err);
+          this.snackBar.open('Failed to reset matching quantities.', 'OK', { duration: 4000 });
         }
       });
     });
@@ -356,8 +343,8 @@ export class SettingsComponent implements OnInit {
       this.snackBar.open('Deleting matching inventory items...', 'OK', { duration: 1500 });
 
       this.inventoryService.deleteInventories(filters).subscribe({
-        next: () => {
-          this.snackBar.open('Deleted matching inventory items.', 'OK', { duration: 3000 });
+        next: response => {
+          this.snackBar.open(response.message, 'OK', { duration: 3000 });
         },
         error: (err) => {
           console.error('inventory delete matching items failed', err);
