@@ -1,5 +1,10 @@
 :host {
   display: block;
+  --app-primary-color: var(--mat-sys-primary, #1565c0);
+  --app-warn-color: var(--mat-sys-error, #d32f2f);
+  --app-text-color: var(--mat-sys-on-surface, rgba(255, 255, 255, 0.87));
+  --app-hover-color: var(--mat-sys-surface-container-high, #4a4a4a);
+  --app-divider-color: var(--mat-sys-outline-variant, rgba(255, 255, 255, 0.22));
 }
 
 mat-card {
@@ -69,10 +74,16 @@ mat-card {
 
 .request-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.request-actions button {
+  flex: 0 0 auto;
+  min-width: max-content;
 }
 
 .tab-count {
@@ -93,6 +104,10 @@ mat-card {
   .request-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .request-actions button {
+    width: 100%;
   }
 
   .request-card-shell {

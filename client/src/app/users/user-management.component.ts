@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, input } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -22,6 +22,63 @@ interface PermissionGroupView {
   group: string;
   permissions: PermissionCatalogEntry[];
 }
+
+interface PermissionBundle {
+  permission: string;
+  group: string;
+  label: string;
+  sourceLabel: string;
+  permissions: string[];
+  description: string;
+}
+
+const PERMISSION_BUNDLES: PermissionBundle[] = [
+  {
+    permission: 'access_families',
+    group: 'Family',
+    label: 'Family Page Access',
+    sourceLabel: 'Included by Family Page Access',
+    permissions: ['view_families', 'view_family', 'view_dashboard_stats'],
+    description: 'This opens the family page and includes the family list, family details, and family dashboard statistics.'
+  },
+  {
+    permission: 'access_point_of_sale',
+    group: 'Point of Sale',
+    label: 'Point of Sale Access',
+    sourceLabel: 'Included by Point of Sale',
+    permissions: ['view_families', 'manage_family_help_sessions', 'view_inventory', 'view_inventory_item'],
+    description: 'This opens Point of Sale and includes family lookup, family help sessions, and inventory barcode lookup.'
+  },
+  {
+    permission: 'manage_drive_scheduling',
+    group: 'Settings',
+    label: 'Drive Scheduling Management',
+    sourceLabel: 'Included by Drive Scheduling Management',
+    permissions: ['schedule_families', 'edit_available_spots'],
+    description: 'This allows volunteers to set available drive spots and run family scheduling.'
+  }
+];
+const HIDDEN_IMPLEMENTATION_PERMISSIONS = new Set([
+  'edit_available_spots',
+  'view_families',
+  'view_family',
+  'view_dashboard_stats',
+  'view_family_checklist',
+  'manage_family_help_sessions',
+  'schedule_families',
+  'view_checklist',
+  'manage_checklist'
+]);
+const PERMISSION_LABEL_FALLBACKS = new Map<string, string>([
+  ['edit_available_spots', 'Available Spot Editing'],
+  ['manage_family_help_sessions', 'Family Help Sessions'],
+  ['schedule_families', 'Family Scheduling'],
+  ['view_dashboard_stats', 'Dashboard Statistics'],
+  ['view_families', 'Family List Viewing'],
+  ['view_family', 'Family Detail Viewing'],
+  ['view_inventory', 'Inventory Viewing'],
+  ['view_inventory_item', 'Inventory Item Viewing']
+]);
 
 @Component({
   selector: 'app-user-management',
@@ -54,6 +111,7 @@ export class UserManagementComponent implements OnInit {
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
   private authService = inject(AuthService);
+  private permissionLabelByName = new Map<string, string>(PERMISSION_LABEL_FALLBACKS);
 
   readonly userForm = this.fb.group({
     systemRole: ['VOLUNTEER' as SystemRole, Validators.required],
@@ -248,12 +306,19 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  togglePermission(permission: string, enabled: boolean) {
+  togglePermission(permission: string, enabled: boolean, event?: MatCheckboxChange) {
     if (!this.selectedJobRole) {
       return;
     }
 
     if (enabled) {
+      if (this.isBundlePermission(permission)) {
+        const enabledBundle = this.enablePermissionBundle(permission);
+        if (!enabledBundle && event) {
+          event.source.checked = false;
+        }
+        return;
+      }
       if (!this.selectedJobRole.permissions.includes(permission)) {
         this.selectedJobRole.permissions.push(permission);
       }
@@ -272,6 +337,21 @@ export class UserManagementComponent implements OnInit {
       return false;
     }
     return this.basePermissions.has(permission);
+  }
+
+  isPointOfSaleBundledPermission(permission: string): boolean {
+    return this.bundleSourceLabel(permission) === 'Included by Point of Sale';
+  }
+
+  isPermissionLocked(permission: string): boolean {
+    return this.isInheritedPermission(permission) || !!this.bundleSourceLabel(permission);
+  }
+
+  permissionSourceLabel(permission: string): string {
+    if (this.isInheritedPermission(permission)) {
+      return 'Included by volunteer base';
+    }
+    return this.bundleSourceLabel(permission);
   }
 
   get isVolunteerForm(): boolean {
@@ -378,10 +458,28 @@ export class UserManagementComponent implements OnInit {
   }
 
   private buildPermissionGroups(permissionCatalog: PermissionCatalogEntry[]) {
-    const groupOrder = ['Family', 'Inventory', 'Supply List', 'Checklist', 'Reports', 'Settings'];
+    const groupOrder = ['Family', 'Point of Sale', 'Inventory', 'Supply List', 'Checklist', 'Reports', 'Settings'];
     const grouped = new Map<string, PermissionCatalogEntry[]>();
+    this.permissionLabelByName = new Map<string, string>(PERMISSION_LABEL_FALLBACKS);
+    for (const permission of permissionCatalog) {
+      this.permissionLabelByName.set(permission.permission, permission.label);
+    }
+    const assignablePermissions = permissionCatalog.filter(entry =>
+      entry.volunteerAssignable && !HIDDEN_IMPLEMENTATION_PERMISSIONS.has(entry.permission)
+    );
 
-    for (const permission of permissionCatalog.filter(entry => entry.volunteerAssignable)) {
+    for (const bundle of PERMISSION_BUNDLES) {
+      if (!assignablePermissions.some(entry => entry.permission === bundle.permission)) {
+        assignablePermissions.push({
+          permission: bundle.permission,
+          group: bundle.group,
+          label: bundle.label,
+          volunteerAssignable: true
+        });
+      }
+    }
+
+    for (const permission of assignablePermissions) {
       const group = grouped.get(permission.group) ?? [];
       group.push(permission);
       grouped.set(permission.group, group);
@@ -397,5 +495,59 @@ export class UserManagementComponent implements OnInit {
         const bIndex = groupOrder.includes(b.group) ? groupOrder.indexOf(b.group) : groupOrder.length;
         return aIndex - bIndex || a.group.localeCompare(b.group);
       });
+  }
+
+  private enablePermissionBundle(permission: string): boolean {
+    if (!this.selectedJobRole) {
+      return false;
+    }
+
+    const bundle = PERMISSION_BUNDLES.find(candidate => candidate.permission === permission);
+    if (!bundle) {
+      return false;
+    }
+
+    const missingPermissions = bundle.permissions
+      .filter(permission => !this.selectedJobRole!.permissions.includes(permission));
+    const missingPermissionLabels = missingPermissions.map(permission => this.permissionLabel(permission));
+    const message = missingPermissions.length === 0
+      ? `${bundle.label} is a bundle permission. ${bundle.description} Enable it?`
+      : `${bundle.label} will also add these required permissions: ${missingPermissionLabels.join(', ')}. Enable it?`;
+
+    if (!confirm(message)) {
+      return false;
+    }
+
+    this.addPermission(bundle.permission);
+    for (const bundledPermission of bundle.permissions) {
+      this.addPermission(bundledPermission);
+    }
+    return true;
+  }
+
+  private addPermission(permission: string) {
+    if (!this.selectedJobRole?.permissions.includes(permission)) {
+      this.selectedJobRole?.permissions.push(permission);
+    }
+  }
+
+  private isBundlePermission(permission: string): boolean {
+    return PERMISSION_BUNDLES.some(bundle => bundle.permission === permission);
+  }
+
+  private bundleSourceLabel(permission: string): string {
+    if (!this.selectedJobRole) {
+      return '';
+    }
+
+    const bundle = PERMISSION_BUNDLES.find(candidate =>
+      this.selectedJobRole!.permissions.includes(candidate.permission)
+        && candidate.permissions.includes(permission)
+    );
+    return bundle?.sourceLabel ?? '';
+  }
+
+  private permissionLabel(permission: string): string {
+    return this.permissionLabelByName.get(permission) ?? permission;
   }
 }

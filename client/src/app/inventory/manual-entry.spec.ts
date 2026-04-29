@@ -389,6 +389,48 @@ describe('ManualEntry', () => {
       expect(component.form.get('notes')?.value).toBe('');
     });
 
+    it('should use fallback values when selecting an incomplete existing item', () => {
+      createComponent({ barcode: 'UPC-111', quantity: undefined } as unknown as { barcode: string; quantity: number });
+      component.form.get('quantity')?.setValue(null);
+
+      const incompleteItem = {
+        internalID: 'missing-fields',
+        internalBarcode: 'ITEM-00009',
+        externalBarcode: undefined,
+        quantity: 6
+      } as unknown as Inventory;
+
+      component.selectExistingItem(incompleteItem);
+
+      expect(component.form.get('item')?.value).toBe('');
+      expect(component.form.get('description')?.value).toBe('');
+      expect(component.form.get('brand')?.value).toBe('');
+      expect(component.form.get('color')?.value).toBe('');
+      expect(component.form.get('packageSize')?.value).toBe(1);
+      expect(component.form.get('size')?.value).toBe('');
+      expect(component.form.get('type')?.value).toBe('');
+      expect(component.form.get('material')?.value).toBe('');
+      expect(component.form.get('quantity')?.value).toBe(1);
+      expect(component.form.get('notes')?.value).toBe('');
+      expect(component.form.get('maxQuantity')?.value).toBe(0);
+      expect(component.form.get('minQuantity')?.value).toBe(0);
+      expect(component.form.get('stockState')?.value).toBe('');
+    });
+
+    it('should treat null filter controls as empty filters', () => {
+      component.allInventory = [existingItem];
+      component.form.patchValue({
+        item: null,
+        brand: null,
+        color: null,
+        size: null,
+        type: null,
+        material: null
+      });
+
+      expect(component.getFilteredItems()).toEqual([existingItem]);
+    });
+
     it('should filter items by multiple fields', () => {
       component.allInventory = [
         existingItem,

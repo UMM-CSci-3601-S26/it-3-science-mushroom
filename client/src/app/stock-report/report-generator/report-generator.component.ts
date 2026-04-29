@@ -442,7 +442,7 @@ export class ReportGeneratorComponent {
       return;
     }
 
-    const fileName = `Stock_Report_${this.formatDateTime(this.dateTime)[1]}.xlsx`;
+    const fileName = `Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
     this.stockReportService.downloadSingleReportBlob(report).subscribe({
       next: (blob) => {
         // Create object URL and trigger download

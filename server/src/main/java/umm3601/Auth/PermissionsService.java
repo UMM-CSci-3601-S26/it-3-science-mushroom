@@ -58,6 +58,17 @@ import umm3601.SupplyList.SupplyListController;
  */
 public class PermissionsService {
   private static final String PERMISSIONS_ID = "role-permissions";
+  private static final Set<String> NON_ASSIGNABLE_PERMISSIONS = Set.of(
+      "edit_available_spots",
+      "family_portal_access",
+      "manage_checklist",
+      "manage_family_help_sessions",
+      "schedule_families",
+      "view_checklist",
+      "view_dashboard_stats",
+      "view_families",
+      "view_family",
+      "view_family_checklist");
   private static final List<Class<?>> PERMISSION_SOURCES = List.of(
       FamilyController.class,
       InventoryController.class,
@@ -74,6 +85,7 @@ public class PermissionsService {
       "view_dashboard_stats",
       "view_families",
       "view_family",
+      "view_family_checklist",
       "family_portal_access",
       "add_inventory_item",
       "delete_inventory_item",
@@ -87,6 +99,7 @@ public class PermissionsService {
       "manage_checklist",
       "view_checklist",
       "edit_available_spots",
+      "edit_drive_day",
       "edit_schools",
       "edit_supply_order",
       "edit_time_availability",
@@ -355,7 +368,7 @@ public class PermissionsService {
         permission,
         permissionGroup(permission),
         permissionLabel(permission),
-        !"family_portal_access".equals(permission));
+        !NON_ASSIGNABLE_PERMISSIONS.contains(permission));
   }
 
   private String permissionGroup(String permission) {
@@ -373,6 +386,7 @@ public class PermissionsService {
     }
     if (permission.contains("settings")
         || permission.contains("schools")
+        || permission.contains("drive_day")
         || permission.contains("supply_order")
         || permission.contains("time_availability")
         || permission.contains("available_spots")) {
@@ -396,6 +410,7 @@ public class PermissionsService {
       case "view_dashboard_stats" -> "Dashboard Statistics";
       case "view_families" -> "Family List Viewing";
       case "view_family" -> "Family Detail Viewing";
+      case "view_family_checklist" -> "Finalized Family Checklist Viewing";
       case "family_portal_access" -> "Family Portal Access";
       case "add_inventory_item" -> "Inventory Item Creation";
       case "delete_inventory_item" -> "Inventory Item Deletion";
@@ -410,6 +425,7 @@ public class PermissionsService {
       case "view_checklist" -> "Checklist Viewing";
       case "edit_schools" -> "School Settings Editing";
       case "edit_available_spots" -> "Available Spot Editing";
+      case "edit_drive_day" -> "Drive Day Editing";
       case "edit_supply_order" -> "Supply Order Editing";
       case "edit_time_availability" -> "Time Availability Editing";
       case "manage_stock_reports" -> "Stock Report Management";
@@ -456,11 +472,11 @@ public class PermissionsService {
     volunteerBase.permissions = List.of(
         "view_inventory",
         "view_inventory_item",
+        "access_families",
         "view_families",
         "view_family",
         "view_dashboard_stats",
         "view_supply_lists",
-        "view_checklist",
         "request_family_delete");
     volunteerBase.inherits = List.of();
 
