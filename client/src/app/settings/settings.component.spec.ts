@@ -13,12 +13,15 @@ import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
 import { InventoryService } from '../inventory/inventory.service';
 import { DialogService } from '../dialog/dialog.service';
+import { FamilyService } from '../family/family.service';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
   let termsServiceSpy: jasmine.SpyObj<TermsService>;
+  let familyServiceSpy: jasmine.SpyObj<FamilyService>;
+  let routerSpy: jasmine.SpyObj<Router>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
   let dialogServiceSpy: jasmine.SpyObj<DialogService>;
@@ -35,10 +38,10 @@ describe('SettingsComponent', () => {
   const mockSettings: AppSettings = {
     schools: [],
     timeAvailability: {
-      earlyMorning: '',
-      lateMorning: '',
-      earlyAfternoon: '',
-      lateAfternoon: '',
+      earlyMorning: 'early morning',
+      lateMorning: 'late morning',
+      earlyAfternoon: 'early afternoon',
+      lateAfternoon: 'late afternoon',
     },
     supplyOrder: [],
     availableSpots: 5,
@@ -52,9 +55,11 @@ describe('SettingsComponent', () => {
       'updateTimeAvailability',
       'updateSupplyOrder',
       'updateAvailableSpots',
+      'scheduleFamilies',
       'updateBarcodePrintWarningLimit'
     ]);
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
+    familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     inventoryServiceSpy = jasmine.createSpyObj('InventoryService', [
       'getInventory',
@@ -72,6 +77,8 @@ describe('SettingsComponent', () => {
       materialOptions: () => []
     });
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+
 
     // Default: return empty settings and the three mock terms
     settingsServiceSpy.getSettings.and.returnValue(of(mockSettings));
@@ -100,6 +107,8 @@ describe('SettingsComponent', () => {
         { provide: TermsService, useValue: termsServiceSpy },
         { provide: InventoryService, useValue: inventoryServiceSpy },
         { provide: DialogService, useValue: dialogServiceSpy },
+        { provide: FamilyService, useValue: familyServiceSpy },
+        { provide: Router, useValue: routerSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
       ],
     }).compileComponents();
@@ -732,6 +741,77 @@ describe('SettingsComponent', () => {
     tick();
 
     expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to reset quantities.', 'OK', { duration: 4000 });
+  it('Should call scheduleFamilies and show successful snackBar', fakeAsync(() => {
+    component.availableSpotsForm.setValue({ availableSpots: 5 });
+
+    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
+    familyServiceSpy.scheduleFamilies.and.returnValue(of(undefined));
+
+    component.scheduleFamilies();
+    tick();
+    tick();
+
+    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/family']);
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Families scheduled', 'OK', { duration: 2000 });
+  }));
+
+  it('Should call scheduleFamilies and show capacity error snackBar', fakeAsync(() => {
+    component.availableSpotsForm.setValue({ availableSpots: 0 });
+
+    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
+    familyServiceSpy.scheduleFamilies.and.returnValue(
+      throwError(() => ({
+        error: {
+          title: 'Not all families were able to be sorted, your event capacity may be too low'
+        }
+      }))
+    );
+
+    component.scheduleFamilies();
+    tick();
+    tick();
+
+    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Your capacity is too low for the number of families', 'OK', { duration: 3000 });
+  }));
+
+  it('Should call scheduleFamilies and show general error snackBar', fakeAsync(() => {
+    component.availableSpotsForm.setValue({ availableSpots: 0 });
+
+    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
+    familyServiceSpy.scheduleFamilies.and.returnValue(
+      throwError(() => ({
+        error: { title: 'general error' }
+      }))
+    );
+
+    component.scheduleFamilies();
+    tick();
+    tick();
+
+    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to schedule families', 'OK', { duration: 3000 });
+  }));
+
+  it('Should call scheduleFamilies and show update available spots error snackBar', fakeAsync(() => {
+    component.availableSpotsForm.setValue({ availableSpots: 0 });
+
+    settingsServiceSpy.updateAvailableSpots.and.returnValue(
+      throwError(() => ({
+        error: { title: 'update available spots error'}
+      }))
+    );
+
+    component.scheduleFamilies();
+    tick();
+    tick();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to update available spots', 'OK', { duration: 3000 });
   }));
   it('saves the barcode print warning limit setting', () => {
     settingsServiceSpy.updateBarcodePrintWarningLimit.and.returnValue(of(undefined));

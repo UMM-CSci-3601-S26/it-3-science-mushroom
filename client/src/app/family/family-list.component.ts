@@ -11,7 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -64,6 +64,7 @@ import { DashboardStats } from '../family/family';
 export class FamilyListComponent {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
+  private route = inject(ActivatedRoute);
 
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);

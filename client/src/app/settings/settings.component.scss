@@ -45,6 +45,8 @@
 
 .save-button {
   margin-top: 8px;
+  display: flex;
+  column-span: 2;
 }
 
 .inventory-target-form {
