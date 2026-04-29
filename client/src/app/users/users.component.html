@@ -1,0 +1,64 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Users and Delete Requests</mat-card-title>
+    <mat-card-subtitle>Admin tools</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-tab-group [(selectedIndex)]="selectedTabIndex">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          Delete Requests
+          <span *ngIf="pendingDeleteRequests.length > 0" class="tab-count">{{ pendingDeleteRequests.length }}</span>
+        </ng-template>
+        <div class="delete-requests-toolbar">
+          <button mat-stroked-button color="primary" (click)="loadRequests()">Refresh Requests</button>
+        </div>
+        <p>
+          Volunteers can request family removals with a reason. Review requests below,
+          then either permanently delete the family or restore it back to active status.
+        </p>
+        <ng-container *ngIf="isLoading; else loaded">
+          <p>Loading requests...</p>
+        </ng-container>
+        <ng-template #loaded>
+          <ng-container *ngIf="pendingDeleteRequests.length === 0; else requests">
+            <p>No pending delete requests.</p>
+          </ng-container>
+          <ng-template #requests>
+            <div class="request-grid">
+              <section class="request-card-shell" *ngFor="let family of pendingDeleteRequests; trackBy: trackByFamilyId">
+                <app-family-card [family]="family" [compact]="true" [showRequestDeleteAction]="false"></app-family-card>
+
+                <div class="request-review-card">
+                  <div class="request-review-header">
+                    <div>
+                      <div class="request-title">Delete Request Review</div>
+                      <div class="request-meta">{{ getRequesterLabel(family) }}</div>
+                    </div>
+                    <span class="request-status">Pending</span>
+                  </div>
+
+                  <div class="request-reason-block">
+                    <div class="request-reason-label">Reason</div>
+                    <div class="request-reason-text">{{ family.deleteRequest?.message || 'No message provided' }}</div>
+                  </div>
+
+                  <div class="request-actions">
+                    <button mat-stroked-button color="primary" (click)="restoreFamily(family)">Restore Family</button>
+                    <button mat-raised-button color="warn" (click)="approveDelete(family)">Delete Family</button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </ng-template>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Users">
+        <app-user-management [section]="'users'"></app-user-management>
+      </mat-tab>
+      <mat-tab label="Volunteer Permissions">
+        <app-user-management [section]="'permissions'"></app-user-management>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card-content>
+</mat-card>
