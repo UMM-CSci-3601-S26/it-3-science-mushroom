@@ -1,0 +1,38 @@
+<mat-card class="family-card">
+  <div class="family-card-top">
+    <div class="family-main">
+      <div class="family-heading">
+        <h3 class="family-name">{{ family().guardianName }}</h3>
+        <span class="status-pill" [ngClass]="statusClass()">{{ statusLabel() }}</span>
+      </div>
+      <div class="family-meta">
+        <span>{{ family().timeSlot }}</span>
+        <span>{{ family().students?.length ?? 0 }} student{{ (family().students?.length ?? 0) === 1 ? '' : 's' }}</span>
+      </div>
+      <p class="family-address">{{ family().address }}</p>
+    </div>
+    <div class="family-actions">
+      @if (isCompleted()) {
+        <button
+          mat-stroked-button
+          color="warn"
+          type="button"
+          class="revert-session-button"
+          (click)="revertFamily.emit(family())">
+          <mat-icon>undo</mat-icon>
+          Revert Session
+        </button>
+      } @else {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          class="help-family-button"
+          (click)="helpFamily.emit(family())">
+          <mat-icon>assignment</mat-icon>
+          Help Family
+        </button>
+      }
+    </div>
+  </div>
+</mat-card>

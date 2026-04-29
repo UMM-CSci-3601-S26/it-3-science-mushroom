@@ -1,0 +1,194 @@
+<div class="session-shell">
+  <div class="session-header">
+    <div>
+      <h2 class="session-title">Help Family Session</h2>
+      <p class="session-subtitle">{{ sessionFamily?.guardianName ?? data.family.guardianName }}</p>
+    </div>
+  </div>
+
+  @if (loading) {
+    <mat-card class="session-summary">
+      <p>Starting help session and loading checklist...</p>
+    </mat-card>
+  } @else if (errorMessage && !sessionFamily) {
+    <mat-card class="session-error">
+      <p>{{ errorMessage }}</p>
+    </mat-card>
+  } @else if (sessionFamily) {
+    <mat-card class="session-summary">
+      <div>
+        <span>Time Slot</span>
+        <strong>{{ sessionFamily.timeSlot }}</strong>
+      </div>
+      <div>
+        <span>Address</span>
+        <strong>{{ sessionFamily.address }}</strong>
+      </div>
+      <div>
+        <span>Students</span>
+        <strong>{{ sessionFamily.students.length }}</strong>
+      </div>
+    </mat-card>
+
+    @if (errorMessage) {
+      <mat-card class="session-error">
+        <p>{{ errorMessage }}</p>
+      </mat-card>
+    }
+
+    @if (sessionHasNoChecklistItems(sessionFamily)) {
+      <mat-card class="session-empty-checklist">
+        <div>
+          <p><strong>No checklist items were found yet.</strong></p>
+          <p>
+            Add matching supply-list rows for these students, then regenerate this session so the backend
+            rebuilds the snapshot.
+          </p>
+        </div>
+        <button mat-stroked-button type="button" (click)="restartSession()">
+          Regenerate Checklist
+        </button>
+      </mat-card>
+    }
+
+    <div class="session-scroll">
+      <div class="session-students">
+        @for (section of sessionFamily.checklist?.sections ?? []; track section.id; let sectionIndex = $index) {
+          <mat-card class="student-session-card">
+            <div class="student-card-header">
+              <div>
+                <h3>{{ section.printableTitle || section.title }}</h3>
+                @if (studentForSection(sectionIndex); as student) {
+                  <div class="student-details">
+                    <span>School: {{ student.school || 'Unknown' }}</span>
+                    <span>Grade: {{ student.grade || 'Unknown' }}</span>
+                    <span>Teacher: {{ student.teacher || 'N/A' }}</span>
+                  </div>
+                }
+              </div>
+              <span class="section-status">{{ section.saved ? 'Saved' : 'In progress' }}</span>
+            </div>
+
+            @if (section.items.length > 0) {
+              <div class="checklist-items">
+                @for (item of section.items; track item.id) {
+                  <div class="checklist-item" [class.not-in-inventory]="!item.available">
+                    <mat-checkbox
+                      [checked]="item.selected"
+                      [disabled]="!item.available"
+                      (change)="setItemSelected(item, $event.checked)"
+                      aria-label="Select checklist item">
+                    </mat-checkbox>
+
+                    <div class="item-copy">
+                      <p class="item-label">{{ item.label || item.itemDescription }}</p>
+                      <p class="item-meta">
+                        <span>Quantity: {{ item.requestedQuantity }}</span>
+                        @if (!item.available) {
+                          <span>Not found in inventory</span>
+                        } @else {
+                          <span>Found in inventory</span>
+                        }
+                      </p>
+                      @if (shouldShowMatchedInventory(item)) {
+                        <p class="inventory-match">
+                          Will remove: {{ matchedInventoryDisplay(item) }}
+                        </p>
+                      }
+                      @if (hasSubstitute(item)) {
+                        <p class="substitute-match">
+                          Replacing with: {{ substituteDisplay(item) }}
+                        </p>
+                      }
+                      @if (needsReason(item)) {
+                        <label class="reason-field">
+                          <span>Why not given?</span>
+                          <select
+                            [value]="item.notPickedUpReason || ''"
+                            (change)="setNotPickedUpReason(item, $any($event.target).value)">
+                            <option value="">Choose a reason</option>
+                            <option value="available_didnt_need">Family did not need this item</option>
+                            <option value="item_not_avaliable">Item not avaliable</option>
+                          </select>
+                        </label>
+                      }
+                    </div>
+
+                    <div class="item-actions">
+                      <span class="item-status">{{ item.available ? 'Available' : 'Needs review' }}</span>
+                      @if (item.available) {
+                        <button
+                          mat-stroked-button
+                          type="button"
+                          class="substitute-button"
+                          (click)="toggleSubstitutionScanner(item)">
+                          Substitute
+                        </button>
+                      }
+                      @if (hasSubstitute(item)) {
+                        <button
+                          mat-button
+                          type="button"
+                          class="clear-substitute-button"
+                          (click)="clearSubstitution(item)">
+                          Clear Substitute
+                        </button>
+                      }
+                    </div>
+
+                    @if (activeSubstitutionItemId === item.id) {
+                      <div class="substitution-panel">
+                        <div>
+                          <strong>Scan substitute item</strong>
+                          <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
+                        </div>
+                        @if (substituteErrorMessage) {
+                          <p class="substitute-error">{{ substituteErrorMessage }}</p>
+                        }
+                        <app-scanner
+                          [processOnDone]="false"
+                          (scanned)="applySubstituteBarcode(item, $event)">
+                        </app-scanner>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="placeholder-text">
+                No checklist items were generated for this student. Check that this student's school,
+                grade, and teacher match at least one supply-list row.
+              </p>
+            }
+          </mat-card>
+        } @empty {
+          <mat-card class="student-session-card">
+            <p class="placeholder-text">No checklist sections were returned for this family.</p>
+          </mat-card>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="session-actions">
+    <button
+      mat-stroked-button
+      type="button"
+      class="clear-session-button"
+      [disabled]="saving"
+      (click)="clearSessionAndClose()">
+      Clear Session
+    </button>
+    <button mat-stroked-button type="button" [disabled]="saving" (click)="closeAndSaveDraft()">
+      Draft Session
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      [disabled]="saving || loading || !sessionFamily?.checklist"
+      (click)="saveCompletedSession()">
+      Finalize Family Session
+    </button>
+  </div>
+</div>

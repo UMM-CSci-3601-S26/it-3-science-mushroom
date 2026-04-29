@@ -36,7 +36,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 // Com Imports
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
@@ -44,7 +43,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-
 // IO Imports
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
@@ -60,7 +58,7 @@ import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 import umm3601.settings.Settings;
 import umm3601.settings.Settings.TimeAvailabilityLabels;
-@SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength" })
+@SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength", "checkstyle:ParameterNumber" })
 class FamilyControllerSpec {
   private FamilyController familyController;
 
@@ -79,6 +77,9 @@ class FamilyControllerSpec {
 
   @Captor
   private ArgumentCaptor<Family> familyCaptor;
+
+  @Captor
+  private ArgumentCaptor<Family.FamilyChecklist> checklistCaptor;
 
   @Captor
   private ArgumentCaptor<Map<String, String>> mapCaptor;
@@ -117,229 +118,128 @@ class FamilyControllerSpec {
     inventoryDocuments.drop();
     settingsDocuments.drop();
 
-    List<Document> testFamilies = new ArrayList<>();
-
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "Jane Doe")
-        .append("email", "jane@email.com")
-        .append("address", "123 Street")
-        .append("accommodations", "None")
-        .append("timeSlot", "10:00-11:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", true)
-          .append("lateMorning", true)
-          .append("earlyAfternoon", true)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "not_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Alice")
-            .append("grade", "3")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-            .append("backpack", true)
-            .append("headphones", false),
-          new Document()
-            .append("name", "Timmy")
-            .append("grade", "5")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "John Christensen")
-        .append("email", "jchristensen@email.com")
-        .append("address", "713 Broadway")
-        .append("accommodations", "None")
-        .append("timeSlot", "8:00-9:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", true)
-          .append("earlyAfternoon", false)
-          .append("lateAfternoon", false)
-        )
-        .append("helped", true)
-        .append("status", "helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Sara")
-            .append("grade", "7")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A"),
-          new Document()
-            .append("name", "Ronan")
-            .append("grade", "4")
-            .append("school", "Herman High School")
-            .append("schoolAbbreviation", "HHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "John Johnson")
-        .append("email", "jjohnson@email.com")
-        .append("address", "456 Avenue")
-        .append("accommodations", "None")
-        .append("timeSlot", "2:00-3:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", false)
-          .append("earlyAfternoon", false)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "being_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Lilian")
-            .append("grade", "1")
-            .append("school", "Herman High School")
-            .append("schoolAbbreviation", "HHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "Melina Brim")
-        .append("email", "melina@email.com")
-        .append("address", "125 Street")
-        .append("timeSlot", "10:00-11:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", false)
-          .append("earlyAfternoon", true)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "not_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Tricia")
-            .append("grade", "3")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-            .append("backpack", true)
-            .append("headphones", false),
-          new Document()
-            .append("name", "Bernice")
-            .append("grade", "5")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-        )));
-    testFamilies.add(
-      new Document()
-        .append("guardianName", "Bob Dylan")
-        .append("email", "therealbobdylan@email.com")
-        .append("address", "Nowhere")
-        .append("timeSlot", "10:00-11:00")
-        .append("timeAvailability", new Document()
-          .append("earlyMorning", false)
-          .append("lateMorning", true)
-          .append("earlyAfternoon", true)
-          .append("lateAfternoon", true)
-        )
-        .append("helped", false)
-        .append("status", "not_helped")
-        .append("students", List.of(
-          new Document()
-            .append("name", "Jeanie")
-            .append("grade", "3")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-            .append("backpack", true)
-            .append("headphones", false),
-          new Document()
-            .append("name", "Fred")
-            .append("grade", "5")
-            .append("school", "Morris Area High School")
-            .append("schoolAbbreviation", "MAHS")
-            .append("teacher", "N/A")
-        )));
+    List<Document> testFamilies = List.of(
+      familyDoc("Jane Doe", "jane@email.com", "123 Street", "None", "10:00-11:00",
+        true, true, true, true, false, "not_helped", List.of(
+          studentDoc("Alice", "3", "Morris Area High School", "MAHS", true, false),
+          studentDoc("Timmy", "5", "Morris Area High School", "MAHS"))),
+      familyDoc("John Christensen", "jchristensen@email.com", "713 Broadway", "None", "8:00-9:00",
+        false, true, false, false, true, "helped", List.of(
+          studentDoc("Sara", "7", "Morris Area High School", "MAHS"),
+          studentDoc("Ronan", "4", "Herman High School", "HHS"))),
+      familyDoc("John Johnson", "jjohnson@email.com", "456 Avenue", "None", "2:00-3:00",
+        false, false, false, true, false, "being_helped", List.of(
+          studentDoc("Lilian", "1", "Herman High School", "HHS"))),
+      familyDoc("Melina Brim", "melina@email.com", "125 Street", null, "10:00-11:00",
+        false, false, true, true, false, "not_helped", List.of(
+          studentDoc("Tricia", "3", "Morris Area High School", "MAHS", true, false),
+          studentDoc("Bernice", "5", "Morris Area High School", "MAHS"))),
+      familyDoc("Bob Dylan", "therealbobdylan@email.com", "Nowhere", null, "10:00-11:00",
+        false, true, true, true, false, "not_helped", List.of(
+          studentDoc("Jeanie", "3", "Morris Area High School", "MAHS", true, false),
+          studentDoc("Fred", "5", "Morris Area High School", "MAHS"))));
 
     testFamilyId = new ObjectId();
 
-    Document specialFamily = new Document()
-      .append("_id", testFamilyId)
-      .append("guardianName", "Bob Jones")
-      .append("email", "bob@email.com")
-      .append("address", "456 Oak Ave")
-      .append("accommodations", "None")
-      .append("timeSlot", "2:00-3:00")
-      .append("timeAvailability", new Document()
-        .append("earlyMorning", false)
-        .append("lateMorning", true)
-        .append("earlyAfternoon", false)
-        .append("lateAfternoon", true)
-      )
-      .append("helped", false)
-      .append("status", "not_helped")
-      .append("students", List.of(
-        new Document()
-          .append("name", "Sara")
-          .append("grade", "5")
-          .append("school", "Roosevelt")
-          .append("schoolAbbreviation", "R")
-          .append("teacher", "N/A")
-          .append("backpack", true)
-          .append("headphones", false)
-
-      ));
+    Document specialFamily = familyDoc(testFamilyId, "Bob Jones", "bob@email.com", "456 Oak Ave",
+      "None", "2:00-3:00", false, true, false, true, false, "not_helped",
+      List.of(studentDoc("Sara", "5", "Roosevelt", "R", true, false)));
 
     familyDocuments.insertMany(testFamilies);
     familyDocuments.insertOne(specialFamily);
 
     supplyListDocuments.insertMany(List.of(
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Roosevelt")
-        .append("grade", "5")
-        .append("teacher", "N/A")
-        .append("item", List.of("Backpack"))
-        .append("quantity", 1),
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Roosevelt")
-        .append("grade", "5")
-        .append("teacher", "N/A")
-        .append("item", List.of("Water Bottle"))
-        .append("quantity", 1)));
+      supplyListDoc("Backpack"),
+      supplyListDoc("Water Bottle")));
 
     inventoryDocuments.insertMany(List.of(
-      new Document()
-        .append("item", "Backpack")
-        .append("description", "Student Backpack")
-        .append("quantity", 3)
-        .append("internalID", "ID-10000")
-        .append("internalBarcode", "ITEM-10000")
-        .append("externalBarcode", List.of("EXT-10000")),
-      new Document()
-        .append("item", "Notebook")
-        .append("description", "Wide Ruled Notebook")
-        .append("quantity", 4)
-        .append("internalID", "ID-10001")
-        .append("internalBarcode", "ITEM-10001")
-        .append("externalBarcode", List.of("SUB-10001")),
-      new Document()
-        .append("item", "Water Bottle")
-        .append("description", "Blue Water Bottle")
-        .append("quantity", 0)
-        .append("internalID", "ID-10002")
-        .append("internalBarcode", "ITEM-10002")
-        .append("externalBarcode", List.of("EXT-10002"))));
+      inventoryDoc("Backpack", "Student Backpack", 3, "ID-10000", "ITEM-10000", "EXT-10000"),
+      inventoryDoc("Notebook", "Wide Ruled Notebook", 4, "ID-10001", "ITEM-10001", "SUB-10001"),
+      inventoryDoc("Water Bottle", "Blue Water Bottle", 0, "ID-10002", "ITEM-10002", "EXT-10002")));
 
-    Document settings = new Document()
-      .append("availableSpots", 5);
-
-    settingsDocuments.insertOne(settings);
+    settingsDocuments.insertOne(new Document().append("availableSpots", 5));
 
     familyController = new FamilyController(db);
+  }
+
+  private Document familyDoc(String guardianName, String email, String address, String accommodations,
+      String timeSlot, boolean earlyMorning, boolean lateMorning, boolean earlyAfternoon,
+      boolean lateAfternoon, boolean helped, String status, List<Document> students) {
+    return familyDoc(null, guardianName, email, address, accommodations, timeSlot, earlyMorning,
+      lateMorning, earlyAfternoon, lateAfternoon, helped, status, students);
+  }
+
+  private Document familyDoc(ObjectId id, String guardianName, String email, String address,
+      String accommodations, String timeSlot, boolean earlyMorning, boolean lateMorning,
+      boolean earlyAfternoon, boolean lateAfternoon, boolean helped, String status,
+      List<Document> students) {
+    Document family = new Document();
+    if (id != null) {
+      family.append("_id", id);
+    }
+    family.append("guardianName", guardianName)
+      .append("email", email)
+      .append("address", address);
+    if (accommodations != null) {
+      family.append("accommodations", accommodations);
+    }
+    return family.append("timeSlot", timeSlot)
+      .append("timeAvailability", timeAvailabilityDoc(earlyMorning, lateMorning,
+        earlyAfternoon, lateAfternoon))
+      .append("helped", helped)
+      .append("status", status)
+      .append("students", students);
+  }
+
+  private Document timeAvailabilityDoc(boolean earlyMorning, boolean lateMorning,
+      boolean earlyAfternoon, boolean lateAfternoon) {
+    return new Document()
+      .append("earlyMorning", earlyMorning)
+      .append("lateMorning", lateMorning)
+      .append("earlyAfternoon", earlyAfternoon)
+      .append("lateAfternoon", lateAfternoon);
+  }
+
+  private Document studentDoc(String name, String grade, String school, String schoolAbbreviation) {
+    return studentDoc(name, grade, school, schoolAbbreviation, null, null);
+  }
+
+  private Document studentDoc(String name, String grade, String school, String schoolAbbreviation,
+      Boolean backpack, Boolean headphones) {
+    Document student = new Document()
+      .append("name", name)
+      .append("grade", grade)
+      .append("school", school)
+      .append("schoolAbbreviation", schoolAbbreviation)
+      .append("teacher", "N/A");
+    if (backpack != null) {
+      student.append("backpack", backpack);
+    }
+    if (headphones != null) {
+      student.append("headphones", headphones);
+    }
+    return student;
+  }
+
+  private Document supplyListDoc(String item) {
+    return new Document()
+      .append("district", "District 1")
+      .append("school", "Roosevelt")
+      .append("grade", "5")
+      .append("teacher", "N/A")
+      .append("item", List.of(item))
+      .append("quantity", 1);
+  }
+
+  private Document inventoryDoc(String item, String description, int quantity,
+      String internalId, String internalBarcode, String externalBarcode) {
+    return new Document()
+      .append("item", item)
+      .append("description", description)
+      .append("quantity", quantity)
+      .append("internalID", internalId)
+      .append("internalBarcode", internalBarcode)
+      .append("externalBarcode", List.of(externalBarcode));
   }
 
   @Test
@@ -472,6 +372,46 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void getFinalizedFamilyChecklistReturnsCompletedChecklist() {
+    Family family = startHelpSessionAndGetFamily();
+    family.checklist.sections.get(0).items.get(1).selected = false;
+    family.checklist.sections.get(0).items.get(1).substituteBarcode = "SUB-10001";
+
+    FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
+    request.setChecklist(family.checklist);
+    String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyHelpSessionSaveAllRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyHelpSessionSaveAllRequest.class)));
+
+    familyController.saveFamilyHelpSessionAll(ctx);
+    Mockito.clearInvocations(ctx);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.getFinalizedFamilyChecklist(ctx);
+
+    verify(ctx).json(checklistCaptor.capture());
+    assertFalse(checklistCaptor.getValue().snapshot);
+    assertTrue(checklistCaptor.getValue().sections.get(0).saved);
+  }
+
+  @Test
+  void getFinalizedFamilyChecklistRejectsActiveSnapshot() {
+    startHelpSessionAndGetFamily();
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    Throwable exception = assertThrows(NotFoundResponse.class,
+      () -> familyController.getFinalizedFamilyChecklist(ctx));
+
+    assertEquals("The finalized checklist for this family was not found", exception.getMessage());
+  }
+
+  @Test
   void addNewFamily() {
     Family newFamily = new Family();
     newFamily.guardianName = "Charlie Brown";
@@ -598,6 +538,27 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void updateFamilyRejectsInvalidEmailForExistingFamily() {
+    Family updatedFamily = new Family();
+    updatedFamily.guardianName = "Bob Jones";
+    updatedFamily.email = "not-an-email";
+    updatedFamily.address = "456 Oak Ave";
+    updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.students = new ArrayList<>();
+
+    String json = javalinJackson.toJsonString(updatedFamily, Family.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+      .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> familyController.updateFamily(ctx));
+
+    assertTrue(exception.getMessage().contains("valid email"));
+  }
+
+  @Test
   void updateFamilyStatusMarksFamilyHelped() {
     String json = """
       {
@@ -617,6 +578,28 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertTrue(familyCaptor.getValue().helped);
     assertEquals("helped", familyCaptor.getValue().status);
+  }
+
+  @Test
+  void updateFamilyStatusSupportsStatusPayloadWithoutHelpedBoolean() {
+    String json = """
+      {
+        "status": "being_helped"
+      }
+      """;
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyStatusUpdateRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyStatusUpdateRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyStatusUpdateRequest.class)));
+
+    familyController.updateFamilyStatus(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    assertFalse(familyCaptor.getValue().helped);
+    assertEquals("being_helped", familyCaptor.getValue().status);
   }
 
   @Test
@@ -642,6 +625,21 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void updateFamilyStatusRejectsBadIdAndMissingFamily() {
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+
+    BadRequestResponse badId = assertThrows(BadRequestResponse.class,
+      () -> familyController.updateFamilyStatus(ctx));
+    assertTrue(badId.getMessage().contains("family id was not legal"));
+
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toString());
+
+    NotFoundResponse missing = assertThrows(NotFoundResponse.class,
+      () -> familyController.updateFamilyStatus(ctx));
+    assertTrue(missing.getMessage().contains("family was not found"));
+  }
+
+  @Test
   void updateFamilyStatusRejectsMissingPayload() {
     String json = "{}";
 
@@ -656,6 +654,21 @@ class FamilyControllerSpec {
        () -> familyController.updateFamilyStatus(ctx));
 
     assertTrue(exception.getMessage().contains("must include either helped or status"));
+  }
+
+  @Test
+  void updateFamilyChecklistRejectsBadIdAndMissingFamily() {
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+
+    BadRequestResponse badId = assertThrows(BadRequestResponse.class,
+      () -> familyController.updateFamilyChecklist(ctx));
+    assertTrue(badId.getMessage().contains("family id was not legal"));
+
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toString());
+
+    NotFoundResponse missing = assertThrows(NotFoundResponse.class,
+      () -> familyController.updateFamilyChecklist(ctx));
+    assertTrue(missing.getMessage().contains("family was not found"));
   }
 
   @Test
@@ -807,10 +820,14 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertEquals("helped", familyCaptor.getValue().status);
     assertTrue(familyCaptor.getValue().helped);
-    assertNull(familyCaptor.getValue().checklist);
+    assertNotNull(familyCaptor.getValue().checklist);
+    assertFalse(familyCaptor.getValue().checklist.snapshot);
+    assertTrue(familyCaptor.getValue().checklist.sections.get(0).saved);
 
     Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
-    assertNull(updatedFamily.get("checklist"));
+    Document updatedChecklist = updatedFamily.get("checklist", Document.class);
+    assertNotNull(updatedChecklist);
+    assertFalse(updatedChecklist.getBoolean("snapshot"));
 
     Document substituteInventory = db.getCollection("inventory")
       .find(eq("internalID", "ID-10001"))
@@ -841,14 +858,18 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertEquals("helped", familyCaptor.getValue().status);
     assertTrue(familyCaptor.getValue().helped);
-    assertNull(familyCaptor.getValue().checklist);
+    assertNotNull(familyCaptor.getValue().checklist);
+    assertFalse(familyCaptor.getValue().checklist.snapshot);
+    assertTrue(familyCaptor.getValue().checklist.sections.get(0).saved);
 
     Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
-    assertNull(updatedFamily.get("checklist"));
+    Document updatedChecklist = updatedFamily.get("checklist", Document.class);
+    assertNotNull(updatedChecklist);
+    assertFalse(updatedChecklist.getBoolean("snapshot"));
   }
 
   @Test
-  void saveFamilyHelpSessionChildClearsSnapshotWhenLastSectionIsSaved() {
+  void saveFamilyHelpSessionChildKeepsCompletedChecklistWhenLastSectionIsSaved() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     section.items.get(1).selected = false;
@@ -871,10 +892,14 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertEquals("helped", familyCaptor.getValue().status);
     assertTrue(familyCaptor.getValue().helped);
-    assertNull(familyCaptor.getValue().checklist);
+    assertNotNull(familyCaptor.getValue().checklist);
+    assertFalse(familyCaptor.getValue().checklist.snapshot);
+    assertTrue(familyCaptor.getValue().checklist.sections.get(0).saved);
 
     Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
-    assertNull(updatedFamily.get("checklist"));
+    Document updatedChecklist = updatedFamily.get("checklist", Document.class);
+    assertNotNull(updatedChecklist);
+    assertFalse(updatedChecklist.getBoolean("snapshot"));
   }
 
   @Test
@@ -1352,6 +1377,23 @@ class FamilyControllerSpec {
 
     boolean materialMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedMaterial);
     assertFalse(materialMismatch);
+
+    SupplyList exactMatch = new SupplyList();
+    exactMatch.item = List.of("Notebook");
+    exactMatch.brand = new SupplyList.AttributeOptions();
+    exactMatch.brand.allOf = "Acme";
+    exactMatch.color = new SupplyList.ColorAttributeOptions();
+    exactMatch.color.allOf = List.of("Blue");
+    exactMatch.size = new SupplyList.AttributeOptions();
+    exactMatch.size.allOf = "Wide";
+    exactMatch.type = new SupplyList.AttributeOptions();
+    exactMatch.type.allOf = "Ruled";
+    exactMatch.material = new SupplyList.AttributeOptions();
+    exactMatch.material.allOf = "Paper";
+    exactMatch.packageSize = 2;
+
+    boolean exactMatchResult = invokeInventoryMatchesSupplyList(inventory, exactMatch);
+    assertTrue(exactMatchResult);
   }
 
   @Test
@@ -1385,6 +1427,94 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void privateSimilarityHelpersCoverScoreBranches() throws Exception {
+    Inventory inventory = new Inventory();
+    inventory.item = "Yellow Pencil";
+    inventory.description = "Plastic writing pencil";
+    inventory.brand = "Ticonderoga";
+    inventory.color = "Yellow";
+    inventory.material = "Wood";
+
+    SupplyList exactItemSupplyList = new SupplyList();
+    exactItemSupplyList.item = List.of("Yellow Pencil");
+    assertEquals(100, invokeItemSimilarityScore(inventory, exactItemSupplyList));
+
+    SupplyList searchableItemSupplyList = new SupplyList();
+    searchableItemSupplyList.item = List.of("Plastic");
+    assertEquals(75, invokeItemSimilarityScore(inventory, searchableItemSupplyList));
+
+    SupplyList partialItemSupplyList = new SupplyList();
+    partialItemSupplyList.item = List.of("Classroom Pencil");
+    assertEquals(50, invokeItemSimilarityScore(inventory, partialItemSupplyList));
+
+    SupplyList blankItemSupplyList = new SupplyList();
+    blankItemSupplyList.item = List.of(" ");
+    assertEquals(0, invokeItemSimilarityScore(inventory, blankItemSupplyList));
+
+    SupplyList emptyItemSupplyList = new SupplyList();
+    emptyItemSupplyList.item = List.of();
+    assertEquals(0, invokeItemSimilarityScore(inventory, emptyItemSupplyList));
+
+    SupplyList nullItemSupplyList = new SupplyList();
+    nullItemSupplyList.item = null;
+    assertEquals(0, invokeItemSimilarityScore(inventory, nullItemSupplyList));
+
+    SupplyList shortPartialItemSupplyList = new SupplyList();
+    shortPartialItemSupplyList.item = List.of("No 2");
+    assertEquals(0, invokeItemSimilarityScore(inventory, shortPartialItemSupplyList));
+
+    SupplyList.AttributeOptions requiredBrand = new SupplyList.AttributeOptions();
+    requiredBrand.allOf = "Ticonderoga";
+    assertEquals(5, invokeAttributeSimilarityScore(requiredBrand, inventory.brand));
+
+    SupplyList.AttributeOptions requiredBrandMiss = new SupplyList.AttributeOptions();
+    requiredBrandMiss.allOf = "Crayola";
+    assertEquals(0, invokeAttributeSimilarityScore(requiredBrandMiss, inventory.brand));
+
+    SupplyList.AttributeOptions optionalBrand = new SupplyList.AttributeOptions();
+    optionalBrand.anyOf = List.of("Crayola", "Ticonderoga");
+    assertEquals(3, invokeAttributeSimilarityScore(optionalBrand, inventory.brand));
+
+    SupplyList.AttributeOptions missingBrand = new SupplyList.AttributeOptions();
+    missingBrand.allOf = "";
+    missingBrand.anyOf = List.of("Crayola");
+    assertEquals(0, invokeAttributeSimilarityScore(missingBrand, inventory.brand));
+    assertEquals(0, invokeAttributeSimilarityScore(null, inventory.brand));
+
+    SupplyList.ColorAttributeOptions requiredColor = new SupplyList.ColorAttributeOptions();
+    requiredColor.allOf = List.of("Yellow");
+    assertEquals(5, invokeColorSimilarityScore(requiredColor, inventory.color));
+
+    SupplyList.ColorAttributeOptions requiredColorMiss = new SupplyList.ColorAttributeOptions();
+    requiredColorMiss.allOf = List.of("Blue");
+    assertEquals(0, invokeColorSimilarityScore(requiredColorMiss, inventory.color));
+
+    SupplyList.ColorAttributeOptions optionalColor = new SupplyList.ColorAttributeOptions();
+    optionalColor.anyOf = List.of("Blue", "Yellow");
+    assertEquals(3, invokeColorSimilarityScore(optionalColor, inventory.color));
+
+    SupplyList.ColorAttributeOptions missingColor = new SupplyList.ColorAttributeOptions();
+    missingColor.allOf = List.of("Blue");
+    missingColor.anyOf = List.of("Red");
+    assertEquals(0, invokeColorSimilarityScore(missingColor, inventory.color));
+    assertEquals(0, invokeColorSimilarityScore(null, inventory.color));
+  }
+
+  @Test
+  void privateBestInventoryDescriptionFallsBackToItemString() throws Exception {
+    Inventory inventoryWithDescription = new Inventory();
+    inventoryWithDescription.item = "Backpack";
+    inventoryWithDescription.description = "Blue student backpack";
+
+    Inventory inventoryWithoutDescription = new Inventory();
+    inventoryWithoutDescription.item = "Notebook";
+    inventoryWithoutDescription.description = "";
+
+    assertEquals("Blue student backpack", invokeBestInventoryDescription(inventoryWithDescription));
+    assertEquals("Notebook", invokeBestInventoryDescription(inventoryWithoutDescription));
+  }
+
+  @Test
   void privateValidateChecklistItemCoversAdditionalBranches() throws Exception {
     Family.ChecklistItem unavailableSelected = new Family.ChecklistItem();
     unavailableSelected.selected = true;
@@ -1405,7 +1535,13 @@ class FamilyControllerSpec {
     invalidReason.notPickedUpReason = "bad_reason";
     BadRequestResponse invalidReasonException = assertThrows(BadRequestResponse.class,
       () -> invokeValidateChecklistItemForSave(invalidReason));
-    assertTrue(invalidReasonException.getMessage().contains("Checklist reason must be"));
+    assertTrue(invalidReasonException.getMessage().contains("reason must be"));
+
+    Family.ChecklistItem itemNotAvaliableReason = new Family.ChecklistItem();
+    itemNotAvaliableReason.selected = false;
+    itemNotAvaliableReason.available = true;
+    itemNotAvaliableReason.notPickedUpReason = "item_not_avaliable";
+    invokeValidateChecklistItemForSave(itemNotAvaliableReason);
 
     Family.ChecklistItem unavailableUnchecked = new Family.ChecklistItem();
     unavailableUnchecked.selected = false;
@@ -1513,6 +1649,69 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void privateGetSupplyListsForStudentMatchesSchoolAcronymsAndGradeFormats() throws Exception {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertMany(List.of(
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area High School")
+        .append("grade", "12th Grade")
+        .append("teacher", "N/A")
+        .append("item", List.of("Notebook"))
+        .append("quantity", 1),
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area High School")
+        .append("grade", "High School")
+        .append("teacher", "")
+        .append("item", List.of("Folder"))
+        .append("quantity", 1),
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area Middle School")
+        .append("grade", "Middle School")
+        .append("teacher", "")
+        .append("item", List.of("Pencil"))
+        .append("quantity", 1),
+      new Document()
+        .append("district", "District 1")
+        .append("school", "Morris Area Elementary")
+        .append("grade", "Elementary")
+        .append("teacher", "")
+        .append("item", List.of("Crayon"))
+        .append("quantity", 1)));
+
+    Family.StudentInfo student = new Family.StudentInfo();
+    student.school = "MAHS";
+    student.grade = "12";
+    student.teacher = "N/A";
+
+    List<SupplyList> matches = invokeGetSupplyListsForStudent(student);
+
+    assertEquals(2, matches.size());
+    assertTrue(matches.stream().anyMatch(match -> List.of("Notebook").equals(match.item)));
+    assertTrue(matches.stream().anyMatch(match -> List.of("Folder").equals(match.item)));
+
+    Family.StudentInfo middleSchoolStudent = new Family.StudentInfo();
+    middleSchoolStudent.school = "MAMS";
+    middleSchoolStudent.grade = "7";
+    middleSchoolStudent.teacher = "N/A";
+
+    List<SupplyList> middleSchoolMatches = invokeGetSupplyListsForStudent(middleSchoolStudent);
+    assertEquals(1, middleSchoolMatches.size());
+    assertEquals(List.of("Pencil"), middleSchoolMatches.get(0).item);
+
+    Family.StudentInfo elementaryStudent = new Family.StudentInfo();
+    elementaryStudent.school = "MAE";
+    elementaryStudent.grade = "5";
+    elementaryStudent.teacher = "N/A";
+
+    List<SupplyList> elementaryMatches = invokeGetSupplyListsForStudent(elementaryStudent);
+    assertEquals(1, elementaryMatches.size());
+    assertEquals(List.of("Crayon"), elementaryMatches.get(0).item);
+  }
+
+  @Test
   void privateBuildChecklistItemSnapshotCoversUnavailableFallbackBranch() throws Exception {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Scissors");
@@ -1525,6 +1724,50 @@ class FamilyControllerSpec {
     assertFalse(item.available);
     assertFalse(item.selected);
     assertNull(item.matchedInventoryId);
+  }
+
+  @Test
+  void privateBuildChecklistItemSnapshotUsesHighestQuantitySimilarInventoryItem() throws Exception {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      new Document()
+        .append("item", "Yellow Pencil")
+        .append("description", "Yellow #2 pencil")
+        .append("quantity", 4)
+        .append("size", "Wide")
+        .append("type", "Mechanical")
+        .append("material", "Wood")
+        .append("internalID", "LOW-QTY-PENCIL")
+        .append("internalBarcode", "LOW-QTY-PENCIL"),
+      new Document()
+        .append("item", "Plastic Pencil")
+        .append("description", "Plastic writing pencil")
+        .append("quantity", 30)
+        .append("size", "Narrow")
+        .append("type", "Wooden")
+        .append("material", "Plastic")
+        .append("internalID", "HIGH-QTY-PENCIL")
+        .append("internalBarcode", "HIGH-QTY-PENCIL"),
+      new Document()
+        .append("item", "Pen")
+        .append("description", "Blue ink pen")
+        .append("quantity", 100)
+        .append("internalID", "NOT-A-PENCIL")
+        .append("internalBarcode", "NOT-A-PENCIL")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Pencil");
+    supplyList.size = new SupplyList.AttributeOptions();
+    supplyList.size.allOf = "Wide";
+    supplyList.type = new SupplyList.AttributeOptions();
+    supplyList.type.allOf = "Mechanical";
+    supplyList.quantity = 1;
+
+    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
+
+    assertTrue(item.available);
+    assertTrue(item.selected);
+    assertEquals("HIGH-QTY-PENCIL", item.matchedInventoryId);
   }
 
   @Test
@@ -1597,6 +1840,27 @@ class FamilyControllerSpec {
       throws Exception {
     return invokePrivate("matchesColorAttribute",
       new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private int invokeAttributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
+      throws Exception {
+    return invokePrivate("attributeSimilarityScore",
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private int invokeColorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue)
+      throws Exception {
+    return invokePrivate("colorSimilarityScore",
+      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+  }
+
+  private int invokeItemSimilarityScore(Inventory inventory, SupplyList supplyList) throws Exception {
+    return invokePrivate("itemSimilarityScore", new Class<?>[] {Inventory.class, SupplyList.class},
+      inventory, supplyList);
+  }
+
+  private String invokeBestInventoryDescription(Inventory inventory) throws Exception {
+    return invokePrivate("bestInventoryDescription", new Class<?>[] {Inventory.class}, inventory);
   }
 
   private void invokeValidateChecklistItemForSave(Family.ChecklistItem item) throws Exception {
@@ -1678,7 +1942,7 @@ class FamilyControllerSpec {
 
     assertEquals("Jane Doe", families.get(5).guardianName);
     assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
-}
+  }
 
   @Test
   public void familySchedulingAtCapacity() {
@@ -1694,39 +1958,10 @@ class FamilyControllerSpec {
     newFamily.email = "charlie@email.com";
     newFamily.address = "789 Pine St";
     newFamily.timeAvailability = availability;
-    newFamily.students = new ArrayList<>();
-
-    StudentInfo student1 = new StudentInfo();
-    student1.name = "Janie";
-    student1.grade = "4";
-    student1.school = "Morris Area Elementary School";
-    student1.schoolAbbreviation = "MAES";
-    student1.teacher = "N/A";
-    student1.backpack = true;
-    student1.headphones = true;
-
-    StudentInfo student2 = new StudentInfo();
-    student2.name = "Susie";
-    student2.grade = "4";
-    student2.school = "Morris Area Elementary School";
-    student2.schoolAbbreviation = "MAES";
-    student2.teacher = "N/A";
-    student2.backpack = true;
-    student2.headphones = true;
-
-    StudentInfo student3 = new StudentInfo();
-    student3.name = "Paul";
-    student3.grade = "2";
-    student3.school = "Morris Area Elementary School";
-    student3.schoolAbbreviation = "MAES";
-    student3.teacher = "N/A";
-    student3.backpack = true;
-    student3.headphones = true;
-
-    newFamily.students.add(student1);
-    newFamily.students.add(student2);
-    newFamily.students.add(student3);
-
+    newFamily.students = List.of(
+      studentInfo("Janie", "4"),
+      studentInfo("Susie", "4"),
+      studentInfo("Paul", "2"));
 
     String json = javalinJackson.toJsonString(newFamily, Family.class);
 
@@ -1741,5 +1976,17 @@ class FamilyControllerSpec {
 
     assertThrows(NotFoundResponse.class,
     () -> familyController.scheduleFamilies(ctx));
+  }
+
+  private StudentInfo studentInfo(String name, String grade) {
+    StudentInfo student = new StudentInfo();
+    student.name = name;
+    student.grade = grade;
+    student.school = "Morris Area Elementary School";
+    student.schoolAbbreviation = "MAES";
+    student.teacher = "N/A";
+    student.backpack = true;
+    student.headphones = true;
+    return student;
   }
 }
