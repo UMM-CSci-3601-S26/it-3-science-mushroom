@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, Input } from '@angular/core';
 import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { OnDestroy } from '@angular/core';
 import { InventoryIndex } from '../inventory/inventory-index';
@@ -26,12 +26,17 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   // becomes true when user is done scanning and ready to process items
   processing = false;
   readonly scanModes: { key: ScanMode; label: string; description: string}[] = [
-    {key: "camera", label: "Camera Scan", description: "Use on devices with a camera, phones, tablets, laptops"},
+    {key: "camera", label: "Camera Scan", description: "Use on devices with a camera: phones, tablets, laptops, etc"},
     {key: "handheld", label: "Hand Held Scan", description: "Use this with a USB or Bluetooth barcode scanner"}
   ];
 
   activeMode: ScanMode | null = null;
   handheldInputValue = '';
+  @Input() currentScannerAction: 'add' | 'remove' = 'add';
+
+  scannerAction() {
+    return this.currentScannerAction;
+  }
 
   /**
    * Held items for session, this will be populated by the items found/manually inputted
@@ -65,7 +70,6 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     // eslint-disable-next-line
     private scanService: ScanService) {
     console.log('ScannerComponent initialized');
-
   }
 
   ngAfterViewInit() {
@@ -110,7 +114,6 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
    * Phase 1 of scanning
    * Opens a scan UI, resets any previous data and activates camera for now
    * sets isScanning true for ui control
-   *
    */
   async startCameraScanner() {
 
@@ -175,6 +178,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     this.handheldInputValue = '';
     this.focusHandheldInput();
   }
+
   /**
    * Phase 2 of scanning
    * Every time a barcode is scanned it will clean it and send it to the scannedItem ( not session items )
@@ -210,12 +214,16 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     console.log('Normalized Barcode', normalized, 'qty:', this.scanQuantities.get(normalized));
     this.scanned.emit(normalized);
   }
-  // allows the user to input the desired amount of that scanned item into the system and if they dont
-  // the method will resort to a default of 1 since a scanned item innately is one item
+
+  /**
+   * Allows the user to input the desired amount of that scanned item into the system and if they don't
+   * the method will resort to a default of 1 since a scanned item innately is one item
+   */
   updateScanQuantity(barcode: string, value: number) {
     const safeValue = Number(value);
     this.scanQuantities.set(barcode, safeValue > 0 ? safeValue : 1);
   }
+
   /**
    * Phase 3 of scanning
    *  when the user clicks done the onDone() is called to end the scanning session
@@ -238,7 +246,10 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     this.activeMode = null;
     this.done.emit();
   }
-  // stops camera and releases media stream
+
+  /**
+   * Stops camera and releases media stream
+   */
   stopScanner() {
     console.log('STOP SCANNER');
 
@@ -269,6 +280,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     //   console.error('Error stopping media stream:', err);
     // });
   }
+
   clearScans() {
     this.scannedItems = [];
     this.scanQuantities.clear();
@@ -287,6 +299,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
       this.handheldInput?.nativeElement.select();
     });
   }
+
   /**
    * Phase 4 of scanning
    * Goes through every scanned barcode in scannedItems once the user clicked the DONE button
@@ -410,10 +423,9 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     this.processing = false;
   }
   /**
-   * for each item in missingItems[] it will ask the user to enter
+   * For each item in missingItems[] it will ask the user to enter
    * information about each one
    */
-
   async handleProcessingResults(missingItems: { barcode: string; quantity: number }[]) {
     for (const missing of missingItems) {
       if (this.sessionItems.has(missing.barcode)) {
@@ -424,7 +436,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * after the user has clicked done and the items are being search for in the system
+   * After the user has clicked done and the items are being search for in the system
    * by processScannedItem() all the items that dont have a place in the system
    * are put into missingItems[] and handleProcessingResults() sends the missing items
    * to openManualEntry() which will prompt the user to input information
@@ -475,6 +487,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
       }
     }
   }
+
   resolveManualEntry(result: ManualEntryResult | null) {
     this.manualEntryResolver?.(result);
   }
@@ -482,17 +495,21 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   trackByBarcode(index: number, entry: { key: string; value: number}) {
     return entry.key;
   }
+
   getScanEntries() {
     return Array.from(this.scanQuantities.entries()).map(([key, value]) => ({
       key, value
     }));
   }
+
   debugEntry(value: string) {
     console.log('ENTER FIRED', value);
   }
+
   clearHandheldInput() {
     this.handheldInputValue = '';
   }
+
   removeScannedItem(barcode: string) {
     this.scannedItems = this.scannedItems.filter(item => item !== barcode);
 
