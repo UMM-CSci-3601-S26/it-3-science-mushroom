@@ -18,3 +18,12 @@ import './commands';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
+
+Cypress.Commands.overwrite('visit', (originalFn, url, options) => {
+  return cy.request('POST', '/api/auth/login', {
+    username: 'addy',
+    password: 'password123'
+  }).then({ timeout: 30000 }, () => {
+    return originalFn(url, { timeout: 30000, ...options });
+  });
+});

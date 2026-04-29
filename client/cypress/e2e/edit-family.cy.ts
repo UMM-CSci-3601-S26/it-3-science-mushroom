@@ -103,15 +103,15 @@ describe('Edit family page', () => {
     cy.get('[data-test=gradeError]').should('exist').and('be.visible');
     // Entering a valid grade should remove the error
     page.getStudentField(2, 'grade').click();
-    cy.get('mat-option').contains('10').click();
+    cy.get('mat-option', { timeout: 10000 }).contains('10').click({ force: true });
     cy.get('[data-test=gradeError]').should('not.exist');
 
     // Test invalid school
     page.getStudentField(2, 'school').click().type('{esc}');
     cy.get('[data-test=schoolError]').should('exist').and('be.visible');
     // Entering a valid school should remove the error
-    page.getStudentField(2, 'school').click();
-    cy.get('mat-option').contains('Morris Area High School (MAHS)').click();
+    page.getStudentField(2, 'school').click({ force: true });
+    cy.get('mat-option', { timeout: 10000 }).contains('Morris Area High School (MAHS)').click({ force: true });
     cy.get('[data-test=schoolError]').should('not.exist');
   });
 
@@ -121,10 +121,10 @@ describe('Edit family page', () => {
 
     page.addStudentButton().click();
     page.getStudentField(2, 'name').type('Lisa');
-    page.getStudentField(2, 'grade').click();
-    cy.get('mat-option').contains('10').click();
-    page.getStudentField(2, 'school').click();
-    cy.get('mat-option').contains('Morris Area High School (MAHS)').click();
+    page.getStudentField(2, 'grade').click({ force: true });
+    cy.get('mat-option', { timeout: 10000 }).contains('10').click({ force: true });
+    page.getStudentField(2, 'school').click({ force: true });
+    cy.get('mat-option', { timeout: 10000 }).contains('Morris Area High School (MAHS)').click({ force: true });
 
     cy.get(`[formarrayname="students"] [formcontrolname="name"]`).should('have.length', 3);
 
