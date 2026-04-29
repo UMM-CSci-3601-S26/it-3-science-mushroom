@@ -122,6 +122,22 @@ export class FamilyListComponent {
     return this.authService.hasPermission('request_family_delete');
   }
 
+  get canExportFamilies(): boolean {
+    return this.authService.hasPermission('export_families_csv');
+  }
+
+  get canAddFamily(): boolean {
+    return this.authService.hasPermission('add_family');
+  }
+
+  get canEditFamily(): boolean {
+    return this.authService.hasPermission('edit_family');
+  }
+
+  get canRequestFamilyDelete(): boolean {
+    return this.authService.hasPermission('request_family_delete');
+  }
+
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
   showOptionsMenu = signal<boolean>(false);
@@ -266,6 +282,41 @@ export class FamilyListComponent {
         }
         this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
       }
+    });
+  }
+
+  submitDeleteRequest(family: Family) {
+    if (!this.canRequestFamilyDelete || !family._id) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DeleteFamilyRequestDialogComponent, {
+      width: '520px',
+      data: { guardianName: family.guardianName }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DeleteFamilyRequestDialogResult | undefined) => {
+      if (!result?.message?.trim()) {
+        return;
+      }
+
+      this.familyService.requestFamilyDelete(family._id!, result.message.trim()).subscribe({
+        next: () => {
+          if (!family.deleteRequest) {
+            family.deleteRequest = { requested: true };
+          }
+          family.deleteRequest.requested = true;
+          family.deleteRequest.message = result.message.trim();
+          this.snackBar.open('Delete request submitted for admin review.', 'Close', { duration: 2500 });
+        },
+        error: error => {
+          this.snackBar.open(
+            error.error?.message || 'Unable to submit delete request right now. Please try again.',
+            'Close',
+            { duration: 3500 }
+          );
+        }
+      });
     });
   }
 
