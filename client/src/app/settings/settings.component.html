@@ -374,25 +374,25 @@
             <hr>
 
               <div class="flex-row">
-                  <button mat-raised-button color="warn" (click)="clearInventory()">
-                    <mat-icon>delete_sweep</mat-icon>
-                    Delete All Items
-                  </button>
+                <button mat-raised-button color="warn" (click)="clearInventory()" data-cy="clear-inventory-button">
+                  <mat-icon>delete_sweep</mat-icon>
+                  Delete All Items
+                </button>
 
-                  <button mat-raised-button color="warn" (click)="deleteMatchingInventory()">
-                    <mat-icon>delete_forever</mat-icon>
-                    Delete Matching Items
-                  </button>
+                <button mat-raised-button color="warn" (click)="deleteMatchingInventory()" data-cy="delete-matching-inventory-button">
+                  <mat-icon>delete_forever</mat-icon>
+                  Delete Matching Items
+                </button>
 
-                  <button mat-raised-button color="primary" (click)="resetAllQuantities()">
-                    <mat-icon>refresh</mat-icon>
-                    Reset All Quantities
-                  </button>
+                <button mat-raised-button color="primary" (click)="resetAllQuantities()" data-cy="reset-all-quantities-button">
+                  <mat-icon>refresh</mat-icon>
+                  Reset All Quantities
+                </button>
 
-                  <button mat-raised-button color="primary" (click)="resetMatchingQuantities()">
-                    <mat-icon>refresh</mat-icon>
-                    Reset Matching Quantities
-                  </button>
+                <button mat-raised-button color="primary" (click)="resetMatchingQuantities()" data-cy="reset-matching-quantities-button">
+                  <mat-icon>refresh</mat-icon>
+                  Reset Matching Quantities
+                </button>
               </div>
           </div>
         </mat-tab>
