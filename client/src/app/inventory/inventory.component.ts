@@ -125,7 +125,7 @@ export class InventoryComponent {
   description = signal<string | undefined>(undefined);
   quantity = signal<number | undefined>(undefined);
   showNAValues = signal(true);
-  showZeroQuantityItems = signal(true);
+  showZeroQuantityItems = signal(false);
   showOnlyZeroQuantityItems = signal(false);
   viewType = signal<'detailed' | 'simple'>('detailed');
 

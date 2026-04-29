@@ -465,7 +465,7 @@ describe('InventoryService', () => {
         const callArgs = mockedMethod.calls.mostRecent().args;
         expect(callArgs[0])
           .withContext('talks to the correct endpoint')
-          .toBe(`${service.inventoryUrl}/reset`);
+          .toBe(`${service.inventoryUrl}/resetQuantity`);
 
         expect(callArgs[1])
           .withContext('body should be empty object')

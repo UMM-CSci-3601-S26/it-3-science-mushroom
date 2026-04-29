@@ -47,7 +47,7 @@ public class InventoryController implements Controller {
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
   private static final String API_INVENTORY_REMOVE_QUANTITY = "/api/inventory/removeQuantity";
   private static final String API_INVENTORY_CLEAR = "/api/inventory/clear";
-  private static final String API_INVENTORY_RESET = "/api/inventory/reset";
+  private static final String API_INVENTORY_RESET = "/api/inventory/resetQuantity";
 
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";

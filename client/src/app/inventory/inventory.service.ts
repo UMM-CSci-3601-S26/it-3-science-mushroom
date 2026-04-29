@@ -175,7 +175,7 @@ export class InventoryService {
    */
   resetAllQuantities(): Observable<unknown> {
     return new Observable(observer => {
-      this.httpClient.post(`${this.inventoryUrl}/reset`, {}).subscribe({
+      this.httpClient.post(`${this.inventoryUrl}/resetQuantity`, {}).subscribe({
         next: (result) => {
           //this.loadInventory();
           observer.next(result);
@@ -334,7 +334,7 @@ export class InventoryService {
       }
     }
 
-    return this.httpClient.post<InventoryBulkActionResponse>(`${this.inventoryUrl}/reset`, {}, { params: httpParams });
+    return this.httpClient.post<InventoryBulkActionResponse>(`${this.inventoryUrl}/resetQuantity`, {}, { params: httpParams });
   }
 
   optionBuilder(data: Inventory[], key: keyof Inventory): SelectOption[] {
