@@ -67,7 +67,7 @@ public class InventoryControllerSpec {
   private ArgumentCaptor<Document> documentCaptor;
 
   @Captor
-  private ArgumentCaptor<Map<String, String>> mapCaptor;
+  private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
   // -- Test Management -- \\
 
@@ -619,6 +619,152 @@ public class InventoryControllerSpec {
     });
 
     assertEquals("Cannot remove more than current quantity", ex.getMessage());
+  }
+
+  @Test
+  void deleteInventoryDeletesExisting() throws IOException {
+    db.getCollection("inventory").insertOne(new Document()
+        .append("internalID", "ID-DEL-001")
+        .append("quantity", 3));
+
+    when(ctx.pathParam("id")).thenReturn("ID-DEL-001");
+
+    inventoryController.deleteInventory(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+
+    Document found = db.getCollection("inventory").find(new Document("internalID", "ID-DEL-001")).first();
+    assertEquals(null, found);
+  }
+
+  @Test
+  void deleteInventoryReturnsNotFoundForMissing() {
+    when(ctx.pathParam("id")).thenReturn("ID-DOES-NOT-EXIST");
+
+    NotFoundResponse ex = assertThrows(NotFoundResponse.class, () -> {
+      inventoryController.deleteInventory(ctx);
+    });
+
+    assertEquals("The requested inventory item was not found", ex.getMessage());
+  }
+
+  @Test
+  void deleteInventoriesDeletesMatchingItems() throws IOException {
+    // Insert two items with the same brand
+    db.getCollection("inventory").insertMany(List.of(
+      new Document().append("item", "DelA").append("brand", "DelBrand").append("quantity", 1),
+      new Document().append("item", "DelB").append("brand", "DelBrand").append("quantity", 2)
+    ));
+
+    when(ctx.queryParamMap()).thenReturn(Map.of("brand", List.of("DelBrand")));
+    when(ctx.queryParam("brand")).thenReturn("DelBrand");
+
+    inventoryController.deleteInventories(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(2L, response.get("matchedCount"));
+    assertEquals("Deleted 2 matching inventory item(s).", response.get("message"));
+
+    long remaining = db.getCollection("inventory").countDocuments(new Document("brand", "DelBrand"));
+    assertEquals(0, remaining);
+  }
+
+  @Test
+  void deleteInventoriesReturnsNoMatchesMessage() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("brand", List.of("MissingBrand")));
+    when(ctx.queryParam("brand")).thenReturn("MissingBrand");
+
+    inventoryController.deleteInventories(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(0L, response.get("matchedCount"));
+    assertEquals("No inventory items matched the provided filters.", response.get("message"));
+  }
+
+  @Test
+  void clearInventoryRemovesAllItems() {
+    // Ensure there are items present
+    long before = db.getCollection("inventory").countDocuments();
+    assert (before > 0);
+
+    inventoryController.clearInventory(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+
+    long after = db.getCollection("inventory").countDocuments();
+    assertEquals(0, after);
+  }
+
+  @Test
+  void resetQuantitiesSetsZerosForAllItems() {
+    inventoryController.resetQuantities(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(5L, response.get("matchedCount"));
+    assertEquals("Reset quantities for 5 matching inventory item(s).", response.get("message"));
+
+    for (Document d : db.getCollection("inventory").find()) {
+      Integer q = d.getInteger("quantity");
+      Integer max = d.getInteger("maxQuantity");
+      Integer min = d.getInteger("minQuantity");
+      assertEquals(0, q);
+      assertEquals(0, max);
+      assertEquals(0, min);
+    }
+  }
+
+  @Test
+  void resetQuantitiesFiltersByQuery() {
+    // Insert two items with the same brand and nonzero quantities
+    db.getCollection("inventory").insertMany(List.of(
+      new Document().append("internalID", "ID-RESET-001")
+      .append("brand", "ResetBrand")
+      .append("quantity", 5)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 1),
+
+      new Document().append("internalID", "ID-RESET-002")
+      .append("brand", "ResetBrand")
+      .append("quantity", 3)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 1)
+    ));
+
+    when(ctx.queryParamMap()).thenReturn(Map.of("brand", List.of("ResetBrand")));
+    when(ctx.queryParam("brand")).thenReturn("ResetBrand");
+
+    inventoryController.resetQuantities(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(2L, response.get("matchedCount"));
+    assertEquals("Reset quantities for 2 matching inventory item(s).", response.get("message"));
+  }
+
+  @Test
+  void resetQuantitiesReturnsNoMatchesMessage() {
+    when(ctx.queryParamMap()).thenReturn(Map.of("brand", List.of("MissingBrand")));
+    when(ctx.queryParam("brand")).thenReturn("MissingBrand");
+
+    inventoryController.resetQuantities(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(0L, response.get("matchedCount"));
+    assertEquals("No inventory items matched the provided filters.", response.get("message"));
   }
 }
 

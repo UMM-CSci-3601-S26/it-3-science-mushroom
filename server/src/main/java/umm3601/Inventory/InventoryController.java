@@ -9,6 +9,7 @@ import static com.mongodb.client.model.Filters.regex;
 // Java Imports
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 // IO Imports
 import io.javalin.Javalin;
@@ -276,16 +278,15 @@ public class InventoryController implements Controller {
    * @param ctx The HTTP request context
   */
   public void deleteInventories(Context ctx) {
-
     Bson filter = constructFilter(ctx);
 
-    FindIterable<Inventory> results = inventoryCollection.find(filter);
+    DeleteResult deleteResult = inventoryCollection.deleteMany(filter);
+    long matchedCount = deleteResult.getDeletedCount();
+    String message = matchedCount == 0
+      ? "No inventory items matched the provided filters."
+      : "Deleted " + matchedCount + " matching inventory item(s).";
 
-    ArrayList<Inventory> matching = results.into(new ArrayList<>());
-
-    matching.forEach(inv -> inventoryCollection.deleteOne(eq("_id", inv._id)));
-
-    ctx.json(matching);
+    ctx.json(Map.of("matchedCount", matchedCount, "message", message));
     ctx.status(HttpStatus.OK);
   }
 
@@ -298,12 +299,26 @@ public class InventoryController implements Controller {
   }
 
   /**
-   * Sets the quantity of all inventory items to 0.
+   * Sets quantity, minQuantity, and maxQuantity to 0 for all matching inventory items based on query parameters
    */
   public void resetQuantities(Context ctx) {
-    inventoryCollection.updateMany(new Document(), Updates.set(QUANTITY_KEY, 0));
-    inventoryCollection.updateMany(new Document(), Updates.set(MAX_QUANTITY_KEY, 0));
-    inventoryCollection.updateMany(new Document(), Updates.set(MIN_QUANTITY_KEY, 0));
+    Bson filter = constructFilter(ctx);
+
+    UpdateResult updateResult = inventoryCollection.updateMany(
+      filter,
+      Updates.combine(
+        Updates.set(QUANTITY_KEY, 0),
+        Updates.set(MAX_QUANTITY_KEY, 0),
+        Updates.set(MIN_QUANTITY_KEY, 0)
+      )
+    );
+
+    long matchedCount = updateResult.getMatchedCount();
+    String message = matchedCount == 0
+      ? "No inventory items matched the provided filters."
+      : "Reset quantities for " + matchedCount + " matching inventory item(s).";
+
+    ctx.json(Map.of("matchedCount", matchedCount, "message", message));
     ctx.status(HttpStatus.OK);
   }
 
