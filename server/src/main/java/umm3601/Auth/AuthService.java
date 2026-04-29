@@ -76,7 +76,7 @@ public class AuthService {
         throw new UnauthorizedResponse("User account no longer exists");
       }
       AccessIdentity identity = normalizeAccessIdentity(user);
-      return buildAccessProfile(user.systemRole, identity.jobRole);
+      return buildAccessProfile(user, identity.jobRole);
     } catch (JwtException e) {
       throw new UnauthorizedResponse("Invalid or expired token");
     }
@@ -101,6 +101,14 @@ public class AuthService {
     return response;
   }
 
+  public Map<String, Object> buildAccessProfile(Users user, String jobRole) {
+    Map<String, Object> response = buildAccessProfile(user.systemRole, jobRole);
+    response.put("username", user.username);
+    response.put("fullName", user.fullName);
+    response.put("email", user.email);
+    return response;
+  }
+
   public void assignVolunteerJobRole(String username, String jobRole) {
     Users user = usersService.findByUsername(username);
     if (user == null) {
@@ -118,7 +126,7 @@ public class AuthService {
   private AuthSession createSession(Users user, Role systemRole) {
     AccessIdentity identity = normalizeAccessIdentity(user);
     String token = JwtUtils.createToken(user._id, systemRole, identity.jobRole, jwtSecret);
-    return new AuthSession(token, buildAccessProfile(systemRole, identity.jobRole));
+    return new AuthSession(token, buildAccessProfile(user, identity.jobRole));
   }
 
   private AccessIdentity normalizeAccessIdentity(Users user) {

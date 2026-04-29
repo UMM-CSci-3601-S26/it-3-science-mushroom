@@ -78,11 +78,18 @@ public class AuthController {
     }
 
     String jobRole = ctx.attribute("jobRole");
+    String username = ctx.attribute("username");
+    String fullName = ctx.attribute("fullName");
+    String email = ctx.attribute("email");
     if (systemRole == Role.VOLUNTEER && (jobRole == null || jobRole.isBlank())) {
       jobRole = "volunteer_base";
     }
 
-    ctx.json(authService.buildAccessProfile(systemRole, jobRole));
+    Map<String, Object> profile = authService.buildAccessProfile(systemRole, jobRole);
+    profile.put("username", username);
+    profile.put("fullName", fullName);
+    profile.put("email", email);
+    ctx.json(profile);
   }
 
   @Route(path = "/api/auth/permissions/all", method = HttpMethod.GET)
