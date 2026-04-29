@@ -95,6 +95,12 @@
               <span>Management</span>
             </button>
           }
+          @if (isAdmin) {
+            <button mat-menu-item (click)="copyVolunteerSignUpLink()">
+              <mat-icon>content_copy</mat-icon>
+              <span>Copy Volunteer Sign Up Link</span>
+            </button>
+          }
           <button mat-menu-item (click)="logout()">
             <mat-icon>logout</mat-icon>
             <span>Logout</span>
