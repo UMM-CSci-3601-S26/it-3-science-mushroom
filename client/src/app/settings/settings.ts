@@ -23,6 +23,7 @@ export interface AppSettings {
   timeAvailability: TimeAvailabilityLabels;
   supplyOrder: SupplyItemOrder[];
   availableSpots: number;
+  barcodePrintWarningLimit: number;
 }
 
 // Service for managing application settings, including schools, time availability labels, and supply order.
