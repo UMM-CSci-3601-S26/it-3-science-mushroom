@@ -92,11 +92,11 @@ export class SettingsComponent implements OnInit {
   }
 
   get canEditAvailableSlots(): boolean {
-    return this.authService.hasPermission('edit_available_slots')
+    return this.authService.hasPermission('edit_available_spots');
   }
 
   get canEditDriveDay(): boolean {
-    return this.authService.isAdmin();
+    return this.authService.hasPermission('edit_drive_day');
   }
 
   // Options for filter dropdowns, built from inventory data

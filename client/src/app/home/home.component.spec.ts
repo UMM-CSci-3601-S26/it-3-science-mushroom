@@ -1,6 +1,7 @@
 import { DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
 import { HomeComponent } from './home.component';
 
 describe('Home', () => {
@@ -12,6 +13,7 @@ describe('Home', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HomeComponent],
+      providers: [provideRouter([])]
     });
 
     fixture = TestBed.createComponent(HomeComponent);
