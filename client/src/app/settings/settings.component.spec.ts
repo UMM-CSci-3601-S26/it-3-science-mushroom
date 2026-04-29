@@ -741,6 +741,8 @@ describe('SettingsComponent', () => {
     tick();
 
     expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to reset quantities.', 'OK', { duration: 4000 });
+  }));
+
   it('Should call scheduleFamilies and show successful snackBar', fakeAsync(() => {
     component.availableSpotsForm.setValue({ availableSpots: 5 });
 

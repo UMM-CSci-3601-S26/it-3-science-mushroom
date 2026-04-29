@@ -433,6 +433,10 @@ export class SettingsComponent implements OnInit {
             this.snackBar.open('Failed to reset quantities.', 'OK', { duration: 4000 });
           }
         });
+      }
+    });
+  }
+
   scheduleFamilies(): void {
     this.settingsService.updateAvailableSpots(this.availableSpotsForm.value as number).subscribe({
       next: () => {
