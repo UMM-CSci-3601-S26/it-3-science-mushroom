@@ -1,0 +1,69 @@
+<h2 mat-dialog-title> Print Barcodes</h2>
+
+<div class="barcode-dialog-panel">
+  <mat-dialog-content class="barcode-print-content">
+    <p> Select items to print barcodes</p>
+
+    <div class="barcode-filter-row">
+      <mat-form-field appearance="outline" class="description-filter">
+        <mat-label>Description</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="descriptionFilter"
+          placeholder="Search descriptions..."
+        >
+      </mat-form-field>
+
+      <button mat-raised-button type="button" (click)="clearDescriptionFilter()">
+        Clear
+      </button>
+    </div>
+
+    <div class="barcode-dialog-actions barcode-select-actions">
+      <div class="select-options">
+        <button mat-raised-button type="button" (click)="clearSelectedItems()">
+          Clear Selected
+        </button>
+        <button mat-raised-button type="button" (click)="selectAllVisibleItems()">
+          Select Visible
+        </button>
+        <button mat-raised-button type="button" (click)="selectAllItems()">
+          Select All
+        </button>
+      </div>
+    </div>
+
+    <div class="barcode-item-list-frame">
+      <div class="barcode-item-list">
+        <div class="barcode-item-row" *ngFor="let item of filteredItems()">
+          <mat-checkbox
+            [checked]="isSelected(item)"
+            (change)="toggleSelectedItems(item, $event.checked)">
+          </mat-checkbox>
+          <div class="barcode-item-info">
+            <div class="barcode-item-name">
+              {{ item.item }}
+            </div>
+            <div class="barcode-item-details">
+              {{ item.description}} | {{ item.internalBarcode }}
+            </div>
+          </div>
+        </div>
+
+        <p class="empty-filter-message" *ngIf="filteredItems().length === 0">
+          No items match that description.
+        </p>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="barcode-dialog-actions barcode-print-actions" align="end">
+    <button mat-raised-button type="button" (click)="cancel()">
+      Cancel
+    </button>
+    <button mat-raised-button type="button" (click)="printSelectedItems()">
+      Print
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,211 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: var(--barcode-dialog-bg);
+  color: var(--barcode-text);
+  max-height: 95vh;
+  overflow: hidden;
+  padding: 0 0 24px;
+
+  --barcode-dialog-bg: linear-gradient(135deg, #dbeafe 0%, #f8fbff 42%, #e0f2fe 100%);
+  --barcode-panel-bg: rgba(255, 255, 255, 0.42);
+  --barcode-panel-border: #cbd5e1;
+  --barcode-card-bg: #ffffff;
+  --barcode-card-border: #d1d5db;
+  --barcode-card-hover: #ebf1f7;
+  --barcode-text: #111827;
+  --barcode-muted-text: #4b5563;
+}
+
+h2[mat-dialog-title] {
+  margin: 0;
+  padding: 18px 32px 8px;
+  color: var(--barcode-text);
+  background: transparent;
+}
+
+.barcode-dialog-panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: 0 32px;
+  padding: 18px;
+  height: min(720px, calc(95vh - 86px));
+  max-height: calc(95vh - 86px);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--barcode-panel-border);
+  border-radius: 12px;
+  background: var(--barcode-panel-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --barcode-dialog-bg: linear-gradient(135deg, #0b1220 0%, #111827 46%, #13204a 100%);
+    --barcode-panel-bg: rgba(31, 41, 55, 0.36);
+    --barcode-panel-border: #4b5563;
+    --barcode-card-bg: #1f2937;
+    --barcode-card-border: #374151;
+    --barcode-card-hover: #253244;
+    --barcode-text: #f9fafb;
+    --barcode-muted-text: #d1d5db;
+  }
+}
+
+.barcode-print-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  padding-top: 0.5rem;
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  background: transparent;
+  color: var(--barcode-text);
+}
+
+.barcode-filter-row {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.description-filter {
+  flex: 1;
+}
+
+.barcode-item-list-frame {
+  flex: 1 1 auto;
+  display: flex;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+  border: 1px solid var(--barcode-panel-border);
+  border-radius: 12px;
+  background: var(--barcode-panel-bg);
+}
+
+.barcode-item-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-auto-rows: 86px;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  padding: 0 0.25rem 0.5rem 0;
+}
+
+.barcode-item-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.75rem;
+  box-sizing: border-box;
+  height: 86px;
+  padding: 0.75rem;
+  border: 1px solid var(--barcode-card-border);
+  border-radius: 10px;
+  background: var(--barcode-card-bg);
+}
+
+.barcode-item-row:hover {
+  background: var(--barcode-card-hover);
+}
+
+.barcode-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.barcode-item-name {
+  font-weight: 700;
+  color: var(--barcode-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barcode-item-details {
+  font-size: 0.875rem;
+  color: var(--barcode-muted-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-filter-message {
+  margin: 0.75rem;
+  color: var(--barcode-muted-text);
+  text-align: center;
+}
+.barcode-dialog-actions {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  align-items: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0.25rem 0 0.75rem;
+  width: 100%;
+  background: transparent;
+  color: var(--barcode-text);
+}
+
+.barcode-select-actions {
+  margin: 0.25rem 0 0.75rem;
+}
+
+.barcode-print-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+
+.select-options,
+.action-options {
+  display: contents;
+}
+
+.select-options button,
+.action-options button {
+  margin: 0;
+  min-height: 36px;
+  width: 100%;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.barcode-print-actions button {
+  width: auto;
+  min-width: 88px;
+}
+
+@media (max-width: 640px) {
+  .barcode-dialog-actions {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
+.select-options button:hover {
+  background: var(--barcode-card-hover);
+}
+
+.action-options button:hover {
+  background: var(--barcode-card-hover);
+}

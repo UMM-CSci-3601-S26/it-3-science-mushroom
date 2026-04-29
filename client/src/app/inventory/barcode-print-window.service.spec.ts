@@ -1,0 +1,104 @@
+import { TestBed } from '@angular/core/testing';
+import { BarcodePrintWindowService } from './barcode-print-window.service';
+import { PrintableBarcodeItem } from './barcode-print-item';
+import { Inventory } from './inventory';
+
+describe('BarcodePrintWindowService', () => {
+  let service: BarcodePrintWindowService;
+
+  const item: Inventory = {
+    internalID: 'item-a',
+    internalBarcode: 'ITEM-00001',
+    item: 'Markers <Blue>',
+    brand: 'Crayola',
+    description: 'Washable & bright "markers"',
+    color: 'Blue',
+    size: 'Wide',
+    type: 'Washable',
+    material: 'Plastic',
+    quantity: 5,
+    maxQuantity: 10,
+    minQuantity: 1,
+    stockState: 'stocked',
+    notes: 'A',
+  };
+
+  const printableItem: PrintableBarcodeItem = {
+    item,
+    barcode: 'ITEM-00001',
+    barcodeImage: 'data:image/png;base64,barcode-image',
+    quantity: 2,
+  };
+
+  const singleFallbackPrintableItem: PrintableBarcodeItem = {
+    item: {
+      ...item,
+      internalID: 'item-b',
+      internalBarcode: 'ITEM-00002',
+      item: "Folders 'Green'",
+      description: undefined,
+    },
+    barcode: 'ITEM-00002',
+    barcodeImage: 'data:image/png;base64,barcode-image-two',
+    quantity: 0,
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [BarcodePrintWindowService],
+    });
+
+    service = TestBed.inject(BarcodePrintWindowService);
+  });
+
+  it('returns false when the browser blocks the popup window', () => {
+    spyOn(window, 'open').and.returnValue(null);
+
+    expect(service.open([printableItem])).toBeFalse();
+  });
+
+  it('opens a popup window and writes printable barcode HTML', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus'),
+    } as unknown as Window;
+
+    spyOn(window, 'open').and.returnValue(popupWindow);
+
+    const opened = service.open([printableItem]);
+
+    expect(opened).toBeTrue();
+    expect(window.open).toHaveBeenCalledWith('', '_blank', 'width=900,height=700');
+    expect(documentSpy.open).toHaveBeenCalled();
+    expect(documentSpy.close).toHaveBeenCalled();
+    expect(popupWindow.focus).toHaveBeenCalled();
+
+    const html = documentSpy.write.calls.mostRecent().args[0] as string;
+    expect(html).toContain('Print Barcodes');
+    expect(html).toContain('Barcode print summary');
+    expect(html).toContain('Total barcodes: <span class="summary-quantity">2</span>');
+    expect(html).toContain('data:image/png;base64,barcode-image');
+    expect(html).toContain('Markers &lt;Blue&gt;');
+    expect(html).toContain('<span class="summary-quantity">2</span>');
+    expect(html).toContain('Washable &amp; bright &quot;markers&quot;');
+    expect(html.match(/data:image\/png;base64,barcode-image/g)?.length).toBe(2);
+  });
+
+  it('falls back to one printable label when quantity is invalid', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus'),
+    } as unknown as Window;
+
+    spyOn(window, 'open').and.returnValue(popupWindow);
+
+    service.open([singleFallbackPrintableItem]);
+
+    const html = documentSpy.write.calls.mostRecent().args[0] as string;
+    expect(html).toContain('Total barcodes: <span class="summary-quantity">1</span>');
+    expect(html).toContain('Folders &#39;Green&#39;');
+    expect(html.match(/data:image\/png;base64,barcode-image-two/g)?.length).toBe(1);
+  });
+});

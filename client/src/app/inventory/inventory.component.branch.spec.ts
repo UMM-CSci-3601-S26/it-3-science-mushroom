@@ -8,6 +8,7 @@ import { Inventory } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
 import { SelectOption } from './inventory';
+import { SettingsService } from '../settings/settings.service';
 import { ManualEntryResult } from './manual-entry';
 
 type ScanCard = {
@@ -34,6 +35,7 @@ describe('InventoryComponent branch coverage', () => {
   let inventoryIndexSpy: jasmine.SpyObj<InventoryIndex>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
+  let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
   let scannerStub: ScannerStub;
 
   const itemA: Inventory = {
@@ -119,6 +121,19 @@ describe('InventoryComponent branch coverage', () => {
 
     snackBarSpy = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
     dialogSpy = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    settingsServiceSpy = jasmine.createSpyObj<SettingsService>('SettingsService', ['getSettings']);
+    settingsServiceSpy.getSettings.and.returnValue(of({
+      schools: [],
+      timeAvailability: {
+        earlyMorning: '',
+        lateMorning: '',
+        earlyAfternoon: '',
+        lateAfternoon: ''
+      },
+      supplyOrder: [],
+      availableSpots: 0,
+      barcodePrintWarningLimit: 25
+    }));
 
     scannerStub = {
       clearHandheldInput: jasmine.createSpy('clearHandheldInput'),
@@ -144,7 +159,8 @@ describe('InventoryComponent branch coverage', () => {
         { provide: InventoryService, useValue: inventoryServiceSpy },
         { provide: InventoryIndex, useValue: inventoryIndexSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: MatDialog, useValue: dialogSpy }
+        { provide: MatDialog, useValue: dialogSpy },
+        { provide: SettingsService, useValue: settingsServiceSpy }
       ]
     });
 

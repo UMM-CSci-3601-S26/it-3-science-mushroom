@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 public class SettingSpec {
 
+  private static final int DEFAULT_BARCODE_PRINT_WARNING_LIMIT = 25;
+
   @Test
   void canCreateSettingsWithSchoolListAndTimeAvailability() {
     Settings settings = new Settings();
@@ -34,6 +36,7 @@ public class SettingSpec {
     assertEquals("10:30 AM - 12:30 AM", settings.timeAvailability.lateMorning);
     assertEquals("1:00 PM - 3:00 PM", settings.timeAvailability.earlyAfternoon);
     assertEquals("3:00 PM - 5:00 PM", settings.timeAvailability.lateAfternoon);
+    assertEquals(DEFAULT_BARCODE_PRINT_WARNING_LIMIT, settings.barcodePrintWarningLimit);
   }
 
   @Test

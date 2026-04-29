@@ -102,6 +102,9 @@ export class SettingsComponent implements OnInit {
     type: new FormControl(''),
     material: new FormControl(''),
   });
+  
+  barcodePrintForm = new FormGroup({
+    barcodePrintWarningLimit: new FormControl<number>(25, [Validators.required, Validators.min(1)])
 
   // Drive Order: three buckets of item terms (e.g. "notebook", "folder")
   stagedTerms: string[] = [];    // included in the drive, checklist order matches this list
@@ -116,6 +119,9 @@ export class SettingsComponent implements OnInit {
         this.timeAvailabilityForm.patchValue(settings.timeAvailability);
       }
       this.availableSpotsForm.patchValue({ availableSpots: settings.availableSpots});
+      this.barcodePrintForm.patchValue({
+        barcodePrintWarningLimit: settings.barcodePrintWarningLimit ?? 25
+      });
     });
 
     this.loadDriveOrder();
@@ -422,5 +428,14 @@ export class SettingsComponent implements OnInit {
         });
       }
     });
+  saveBarcodePrintSettings(): void {
+    if (this.barcodePrintForm.valid) {
+      const warningLimit = this.barcodePrintForm.value.barcodePrintWarningLimit ?? 25;
+
+      this.settingsService.updateBarcodePrintWarningLimit(warningLimit).subscribe({
+        next: () => this.snackBar.open(`Barcode print warning limit saved: ${warningLimit}`, 'OK', { duration: 2000 }),
+        error: () => this.snackBar.open('Failed to save barcode print settings', 'OK', { duration: 3000 })
+      });
+    }
   }
 }

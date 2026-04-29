@@ -56,6 +56,9 @@ public class Settings {
    */
   public int availableSpots = 5;
 
+  // Warns the operator before printing more than this many barcode labels for one item
+  public int barcodePrintWarningLimit = 25;
+
   /**
    * Records how a single supply list entry should be treated on drive day.
    * "staged"   – included in the checklist at this exact position in the list
