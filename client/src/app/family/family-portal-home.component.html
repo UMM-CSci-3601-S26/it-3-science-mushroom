@@ -1,0 +1,81 @@
+<div class="family-portal-container">
+  @if (isLoading) {
+    <mat-card class="portal-status-card">
+      <mat-card-header>
+        <mat-card-title>Family Portal</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>Loading your family information...</mat-card-content>
+    </mat-card>
+  } @else if (error) {
+    <mat-card class="portal-status-card portal-error-card">
+      <mat-card-header>
+        <mat-card-title>Family Portal</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>{{ error }}</mat-card-content>
+    </mat-card>
+  } @else {
+    <section class="portal-summary-band">
+      <div>
+        <h1>Family Portal</h1>
+        <p>{{ summary?.driveDay?.message || 'Your pickup details and checklist will stay updated here.' }}</p>
+      </div>
+      <a mat-raised-button color="primary" routerLink="/family-portal/form">
+        <mat-icon>edit</mat-icon>
+        Edit Family Profile
+      </a>
+    </section>
+
+    <section class="portal-info-grid">
+      <mat-card class="portal-info-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>event</mat-icon>
+          <mat-card-title>Drive Day</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="portal-info-value">{{ driveDayDate }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="portal-info-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>schedule</mat-icon>
+          <mat-card-title>Pickup Time</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="portal-info-value">{{ assignedTimeSlot }}</div>
+          <div class="portal-status-chip">{{ summary?.timeSlotStatus || 'pending' }}</div>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
+    <mat-card class="checklist-card">
+      <mat-card-header>
+        <mat-card-title>{{ checklist?.printableTitle || 'Family Checklist' }}</mat-card-title>
+        <mat-card-subtitle>Supplies currently planned for your family</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (checklistSections.length === 0) {
+          <p>No checklist has been generated for your family yet.</p>
+        } @else {
+          <div class="checklist-section-grid">
+            @for (section of checklistSections; track section.id || section.title) {
+              <section class="checklist-section">
+                <h3>{{ section.printableTitle || section.title }}</h3>
+                <ul>
+                  @for (item of section.items ?? []; track item.id || item.label) {
+                    <li>
+                      <span>{{ item.label || item.itemDescription || 'Checklist item' }}</span>
+                      @if (item.requestedQuantity) {
+                        <span class="quantity-chip">x{{ item.requestedQuantity }}</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

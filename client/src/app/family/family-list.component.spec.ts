@@ -56,6 +56,37 @@ describe('Family list', () => {
     expect(families[0].guardianName).toBe('John Johnson');
   });
 
+  it('should filter families by linked guardian account status', () => {
+    familyList.linkStatusFilter.set('linked');
+    fixture.detectChanges();
+
+    expect(familyList.filteredFamilies.map(family => family.guardianName))
+      .toEqual(['John Johnson', 'George Peterson']);
+
+    familyList.linkStatusFilter.set('manual');
+    fixture.detectChanges();
+
+    expect(familyList.filteredFamilies.map(family => family.guardianName))
+      .toEqual(['Jane Doe']);
+
+    familyList.linkStatusFilter.set('all');
+    fixture.detectChanges();
+
+    expect(familyList.filteredFamilies.length).toBe(3);
+  });
+
+  it('should clear family filters', () => {
+    familyList.guardianName.set('Jane');
+    familyList.linkStatusFilter.set('manual');
+    familyList.pageNum.set(2);
+
+    familyList.clearFamilyFilters();
+
+    expect(familyList.guardianName()).toBeUndefined();
+    expect(familyList.linkStatusFilter()).toBe('all');
+    expect(familyList.pageNum()).toBe(0);
+  });
+
   it('exportFamilies() should be called when CSV is downloaded', () => {
     spyOn(familyService, 'exportFamilies').and.returnValue(of('csv-data'));
 
@@ -158,7 +189,10 @@ describe('Misbehaving Family List', () => {
       providers: [{
         provide: FamilyService,
         useValue: familyServiceStub
-      }, provideRouter([])],
+      },
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideRouter([])],
     })
       .compileComponents();
   }));
@@ -193,6 +227,8 @@ describe('FamilyDash', () => {
       imports: [FamilyListComponent],
       providers: [
         { provide: FamilyService, useClass: MockFamilyService },
+        provideHttpClient(),
+        provideHttpClientTesting(),
         provideRouter([])
       ]
     }).compileComponents();

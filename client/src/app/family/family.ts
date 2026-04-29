@@ -51,6 +51,8 @@ export interface FamilyChecklist {
 
 export interface Family {
   _id?: string;
+  ownerUserId?: string;
+  profileComplete?: boolean;
   guardianName: string;
   email: string;
   address: string;
@@ -61,6 +63,16 @@ export interface Family {
   status?: string;
   checklist?: FamilyChecklist | null;
   students: StudentInfo[];
+  deleteRequest?: FamilyDeleteRequest;
+}
+
+export interface FamilyDeleteRequest {
+  requested: boolean;
+  message?: string;
+  requestedByUserId?: string;
+  requestedByUserName?: string;
+  requestedBySystemRole?: string;
+  requestedAt?: string;
 }
 
 export interface DashboardStats {

@@ -26,6 +26,7 @@ import { FamilyService } from './family.service';
 // Settings Imports
 import { SettingsService } from '../settings/settings.service';
 import { SchoolInfo, TimeAvailabilityLabels } from '../settings/settings';
+import { AuthService } from '../auth/auth-service';
 
 @Component({
   selector: 'app-edit-family',
@@ -55,6 +56,11 @@ export class EditFamilyComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private dialogService = inject(DialogService);
   private settingsService = inject(SettingsService);
+  private authService = inject(AuthService);
+
+  get canDeleteFamily(): boolean {
+    return this.authService.hasPermission('delete_family');
+  }
 
   error = signal({ help: '', httpResponse: '', message: '' });
 
@@ -365,6 +371,11 @@ export class EditFamilyComponent implements OnInit {
   }
 
   deleteForm() {
+    if (!this.canDeleteFamily) {
+      this.snackBar.open('You do not have permission to delete families.', 'OK', { duration: 3000 });
+      return;
+    }
+
     const familyId = this.route.snapshot.paramMap.get('id');
     const rawForm = this.editFamilyForm.value;
 

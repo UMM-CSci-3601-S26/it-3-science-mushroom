@@ -1,0 +1,179 @@
+<div class="family-portal-form-page">
+  <form [formGroup]="familyForm" (ngSubmit)="saveForm()">
+    <mat-card class="family-portal-form-card">
+      <mat-card-header>
+        <mat-card-title>Family Profile</mat-card-title>
+        <mat-card-subtitle>
+          Keep your household details current for pickup scheduling and supplies.
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        @if (isLoading) {
+          <p class="loading-text">Loading family form...</p>
+        } @else {
+          <section class="form-section">
+            <h3>Guardian</h3>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Guardian First Name</mat-label>
+                <input matInput formControlName="guardianFirstName" required>
+                @if (formControlHasError('guardianFirstName')) {
+                  <mat-error data-test="guardianFirstNameError">
+                    {{ getFamilyErrorMessage('guardianFirstName') }}
+                  </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Guardian Last Name</mat-label>
+                <input matInput formControlName="guardianLastName" required>
+                @if (formControlHasError('guardianLastName')) {
+                  <mat-error data-test="guardianLastNameError">
+                    {{ getFamilyErrorMessage('guardianLastName') }}
+                  </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email" required>
+                @if (formControlHasError('email')) {
+                  <mat-error data-test="emailError">
+                    {{ getFamilyErrorMessage('email') }}
+                  </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Address</mat-label>
+                <input matInput formControlName="address" required>
+                @if (formControlHasError('address')) {
+                  <mat-error data-test="addressError">
+                    {{ getFamilyErrorMessage('address') }}
+                  </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field-wide">
+                <mat-label>Any Accommodations Needed?</mat-label>
+                <input matInput formControlName="accommodations">
+              </mat-form-field>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <div class="section-heading-row">
+              <h3>Students</h3>
+              <button mat-stroked-button type="button" color="primary" (click)="addStudent()">
+                Add Student
+              </button>
+            </div>
+
+            <div formArrayName="students" class="students-container">
+              @for (student of students.controls; track $index; let i = $index) {
+                <div [formGroupName]="i" class="student-panel">
+                  <div class="student-panel-header">
+                    <h4>Student {{ i + 1 }}</h4>
+                    <button mat-button color="warn" type="button" (click)="removeStudent(i)">
+                      Remove
+                    </button>
+                  </div>
+
+                  <div class="student-grid">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Name</mat-label>
+                      <input matInput formControlName="name" required>
+                      @if (studentControlHasError(i, 'name')) {
+                        <mat-error data-test="nameError">
+                          {{ getStudentErrorMessage(i, 'name') }}
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Grade</mat-label>
+                      <mat-select formControlName="grade" required>
+                        @for (grade of grades; track grade) {
+                          <mat-option [value]="grade">{{ grade }}</mat-option>
+                        }
+                      </mat-select>
+                      @if (studentControlHasError(i, 'grade')) {
+                        <mat-error data-test="gradeError">
+                          {{ getStudentErrorMessage(i, 'grade') }}
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>School</mat-label>
+                      <mat-select formControlName="school" required>
+                        @for (school of schools; track school.abbreviation) {
+                          <mat-option [value]="school.abbreviation">
+                            {{ school.name }} ({{ school.abbreviation }})
+                          </mat-option>
+                        }
+                      </mat-select>
+                      @if (studentControlHasError(i, 'school')) {
+                        <mat-error data-test="schoolError">
+                          {{ getStudentErrorMessage(i, 'school') }}
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Teacher Last Name</mat-label>
+                      <input matInput formControlName="teacher">
+                    </mat-form-field>
+                  </div>
+
+                  <div class="student-needs-row">
+                    <div class="radio-section">
+                      <h5>Backpack Needed?</h5>
+                      <mat-radio-group formControlName="backpack">
+                        <mat-radio-button [value]="true">Yes</mat-radio-button>
+                        <mat-radio-button [value]="false">No</mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+
+                    <div class="radio-section">
+                      <h5>Headphones Needed?</h5>
+                      <mat-radio-group formControlName="headphones">
+                        <mat-radio-button [value]="true">Yes</mat-radio-button>
+                        <mat-radio-button [value]="false">No</mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+
+          <section class="form-section">
+            <h3>Available Times</h3>
+            <div class="availability-grid" formGroupName="timeAvailability">
+              <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox">
+                {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)
+              </mat-checkbox>
+              <mat-checkbox formControlName="lateMorning" data-test="lateMorningCheckbox">
+                {{ timeAvailabilityLabels.lateMorning }} (Late Morning)
+              </mat-checkbox>
+              <mat-checkbox formControlName="earlyAfternoon" data-test="earlyAfternoonCheckbox">
+                {{ timeAvailabilityLabels.earlyAfternoon }} (Early Afternoon)
+              </mat-checkbox>
+              <mat-checkbox formControlName="lateAfternoon" data-test="lateAfternoonCheckbox">
+                {{ timeAvailabilityLabels.lateAfternoon }} (Late Afternoon)
+              </mat-checkbox>
+            </div>
+          </section>
+        }
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
+          Save Family Profile
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>

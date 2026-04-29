@@ -13,9 +13,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatPaginatorModule, PageEvent, MatPaginatorIntl } from '@angular/material/paginator';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 // RxJS Imports
 import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
@@ -26,6 +27,9 @@ import { Family, SelectOption } from './family';
 import { FamilyCardComponent } from './family-card.component';
 import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
+
+import { AuthService } from '../auth/auth-service';
+import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } from './delete-family-request-dialog.component';
 
 @Component({
   selector: 'app-family',
@@ -57,13 +61,33 @@ import { DashboardStats } from '../family/family';
     MatCardTitle,
     MatCardContent,
     MatAutocompleteModule,
+    MatDialogModule,
+    MatSnackBarModule,
     MatPaginatorModule
   ],
 })
 
 export class FamilyListComponent {
   private familyService = inject(FamilyService);
+  private authService = inject(AuthService);
+  private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+
+  get canExportFamilies(): boolean {
+    return this.authService.hasPermission('export_families_csv');
+  }
+
+  get canAddFamily(): boolean {
+    return this.authService.hasPermission('add_family');
+  }
+
+  get canEditFamily(): boolean {
+    return this.authService.hasPermission('edit_family');
+  }
+
+  get canRequestFamilyDelete(): boolean {
+    return this.authService.hasPermission('request_family_delete');
+  }
 
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
@@ -105,6 +129,30 @@ export class FamilyListComponent {
     )
   }
 
+  linkStatusFilter = signal<'all' | 'linked' | 'manual'>('all');
+
+  private filterByLinkStatus(families: Family[]): Family[] {
+    const status = this.linkStatusFilter();
+    if (status === 'all') {
+      return families;
+    }
+
+    return families.filter(family => {
+      const hasLinkedGuardian = !!family.ownerUserId?.trim();
+      return status === 'linked' ? hasLinkedGuardian : !hasLinkedGuardian;
+    });
+  }
+
+  get filteredFamilies(): Family[] {
+    return this.filterByLinkStatus(this.serverFilteredFamilies() ?? []);
+  }
+
+  clearFamilyFilters() {
+    this.linkStatusFilter.set('all');
+    this.guardianName.set(undefined);
+    this.pageNum.set(0);
+  }
+
   filteredFamilyOptions = computed(() =>
     this.filterOptions(this.familyService.familyOptions(), (this.guardianName() || '').toLowerCase())
   );
@@ -141,7 +189,7 @@ export class FamilyListComponent {
   pageSize = signal(8);
 
   familiesPerPage = computed(() => {
-    const data = this.serverFilteredFamilies();
+    const data = this.filteredFamilies;
     const initialSetup = this.pageNum() * this.pageSize();
     return data.slice(initialSetup, initialSetup + this.pageSize());
   });
@@ -185,6 +233,41 @@ export class FamilyListComponent {
         }
         this.snackBar.open(this.errMsg(), 'OK', { duration: 6000 });
       }
+    });
+  }
+
+  submitDeleteRequest(family: Family) {
+    if (!this.canRequestFamilyDelete || !family._id) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DeleteFamilyRequestDialogComponent, {
+      width: '520px',
+      data: { guardianName: family.guardianName }
+    });
+
+    dialogRef.afterClosed().subscribe((result: DeleteFamilyRequestDialogResult | undefined) => {
+      if (!result?.message?.trim()) {
+        return;
+      }
+
+      this.familyService.requestFamilyDelete(family._id!, result.message.trim()).subscribe({
+        next: () => {
+          if (!family.deleteRequest) {
+            family.deleteRequest = { requested: true };
+          }
+          family.deleteRequest.requested = true;
+          family.deleteRequest.message = result.message.trim();
+          this.snackBar.open('Delete request submitted for admin review.', 'Close', { duration: 2500 });
+        },
+        error: error => {
+          this.snackBar.open(
+            error.error?.message || 'Unable to submit delete request right now. Please try again.',
+            'Close',
+            { duration: 3500 }
+          );
+        }
+      });
     });
   }
 }

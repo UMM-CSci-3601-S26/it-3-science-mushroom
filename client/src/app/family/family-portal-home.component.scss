@@ -1,0 +1,102 @@
+.family-portal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: 16px;
+}
+
+.portal-summary-band {
+  align-items: center;
+  border-left: 6px solid inherit;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 20px;
+
+  h1 {
+    font-size: 1.8rem;
+    margin: 0 0 6px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.portal-info-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.portal-info-card,
+.checklist-card,
+.portal-status-card {
+  border-radius: 8px;
+}
+
+.portal-info-value {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.portal-status-chip,
+.quantity-chip {
+  background: inherit;
+  border-radius: 16px;
+  color: inherit;
+  display: inline-flex;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  text-transform: capitalize;
+}
+
+.portal-error-card {
+  border-left: 6px solid #c62828;
+}
+
+.checklist-section-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.checklist-section {
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 12px;
+
+  h3 {
+    font-size: 1rem;
+    margin: 0 0 8px;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    align-items: center;
+    border-top: 1px solid;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+
+  li:first-child {
+    border-top: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .portal-summary-band {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
