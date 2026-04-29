@@ -106,6 +106,22 @@ export class FamilyListComponent {
     return this.authService.hasPermission('request_family_delete');
   }
 
+  get canExportFamilies(): boolean {
+    return this.authService.hasPermission('export_families_csv');
+  }
+
+  get canAddFamily(): boolean {
+    return this.authService.hasPermission('add_family');
+  }
+
+  get canEditFamily(): boolean {
+    return this.authService.hasPermission('edit_family');
+  }
+
+  get canRequestFamilyDelete(): boolean {
+    return this.authService.hasPermission('request_family_delete');
+  }
+
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
   showOptionsMenu = signal<boolean>(false);

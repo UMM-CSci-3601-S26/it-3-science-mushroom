@@ -170,6 +170,7 @@
               }
             </div>
 
+            @if (canEditBarcode) {
             <div class="print-barcode" data-cy="barcode-print">
               <button
               mat-stroked-button
@@ -179,7 +180,8 @@
                   Print Barcodes
               </button>
             </div>
-
+            }
+            
             <mat-button-toggle-group class="view-toggle" [(ngModel)]="viewType" data-test="viewTypeToggle">
               <mat-button-toggle value="simple" data-test="simple-view">Simple</mat-button-toggle>
               <mat-button-toggle value="detailed" data-test="detailed-view">Detailed</mat-button-toggle>
