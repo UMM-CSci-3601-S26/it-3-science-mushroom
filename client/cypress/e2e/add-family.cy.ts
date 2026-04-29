@@ -141,6 +141,7 @@ describe('Add family page', () => {
   describe('Adding a new family', () => {
     beforeEach(() => {
       cy.task('seed:database');
+      page.navigateTo();
     });
 
     it('Should go to the right page, and have the right info', () => {

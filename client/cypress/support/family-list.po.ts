@@ -11,7 +11,7 @@ export class FamilyListPage {
   private readonly totalStudentsNum = '.stat-number-student'
   private readonly studentsPerSchool = '.stat-row-school'
   private readonly studentsPerGrade = '.stat-row-grade'
-  private readonly studentCardSelector = '.student-cards';
+  private readonly studentCardSelector = '.student-item';
   //private readonly profileButtonSelector = '[data-test=viewProfileButton]';
   //private readonly radioButtonSelector = '[data-test=viewTypeRadio] mat-radio-button';
   //private readonly familyRoleDropdownSelector = '[data-test=familyRoleSelect]';
