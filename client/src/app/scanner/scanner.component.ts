@@ -54,6 +54,7 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
   @Output() manualEntryNeeded = new EventEmitter<{ barcode: string, quantity: number }>();
   @Output() processingStarted = new EventEmitter<void>();
   @Output() done = new EventEmitter<void>();
+  @Input() processOnDone = true;
 
   private codeReader = new BrowserMultiFormatReader();
   private controls: IScannerControls | null = null;
@@ -239,7 +240,9 @@ export class ScannerComponent implements AfterViewInit, OnDestroy {
     this.isScanning = false;
     this.stopScanner();
 
-    await this.processScannedItems();
+    if (this.processOnDone) {
+      await this.processScannedItems();
+    }
 
     this.scannedItems = [];
     this.handheldInputValue = '';
