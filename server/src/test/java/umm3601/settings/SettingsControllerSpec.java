@@ -211,6 +211,7 @@ class SettingsControllerSpec {
     assertEquals(SettingsController.SETTINGS_ID, returned._id);
     assertNotNull(returned.schools);
     assertNotNull(returned.timeAvailability);
+    assertEquals(25, returned.barcodePrintWarningLimit);
   }
 
   // Checks that the controller actually registers all its routes with Javalin.
@@ -402,6 +403,51 @@ class SettingsControllerSpec {
 
     assertNotNull(settingsCaptor.getValue().supplyOrder);
     assertEquals(0, settingsCaptor.getValue().supplyOrder.size());
+  }
+
+  @Test
+  void getSettingsMissingBarcodePrintWarningLimitDefaultsToTwentyFive() {
+    db.getCollection("settings").drop();
+    db.getCollection("settings").insertOne(
+        new Document("_id", SettingsController.SETTINGS_ID)
+            .append("schools", List.of())
+            .append("timeAvailability", new Document())
+            .append("barcodePrintWarningLimit", 0));
+
+    settingsController.getSettings(ctx);
+
+    settingsCaptor = ArgumentCaptor.forClass(Settings.class);
+    verify(ctx).json(settingsCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals(25, settingsCaptor.getValue().barcodePrintWarningLimit);
+  }
+
+  @Test
+  void updateBarcodePrintWarningLimitReturnsOK() {
+    Settings body = new Settings();
+    body.barcodePrintWarningLimit = 30;
+    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
+
+    settingsController.updateBarcodePrintWarningLimit(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateBarcodePrintWarningLimitThrowsIfLessThanOne() {
+    Settings body = new Settings();
+    body.barcodePrintWarningLimit = 0;
+    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
+
+    boolean threw = false;
+    try {
+      settingsController.updateBarcodePrintWarningLimit(ctx);
+    } catch (io.javalin.http.BadRequestResponse e) {
+      threw = true;
+      assertEquals("barcodePrintWarningLimit must be at least 1.", e.getMessage());
+    }
+    assertTrue(threw);
   }
 
   @Test

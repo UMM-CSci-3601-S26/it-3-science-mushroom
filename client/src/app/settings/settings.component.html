@@ -134,6 +134,38 @@
           </div>
         </mat-tab>
 
+        <!-- Barcode Printing Tab -->
+        <mat-tab label="Barcode Printing">
+          <div class="tab-content">
+            <p class="tab-description">
+              Control barcode print safeguards.
+            </p>
+
+            <form [formGroup]="barcodePrintForm" (ngSubmit)="saveBarcodePrintSettings()">
+              <div class="flex-col">
+                <mat-form-field>
+                  <mat-label>Ask Before Printing More Than</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    min="1"
+                    formControlName="barcodePrintWarningLimit"
+                    placeholder="e.g. 25"
+                  >
+                  <mat-error *ngIf="barcodePrintForm.get('barcodePrintWarningLimit')?.hasError('required')">Required</mat-error>
+                  <mat-error *ngIf="barcodePrintForm.get('barcodePrintWarningLimit')?.hasError('min')">Must be at least 1</mat-error>
+                </mat-form-field>
+
+                <div class="save-button">
+                  <button mat-raised-button color="primary" type="submit" [disabled]="!barcodePrintForm.valid">
+                    Save Barcode Print Settings
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </mat-tab>
+
         <!-- ── Drive Order Tab ── -->
         <mat-tab label="Drive Order">
           <div class="tab-content">

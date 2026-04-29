@@ -41,6 +41,7 @@ describe('SettingsComponent', () => {
     },
     supplyOrder: [],
     availableSpots: 5,
+    barcodePrintWarningLimit: 25,
   };
 
   beforeEach(async () => {
@@ -51,6 +52,7 @@ describe('SettingsComponent', () => {
       'updateSupplyOrder',
       'updateAvailableSpots',
       'scheduleFamilies'
+      'updateBarcodePrintWarningLimit'
     ]);
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
     familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
@@ -508,4 +510,22 @@ describe('SettingsComponent', () => {
 
     expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to update available spots', 'OK', { duration: 3000 });
   }));
+  it('saves the barcode print warning limit setting', () => {
+    settingsServiceSpy.updateBarcodePrintWarningLimit.and.returnValue(of(undefined));
+    component.barcodePrintForm.setValue({ barcodePrintWarningLimit: 30 });
+
+    component.saveBarcodePrintSettings();
+
+    expect(settingsServiceSpy.updateBarcodePrintWarningLimit).toHaveBeenCalledWith(30);
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Barcode print warning limit saved: 30', 'OK', { duration: 2000 });
+  });
+
+  it('shows an error when barcode print settings fail to save', () => {
+    settingsServiceSpy.updateBarcodePrintWarningLimit.and.returnValue(throwError(() => new Error('fail')));
+    component.barcodePrintForm.setValue({ barcodePrintWarningLimit: 30 });
+
+    component.saveBarcodePrintSettings();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to save barcode print settings', 'OK', { duration: 3000 });
+  });
 });

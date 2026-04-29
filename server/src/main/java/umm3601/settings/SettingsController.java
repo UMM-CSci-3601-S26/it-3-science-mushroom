@@ -49,8 +49,10 @@ public class SettingsController implements Controller {
   private static final String API_SETTINGS_TIME = "/api/settings/timeAvailability";
   private static final String API_SETTINGS_SUPPLY_ORDER = "/api/settings/supplyOrder";
   private static final String API_SETTINGS_AVAILABLE_SPOTS = "/api/settings/availableSpots";
+  private static final String API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT = "/api/settings/barcodePrintWarningLimit";
 
   private static final int DEFAULT_AVAILABLE_SPOTS = 5;
+  private static final int DEFAULT_BARCODE_PRINT_WARNING_LIMIT = 25;
 
   private final JacksonMongoCollection<Settings> settingsCollection;
 
@@ -74,9 +76,13 @@ public class SettingsController implements Controller {
       settings.schools = new ArrayList<>();
       settings.timeAvailability = new Settings.TimeAvailabilityLabels();
       settings.availableSpots = DEFAULT_AVAILABLE_SPOTS;
+      settings.barcodePrintWarningLimit = DEFAULT_BARCODE_PRINT_WARNING_LIMIT;
       settings.supplyOrder = new ArrayList<>();
     } else if (settings.supplyOrder == null) {
       settings.supplyOrder = new ArrayList<>();
+    }
+    if (settings.barcodePrintWarningLimit < 1) {
+      settings.barcodePrintWarningLimit = DEFAULT_BARCODE_PRINT_WARNING_LIMIT;
     }
     ctx.json(settings);
     ctx.status(HttpStatus.OK);
@@ -165,12 +171,28 @@ public class SettingsController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  public void updateBarcodePrintWarningLimit(Context ctx) {
+    Settings body = ctx.bodyAsClass(Settings.class);
+
+    if (body.barcodePrintWarningLimit < 1) {
+      throw new BadRequestResponse("barcodePrintWarningLimit must be at least 1.");
+    }
+
+    settingsCollection.updateOne(
+        eq("_id", SETTINGS_ID),
+        new Document("$set", new Document("barcodePrintWarningLimit", body.barcodePrintWarningLimit)),
+        new UpdateOptions().upsert(true));
+
+    ctx.status(HttpStatus.OK);
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_SETTINGS, this::getSettings);
     server.patch(API_SETTINGS_SCHOOLS, this::updateSchools);
     server.patch(API_SETTINGS_TIME, this::updateTimeAvailability);
     server.patch(API_SETTINGS_AVAILABLE_SPOTS, this::updateSpotAvailability);
+    server.patch(API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT, this::updateBarcodePrintWarningLimit);
     server.patch(API_SETTINGS_SUPPLY_ORDER, this::updateSupplyOrder);
   }
 }

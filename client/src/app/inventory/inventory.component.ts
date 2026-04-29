@@ -21,6 +21,7 @@ import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
+
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -29,9 +30,14 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
-
+import { BarcodePrintDialog } from './barcode-print-dialog';
+import { BarcodePrintQuantityDialog } from './barcode-print-quantity-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
+import JsBarcode from 'jsbarcode';
+import { BarcodePrintWindowService } from './barcode-print-window.service';
+import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode-print-item';
+import { SettingsService } from '../settings/settings.service';
 
 type ScanCard = {
   id: string;
@@ -83,6 +89,8 @@ export class InventoryComponent {
   private inventoryService = inject(InventoryService);
   private inventoryIndex = inject(InventoryIndex);
   private dialog = inject(MatDialog);
+  private barcodePrintWindow = inject(BarcodePrintWindowService);
+  private settingsService = inject(SettingsService);
 
   reload = signal(0);
   showScanner = false;
@@ -119,6 +127,95 @@ export class InventoryComponent {
   scanCards = signal<ScanCard[]>([]);
   removeAmount: number;
   showRemovePanel = signal(false);
+
+  //This will open the barcode print dialog page
+  async openBarcodePrintDialog() {
+    const dialogRef = this.dialog.open(BarcodePrintDialog, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: {
+        items: this.displayedInventory()
+      }
+    });
+
+    const selectedItems = await firstValueFrom(dialogRef.afterClosed());
+
+    if (selectedItems?.length) {
+      const quantityDialogRef = this.dialog.open(BarcodePrintQuantityDialog, {
+        width: '760px',
+        maxWidth: '95vw',
+        maxHeight: '95vh',
+        data: {
+          items: selectedItems,
+          warningLimit: await this.getBarcodePrintWarningLimit()
+        }
+      });
+
+      const quantitySelections = await firstValueFrom(quantityDialogRef.afterClosed());
+
+      if (quantitySelections?.length) {
+        this.printBarcodeItems(quantitySelections);
+      }
+    }
+  }
+
+  private async getBarcodePrintWarningLimit(): Promise<number> {
+    try {
+      const settings = await firstValueFrom(this.settingsService.getSettings());
+
+      return settings.barcodePrintWarningLimit ?? 25;
+    } catch {
+      return 25;
+    }
+  }
+
+  getPrintableBarcodeValue(item: Inventory): string | undefined {
+    return item.internalBarcode;
+  }
+
+  printBarcodeItems(selections: BarcodePrintQuantitySelection[]): void {
+    const printableItems: PrintableBarcodeItem[] = [];
+
+    for (const selection of selections) {
+      const barcode = this.getPrintableBarcodeValue(selection.item);
+
+      if (!barcode) {
+        continue;
+      }
+
+      printableItems.push({
+        item: selection.item,
+        barcode,
+        barcodeImage: this.createBarcodeImage(barcode),
+        quantity: selection.quantity
+      });
+    }
+
+    if (!printableItems.length) {
+      this.snackBar.open('No selected items have printable barcodes.', 'OK', { duration: 3000 });
+      return;
+    }
+
+    const opened = this.barcodePrintWindow.open(printableItems);
+
+    if (!opened) {
+      this.snackBar.open('Popup blocked. Allow popups to print barcodes.', 'OK', { duration: 4000 });
+    }
+  }
+  // uses Jsbarcode with format CODE128 since we have
+  // letters,hyphens and number with no fixed length
+  // To create an iamge of the barcode
+  createBarcodeImage(barcode: string): string {
+    const canvas = document.createElement('canvas');
+
+    JsBarcode(canvas, barcode, {
+      format: 'CODE128',
+      displayValue: true, // Puts the barcode value under the barcode ex: ITEM-00001
+    })
+
+    return canvas.toDataURL('image/png') // turns the canvas into a image
+  }
 
   async onScanned(code: string) {
     console.log('scanned item', code);

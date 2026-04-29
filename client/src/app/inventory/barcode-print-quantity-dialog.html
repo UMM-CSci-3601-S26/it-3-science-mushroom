@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>Barcode Copies</h2>
+
+<div class="barcode-quantity-panel">
+  <mat-dialog-content class="barcode-quantity-content">
+    <p>Choose how many labels to print for each selected item.</p>
+
+    <div class="barcode-quantity-list">
+      <div class="barcode-quantity-row" *ngFor="let row of rows; trackBy: trackByInternalID">
+        <div class="barcode-quantity-info">
+          <div class="barcode-quantity-name">{{ row.item.item }}</div>
+          <div class="barcode-quantity-details">
+            {{ row.item.description }} | {{ row.item.internalBarcode }}
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="barcode-quantity-field">
+          <mat-label>Copies</mat-label>
+          <input
+            matInput
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            [(ngModel)]="row.quantity"
+            [attr.aria-label]="'Copies for ' + row.item.item"
+          >
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="barcode-quantity-actions" align="end">
+    <button mat-raised-button type="button" (click)="cancel()">
+      Cancel
+    </button>
+    <button mat-raised-button type="button" (click)="print()">
+      Print
+    </button>
+  </mat-dialog-actions>
+</div>
