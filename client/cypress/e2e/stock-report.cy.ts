@@ -24,6 +24,11 @@ describe('Stock Report', () => {
     cy.wait('@saveReport');
   });
 
+  afterEach(() => {
+    // Clean up downloads folder
+    cy.exec('rm -rf cypress/downloads || true');
+  });
+
   describe('General Tests', () => {
     it('Should have the correct title', () => {
       page.getAppTitle().should('contain', 'Stock Report');
@@ -79,14 +84,14 @@ describe('Stock Report', () => {
   describe('Generation Tests', () => {
     describe('PDF Generation', () => {
       it('Should be able to generate and download a PDF report', () => {
-        page.getGenerateAndDownloadPDFButton();
+        page.getGenerateAndDownloadPDFButton().click();
         // Verify snackbar message appears
         cy.get('.mdc-snackbar').should('contain', 'Generating and downloading report');
       });
 
       it('Should be able to generate and save a PDF report to server', () => {
         cy.intercept('POST', '/api/stockreport*').as('saveReport');
-        page.getGenerateAndSavePDFButton();
+        page.getGenerateAndSavePDFButton().click();
 
         cy.wait('@saveReport');
         cy.get('.mdc-snackbar').should('contain', 'Generating and saving report');
@@ -95,14 +100,14 @@ describe('Stock Report', () => {
 
     describe('XLSX Generation', () => {
       it('Should be able to generate and download an XLSX report', () => {
-        page.getGenerateAndDownloadXLSXButton();
+        page.getGenerateAndDownloadXLSXButton().click();
         // Verify snackbar message appears
         cy.get('.mdc-snackbar').should('contain', 'Generating and downloading report');
       });
 
       it('Should be able to generate and save an XLSX report to server', () => {
         cy.intercept('GET', '/api/stockreport*').as('saveReport');
-        page.getGenerateAndSaveXLSXButton();
+        page.getGenerateAndSaveXLSXButton().click();
 
         cy.wait('@saveReport');
         cy.get('.mdc-snackbar').should('contain', 'Generating and saving report');
@@ -116,7 +121,7 @@ describe('Stock Report', () => {
         // Reports created in beforeEach
         cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
         cy.get('[data-cy="pdf-report-item"]').first().within(() => {
-          cy.get('[data-cy="download-pdf-button"]');
+          cy.get('[data-cy="download-pdf-button"]').click();
         });
 
         // Verify snackbar shows download message
@@ -127,7 +132,7 @@ describe('Stock Report', () => {
         // Reports created in beforeEach
         cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
         cy.get('[data-cy="xlsx-report-item"]').first().within(() => {
-          cy.get('[data-cy="download-xlsx-button"]');
+          cy.get('[data-cy="download-xlsx-button"]').click();
         });
 
         // Verify snackbar shows download message
@@ -140,7 +145,7 @@ describe('Stock Report', () => {
         // Reports created in beforeEach
         cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
         cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
-        page.getDownloadAllReportsButton();
+        page.getDownloadAllReportsButton().click();
 
         // Verify snackbar shows download message
         cy.get('.mdc-snackbar').should('contain', 'Downloaded all "All" report(s)');
@@ -149,7 +154,7 @@ describe('Stock Report', () => {
       it('Should be able to download all PDF reports as a ZIP from the server', () => {
         // Reports created in beforeEach
         cy.get('[data-cy="pdf-reports-list"]', { timeout: 10000 }).should('exist');
-        page.getDownloadAllPDFsButton();
+        page.getDownloadAllPDFsButton().click();
 
         // Verify snackbar shows download message
         cy.get('.mdc-snackbar').should('contain', 'Downloaded all "PDF" report(s)');
@@ -158,7 +163,7 @@ describe('Stock Report', () => {
       it('Should be able to download all XLSX reports as a ZIP from the server', () => {
         // Reports created in beforeEach
         cy.get('[data-cy="xlsx-reports-list"]', { timeout: 10000 }).should('exist');
-        page.getDownloadAllXLSXsButton();
+        page.getDownloadAllXLSXsButton().click();
 
         // Verify snackbar shows download message
         cy.get('.mdc-snackbar').should('contain', 'Downloaded all "XLSX" report(s)');
