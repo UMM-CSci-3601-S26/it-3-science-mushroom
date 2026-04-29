@@ -154,26 +154,25 @@ export class InventoryService {
     });
   }
 
-
-  // addByScanAndUpdate(barcode: string) {
-  //   this.addByScan(barcode).subscribe(updatedItem => {
-  //     this.syncItem(updatedItem);
-  //   }, (err) => {
-  //     if (err.status ===404) {
-  //       this.openManualEntry(barcode);
-  //     } else {
-  //       console.error('Error adding item by scan:', err);
-  //     }
-  //   }
-  //   );
-  // }
+  /* These methods are currently unused and thus commented out. Their tests (if they have any) are also commented out.
+  addByScanAndUpdate(barcode: string) {
+    this.addByScan(barcode).subscribe(updatedItem => {
+      this.syncItem(updatedItem);
+    }, (err) => {
+      if (err.status ===404) {
+        this.openManualEntry(barcode);
+      } else {
+        console.error('Error adding item by scan:', err);
+      }
+    }
+    );
+  }
 
   /**
    * Remove one unit of an item from inventory
    * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
    * @returns Observable of the updated inventory item after removal
-   * @note Unused.
-   */
+   *
   removeOne(identifier: string): Observable<Inventory> {
     return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/removeQuantity`, { params: { id: identifier } });
   }
@@ -181,8 +180,7 @@ export class InventoryService {
   /**
    * Remove one unit of an item from inventory and update the inventory state
    * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
-   * @note Unused.
-   */
+   *
   removeOneAndUpdate(identifier: string) {
     this.removeOne(identifier).subscribe(item => {
       if (item.quantity <= 0) {
@@ -193,10 +191,11 @@ export class InventoryService {
     });
   }
 
+
   /**
    * Sync the inventory state with an updated item. If it exists, it is updated. If it does not, it is added.
    * @param updatedItem Inventory item with updated information to sync with the inventory state
-   */
+
   private syncItem(updatedItem: Inventory) {
     const currentInventory = this.inventory();
     const index = currentInventory.findIndex(item => item.internalID === updatedItem.internalID);
@@ -207,7 +206,7 @@ export class InventoryService {
     } else {
       this.inventory.set([...currentInventory, updatedItem]);
     }
-  }
+  }*/
 
   /**
    * Get inventory from the server, filtered by optional parameters
