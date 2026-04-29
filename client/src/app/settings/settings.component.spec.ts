@@ -61,7 +61,14 @@ describe('SettingsComponent', () => {
       'deleteInventories',
       'clearInventory',
       'resetQuantities'
-    ]);
+    ], {
+      itemOptions: () => [],
+      brandOptions: () => [],
+      colorOptions: () => [],
+      sizeOptions: () => [],
+      typeOptions: () => [],
+      materialOptions: () => []
+    });
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
 
     // Default: return empty settings and the three mock terms
