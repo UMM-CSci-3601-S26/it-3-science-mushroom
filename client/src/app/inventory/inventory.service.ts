@@ -154,6 +154,38 @@ export class InventoryService {
     });
   }
 
+  /**
+   * Delete all inventory items from the database
+   */
+  clearInventory(): Observable<unknown> {
+    return new Observable(observer => {
+      this.httpClient.delete(`${this.inventoryUrl}/clear`).subscribe({
+        next: (result) => {
+          this.loadInventory();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
+  }
+
+  /**
+   * Resets the quantity of all inventory items to 0
+   */
+  resetQuantities(): Observable<unknown> {
+    return new Observable(observer => {
+      this.httpClient.post(`${this.inventoryUrl}/reset`, {}).subscribe({
+        next: (result) => {
+          this.loadInventory();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
+  }
+
   /* These methods are currently unused and thus commented out. Their tests (if they have any) are also commented out.
   addByScanAndUpdate(barcode: string) {
     this.addByScan(barcode).subscribe(updatedItem => {
@@ -239,6 +271,47 @@ export class InventoryService {
 
     }
     return this.httpClient.get<Inventory[]>(this.inventoryUrl, { params: httpParams });
+  }
+
+  /**
+   * Delete inventory items from the server, filtered by optional parameters
+   * @param filters Filters to apply to the API call
+   * @returns Observable for the delete request
+   */
+  deleteInventories(filters?: {item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string}): Observable<unknown> {
+    let httpParams: HttpParams = new HttpParams();
+
+    if (filters) {
+      if (filters.item) {
+        httpParams = httpParams.set(this.itemKey, filters.item);
+      }
+      if (filters.brand) {
+        httpParams = httpParams.set(this.brandKey, filters.brand);
+      }
+      if (filters.color) {
+        httpParams = httpParams.set(this.colorKey, filters.color);
+      }
+      if (filters.size) {
+        httpParams = httpParams.set(this.sizeKey, filters.size);
+      }
+      if (filters.type) {
+        httpParams = httpParams.set(this.typeKey, filters.type);
+      }
+      if (filters.material) {
+        httpParams = httpParams.set(this.materialKey, filters.material);
+      }
+    }
+
+    return new Observable(observer => {
+      this.httpClient.delete(this.inventoryUrl, { params: httpParams }).subscribe({
+        next: (result) => {
+          //this.loadInventory(); // Settings page doesn't show inventory atm, so this isn't needed
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
   }
 
   optionBuilder(data: Inventory[], key: keyof Inventory): SelectOption[] {
