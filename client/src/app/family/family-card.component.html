@@ -1,31 +1,87 @@
 @if (family()) {
-  <mat-card class="family-card">
+  <mat-card
+    class="family-card"
+    [ngClass]="{
+      'family-card-linked': hasLinkedGuardianAccount,
+      'family-card-manual': !hasLinkedGuardianAccount,
+      'family-card-compact': compact()
+    }"
+  >
 
     <mat-card-header class="family-card-header">
       <mat-card-title class="family-card-guardianName">{{ family().guardianName }}</mat-card-title>
-      <button mat-icon-button class="edit-family-button" matTooltip="Edit Family" matTooltipPosition="left" [routerLink]="['/family', family()._id]" data-test="editFamilyButton">
-        <mat-icon class="md-24" aria-label="Edit Family">edit</mat-icon>
-      </button>
+      <mat-card-subtitle class="family-card-email">{{ family().email }}</mat-card-subtitle>
+      @if (compact()) {
+        <div class="family-card-compact-meta">
+          <span class="family-card-compact-chip">{{ family().students?.length || 0 }} students</span>
+          <span class="family-card-compact-chip">{{ family().timeSlot || 'to be assigned' }}</span>
+        </div>
+      }
     </mat-card-header>
 
-      <mat-card-content>
+    @if (canEditFamily()) {
+      <button mat-fab class="edit-family-fab" matTooltip="Edit Family" matTooltipPosition="left" [routerLink]="['/family', family()._id]" data-test="editFamilyButton">
+        <mat-icon class="md-24" aria-label="Edit Family">edit</mat-icon>
+      </button>
+    }
+
+    @if (!compact()) {
+      <br>
+    }
+
+    <mat-card-content>
+      <div
+        class="guardian-link-status"
+        [ngClass]="{
+          'guardian-link-status-linked': hasLinkedGuardianAccount,
+          'guardian-link-status-manual': !hasLinkedGuardianAccount
+        }"
+        data-test="guardianLinkStatus"
+      >
+        <mat-icon>{{ hasLinkedGuardianAccount ? 'verified_user' : 'person_off' }}</mat-icon>
+        <span>{{ guardianLinkStatusLabel }}</span>
+      </div>
+
+      @if (compact()) {
+        <div class="family-compact-grid">
+          <div class="family-compact-item">
+            <div class="family-compact-label">Students</div>
+            <div class="family-compact-value">{{ studentNames }}</div>
+          </div>
+          <div class="family-compact-item">
+            <div class="family-compact-label">Address</div>
+            <div class="family-compact-value">{{ family().address }}</div>
+          </div>
+          <div class="family-compact-item">
+            <div class="family-compact-label">Available Times</div>
+            <div class="family-compact-value">{{ getAvailableTimes() }}</div>
+          </div>
+          <div class="family-compact-item">
+            <div class="family-compact-label">Email</div>
+            <div class="family-compact-value">
+              <a class="family-card-email" href="mailto:{{family().email}}">{{ family().email }}</a>
+            </div>
+          </div>
+        </div>
+      } @else {
         <mat-list>
           <mat-list-item>
             <mat-icon matListItemIcon>people</mat-icon>
             <p matListItemTitle>Students</p>
           </mat-list-item>
 
-          <!-- card for the student inside of the family-->
-          <div class="student-card-container">
-            @for (student of family().students ?? []; track [student.name, student.schoolAbbreviation, student.grade, student.teacher]) {
-              <mat-card class="student-cards">
-                <p class="student-name">Name: {{ student.name }}</p>
-                <p class="student-school">School: {{ student.schoolAbbreviation }}</p>
-                <p class="student-grade">Grade: {{ student.grade }}</p>
-                <p class="student-teacher">Teacher: {{ student.teacher }}</p>
-              </mat-card>
+          <mat-list dense class="student-list">
+            @for (student of family().students ?? []; track student.name) {
+              <mat-list-item class="student-item">
+                <mat-icon matListItemIcon class="student-icon">person</mat-icon>
+                <p matListItemTitle>{{ student.name }}</p>
+                <p matListItemLine>{{ student.schoolAbbreviation }} - Grade {{ student.grade }}</p>
+                <p matListItemLine>Teacher: {{ student.teacher || 'N/A' }}</p>
+              </mat-list-item>
             }
-          </div>
+          </mat-list>
+
+          <mat-divider [inset]="true"></mat-divider>
 
           <mat-list-item>
             <mat-icon matListItemIcon>home</mat-icon>
@@ -38,10 +94,8 @@
           <mat-list-item>
             <mat-icon matListItemIcon>schedule</mat-icon>
             <p matListItemTitle>Time Slot</p>
-            <p matListItemLine class="family-card-timeSlot">{{ family().timeSlot }}</p>
+            <p matListItemLine class="family-card-timeSlot">{{ family().timeSlot || 'to be assigned' }}</p>
           </mat-list-item>
-
-          <mat-divider [inset]="true"></mat-divider>
 
           <mat-list-item>
             <mat-icon matListItemIcon>schedule</mat-icon>
@@ -57,8 +111,23 @@
             <a matListItemLine class="family-card-email" href="mailto:{{family().email}}">{{family().email}}</a>
             <a href="mailto:{{family().email}}" matListItemMeta mat-icon-button><mat-icon>open_in_new</mat-icon></a>
           </mat-list-item>
-          <!-- <pre>{{ family() | json }}</pre> -->
+
         </mat-list>
-      </mat-card-content>
+      }
+    </mat-card-content>
+
+    @if (showRequestDeleteAction() && canRequestDelete) {
+      <mat-card-actions class="family-card-actions">
+        <button
+          mat-stroked-button
+          color="warn"
+          [disabled]="hasPendingDeleteRequest"
+          (click)="onRequestDelete()"
+          data-test="requestDeleteButton"
+        >
+          {{ hasPendingDeleteRequest ? 'Delete Requested' : 'Request Delete' }}
+        </button>
+      </mat-card-actions>
+    }
   </mat-card>
 }
