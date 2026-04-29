@@ -59,6 +59,8 @@ import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Settings.Settings.TimeAvailabilityLabels;
 import umm3601.SupplyList.SupplyList;
+import umm3601.Users.Users;
+import umm3601.Users.UsersService;
 
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength", "checkstyle:ParameterNumber" })
 class FamilyControllerSpec {
