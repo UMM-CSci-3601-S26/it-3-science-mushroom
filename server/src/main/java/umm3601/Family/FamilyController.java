@@ -64,17 +64,26 @@ public class FamilyController implements Controller {
   private static final String API_FAMILY_HELPED = "/api/family/{id}/helped";
   private static final String API_FAMILY_STATUS = "/api/family/{id}/status";
   private static final String API_FAMILY_CHECKLIST = "/api/family/{id}/checklist";
+  private static final String API_FAMILY_FINALIZED_CHECKLIST = "/api/family/{id}/finalized-checklist";
   private static final String API_FAMILY_HELP_SESSION = "/api/family/{id}/help-session";
   private static final String API_FAMILY_HELP_SESSION_START = "/api/family/{id}/help-session/start";
   private static final String API_FAMILY_HELP_SESSION_SAVE_CHILD = "/api/family/{id}/help-session/save-child";
   private static final String API_FAMILY_HELP_SESSION_SAVE_ALL = "/api/family/{id}/help-session/save-all";
   private static final String API_FAMILY_HELP_SESSION_CLEAR = "/api/family/{id}/help-session/clear";
+  private static final String API_FAMILY_HELP_SESSION_REVERT = "/api/family/{id}/help-session/revert";
   private static final String STATUS_HELPED = "helped";
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
   private static final String REASON_AVAILABLE_DIDNT_NEED = "available_didnt_need";
+  private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
   private static final String REASON_SUBSTITUTED = "substituted";
+  private static final int EXACT_ITEM_MATCH_SCORE = 100;
+  private static final int SEARCHABLE_ITEM_MATCH_SCORE = 75;
+  private static final int PARTIAL_ITEM_MATCH_SCORE = 50;
+  private static final int REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH = 4;
+  private static final int REQUIRED_ATTRIBUTE_MATCH_SCORE = 5;
+  private static final int OPTIONAL_ATTRIBUTE_MATCH_SCORE = 3;
 
   // Regex
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -146,6 +155,15 @@ public class FamilyController implements Controller {
     }
   }
 
+  public void getFinalizedFamilyChecklist(Context ctx) {
+    Family family = requireFamily(ctx.pathParam("id"));
+
+    if (family.checklist == null || family.checklist.snapshot || !STATUS_HELPED.equals(determineStatus(family))) {
+      throw new NotFoundResponse("The finalized checklist for this family was not found");
+    }
+
+    ctx.json(family.checklist);
+  }
   // takes the list of families and goes through them one by one sorting them into the first available time slot
   public ArrayList<Family> schedulingAlgorithm(ArrayList<Family> families, int capacity) {
     int earlyMorningCapacity = 0; // current number of people in a timeslot
@@ -522,7 +540,7 @@ public class FamilyController implements Controller {
     family.status = areAllSectionsSaved(family.checklist) ? STATUS_HELPED : STATUS_BEING_HELPED;
     family.helped = STATUS_HELPED.equals(family.status);
     if (family.helped) {
-      family.checklist = null;
+      family.checklist.snapshot = false;
     }
     persistFamilyChecklistAndStatus(family);
 
@@ -552,7 +570,7 @@ public class FamilyController implements Controller {
 
     family.status = STATUS_HELPED;
     family.helped = true;
-    family.checklist = null;
+    family.checklist.snapshot = false;
     persistFamilyChecklistAndStatus(family);
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
@@ -566,6 +584,25 @@ public class FamilyController implements Controller {
 
     family.checklist = null;
     family.status = STATUS_NOT_HELPED;
+    family.helped = false;
+    persistFamilyChecklistAndStatus(family);
+
+    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  public void revertCompletedFamilyHelpSession(Context ctx) {
+    Family family = requireFamily(ctx.pathParam("id"));
+    ensureCompletedHelpSessionExists(family);
+
+    restoreChecklistInventoryChanges(family.checklist);
+    for (Family.ChecklistSection section : family.checklist.sections) {
+      section.saved = false;
+    }
+
+    family.checklist.snapshot = true;
+    family.status = STATUS_BEING_HELPED;
     family.helped = false;
     persistFamilyChecklistAndStatus(family);
 
@@ -696,6 +733,15 @@ public class FamilyController implements Controller {
     }
   }
 
+  private void ensureCompletedHelpSessionExists(Family family) {
+    if (family.checklist == null
+        || family.checklist.snapshot
+        || !STATUS_HELPED.equals(determineStatus(family))
+        || !areAllSectionsSaved(family.checklist)) {
+      throw new BadRequestResponse("Only completed help sessions can be reverted.");
+    }
+  }
+
   private Family.FamilyChecklist generateChecklistSnapshot(Family family) {
     Family.FamilyChecklist checklist = new Family.FamilyChecklist();
     checklist.templateId = "family-help-session-v1";
@@ -740,10 +786,10 @@ public class FamilyController implements Controller {
       if (!nameEquivalent(supplyList.school, student.school)) {
         continue;
       }
-      if (!nameEquivalent(supplyList.grade, student.grade)) {
+      if (!gradeEquivalent(supplyList.grade, student.grade)) {
         continue;
       }
-      if (hasText(supplyList.teacher) && !nameEquivalent(supplyList.teacher, student.teacher)) {
+      if (hasValue(supplyList.teacher) && !nameEquivalent(supplyList.teacher, student.teacher)) {
         continue;
       }
       matching.add(supplyList);
@@ -765,8 +811,17 @@ public class FamilyController implements Controller {
     checklistItem.available = match != null && match.quantity > 0;
     checklistItem.selected = checklistItem.available;
     checklistItem.matchedInventoryId = match != null ? match.internalID : null;
+    checklistItem.matchedInventoryItem = match != null ? match.item : null;
+    checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
 
     return checklistItem;
+  }
+
+  private String bestInventoryDescription(Inventory inventory) {
+    if (hasText(inventory.description)) {
+      return inventory.description;
+    }
+    return inventory.toString();
   }
 
   private Inventory findBestInventoryMatch(SupplyList supplyList) {
@@ -774,9 +829,96 @@ public class FamilyController implements Controller {
 
     return inventories.stream()
       .filter(inventory -> inventory.quantity > 0)
-      .filter(inventory -> inventoryMatchesSupplyList(inventory, supplyList))
-      .max(Comparator.comparingInt(this::inventorySpecificityScore))
+      .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
+      .max(Comparator
+        .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
+        .thenComparingInt(inventory -> inventory.quantity)
+        .thenComparingInt(this::inventorySpecificityScore))
       .orElse(null);
+  }
+
+  private int inventorySimilarityScore(Inventory inventory, SupplyList supplyList) {
+    int itemScore = itemSimilarityScore(inventory, supplyList);
+    if (itemScore == 0) {
+      return 0;
+    }
+
+    int score = itemScore;
+    score += attributeSimilarityScore(supplyList.brand, inventory.brand);
+    score += colorSimilarityScore(supplyList.color, inventory.color);
+    score += attributeSimilarityScore(supplyList.material, inventory.material);
+    return score;
+  }
+
+  private int itemSimilarityScore(Inventory inventory, SupplyList supplyList) {
+    if (supplyList.item == null || supplyList.item.isEmpty()) {
+      return 0;
+    }
+
+    String inventoryName = normalizeToken(inventory.item);
+    List<String> searchableTokens = searchableInventoryItemTokens(inventory);
+    int bestScore = 0;
+
+    for (String requestedItem : supplyList.item) {
+      String requestedName = normalizeToken(requestedItem);
+      if (requestedName.isBlank()) {
+        continue;
+      }
+      if (requestedName.equals(inventoryName)) {
+        bestScore = Math.max(bestScore, EXACT_ITEM_MATCH_SCORE);
+        continue;
+      }
+      if (searchableTokens.contains(requestedName)) {
+        bestScore = Math.max(bestScore, SEARCHABLE_ITEM_MATCH_SCORE);
+        continue;
+      }
+
+      for (String requestedToken : tokenParts(requestedItem)) {
+        if (requestedToken.length() >= REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH
+            && searchableTokens.contains(requestedToken)) {
+          bestScore = Math.max(bestScore, PARTIAL_ITEM_MATCH_SCORE);
+        }
+      }
+    }
+
+    return bestScore;
+  }
+
+  private List<String> searchableInventoryItemTokens(Inventory inventory) {
+    List<String> tokens = new ArrayList<>();
+    tokens.add(normalizeToken(inventory.item));
+    tokens.addAll(tokenParts(inventory.item));
+    tokens.addAll(tokenParts(inventory.description));
+    return tokens.stream()
+      .filter(token -> !token.isBlank())
+      .distinct()
+      .toList();
+  }
+
+  private int attributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue) {
+    if (options == null) {
+      return 0;
+    }
+    if (hasText(options.allOf) && nameEquivalent(options.allOf, inventoryValue)) {
+      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
+    }
+    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
+    }
+    return 0;
+  }
+
+  private int colorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue) {
+    if (options == null) {
+      return 0;
+    }
+    if (options.allOf != null && options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
+    }
+    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
+    }
+    return 0;
   }
 
   private boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {
@@ -942,6 +1084,25 @@ public class FamilyController implements Controller {
     }
   }
 
+  private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
+    for (Family.ChecklistSection section : checklist.sections) {
+      for (Family.ChecklistItem item : section.items) {
+        if (item.selected) {
+          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
+        } else if (hasText(item.substituteInventoryId)) {
+          restoreInventory(item.substituteInventoryId, item.requestedQuantity);
+        } else if (hasText(item.substituteBarcode)) {
+          Inventory substituteInventory = findInventoryByBarcode(item.substituteBarcode);
+          if (substituteInventory == null) {
+            throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
+          }
+          restoreInventory(substituteInventory.internalID, item.requestedQuantity);
+          item.substituteInventoryId = substituteInventory.internalID;
+        }
+      }
+    }
+  }
+
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
     if (item.selected && !item.available) {
       throw new BadRequestResponse("Unavailable items cannot be saved as selected.");
@@ -962,7 +1123,7 @@ public class FamilyController implements Controller {
 
       if (hasReason && !isValidNotPickedUpReason(item.notPickedUpReason)) {
         throw new BadRequestResponse(
-          "Checklist reason must be available_didnt_need, not_available_didnt_receive, or substituted.");
+          "reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
       }
     }
   }
@@ -970,6 +1131,7 @@ public class FamilyController implements Controller {
   private boolean isValidNotPickedUpReason(String reason) {
     String normalizedReason = normalizeReason(reason);
     return REASON_AVAILABLE_DIDNT_NEED.equals(normalizedReason)
+      || REASON_ITEM_NOT_AVALIABLE.equals(normalizedReason)
       || REASON_NOT_AVAILABLE_DIDNT_RECEIVE.equals(normalizedReason)
       || REASON_SUBSTITUTED.equals(normalizedReason);
   }
@@ -1015,19 +1177,110 @@ public class FamilyController implements Controller {
      new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity - amount));
   }
 
+  private void restoreInventory(String internalId, int amount) {
+    if (!hasText(internalId)) {
+      throw new BadRequestResponse("A reverted checklist item is missing its inventory match.");
+    }
+
+    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    if (inventory == null) {
+      throw new NotFoundResponse("No item found for internalID: " + internalId);
+    }
+
+    int quantityToRestore = amount <= 0 ? 1 : amount;
+    inventoryCollection.updateOne(eq("_id",
+     new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
+  }
+
   private boolean nameEquivalent(String left, String right) {
-    return normalizeToken(left).equals(normalizeToken(right));
+    String leftToken = normalizeToken(left);
+    String rightToken = normalizeToken(right);
+    String strictLeftToken = normalizeTokenWithoutPluralFold(left);
+    String strictRightToken = normalizeTokenWithoutPluralFold(right);
+    return leftToken.equals(rightToken)
+      || strictLeftToken.equals(acronymToken(right))
+      || strictRightToken.equals(acronymToken(left));
+  }
+
+  private boolean gradeEquivalent(String left, String right) {
+    String leftGrade = normalizeGradeToken(left);
+    String rightGrade = normalizeGradeToken(right);
+    return leftGrade.equals(rightGrade)
+      || "highschool".equals(leftGrade) && isHighSchoolGrade(rightGrade)
+      || "highschool".equals(rightGrade) && isHighSchoolGrade(leftGrade)
+      || "middleschool".equals(leftGrade) && isMiddleSchoolGrade(rightGrade)
+      || "middleschool".equals(rightGrade) && isMiddleSchoolGrade(leftGrade)
+      || "elementary".equals(leftGrade) && isElementaryGrade(rightGrade)
+      || "elementary".equals(rightGrade) && isElementaryGrade(leftGrade);
   }
 
   private String normalizeToken(String value) {
-    if (value == null) {
-      return "";
-    }
-    String normalized = value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
+    String normalized = normalizeTokenWithoutPluralFold(value);
     if (normalized.endsWith("s") && normalized.length() > 1) {
       return normalized.substring(0, normalized.length() - 1);
     }
     return normalized;
+  }
+
+  private String normalizeTokenWithoutPluralFold(String value) {
+    if (value == null) {
+      return "";
+    }
+    return value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
+  }
+
+  private List<String> tokenParts(String value) {
+    if (value == null) {
+      return List.of();
+    }
+    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
+    List<String> tokens = new ArrayList<>();
+    for (String part : parts) {
+      String normalized = normalizeToken(part);
+      if (!normalized.isBlank()) {
+        tokens.add(normalized);
+      }
+    }
+    return tokens;
+  }
+
+  private String normalizeGradeToken(String value) {
+    String normalized = normalizeToken(value);
+    if ("kindergarten".equals(normalized)) {
+      return "k";
+    }
+    if ("prekindergarten".equals(normalized) || "prekindergarden".equals(normalized)) {
+      return "prek";
+    }
+    String withoutGradeWord = normalized.replace("grade", "");
+    return withoutGradeWord.replaceAll("(\\d+)(st|nd|rd|th)$", "$1");
+  }
+
+  private boolean isHighSchoolGrade(String grade) {
+    return "9".equals(grade) || "10".equals(grade) || "11".equals(grade) || "12".equals(grade);
+  }
+
+  private boolean isMiddleSchoolGrade(String grade) {
+    return "6".equals(grade) || "7".equals(grade) || "8".equals(grade);
+  }
+
+  private boolean isElementaryGrade(String grade) {
+    return "prek".equals(grade) || "k".equals(grade)
+      || "1".equals(grade) || "2".equals(grade) || "3".equals(grade) || "4".equals(grade) || "5".equals(grade);
+  }
+
+  private String acronymToken(String value) {
+    if (value == null) {
+      return "";
+    }
+    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
+    StringBuilder acronym = new StringBuilder();
+    for (String part : parts) {
+      if (!part.isBlank()) {
+        acronym.append(part.charAt(0));
+      }
+    }
+    return acronym.length() > 1 ? acronym.toString() : "";
   }
 
   private boolean hasText(String value) {
@@ -1234,6 +1487,8 @@ public class FamilyController implements Controller {
               .append("itemDescription", item.itemDescription)
               .append("supplyListId", item.supplyListId)
               .append("matchedInventoryId", item.matchedInventoryId)
+              .append("matchedInventoryItem", item.matchedInventoryItem)
+              .append("matchedInventoryDescription", item.matchedInventoryDescription)
               .append("requestedQuantity", item.requestedQuantity)
               .append("notPickedUpReason", item.notPickedUpReason)
               .append("substituteItem", item.substituteItem)
@@ -1266,6 +1521,7 @@ public class FamilyController implements Controller {
     server.get(API_FAMILY, this::getFamilies);
     server.get(API_FAMILY_BY_ID, this::getFamily);
     server.get(API_DASHBOARD, this::getDashboardStats);
+    server.get(API_FAMILY_FINALIZED_CHECKLIST, this::getFinalizedFamilyChecklist);
     server.get(API_FAMILY_HELP_SESSION, this::getFamilyHelpSession);
 
     server.put(API_FAMILY_BY_ID, this::updateFamily);
@@ -1279,6 +1535,7 @@ public class FamilyController implements Controller {
     server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
     server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);
     server.post(API_FAMILY_HELP_SESSION_CLEAR, this::clearFamilyHelpSession);
+    server.post(API_FAMILY_HELP_SESSION_REVERT, this::revertCompletedFamilyHelpSession);
 
     server.delete(API_FAMILY_BY_ID, this::deleteFamily);
   }

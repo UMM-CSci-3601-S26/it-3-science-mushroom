@@ -188,13 +188,12 @@ describe('Add family page', () => {
         ]
       };
 
-      cy.intercept('/api/family').as('addFamily');
+      cy.intercept('POST', '/api/family').as('addFamily');
       page.addFamily(family);
       cy.wait('@addFamily');
       cy.log('API intercepted, checking URL...');
 
       // New URL should go right back to the family list page (/family) and stay there (not /family/new)
-      cy.wait('@addFamily');
       cy.url({ timeout: 3000 })
         .should('match', /\/family$/)
         .should('not.match', /\/family\/new$/);

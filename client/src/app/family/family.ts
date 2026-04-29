@@ -15,6 +15,40 @@ export interface AvailabilityOptions {
   lateAfternoon: boolean;
 }
 
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  selected: boolean;
+  available: boolean;
+  itemDescription?: string;
+  supplyListId?: string;
+  matchedInventoryId?: string;
+  matchedInventoryItem?: string;
+  matchedInventoryDescription?: string;
+  requestedQuantity: number;
+  notPickedUpReason?: string;
+  substituteItem?: string;
+  substituteBarcode?: string;
+  substituteDescription?: string;
+  substituteInventoryId?: string;
+  notes?: string;
+}
+
+export interface ChecklistSection {
+  id: string;
+  title: string;
+  printableTitle: string;
+  saved: boolean;
+  items: ChecklistItem[];
+}
+
+export interface FamilyChecklist {
+  templateId: string;
+  printableTitle: string;
+  snapshot: boolean;
+  sections: ChecklistSection[];
+}
+
 export interface Family {
   _id?: string;
   guardianName: string;
@@ -22,7 +56,10 @@ export interface Family {
   address: string;
   accommodations: string;
   timeSlot: string;
-  timeAvailability: AvailabilityOptions;
+  timeAvailability?: AvailabilityOptions;
+  helped?: boolean;
+  status?: string;
+  checklist?: FamilyChecklist | null;
   students: StudentInfo[];
 }
 
