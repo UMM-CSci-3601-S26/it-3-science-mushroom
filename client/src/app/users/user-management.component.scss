@@ -1,4 +1,14 @@
 
+:host {
+  --app-primary-color: var(--mat-sys-primary, #1565c0);
+  --app-primary-on-color: var(--mat-sys-on-primary, #ffffff);
+  --app-warn-color: var(--mat-sys-error, #d32f2f);
+  --app-warn-on-color: var(--mat-sys-on-error, #ffffff);
+  --app-text-color: var(--mat-sys-on-surface, rgba(255, 255, 255, 0.87));
+  --app-hover-color: var(--mat-sys-surface-container-high, #4a4a4a);
+  --app-divider-color: var(--mat-sys-outline-variant, rgba(255, 255, 255, 0.22));
+}
+
 .admin-header,
 .panel-title-row,
 .user-card,
@@ -70,6 +80,30 @@
   padding: 0.85rem 1rem;
   margin-top: 0.75rem;
   background: color-mix(in srgb, var(--app-hover-color) 14%, transparent);
+}
+
+.user-card > div:first-child,
+.role-card > div:first-child {
+  min-width: 0;
+}
+
+.user-actions,
+.form-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.user-actions {
+  flex: 0 0 auto;
+}
+
+.create-role-row {
+  align-items: stretch;
+}
+
+.create-role-row input {
+  flex: 1 1 16rem;
+  min-width: 0;
 }
 
 .user-name {
@@ -167,26 +201,42 @@
 .primary-button,
 .secondary-button,
 .danger-button {
+  align-items: center;
   border: 0;
   border-radius: 10px;
   cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  line-height: 1.2;
   font: inherit;
+  font-weight: 600;
+  min-height: 2.5rem;
+  min-width: max-content;
   padding: 0.65rem 0.9rem;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .primary-button {
   background: var(--app-primary-color);
-  color: #fff;
+  color: var(--app-primary-on-color);
 }
 
 .secondary-button {
   background: color-mix(in srgb, var(--app-primary-color) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--app-primary-color) 62%, transparent);
   color: var(--app-text-color);
 }
 
 .danger-button {
   background: var(--app-warn-color);
-  color: #fff;
+  color: var(--app-warn-on-color);
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.danger-button:hover:not(:disabled) {
+  filter: brightness(1.08);
 }
 
 .danger-button:disabled {
@@ -217,5 +267,11 @@
   .create-role-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .danger-button {
+    width: 100%;
   }
 }

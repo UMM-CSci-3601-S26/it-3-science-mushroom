@@ -71,9 +71,13 @@ describe('UserManagementComponent', () => {
       }
     },
     permissionCatalog: [
-      { permission: 'families.edit', group: 'Family', label: 'Edit families', volunteerAssignable: true },
-      { permission: 'families.view', group: 'Family', label: 'View families', volunteerAssignable: true },
-      { permission: 'inventory.view', group: 'Inventory', label: 'View inventory', volunteerAssignable: true },
+      { permission: 'edit_family', group: 'Family', label: 'Family Editing', volunteerAssignable: true },
+      { permission: 'view_families', group: 'Family', label: 'Family List Viewing', volunteerAssignable: true },
+      { permission: 'view_dashboard_stats', group: 'Family', label: 'Dashboard Statistics', volunteerAssignable: true },
+      { permission: 'schedule_families', group: 'Family', label: 'Family Scheduling', volunteerAssignable: true },
+      { permission: 'manage_checklist', group: 'Checklist', label: 'Checklist Management', volunteerAssignable: true },
+      { permission: 'edit_available_spots', group: 'Settings', label: 'Available Spot Editing', volunteerAssignable: true },
+      { permission: 'view_inventory', group: 'Inventory', label: 'Inventory Viewing', volunteerAssignable: true },
       { permission: 'secret.admin', group: 'Settings', label: 'Secret admin', volunteerAssignable: false }
     ]
   };
@@ -108,6 +112,7 @@ describe('UserManagementComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserManagementComponent);
+
     component = fixture.componentInstance;
     componentInternals = component as unknown as UserManagementInternals;
     (component as unknown as UserManagementInjectedServices).snackBar = snackBar;
@@ -119,7 +124,15 @@ describe('UserManagementComponent', () => {
     expect(userService.getRoleOverview).toHaveBeenCalled();
     expect(component.users).toEqual(users);
     expect(component.jobRoles.map(role => role.name)).toEqual(['pickup_helper', 'volunteer_base']);
-    expect(component.groupedPermissions.map(group => group.group)).toEqual(['Family', 'Inventory']);
+    expect(component.groupedPermissions.map(group => group.group)).toEqual(['Family', 'Point of Sale', 'Inventory', 'Settings']);
+    expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
+      .not.toContain('manage_checklist');
+    expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
+      .not.toContain('view_dashboard_stats');
+    expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
+      .not.toContain('schedule_families');
+    expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
+      .not.toContain('edit_available_spots');
     expect(component.isLoading).toBeFalse();
   });
 
@@ -259,6 +272,68 @@ describe('UserManagementComponent', () => {
     expect(component.isSelectedPermission('inventory.edit')).toBeTrue();
     expect(component.isInheritedPermission('settings.read')).toBeTrue();
     expect(component.basePermissions.has('settings.read')).toBeTrue();
+  });
+
+  it('adds point of sale as a bundled frontend permission after confirmation', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component.selectJobRole(component.jobRoles[0]);
+
+    component.togglePermission('access_point_of_sale', true);
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'Point of Sale Access will also add these required permissions: Family List Viewing, Family Help Sessions, Inventory Viewing, Inventory Item Viewing. Enable it?'
+    );
+    expect(component.selectedJobRole?.permissions).toContain('access_point_of_sale');
+    expect(component.selectedJobRole?.permissions).toContain('view_families');
+    expect(component.selectedJobRole?.permissions).toContain('manage_family_help_sessions');
+    expect(component.selectedJobRole?.permissions).toContain('view_inventory');
+    expect(component.selectedJobRole?.permissions).toContain('view_inventory_item');
+    expect(component.isPointOfSaleBundledPermission('view_inventory_item')).toBeTrue();
+    expect(component.isPermissionLocked('view_inventory_item')).toBeTrue();
+    expect(component.permissionSourceLabel('view_inventory_item')).toBe('Included by Point of Sale');
+  });
+
+  it('adds family page access as a bundled frontend permission after confirmation', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component.selectJobRole(component.jobRoles[0]);
+
+    component.togglePermission('access_families', true);
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'Family Page Access will also add these required permissions: Family List Viewing, Family Detail Viewing, Dashboard Statistics. Enable it?'
+    );
+    expect(component.selectedJobRole?.permissions).toContain('access_families');
+    expect(component.selectedJobRole?.permissions).toContain('view_families');
+    expect(component.selectedJobRole?.permissions).toContain('view_family');
+    expect(component.selectedJobRole?.permissions).toContain('view_dashboard_stats');
+    expect(component.permissionSourceLabel('view_family')).toBe('Included by Family Page Access');
+  });
+
+  it('does not add point of sale bundle permissions when confirmation is cancelled', () => {
+    spyOn(window, 'confirm').and.returnValue(false);
+    component.selectJobRole(component.jobRoles[0]);
+    const event = { source: { checked: true } } as never;
+
+    component.togglePermission('access_point_of_sale', true, event);
+
+    expect(component.selectedJobRole?.permissions).not.toContain('access_point_of_sale');
+    expect(component.selectedJobRole?.permissions).not.toContain('manage_family_help_sessions');
+    expect((event as { source: { checked: boolean } }).source.checked).toBeFalse();
+  });
+
+  it('adds drive scheduling management as a bundled frontend permission after confirmation', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component.selectJobRole(component.jobRoles[0]);
+
+    component.togglePermission('manage_drive_scheduling', true);
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'Drive Scheduling Management will also add these required permissions: Family Scheduling, Available Spot Editing. Enable it?'
+    );
+    expect(component.selectedJobRole?.permissions).toContain('manage_drive_scheduling');
+    expect(component.selectedJobRole?.permissions).toContain('schedule_families');
+    expect(component.selectedJobRole?.permissions).toContain('edit_available_spots');
+    expect(component.permissionSourceLabel('edit_available_spots')).toBe('Included by Drive Scheduling Management');
   });
 
   it('treats volunteer base permissions as not inherited on the base role', () => {
@@ -443,9 +518,11 @@ describe('UserManagementComponent', () => {
       alpha: { permissions: ['c'], inherits: ['volunteer_base'] }
     } as Record<string, JobRoleConfig>);
     const grouped = componentInternals.buildPermissionGroups([
-      { permission: 'inventory.view', group: 'Inventory', label: 'View inventory', volunteerAssignable: true },
-      { permission: 'families.edit', group: 'Family', label: 'Edit families', volunteerAssignable: true },
-      { permission: 'families.view', group: 'Family', label: 'View families', volunteerAssignable: true }
+      { permission: 'view_inventory', group: 'Inventory', label: 'Inventory Viewing', volunteerAssignable: true },
+      { permission: 'edit_family', group: 'Family', label: 'Family Editing', volunteerAssignable: true },
+      { permission: 'view_families', group: 'Family', label: 'Family List Viewing', volunteerAssignable: true },
+      { permission: 'view_checklist', group: 'Checklist', label: 'Checklist Viewing', volunteerAssignable: true },
+      { permission: 'edit_available_spots', group: 'Settings', label: 'Available Spot Editing', volunteerAssignable: true }
     ] as PermissionCatalogEntry[]);
 
     expect(mappedRoles).toEqual([
@@ -456,14 +533,41 @@ describe('UserManagementComponent', () => {
       {
         group: 'Family',
         permissions: [
-          { permission: 'families.edit', group: 'Family', label: 'Edit families', volunteerAssignable: true },
-          { permission: 'families.view', group: 'Family', label: 'View families', volunteerAssignable: true }
+          { permission: 'edit_family', group: 'Family', label: 'Family Editing', volunteerAssignable: true },
+          {
+            permission: 'access_families',
+            group: 'Family',
+            label: 'Family Page Access',
+            volunteerAssignable: true
+          }
+        ]
+      },
+      {
+        group: 'Point of Sale',
+        permissions: [
+          {
+            permission: 'access_point_of_sale',
+            group: 'Point of Sale',
+            label: 'Point of Sale Access',
+            volunteerAssignable: true
+          }
         ]
       },
       {
         group: 'Inventory',
         permissions: [
-          { permission: 'inventory.view', group: 'Inventory', label: 'View inventory', volunteerAssignable: true }
+          { permission: 'view_inventory', group: 'Inventory', label: 'Inventory Viewing', volunteerAssignable: true }
+        ]
+      },
+      {
+        group: 'Settings',
+        permissions: [
+          {
+            permission: 'manage_drive_scheduling',
+            group: 'Settings',
+            label: 'Drive Scheduling Management',
+            volunteerAssignable: true
+          }
         ]
       }
     ]);

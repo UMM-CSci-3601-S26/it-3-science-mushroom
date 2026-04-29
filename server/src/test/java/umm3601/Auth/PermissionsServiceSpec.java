@@ -165,6 +165,8 @@ class PermissionsServiceSpec {
 
     assertTrue(permissions.contains("view_families"));
     assertTrue(permissions.contains("request_family_delete"));
+    assertTrue(permissions.contains("view_family_checklist"));
+    assertTrue(permissions.contains("edit_drive_day"));
     assertTrue(permissions.contains("view_inventory"));
     assertTrue(permissions.contains("manage_checklist"));
     assertFalse(permissions.contains("not_a_real_permission"));
@@ -195,22 +197,55 @@ class PermissionsServiceSpec {
   }
 
   @Test
+  void getPermissionsIncludesFriendlyFamilyAccessBundleInVolunteerBase() {
+    RolePermissions permissions = permissionsService.getPermissions();
+
+    assertTrue(permissions.roles.get("volunteer_base").permissions.contains("access_families"));
+    assertFalse(permissions.roles.get("volunteer_base").permissions.contains("manage_drive_scheduling"));
+    assertFalse(permissions.roles.get("volunteer_base").permissions.contains("view_checklist"));
+  }
+
+  @Test
   void getPermissionCatalogCoversAdditionalGroupsAndFallbackLabels() {
     PermissionsService.PermissionCatalogEntry checklist = permissionsService.getPermissionCatalog().stream()
         .filter(entry -> "manage_checklist".equals(entry.permission))
         .findFirst()
         .orElse(null);
+    PermissionsService.PermissionCatalogEntry familyChecklist = permissionsService.getPermissionCatalog().stream()
+        .filter(entry -> "view_family_checklist".equals(entry.permission))
+        .findFirst()
+        .orElse(null);
     PermissionsService.PermissionCatalogEntry settings = permissionsService.getPermissionCatalog().stream()
-        .filter(entry -> "edit_schools".equals(entry.permission))
+        .filter(entry -> "edit_drive_day".equals(entry.permission))
+        .findFirst()
+        .orElse(null);
+    PermissionsService.PermissionCatalogEntry availableSpots = permissionsService.getPermissionCatalog().stream()
+        .filter(entry -> "edit_available_spots".equals(entry.permission))
+        .findFirst()
+        .orElse(null);
+    PermissionsService.PermissionCatalogEntry scheduleFamilies = permissionsService.getPermissionCatalog().stream()
+        .filter(entry -> "schedule_families".equals(entry.permission))
         .findFirst()
         .orElse(null);
 
     assertNotNull(checklist);
     assertEquals("Checklist", checklist.group);
     assertEquals("Checklist Management", checklist.label);
+    assertFalse(checklist.volunteerAssignable);
+
+    assertNotNull(familyChecklist);
+    assertEquals("Checklist", familyChecklist.group);
+    assertEquals("Finalized Family Checklist Viewing", familyChecklist.label);
+    assertFalse(familyChecklist.volunteerAssignable);
 
     assertNotNull(settings);
     assertEquals("Settings", settings.group);
-    assertEquals("School Settings Editing", settings.label);
+    assertEquals("Drive Day Editing", settings.label);
+
+    assertNotNull(availableSpots);
+    assertFalse(availableSpots.volunteerAssignable);
+
+    assertNotNull(scheduleFamilies);
+    assertFalse(scheduleFamilies.volunteerAssignable);
   }
 }

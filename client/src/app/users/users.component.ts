@@ -14,6 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-users',
+  standalone: true,
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss'],
   imports: [

@@ -10,6 +10,7 @@ import { InventoryIndex } from './inventory-index';
 import { SelectOption } from './inventory';
 import { SettingsService } from '../settings/settings.service';
 import { ManualEntryResult } from './manual-entry';
+import { AuthService } from '../auth/auth-service';
 
 type ScanCard = {
   id: string;
@@ -161,6 +162,7 @@ describe('InventoryComponent branch coverage', () => {
         { provide: MatSnackBar, useValue: snackBarSpy },
         { provide: MatDialog, useValue: dialogSpy },
         { provide: SettingsService, useValue: settingsServiceSpy }
+        { provide: AuthService, useValue: { hasPermission: () => true } }
       ]
     });
 

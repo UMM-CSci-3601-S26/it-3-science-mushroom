@@ -172,6 +172,8 @@ public class FamilyController {
     }
   }
 
+  @Route(method = HttpMethod.GET, path = API_FAMILY_FINALIZED_CHECKLIST)
+  @RequirePermission("view_family_checklist")
   public void getFinalizedFamilyChecklist(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
 
@@ -181,7 +183,7 @@ public class FamilyController {
 
     ctx.json(family.checklist);
   }
-  
+
   public Family getByOwnerUserId(String ownerUserId) {
     Family family = familyCollection.find(eq("ownerUserId", ownerUserId)).first();
     if (family == null) {
@@ -762,6 +764,8 @@ public class FamilyController {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_REVERT)
+  @RequirePermission("manage_family_help_sessions")
   public void revertCompletedFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureCompletedHelpSessionExists(family);
@@ -1095,6 +1099,7 @@ public class FamilyController {
     return 0;
   }
 
+  @SuppressWarnings("unused")
   private boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {
     if (supplyList.item == null || supplyList.item.isEmpty()) {
       return false;

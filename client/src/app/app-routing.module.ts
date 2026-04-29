@@ -52,7 +52,7 @@ const routes: Routes = [
 
   // Point of Sale
   {path: 'point-of-sale', loadComponent: () => import('./PointOfSale/PointOfSale.component').then(m => m.PointOfSaleComponent), title: 'Point Of Sale',
-    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['access_point_of_sale'] }},  
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['access_point_of_sale'] }},
 
   // User management
   {path: 'users', loadComponent: () => import('./users/users.component').then(m => m.UsersComponent), title: 'Users',

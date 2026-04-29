@@ -140,14 +140,16 @@
             [class.permission-row-inherited]="isInheritedPermission(permission.permission)">
             <mat-checkbox
               class="permission-checkbox"
-              [checked]="isSelectedPermission(permission.permission) || isInheritedPermission(permission.permission)"
-              [disabled]="isInheritedPermission(permission.permission)"
-              (change)="togglePermission(permission.permission, $event.checked)"
+              [checked]="isSelectedPermission(permission.permission) || isPermissionLocked(permission.permission)"
+              [disabled]="isPermissionLocked(permission.permission)"
+              (change)="togglePermission(permission.permission, $event.checked, $event)"
             ></mat-checkbox>
             <div class="permission-copy">
               <span class="permission-label">{{ permission.label }}</span>
             </div>
-            <span *ngIf="isInheritedPermission(permission.permission)" class="permission-chip">Included by volunteer base</span>
+            <span *ngIf="permissionSourceLabel(permission.permission)" class="permission-chip">
+              {{ permissionSourceLabel(permission.permission) }}
+            </span>
           </mat-label>
         </div>
 

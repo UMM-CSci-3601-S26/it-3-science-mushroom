@@ -66,11 +66,11 @@ export class SettingsComponent implements OnInit {
   }
 
   get canEditAvailableSlots(): boolean {
-    return this.authService.hasPermission('edit_available_slots')
+    return this.authService.hasPermission('edit_available_spots');
   }
 
   get canEditDriveDay(): boolean {
-    return this.authService.isAdmin();
+    return this.authService.hasPermission('edit_drive_day');
   }
 
   // Current schools list, loaded from the server on init

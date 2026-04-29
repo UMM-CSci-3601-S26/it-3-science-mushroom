@@ -29,6 +29,14 @@ describe('AppRoutingModule', () => {
     expect(routeSummary).toContain({ path: 'settings', title: 'Settings' });
     expect(routeSummary).toContain({ path: 'supplylist', title: 'Supply List' });
     expect(routeSummary).toContain({ path: 'supplylist/new', title: 'Add Supply List Item' });
+    expect(routeSummary).toContain({ path: 'point-of-sale', title: 'Point Of Sale' });
+  });
+
+  it('protects point of sale with the bundled point of sale permission', () => {
+    const pointOfSaleRoute = router.config.find(route => route.path === 'point-of-sale');
+
+    expect(pointOfSaleRoute?.data?.['roles']).toEqual(['ADMIN', 'VOLUNTEER']);
+    expect(pointOfSaleRoute?.data?.['permissions']).toEqual(['access_point_of_sale']);
   });
 
   // What is the point of this test? It is just testing that the same route is defined twice, which is not a good thing.
