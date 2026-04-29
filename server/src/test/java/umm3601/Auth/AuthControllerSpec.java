@@ -121,6 +121,9 @@ class AuthControllerSpec {
     Map<String, Object> payload = responseCaptor.getValue();
     assertEquals("VOLUNTEER", payload.get("systemRole"));
     assertEquals("volunteer_base", payload.get("jobRole"));
+    assertEquals("alice", payload.get("username"));
+    assertEquals("Alice Smith", payload.get("fullName"));
+    assertEquals("alice@example.com", payload.get("email"));
   }
 
   @Test
@@ -322,6 +325,9 @@ class AuthControllerSpec {
     Map<String, Object> payload = responseCaptor.getValue();
     assertEquals("ADMIN", payload.get("systemRole"));
     assertEquals(List.of("*"), payload.get("permissions"));
+    assertEquals("adminuser", payload.get("username"));
+    assertEquals("Admin User", payload.get("fullName"));
+    assertEquals("admin@example.com", payload.get("email"));
   }
 
   @Test
@@ -367,6 +373,9 @@ class AuthControllerSpec {
   void getUserPermissionsReturnsWildcardForAdmin() {
     when(ctx.attribute("systemRole")).thenReturn(Role.ADMIN);
     when(ctx.attribute("jobRole")).thenReturn(null);
+    when(ctx.attribute("username")).thenReturn("adminuser");
+    when(ctx.attribute("fullName")).thenReturn("Admin User");
+    when(ctx.attribute("email")).thenReturn("admin@example.com");
 
     authController.getUserPermissions(ctx);
 
@@ -374,6 +383,9 @@ class AuthControllerSpec {
     Map<String, Object> payload = responseCaptor.getValue();
     assertEquals("ADMIN", payload.get("systemRole"));
     assertEquals(List.of("*"), payload.get("permissions"));
+    assertEquals("adminuser", payload.get("username"));
+    assertEquals("Admin User", payload.get("fullName"));
+    assertEquals("admin@example.com", payload.get("email"));
   }
 
   @Test

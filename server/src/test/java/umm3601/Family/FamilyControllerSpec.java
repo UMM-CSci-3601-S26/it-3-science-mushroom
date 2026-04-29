@@ -51,6 +51,7 @@ import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
+import umm3601.Auth.Role;
 import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
 // Misc Imports
@@ -58,8 +59,6 @@ import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Settings.Settings.TimeAvailabilityLabels;
 import umm3601.SupplyList.SupplyList;
-import umm3601.settings.Settings;
-import umm3601.settings.Settings.TimeAvailabilityLabels;
 
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength", "checkstyle:ParameterNumber" })
 class FamilyControllerSpec {
@@ -1518,6 +1517,64 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void deleteRequestRequesterHelpersCoverMissingAndHydratedBranches() throws Exception {
+    Family nullFamily = null;
+    invokeHydrateDeleteRequestRequester(nullFamily);
+
+    Family noRequest = new Family();
+    invokeHydrateDeleteRequestRequester(noRequest);
+
+    Family noRequesterId = new Family();
+    noRequesterId.deleteRequest = new Family.DeleteRequest();
+    invokeHydrateDeleteRequestRequester(noRequesterId);
+
+    Family missingRequester = new Family();
+    missingRequester.deleteRequest = new Family.DeleteRequest();
+    missingRequester.deleteRequest.requestedByUserId = new ObjectId().toHexString();
+    invokeHydrateDeleteRequestRequester(missingRequester);
+    assertNull(missingRequester.deleteRequest.requestedByUserName);
+
+    UsersService usersService = new UsersService(db);
+    usersService.createUser(
+      "helper.user",
+      "hash",
+      "Helper User",
+      "helper@example.com",
+      Role.VOLUNTEER,
+      "volunteer_base");
+    Users helper = usersService.findByUsername("helper.user");
+
+    Family hydrated = new Family();
+    hydrated.deleteRequest = new Family.DeleteRequest();
+    hydrated.deleteRequest.requestedByUserId = helper._id;
+
+    invokeHydrateDeleteRequestRequester(hydrated);
+
+    assertEquals("Helper User", hydrated.deleteRequest.requestedByUserName);
+    assertEquals("VOLUNTEER", hydrated.deleteRequest.requestedBySystemRole);
+  }
+
+  @Test
+  void userLookupAndDisplayNameHelpersCoverFallbackBranches() throws Exception {
+    assertNull(invokeFindUserById(null));
+    assertNull(invokeFindUserById("   "));
+    assertNull(invokeFindUserById("not-a-real-object-id"));
+    assertNull(invokeDisplayNameForUser(null));
+
+    Users usernameOnly = new Users();
+    usernameOnly.username = "fallback.user";
+    usernameOnly.fullName = "   ";
+
+    assertEquals("fallback.user", invokeDisplayNameForUser(usernameOnly));
+
+    Users fullNameUser = new Users();
+    fullNameUser.username = "named.user";
+    fullNameUser.fullName = "Named User";
+
+    assertEquals("Named User", invokeDisplayNameForUser(fullNameUser));
+  }
+
+  @Test
   void privateValidateChecklistItemCoversAdditionalBranches() throws Exception {
     Family.ChecklistItem unavailableSelected = new Family.ChecklistItem();
     unavailableSelected.selected = true;
@@ -1878,6 +1935,18 @@ class FamilyControllerSpec {
 
   private String invokeNormalizeStatusValue(String status) throws Exception {
     return invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, status);
+  }
+
+  private void invokeHydrateDeleteRequestRequester(Family family) throws Exception {
+    invokePrivate("hydrateDeleteRequestRequester", new Class<?>[] {Family.class}, family);
+  }
+
+  private Users invokeFindUserById(String userId) throws Exception {
+    return invokePrivate("findUserById", new Class<?>[] {String.class}, userId);
+  }
+
+  private String invokeDisplayNameForUser(Users user) throws Exception {
+    return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
   }
 
   private String invokeNormalizeToken(String value) throws Exception {

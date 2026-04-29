@@ -365,6 +365,23 @@ public class BarcodeControllerSpec {
 
     assertEquals("ITEM-00001", documentCaptor.getValue().getString("internalBarcode"));
   }
+
+  @Test
+  void getNextBarcodeIgnoresNonItemPrefix() {
+    MongoCollection<Document> collection = db.getCollection("inventory");
+    collection.drop();
+
+    collection.insertOne(new Document()
+      .append("internalBarcode", "LEGACY-99999"));
+
+    barcodeController.getNextBarcode(ctx);
+
+    verify(ctx).json(documentCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    assertEquals("ITEM-00001", documentCaptor.getValue().getString("internalBarcode"));
+  }
+
   @Test
   void updateQuantityThrowsBadRequestWhenActionMissing() {
     when(ctx.pathParam("id")).thenReturn("ITEM-00001");
@@ -382,6 +399,95 @@ public class BarcodeControllerSpec {
     assertThrows(NotFoundResponse.class, () -> {
       barcodeController.updateQuantity(ctx);
     });
+  }
+
+  @Test
+  void updateQuantityDefaultsInvalidAmountToOne() {
+    when(ctx.pathParam("id")).thenReturn("ITEM-00001");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "add").append("amount", 0));
+
+    barcodeController.updateQuantity(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document updated = db.getCollection("inventory")
+      .find(new Document("_id", pencilId)).first();
+    assertEquals(11, updated.getInteger("quantity"));
+  }
+
+  @Test
+  void updateQuantityUsesProvidedAmount() {
+    when(ctx.pathParam("id")).thenReturn("ITEM-00001");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("action", "remove").append("amount", 3));
+
+    barcodeController.updateQuantity(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document updated = db.getCollection("inventory")
+      .find(new Document("_id", pencilId)).first();
+    assertEquals(7, updated.getInteger("quantity"));
+  }
+
+  @Test
+  void linkExternalBarcodeAddsBarcodeAndDefaultsQuantity() {
+    db.getCollection("inventory").insertOne(new Document()
+      .append("item", "Crayon")
+      .append("quantity", 2)
+      .append("internalID", "internal-crayon")
+      .append("externalBarcode", Arrays.asList("OLD-CODE")));
+
+    when(ctx.pathParam("internalID")).thenReturn("internal-crayon");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("barcode", "NEW-CODE"));
+
+    barcodeController.linkExternalBarcode(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document updated = db.getCollection("inventory")
+      .find(new Document("internalID", "internal-crayon")).first();
+    assertEquals(3, updated.getInteger("quantity"));
+    assertTrue(updated.getList("externalBarcode", String.class).contains("NEW-CODE"));
+  }
+
+  @Test
+  void linkExternalBarcodeUsesProvidedQuantity() {
+    db.getCollection("inventory").insertOne(new Document()
+      .append("item", "Glue")
+      .append("quantity", 4)
+      .append("internalID", "internal-glue")
+      .append("externalBarcode", Arrays.asList()));
+
+    when(ctx.pathParam("internalID")).thenReturn("internal-glue");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("barcode", "GLUE-CODE").append("quantity", 5));
+
+    barcodeController.linkExternalBarcode(ctx);
+
+    verify(ctx).json(inventoryCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Document updated = db.getCollection("inventory")
+      .find(new Document("internalID", "internal-glue")).first();
+    assertEquals(9, updated.getInteger("quantity"));
+  }
+
+  @Test
+  void linkExternalBarcodeRejectsBlankBarcode() {
+    when(ctx.pathParam("internalID")).thenReturn("internal-pencil");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("barcode", "   "));
+
+    assertThrows(BadRequestResponse.class, () -> barcodeController.linkExternalBarcode(ctx));
+  }
+
+  @Test
+  void linkExternalBarcodeThrowsNotFoundForMissingItem() {
+    when(ctx.pathParam("internalID")).thenReturn("missing-internal-id");
+    when(ctx.bodyAsClass(Document.class)).thenReturn(new Document("barcode", "NEW-CODE"));
+
+    assertThrows(NotFoundResponse.class, () -> barcodeController.linkExternalBarcode(ctx));
   }
 
 }

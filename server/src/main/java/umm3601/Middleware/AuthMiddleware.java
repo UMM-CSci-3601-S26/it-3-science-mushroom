@@ -98,6 +98,9 @@ public class AuthMiddleware {
       ctx.attribute("userId", userId);
       ctx.attribute("systemRole", systemRole);
       ctx.attribute("jobRole", jobRole);
+      ctx.attribute("username", user.username);
+      ctx.attribute("fullName", user.fullName);
+      ctx.attribute("email", user.email);
     } catch (JwtException e) {
       throw new UnauthorizedResponse("Invalid or expired token");
     }
