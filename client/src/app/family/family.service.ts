@@ -13,7 +13,7 @@ import { map } from 'rxjs/operators';
 
 // Other Imports
 import { environment } from '../../environments/environment';
-import { Family, DashboardStats, SelectOption } from './family';
+import { Family, DashboardStats, FamilyChecklist, SelectOption } from './family';
 import { FormatDateTimeService } from '../format-date-time/format-date-time.service';
 
 // Type for jsPDF with autoTable metadata
@@ -53,12 +53,15 @@ export class FamilyService {
     this.optionBuilder(this.family(), 'guardianName')
   );
 
-  getFamilies(filters?: { guardianName?: string }): Observable<Family[]> {
+  getFamilies(filters?: { guardianName?: string; status?: string }): Observable<Family[]> {
     let httpParams: HttpParams = new HttpParams();
 
     if (filters) {
       if (filters.guardianName) {
         httpParams = httpParams.set(this.familyKey, filters.guardianName);
+      }
+      if (filters.status) {
+        httpParams = httpParams.set('status', filters.status);
       }
     }
 
@@ -69,6 +72,30 @@ export class FamilyService {
 
   getFamilyById(id: string): Observable<Family> {
     return this.httpClient.get<Family>(`${this.familyUrl}/${id}`);
+  }
+
+  getFinalizedFamilyChecklist(id: string): Observable<FamilyChecklist> {
+    return this.httpClient.get<FamilyChecklist>(`${this.familyUrl}/${id}/finalized-checklist`);
+  }
+
+  startFamilyHelpSession(id: string): Observable<Family> {
+    return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/start`, {});
+  }
+
+  clearFamilyHelpSession(id: string): Observable<Family> {
+    return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/clear`, {});
+  }
+
+  revertCompletedFamilyHelpSession(id: string): Observable<Family> {
+    return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/revert`, {});
+  }
+
+  updateFamilyChecklist(id: string, checklist: FamilyChecklist): Observable<Family> {
+    return this.httpClient.patch<Family>(`${this.familyUrl}/${id}/checklist`, { checklist });
+  }
+
+  saveFamilyHelpSessionAll(id: string, checklist: FamilyChecklist): Observable<Family> {
+    return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/save-all`, { checklist });
   }
 
   addFamily(newFamily: Partial<Family>): Observable<string> {

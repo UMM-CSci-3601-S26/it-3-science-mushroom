@@ -356,13 +356,7 @@ describe('Inventory', () => {
   });
 
   it('Should filter using only item field', () => {
-    cy.intercept({
-      method: 'GET',
-      pathname: '/api/inventory',
-      query: {
-        item: 'Markers'
-      }
-    }).as('filterByItem');
+    cy.intercept('GET', '/api/inventory*').as('filterByItem');
 
     cy.get('[data-cy="filter-item"]')
       .clear()
@@ -371,7 +365,7 @@ describe('Inventory', () => {
 
     cy.wait('@filterByItem');
 
-    cy.get('[data-cy="inventory-item"]').then(($items) => {
+    cy.get('[data-cy="inventory-item"]').should(($items) => {
       const itemTexts = [...$items].map((item) =>
         (item.textContent || '').trim()
       );

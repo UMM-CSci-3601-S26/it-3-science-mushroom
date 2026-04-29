@@ -1,0 +1,181 @@
+:host {
+  display: block;
+  min-height: calc(100vh - 88px);
+  padding: clamp(2rem, 4vw, 4rem);
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.flex-row {
+  display: flex;
+  width: 100%;
+}
+
+.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.pos-card {
+  overflow: hidden;
+  border: 1px solid #dbe3ee;
+  border-radius: 30px;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+}
+
+.pos-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.75rem 1.75rem 1rem;
+}
+
+.pos-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.pos-subtitle {
+  margin-top: 0.35rem;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.family-count {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+mat-card-content {
+  padding: 0 1.75rem 1.75rem;
+}
+
+.filter-card {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.35fr) minmax(420px, 1fr);
+  align-items: center;
+  gap: 1.25rem;
+  border: 1px solid #d7e0ea;
+  border-radius: 22px;
+  padding: 1.15rem 1.25rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%),
+    linear-gradient(90deg, #dbeafe, #ccfbf1);
+  box-sizing: border-box;
+}
+
+.filter-label {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.filter-hint {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.family-search-field {
+  width: 100%;
+}
+
+.filter-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.35fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-filter-field {
+  width: 100%;
+}
+
+.clear-filters-button {
+  height: 3.5rem;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.family-search-field ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+.status-filter-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.family-card-container {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.1rem;
+}
+
+.family-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.2rem 0.15rem;
+  color: #64748b;
+  font-size: 0.88rem;
+}
+
+.family-list-heading span:first-child {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.list-message {
+  display: grid;
+  min-height: 9rem;
+  place-items: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.error-message {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+@media (max-width: 780px) {
+  .pos-header {
+    flex-direction: column;
+  }
+
+  .family-count {
+    align-self: flex-start;
+  }
+
+  .filter-card {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .clear-filters-button {
+    width: 100%;
+  }
+
+  .family-list-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}

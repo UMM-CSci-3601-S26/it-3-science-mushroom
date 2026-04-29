@@ -1,0 +1,91 @@
+<div class="flex-row">
+  <div class="flex-1">
+    <mat-card class="pos-card">
+      <mat-card-header class="pos-header">
+        <div>
+          <mat-card-title class="pos-title">Point of Sale</mat-card-title>
+          <mat-card-subtitle class="pos-subtitle">
+            Find a family, start a help session, and work from the generated checklist.
+          </mat-card-subtitle>
+        </div>
+        <span class="family-count">
+          {{ families.length }} {{ families.length === 1 ? 'family' : 'families' }}
+        </span>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="filter-card">
+          <div>
+            <p class="filter-label">Search Families</p>
+            <p class="filter-hint">Search by guardian name and narrow by session status.</p>
+          </div>
+
+          <div class="filter-controls">
+            <mat-form-field appearance="outline" class="family-search-field">
+              <mat-label>Family name</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input
+                matInput
+                type="search"
+                [formControl]="familySearch"
+                placeholder="Jane Doe">
+              @if (familySearch.value) {
+                <button
+                  mat-icon-button
+                  matSuffix
+                  type="button"
+                  aria-label="Clear family search"
+                  (click)="clearFamilySearch()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="status-filter-field">
+              <mat-label>Status</mat-label>
+              <mat-select [formControl]="statusFilter">
+                @for (option of statusOptions; track option.value) {
+                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            @if (familySearch.value || statusFilter.value) {
+              <button
+                mat-stroked-button
+                type="button"
+                class="clear-filters-button"
+                (click)="clearFilters()">
+                Clear
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="family-card-container">
+          @if (loadingFamilies) {
+            <div class="list-message">Loading families...</div>
+          } @else if (familyLoadError) {
+            <div class="list-message error-message">{{ familyLoadError }}</div>
+          } @else {
+            <div class="family-list-heading">
+              <span>Families ready for help</span>
+              <span>Start a snapshot session from any card.</span>
+            </div>
+            @for (family of families; track family._id) {
+            <app-point-of-sale-family-card
+              [family]="family"
+              (helpFamily)="openHelpFamilySession($event)"
+              (revertFamily)="revertCompletedFamilySession($event)">
+            </app-point-of-sale-family-card>
+            } @empty {
+              <div class="list-message">
+                No families match that search.
+              </div>
+            }
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
