@@ -601,14 +601,14 @@ describe('InventoryComponent branch coverage', () => {
     expect(scannerStub.resolveManualEntry).toHaveBeenCalledWith(undefined);
   });
 
-  it('should close the scanner when toggleScanner is called while open', () => {
+  it('should swap scanner action when toggleScanner is called while open', () => {
     component.showScanner = true;
     component.scannerAction.set('remove');
 
     component.toggleScanner();
 
-    expect(component.showScanner).toBeFalse();
-    expect(component.scannerAction()).toBe('remove');
+    expect(component.showScanner).toBeTrue();
+    expect(component.scannerAction()).toBe('add');
   });
 
   it('should open the scanner in add mode when toggleScanner is called while closed', () => {
