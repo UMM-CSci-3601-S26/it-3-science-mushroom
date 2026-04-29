@@ -6,7 +6,7 @@ import { inject, Injectable, signal, computed } from '@angular/core';
 import { Observable } from 'rxjs';
 
 // Inventory Imports
-import { Inventory, SelectOption } from './inventory';
+import { Inventory, InventoryBulkActionResponse, SelectOption } from './inventory';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -177,7 +177,7 @@ export class InventoryService {
     return new Observable(observer => {
       this.httpClient.post(`${this.inventoryUrl}/reset`, {}).subscribe({
         next: (result) => {
-          this.loadInventory();
+          //this.loadInventory();
           observer.next(result);
           observer.complete();
         },
@@ -278,7 +278,7 @@ export class InventoryService {
    * @param filters Filters to apply to the API call
    * @returns Observable for the delete request
    */
-  deleteInventories(filters?: {item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string}): Observable<unknown> {
+  deleteInventories(filters?: {item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string}): Observable<InventoryBulkActionResponse> {
     let httpParams: HttpParams = new HttpParams();
 
     if (filters) {
@@ -302,16 +302,39 @@ export class InventoryService {
       }
     }
 
-    return new Observable(observer => {
-      this.httpClient.delete(this.inventoryUrl, { params: httpParams }).subscribe({
-        next: (result) => {
-          //this.loadInventory(); // Settings page doesn't show inventory atm, so this isn't needed
-          observer.next(result);
-          observer.complete();
-        },
-        error: (err) => observer.error(err)
-      });
-    });
+    return this.httpClient.delete<InventoryBulkActionResponse>(this.inventoryUrl, { params: httpParams });
+  }
+
+  /**
+   * Reset quantities for matching inventory items on the server, filtered by optional parameters
+   * @param filters Filters to apply to the API call
+   * @returns Observable for the reset request
+   */
+  resetMatchingQuantities(filters: {item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string}): Observable<InventoryBulkActionResponse> {
+    let httpParams: HttpParams = new HttpParams();
+
+    if (filters) {
+      if (filters.item) {
+        httpParams = httpParams.set(this.itemKey, filters.item);
+      }
+      if (filters.brand) {
+        httpParams = httpParams.set(this.brandKey, filters.brand);
+      }
+      if (filters.color) {
+        httpParams = httpParams.set(this.colorKey, filters.color);
+      }
+      if (filters.size) {
+        httpParams = httpParams.set(this.sizeKey, filters.size);
+      }
+      if (filters.type) {
+        httpParams = httpParams.set(this.typeKey, filters.type);
+      }
+      if (filters.material) {
+        httpParams = httpParams.set(this.materialKey, filters.material);
+      }
+    }
+
+    return this.httpClient.post<InventoryBulkActionResponse>(`${this.inventoryUrl}/reset`, {}, { params: httpParams });
   }
 
   optionBuilder(data: Inventory[], key: keyof Inventory): SelectOption[] {
