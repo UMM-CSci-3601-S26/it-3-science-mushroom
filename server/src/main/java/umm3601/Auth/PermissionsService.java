@@ -458,6 +458,7 @@ public class PermissionsService {
         "view_inventory_item",
         "view_families",
         "view_family",
+        "view_dashboard_stats",
         "view_supply_lists",
         "view_checklist",
         "request_family_delete");

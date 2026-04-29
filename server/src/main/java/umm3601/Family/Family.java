@@ -73,6 +73,8 @@ public class Family {
     public boolean requested;
     public String message;
     public String requestedByUserId;
+    public String requestedByUserName;
+    public String requestedBySystemRole;
     public String requestedAt;
   }
 
