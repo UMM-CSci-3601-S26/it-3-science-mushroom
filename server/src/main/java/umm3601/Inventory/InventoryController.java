@@ -54,10 +54,13 @@ public class InventoryController implements Controller {
   static final String COLOR_KEY = "color";
   static final String DESCRIPTION_KEY = "description";
   static final String QUANTITY_KEY = "quantity";
+  static final String MAX_QUANTITY_KEY = "maxQuantity";
+  static final String MIN_QUANTITY_KEY = "minQuantity";
   static final String NOTES_KEY = "notes";
   static final String MATERIAL_KEY = "material";
   static final String TYPE_KEY = "type";
   static final String SORT_ORDER_KEY = "sortorder";
+
   private static final int EXACT_MATCH_SCORE = 3;
   private static final int STARTS_WITH_SCORE = 2;
   private static final int CONTAINS_SCORE = 1;
@@ -299,6 +302,8 @@ public class InventoryController implements Controller {
    */
   public void resetQuantities(Context ctx) {
     inventoryCollection.updateMany(new Document(), Updates.set(QUANTITY_KEY, 0));
+    inventoryCollection.updateMany(new Document(), Updates.set(MAX_QUANTITY_KEY, 0));
+    inventoryCollection.updateMany(new Document(), Updates.set(MIN_QUANTITY_KEY, 0));
     ctx.status(HttpStatus.OK);
   }
 
