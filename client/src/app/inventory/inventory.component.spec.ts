@@ -11,15 +11,18 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { By } from '@angular/platform-browser';
 
 // RxJS Imports
 import { Observable, of, throwError } from 'rxjs';
+
+// Dialog Imports
+import { DialogService } from '../dialog/dialog.service';
 
 // Inventory Imports
 import { MockInventoryService } from 'src/testing/inventory.service.mock';
 import { Inventory, SelectOption } from './inventory';
 import { InventoryComponent } from './inventory.component';
-import { By } from '@angular/platform-browser';
 import { BarcodePrintWindowService } from './barcode/barcode-print-window.service';
 import { SettingsService } from '../settings/settings.service';
 
@@ -631,6 +634,204 @@ describe('Inventory Table', () => {
 
     expect(inventoryTable.showScanner).toBeFalse();
   });
+});
+
+describe('confirmSingleDelete Tests', () => {
+  let inventoryTable: InventoryComponent;
+  let fixture: ComponentFixture<InventoryComponent>;
+  let snackBarSpy: jasmine.Spy;
+  let inventoryService: InventoryService;
+  let dialogService: DialogService;
+
+  const baseInventory: Inventory = {
+    item: 'Test Item',
+    description: 'A test item',
+    brand: 'Test Brand',
+    color: 'Blue',
+    size: 'Large',
+    type: 'Test Type',
+    material: 'Plastic',
+    quantity: 5,
+    notes: 'Test notes',
+    internalID: 'ID-001',
+    internalBarcode: 'BARCODE-001',
+    externalBarcode: [],
+    minQuantity: 1,
+    maxQuantity: 20,
+    stockState: 'In Stock',
+    packageSize: 1
+  };
+
+  const mockScanCard = {
+    id: 'card-1',
+    barcode: 'BARCODE-001',
+    item: baseInventory,
+    removeAmount: 1,
+    foundInInventory: true,
+    mode: 'remove' as const
+  };
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [InventoryComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: InventoryService, useClass: MockInventoryService },
+        { provide: SettingsService, useValue: mockSettingsService },
+        DialogService,
+        provideRouter([])
+      ],
+    });
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(InventoryComponent);
+    inventoryTable = fixture.componentInstance;
+    inventoryService = TestBed.inject(InventoryService);
+    dialogService = TestBed.inject(DialogService);
+    snackBarSpy = spyOn(inventoryTable['snackBar'], 'open');
+    fixture.detectChanges();
+  });
+
+  it('should show snack bar when card is not found', fakeAsync(() => {
+    inventoryTable.confirmSingleDelete('non-existent-id');
+    tick();
+
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'This card cannot be deleted from inventory',
+      'OK',
+      jasmine.objectContaining({ duration: 3000 })
+    );
+  }));
+
+  it('should show snack bar when card mode is not "remove"', fakeAsync(() => {
+    const addCard = { ...mockScanCard, mode: 'add' as const };
+    inventoryTable.scanCards.set([addCard]);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'This card cannot be deleted from inventory',
+      'OK',
+      jasmine.objectContaining({ duration: 3000 })
+    );
+  }));
+
+  it('should show snack bar when card item is null', fakeAsync(() => {
+    const nullItemCard = { ...mockScanCard, item: null };
+    inventoryTable.scanCards.set([nullItemCard]);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'This card cannot be deleted from inventory',
+      'OK',
+      jasmine.objectContaining({ duration: 3000 })
+    );
+  }));
+
+  it('should open dialog with correct parameters when card is valid', fakeAsync(() => {
+    inventoryTable.scanCards.set([mockScanCard]);
+    const dialogServiceSpy = spyOn(dialogService, 'openDialog').and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(dialogServiceSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        title: 'Confirm Delete Single',
+        itemName: 'Test Item',
+        message: jasmine.stringContaining('Are you sure you want to delete the item Test Item?'),
+        buttonOne: 'Cancel',
+        buttonTwo: 'Confirm'
+      }),
+      '400px',
+      '200px'
+    );
+  }));
+
+  it('should not delete when dialog is cancelled', fakeAsync(() => {
+    inventoryTable.scanCards.set([mockScanCard]);
+    const deleteServiceSpy = spyOn(inventoryService, 'deleteInventoryById').and.returnValue(of({}));
+    spyOn(dialogService, 'openDialog').and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(deleteServiceSpy).not.toHaveBeenCalled();
+    expect(inventoryTable.scanCards()).toContain(mockScanCard);
+  }));
+
+  it('should delete inventory and remove card on successful delete', fakeAsync(() => {
+    inventoryTable.scanCards.set([mockScanCard]);
+    const deleteServiceSpy = spyOn(inventoryService, 'deleteInventoryById').and.returnValue(of({}));
+    spyOn(dialogService, 'openDialog').and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(deleteServiceSpy).toHaveBeenCalledWith('ID-001');
+    expect(inventoryTable.scanCards().length).toBe(0);
+  }));
+
+  it('should show success snack bar message after successful delete', fakeAsync(() => {
+    inventoryTable.scanCards.set([mockScanCard]);
+    spyOn(inventoryService, 'deleteInventoryById').and.returnValue(of({}));
+    spyOn(dialogService, 'openDialog').and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'Deleted Test Item.',
+      'OK',
+      jasmine.objectContaining({ duration: 3000 })
+    );
+  }));
+
+  it('should hide remove panel when last card is deleted', fakeAsync(() => {
+    inventoryTable.scanCards.set([mockScanCard]);
+    inventoryTable.showRemovePanel.set(true);
+    spyOn(inventoryService, 'deleteInventoryById').and.returnValue(of({}));
+    spyOn(dialogService, 'openDialog').and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(inventoryTable.showRemovePanel()).toBeFalse();
+  }));
+
+  it('should handle delete error gracefully', fakeAsync(() => {
+    inventoryTable.scanCards.set([mockScanCard]);
+    const error = new Error('Delete failed');
+    spyOn(inventoryService, 'deleteInventoryById').and.returnValue(throwError(() => error));
+    spyOn(dialogService, 'openDialog').and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+
+    inventoryTable.confirmSingleDelete('card-1');
+    tick();
+
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'Failed to delete inventory item.',
+      'OK',
+      jasmine.objectContaining({ duration: 4000 })
+    );
+    expect(inventoryTable.scanCards()).toContain(mockScanCard);
+  }));
 });
 
 describe('Filter Dropdown options', () => {

@@ -1,5 +1,5 @@
-import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { TestBed, waitForAsync } from '@angular/core/testing';
+import { HttpClient, HttpParams, provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting
@@ -7,10 +7,12 @@ import {
 
 import { InventoryService } from './inventory.service';
 import { Inventory } from './inventory';
+import { of } from 'rxjs';
 
 describe('InventoryService', () => {
   let service: InventoryService;
   let httpMock: HttpTestingController;
+  let httpClient: HttpClient;
 
   const itemA: Inventory = {
     internalID: '1',
@@ -61,6 +63,7 @@ describe('InventoryService', () => {
 
     service = TestBed.inject(InventoryService);
     httpMock = TestBed.inject(HttpTestingController);
+    httpClient = TestBed.inject(HttpClient);
 
     // constructor -> loadInventory()
     const initReq = httpMock.expectOne(service.inventoryUrl);
@@ -352,53 +355,130 @@ describe('InventoryService', () => {
     ]);
   });
 
-  it('should delete inventory by internal ID and refresh', () => {
-    let response: unknown | undefined;
+  describe('Delete Tests', () => {
+    it('talks to the right endpoint and is called once for clearInventory', waitForAsync(() => {
+      spyOn(service, 'loadInventory').and.stub();
+      const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
 
-    service.deleteInventoryById('ID-00001').subscribe(data => {
-      response = data;
-    });
+      service.clearInventory().subscribe((res) => {
+        expect(res).toBeUndefined();
 
-    const deleteReq = httpMock.expectOne(`${service.inventoryUrl}/ID-00001`);
-    expect(deleteReq.request.method).toBe('DELETE');
-    deleteReq.flush({});
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${service.inventoryUrl}/clear`);
+      });
+    }));
 
-    const refreshReq = httpMock.expectOne(service.inventoryUrl);
-    expect(refreshReq.request.method).toBe('GET');
-    refreshReq.flush([]);
+    it('deleteInventories calls once and uses correct endpoint with no parameters', waitForAsync(() => {
+      const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
 
-    expect(response).toEqual({});
+      service.deleteInventories().subscribe((res) => {
+        expect(res).toBeUndefined();
+
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+
+        const callArgs = mockedMethod.calls.mostRecent().args;
+        expect(callArgs[0])
+          .withContext('talks to the correct endpoint')
+          .toBe(`${service.inventoryUrl}`);
+
+        const params = callArgs[1].params as HttpParams;
+        expect(params.keys().length)
+          .withContext('params should be empty')
+          .toBe(0);
+      });
+    }));
+
+    it('deleteInventories calls once and uses correct endpoint with parameters', waitForAsync(() => {
+      const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
+      const filters = { item: 'Folder', brand: 'N/A' , color: 'Blue', size: 'Large', type: 'School', material: 'Plastic' };
+
+      service.deleteInventories(filters).subscribe((res) => {
+        expect(res).toBeUndefined();
+
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+
+        const callArgs = mockedMethod.calls.mostRecent().args;
+        expect(callArgs[0])
+          .withContext('talks to the correct endpoint')
+          .toBe(`${service.inventoryUrl}`);
+
+        const params = callArgs[1].params as HttpParams;
+        expect(params.get('item')).toBe('Folder');
+        expect(params.get('brand')).toBe('N/A');
+        expect(params.get('color')).toBe('Blue');
+        expect(params.get('size')).toBe('Large');
+        expect(params.get('type')).toBe('School');
+        expect(params.get('material')).toBe('Plastic');
+      });
+    }));
+
+    it('deleteInventoryById calls once and uses correct endpoint with internalID', waitForAsync(() => {
+      spyOn(service, 'loadInventory').and.stub();
+      const mockedMethod = spyOn(httpClient, 'delete').and.returnValue(of(void 0));
+
+      service.deleteInventoryById('ID-0001').subscribe((res) => {
+        expect(res).toBeUndefined();
+
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${service.inventoryUrl}/ID-0001`);
+      });
+    }));
   });
 
-  it('should handle errors when deleting inventory', () => {
-    let errorResponse: Error | undefined;
+  describe('Reset Tests', () => {
+    it('resetInventory calls clearInventory', waitForAsync(() => {
+      spyOn(httpClient, 'post').and.returnValue(of(void 0));
+      const loadSpy = spyOn(service, 'loadInventory').and.stub();
 
-    service.deleteInventoryById('ID-00001').subscribe({
-      error: (err) => {
-        errorResponse = err;
-      }
-    });
+      service.resetAllQuantities().subscribe((res) => {
+        expect(res).toBeUndefined();
 
-    const deleteReq = httpMock.expectOne(`${service.inventoryUrl}/ID-00001`);
-    expect(deleteReq.request.method).toBe('DELETE');
-    deleteReq.error(new ErrorEvent('Network error'), { status: 500 });
+        expect(loadSpy)
+          .withContext('loadInventory called once')
+          .toHaveBeenCalledTimes(0);
+      });
+    }));
 
-    expect(errorResponse).toBeDefined();
-  });
+    it('resetMatchingQuantities calls once and uses correct endpoint with parameters', waitForAsync(() => {
+      const mockedMethod = spyOn(httpClient, 'post').and.returnValue(of(void 0));
+      const filters = { item: 'Folder', brand: 'N/A' , color: 'Blue', size: 'Large', type: 'School', material: 'Plastic' };
 
-  it('should call loadInventory after successful deletion', () => {
-    spyOn(service, 'loadInventory').and.callThrough();
+      service.resetMatchingQuantities(filters).subscribe((res) => {
+        expect(res).toBeUndefined();
 
-    service.deleteInventoryById('ID-00001').subscribe();
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
 
-    const deleteReq = httpMock.expectOne(`${service.inventoryUrl}/ID-00001`);
-    deleteReq.flush({});
+        const callArgs = mockedMethod.calls.mostRecent().args;
+        expect(callArgs[0])
+          .withContext('talks to the correct endpoint')
+          .toBe(`${service.inventoryUrl}/reset`);
 
-    expect(service.loadInventory).toHaveBeenCalled();
+        expect(callArgs[1])
+          .withContext('body should be empty object')
+          .toEqual({});
 
-    const refreshReq = httpMock.expectOne(service.inventoryUrl);
-    refreshReq.flush([itemA, itemB]);
-
-    expect(service.inventory()).toEqual([itemA, itemB]);
+        const params = callArgs[2].params as HttpParams;
+        expect(params.get('item')).toBe('Folder');
+        expect(params.get('brand')).toBe('N/A');
+        expect(params.get('color')).toBe('Blue');
+        expect(params.get('size')).toBe('Large');
+        expect(params.get('type')).toBe('School');
+        expect(params.get('material')).toBe('Plastic');
+      });
+    }));
   });
 });

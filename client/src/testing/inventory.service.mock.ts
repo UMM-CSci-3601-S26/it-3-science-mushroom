@@ -9,7 +9,7 @@ import { InventoryService } from 'src/app/inventory/inventory.service';
 })
 
 export class MockInventoryService implements Pick<InventoryService,
-'getInventory' | 'itemOptions' | 'brandOptions' | 'colorOptions' | 'sizeOptions' | 'typeOptions' | 'materialOptions'> {
+'getInventory' | 'itemOptions' | 'brandOptions' | 'colorOptions' | 'sizeOptions' | 'typeOptions' | 'materialOptions' | 'deleteInventoryById'> {
   static testInventory: Inventory[] = [
     {
       internalID: "123456789",
@@ -96,5 +96,9 @@ export class MockInventoryService implements Pick<InventoryService,
   /* eslint-disable @typescript-eslint/no-unused-vars */
   getInventory(_filters: { item?: string, brand?: string, color?: string, size?: string, type?: string, material?: string }): Observable<Inventory[]> {
     return of(MockInventoryService.testInventory);
+  }
+
+  deleteInventoryById(_internalID: string): Observable<unknown> {
+    return of(void 0);
   }
 }
