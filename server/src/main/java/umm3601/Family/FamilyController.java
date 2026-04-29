@@ -165,7 +165,11 @@ public class FamilyController implements Controller {
     ctx.json(family.checklist);
   }
   // takes the list of families and goes through them one by one sorting them into the first available time slot
-  public ArrayList<Family> schedulingAlgorithm(ArrayList<Family> families, int capacity) {
+  public ArrayList<Family> schedulingAlgorithm(
+    ArrayList<Family> families,
+    int capacity,
+    Settings.TimeAvailabilityLabels currentSettings
+  ) {
     int earlyMorningCapacity = 0; // current number of people in a timeslot
     int lateMorningCapacity = 0;
     int earlyAfternoonCapacity = 0;
@@ -173,7 +177,9 @@ public class FamilyController implements Controller {
 
     families.sort(Comparator.comparingInt(f -> f.timeAvailability.countTrue()));
 
-    Settings.TimeAvailabilityLabels currentSettings = new Settings.TimeAvailabilityLabels();
+    if (currentSettings == null) {
+      currentSettings = new Settings.TimeAvailabilityLabels();
+    }
 
     for (int j = 0; j < families.size(); j++) {
       int famSize = families.get(j).students.size() + 1;
@@ -244,14 +250,14 @@ public class FamilyController implements Controller {
 
     int capacity = settings.availableSpots;
 
-    schedulingAlgorithm(families, capacity); // scheduling families
+    schedulingAlgorithm(families, capacity, settings.timeAvailability); // scheduling families
 
     List<WriteModel<Family>> updates = new ArrayList<>();
 
     for (Family fam : families) {
         updates.add(
             new UpdateOneModel<>(
-                Filters.eq("_id", fam._id),
+                Filters.eq("_id", new ObjectId(fam._id)),
                 Updates.set("timeSlot", fam.timeSlot)
             )
         );

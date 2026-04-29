@@ -828,4 +828,20 @@ describe('FamilyService', () => {
       }));
     });
   });
+  describe('Schedule Families', () => {
+    it('should call scheduleFamilies and return an array of families', () => {
+      const mockResponse: Family[] = testFamilies;
+
+      familyService.scheduleFamilies().subscribe((families) => {
+        expect(families).toEqual(mockResponse);
+      });
+
+      // Verify the request was made to the correct URL
+      const req = httpTestingController.expectOne(`${familyService.familyUrl}/schedule`);
+      expect(req.request.method).toBe('POST');
+
+      // Simulate a successful response
+      req.flush(mockResponse);
+    });
+  });
 });

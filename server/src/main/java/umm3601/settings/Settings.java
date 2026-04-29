@@ -44,17 +44,17 @@ public class Settings {
    * Family documents store boolean flags against these same keys.
    */
   public static class TimeAvailabilityLabels {
-    public String earlyMorning = "early morning";
-    public String lateMorning = "late morning";
-    public String earlyAfternoon = "early afternoon";
-    public String lateAfternoon = "late afternoon";
+    public String earlyMorning;
+    public String lateMorning;
+    public String earlyAfternoon;
+    public String lateAfternoon;
   }
 
     /**
    * Spots available per time slot at the drive
    * Used to schedule families between the different time slots based on their preferences
    */
-  public int availableSpots = 5;
+  public int availableSpots;
 
   // Warns the operator before printing more than this many barcode labels for one item
   public int barcodePrintWarningLimit = 25;
