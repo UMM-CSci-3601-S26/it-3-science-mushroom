@@ -1,5 +1,5 @@
 // Angular and Material Imports
-import { Component, OnInit, inject, viewChild, signal, effect } from '@angular/core';
+import { Component, OnInit, inject, viewChild, signal, effect, computed } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -34,7 +34,7 @@ import { TermsService } from '../terms/terms.service';
 // Inventory Imports
 import { InventoryService } from '../inventory/inventory.service';
 //import { InventoryIndex } from '../inventory/inventory-index';
-import { Inventory } from '../inventory/inventory';
+import { Inventory, SelectOption } from '../inventory/inventory';
 //import { InventoryComponent } from '../inventory/inventory.component';
 
 // Dialog Imports
@@ -109,6 +109,39 @@ export class SettingsComponent implements OnInit {
   description = signal<string | undefined>(undefined);
   quantity = signal<number | undefined>(undefined);
   reloadTrigger = signal(0);
+
+  private filterOptions(options: SelectOption[], input: string): SelectOption[] {
+    if (!input) return options;
+    const lower = input.toLowerCase();
+    return options.filter(option =>
+      option.label.toLowerCase().includes(lower) ||
+      option.value.toLowerCase().includes(lower)
+    );
+  }
+
+  filteredItemOptions = computed(() =>
+    this.filterOptions(this.itemOptions(), (this.item() || '').toLowerCase())
+  );
+
+  filteredBrandOptions = computed(() =>
+    this.filterOptions(this.brandOptions(), (this.brand() || '').toLowerCase())
+  );
+
+  filteredColorOptions = computed(() =>
+    this.filterOptions(this.colorOptions(), (this.color() || '').toLowerCase())
+  );
+
+  filteredSizeOptions = computed(() =>
+    this.filterOptions(this.sizeOptions(), (this.size() || '').toLowerCase())
+  );
+
+  filteredTypeOptions = computed(() =>
+    this.filterOptions(this.typeOptions(), (this.type() || '').toLowerCase())
+  );
+
+  filteredMaterialOptions = computed(() =>
+    this.filterOptions(this.materialOptions(), (this.material() || '').toLowerCase())
+  );
 
   private item$ = toObservable(this.item);
   private brand$ = toObservable(this.brand);
@@ -356,7 +389,7 @@ export class SettingsComponent implements OnInit {
   }
 
   private reloadInventory(): void {
-    // Refresh inventory data
+    this.inventoryService.loadInventory();
     this.reloadTrigger.update(n => n + 1);
   }
 

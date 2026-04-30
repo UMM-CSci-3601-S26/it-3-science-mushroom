@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { signal, WritableSignal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -12,6 +13,7 @@ import { TermsService } from '../terms/terms.service';
 import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
 import { InventoryService } from '../inventory/inventory.service';
+import { SelectOption } from '../inventory/inventory';
 import { DialogService } from '../dialog/dialog.service';
 import { FamilyService } from '../family/family.service';
 
@@ -25,6 +27,12 @@ describe('SettingsComponent', () => {
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
   let dialogServiceSpy: jasmine.SpyObj<DialogService>;
+  let itemOptionsSignal: WritableSignal<SelectOption[]>;
+  let brandOptionsSignal: WritableSignal<SelectOption[]>;
+  let colorOptionsSignal: WritableSignal<SelectOption[]>;
+  let sizeOptionsSignal: WritableSignal<SelectOption[]>;
+  let typeOptionsSignal: WritableSignal<SelectOption[]>;
+  let materialOptionsSignal: WritableSignal<SelectOption[]>;
 
   const mockTerms: Terms = {
     item: ['folder', 'notebook', 'pencil'],
@@ -61,20 +69,27 @@ describe('SettingsComponent', () => {
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
     familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    itemOptionsSignal = signal<SelectOption[]>([]);
+    brandOptionsSignal = signal<SelectOption[]>([]);
+    colorOptionsSignal = signal<SelectOption[]>([]);
+    sizeOptionsSignal = signal<SelectOption[]>([]);
+    typeOptionsSignal = signal<SelectOption[]>([]);
+    materialOptionsSignal = signal<SelectOption[]>([]);
     inventoryServiceSpy = jasmine.createSpyObj('InventoryService', [
       'getInventory',
       'removeItemQuantityById',
+      'loadInventory',
       'deleteInventories',
       'clearInventory',
       'resetAllQuantities',
       'resetMatchingQuantities'
     ], {
-      itemOptions: () => [],
-      brandOptions: () => [],
-      colorOptions: () => [],
-      sizeOptions: () => [],
-      typeOptions: () => [],
-      materialOptions: () => []
+      itemOptions: itemOptionsSignal,
+      brandOptions: brandOptionsSignal,
+      colorOptions: colorOptionsSignal,
+      sizeOptions: sizeOptionsSignal,
+      typeOptions: typeOptionsSignal,
+      materialOptions: materialOptionsSignal
     });
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -471,6 +486,59 @@ describe('SettingsComponent', () => {
     component.saveAvailableSpots();
 
     expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
+  });
+
+  it('filters inventory management dropdown options using the typed filter values', () => {
+    itemOptionsSignal.set([
+      { label: 'Markers', value: 'Markers' },
+      { label: 'Folder', value: 'Folder' }
+    ]);
+    brandOptionsSignal.set([
+      { label: 'Crayola', value: 'Crayola' },
+      { label: 'OfficeCo', value: 'OfficeCo' }
+    ]);
+    colorOptionsSignal.set([
+      { label: 'Blue', value: 'Blue' },
+      { label: 'Yellow', value: 'Yellow' }
+    ]);
+    sizeOptionsSignal.set([
+      { label: 'Large', value: 'Large' },
+      { label: 'Small', value: 'Small' }
+    ]);
+    typeOptionsSignal.set([
+      { label: 'School', value: 'School' },
+      { label: 'Writing', value: 'Writing' }
+    ]);
+    materialOptionsSignal.set([
+      { label: 'Plastic', value: 'Plastic' },
+      { label: 'Wood', value: 'Wood' }
+    ]);
+
+    component.item.set('mark');
+    component.brand.set('cray');
+    component.color.set('blu');
+    component.size.set('lar');
+    component.type.set('sch');
+    component.material.set('plas');
+
+    expect(component.filteredItemOptions()).toEqual([
+      { label: 'Markers', value: 'Markers' }
+    ]);
+    expect(component.filteredBrandOptions()).toEqual([
+      { label: 'Crayola', value: 'Crayola' }
+    ]);
+    expect(component.filteredColorOptions()).toEqual([
+      { label: 'Blue', value: 'Blue' }
+    ]);
+    expect(component.filteredSizeOptions()).toEqual([
+      { label: 'Large', value: 'Large' }
+    ]);
+    expect(component.filteredTypeOptions()).toEqual([
+      { label: 'School', value: 'School' }
+    ]);
+    expect(component.filteredMaterialOptions()).toEqual([
+      { label: 'Plastic', value: 'Plastic' }
+    ]);
   });
 
   // ---- resetMatchingQuantities ----

@@ -307,7 +307,7 @@
                   data-cy="filter-item"
                 />
                 <mat-autocomplete #itemAuto="matAutocomplete">
-                  @for (option of itemOptions(); track option.value) {
+                  @for (option of filteredItemOptions(); track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 </mat-autocomplete>
@@ -324,7 +324,7 @@
                   data-cy="filter-brand"
                 />
                 <mat-autocomplete #brandAuto="matAutocomplete">
-                  @for (option of brandOptions(); track option.value) {
+                  @for (option of filteredBrandOptions(); track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 </mat-autocomplete>
@@ -341,7 +341,7 @@
                   data-cy="filter-color"
                 />
                 <mat-autocomplete #colorAuto="matAutocomplete">
-                  @for (option of colorOptions(); track option.value) {
+                  @for (option of filteredColorOptions(); track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 </mat-autocomplete>
@@ -358,7 +358,7 @@
                   data-cy="filter-size"
                 />
                 <mat-autocomplete #sizeAuto="matAutocomplete">
-                  @for (option of sizeOptions(); track option.value) {
+                  @for (option of filteredSizeOptions(); track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 </mat-autocomplete>
@@ -375,7 +375,7 @@
                   data-cy="filter-type"
                 />
                 <mat-autocomplete #typeAuto="matAutocomplete">
-                  @for (option of typeOptions(); track option.value) {
+                  @for (option of filteredTypeOptions(); track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 </mat-autocomplete>
@@ -392,7 +392,7 @@
                   data-cy="filter-material"
                 />
                 <mat-autocomplete #matAuto="matAutocomplete">
-                  @for (option of materialOptions(); track option.value) {
+                  @for (option of filteredMaterialOptions(); track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 </mat-autocomplete>
