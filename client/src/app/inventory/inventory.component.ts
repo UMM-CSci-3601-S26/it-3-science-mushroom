@@ -408,6 +408,11 @@ export class InventoryComponent {
   }
 
   openRemoveScanner() {
+    if (this.showScanner && this.scannerAction() === 'remove') {
+      this.closeScanner();
+      return;
+    }
+
     if (!this.canEditInventoryItem) {
       this.snackBar.open('You do not have permission to remove inventory items.', 'OK', { duration: 3000 });
       return;
@@ -496,7 +501,7 @@ export class InventoryComponent {
 
   toggleScanner() {
     if (this.showScanner && this.scannerAction() === 'add') {
-      this.showScanner = false;
+      this.closeScanner();
       return;
     }
     if (!this.canAddInventoryItem) {
@@ -510,10 +515,15 @@ export class InventoryComponent {
     this.scanCards.set([]);
   }
 
-  onScannerDone() {
-    this.scannerProcessing = false;
+  private closeScanner(): void {
+    this.scannerRef()?.deactivateMode?.();
     this.showScanner = false;
+    this.scannerProcessing = false;
     this.activeScannerMode = null;
+  }
+
+  onScannerDone() {
+    this.closeScanner();
     this.reload.update(v => v + 1);
   }
 
