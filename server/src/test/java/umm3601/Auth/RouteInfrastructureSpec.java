@@ -131,11 +131,13 @@ class RouteInfrastructureSpec {
     @RequireRole(Role.ADMIN)
     @RequirePermission("edit_schools")
     public void adminOnly(Context ctx) {
+      assertNotNull(ctx);
       adminOnlyCalled = true;
     }
 
     @RequirePermission("view_settings")
     public void permissionOnly(Context ctx) {
+      assertNotNull(ctx);
       permissionOnlyCalled = true;
     }
   }
@@ -143,17 +145,21 @@ class RouteInfrastructureSpec {
   static class RegistrarController {
     @Route(method = HttpMethod.GET, path = "/api/example/{id}")
     public void byId(Context ctx) {
+      assertNotNull(ctx);
     }
 
     @Route(method = HttpMethod.GET, path = "/api/example/static")
     public void staticRoute(Context ctx) {
+      assertNotNull(ctx);
     }
 
     @Route(method = HttpMethod.PATCH, path = "/api/example/admin")
     public void patchRoute(Context ctx) {
+      assertNotNull(ctx);
     }
 
     public void helper(Context ctx) {
+      assertNotNull(ctx);
     }
   }
 
@@ -161,6 +167,7 @@ class RouteInfrastructureSpec {
     private boolean plainCalled;
 
     public void plain(Context ctx) {
+      assertNotNull(ctx);
       plainCalled = true;
     }
   }
