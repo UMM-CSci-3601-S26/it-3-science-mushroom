@@ -4,7 +4,10 @@
       <h2>{{ showUsersSection && !showPermissionsSection ? 'Users' : showPermissionsSection && !showUsersSection ? 'Volunteer Permissions' : 'User Management' }}</h2>
       <p>Manage staff accounts and volunteer job-role access.</p>
     </div>
-    <button type="button" class="secondary-button" (click)="loadAdminData()">Refresh</button>
+    <div class="refresh-status" aria-live="polite">
+      <span *ngIf="isRefreshing">Refreshing...</span>
+      <span *ngIf="!isRefreshing && lastRefreshedAt">Updated {{ lastRefreshedAt | date:'shortTime' }}</span>
+    </div>
   </div>
 
   <ng-container *ngIf="!isLoading; else loading">
