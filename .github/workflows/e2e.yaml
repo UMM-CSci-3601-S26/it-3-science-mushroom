@@ -42,7 +42,7 @@ jobs:
       run: ${{ github.workspace }}/server/gradlew run -p ${{ github.workspace }}/server/ &
 
     - name: Wait for backend to be ready
-      run: npx wait-on http://localhost:4567/api/inventory
+      run: npx wait-on --timeout 60000 http-get://localhost:4567/api/health
       working-directory: ./client
 
     - name: Run e2e tests
