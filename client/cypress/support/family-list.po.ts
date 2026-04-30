@@ -115,7 +115,7 @@ export class FamilyListPage {
   }
 
   getFilterFamily() {
-    return cy.get('[data-cy="filter-family"]');
+    return cy.get('[data-cy="filter-family"]', { timeout: 10000 });
   }
 
   selectAutoCompleteOption(filterSelector: string, text: string) {

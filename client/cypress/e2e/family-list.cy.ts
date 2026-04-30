@@ -98,25 +98,7 @@ describe('Family list', () => {
       page.getNavLink('Families').click();
       cy.url().should('match', /\/family$/);
 
-      const errors: string[] = [];
-
-      const recordError = (message: string) => {
-        errors.push(message);
-        cy.log(message);
-        console.warn(message);
-      }
-
-      cy.get('body').then(($body) => {
-        if ($body.find('[data-cy="filter-family"]').length === 0) {
-          recordError(`Empty filter input for family`);
-        }
-      });
-
-      cy.then(() => {
-        if (errors.length > 0) {
-          throw new Error(errors.join('\n'));
-        }
-      });
+      page.getFilterFamily().should('exist');
     });
 
     it("Should be able to take an input and display the correct filtered results", () => {
