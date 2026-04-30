@@ -39,7 +39,7 @@ import { Inventory, SelectOption } from '../inventory/inventory';
 //import { InventoryComponent } from '../inventory/inventory.component';
 
 // Dialog Imports
-import { DialogService } from '../dialog/dialog.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 
 @Component({
   selector: 'app-settings',

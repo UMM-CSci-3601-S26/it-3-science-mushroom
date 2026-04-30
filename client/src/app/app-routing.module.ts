@@ -17,17 +17,17 @@ const routes: Routes = [
   {path: 'guardian-sign-up', loadComponent: () => import('./auth/sign-up/sign-up.component').then(m => m.SignUpComponent), title: 'Guardian Sign Up'},
 
   // Family Portal
-  {path: 'family-portal', loadComponent: () => import('./family/family-portal-home.component').then(m => m.FamilyPortalHomeComponent), title: 'Family Portal',
+  {path: 'family-portal', loadComponent: () => import('./family/family-portal/family-portal-home.component').then(m => m.FamilyPortalHomeComponent), title: 'Family Portal',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['GUARDIAN'], permissions: ['family_portal_access'] }},
-  {path: 'family-portal/form', loadComponent: () => import('./family/family-portal-form.component').then(m => m.FamilyPortalFormComponent), title: 'Family Form',
+  {path: 'family-portal/form', loadComponent: () => import('./family/family-portal/family-portal-form.component').then(m => m.FamilyPortalFormComponent), title: 'Family Form',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['GUARDIAN'], permissions: ['family_portal_access'] }},
 
   // Family Pages (Volunteer and Admin view)
   {path: 'family', loadComponent: () => import('./family/family-list.component').then(m => m.FamilyListComponent), title: 'Family',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_families', 'view_dashboard_stats'] }},
-  {path: 'family/new', loadComponent: () => import('./family/add-family.component').then(m => m.AddFamilyComponent), title: 'Add Family',
+  {path: 'family/new', loadComponent: () => import('./family/family-management/add-family/add-family.component').then(m => m.AddFamilyComponent), title: 'Add Family',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['add_family'] }},
-  {path: 'family/:id', loadComponent: () => import('./family/edit-family.component').then(m => m.EditFamilyComponent), title: 'Edit Family',
+  {path: 'family/:id', loadComponent: () => import('./family/family-management/edit-family/edit-family.component').then(m => m.EditFamilyComponent), title: 'Edit Family',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_family', 'edit_family'] }},
 
   // Inventory/Supplylist
@@ -35,7 +35,7 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_inventory'] }},
   {path: 'supplylist', loadComponent: () => import('./supplylist/supplylist.component').then(m => m.SupplyListComponent), title: 'Supply List',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_supply_lists'] }},
-  {path: 'supplylist/new', loadComponent: () => import('./supplylist/add-supplylist.component').then(m => m.AddSupplyListComponent), title: 'Add Supply List Item',
+  {path: 'supplylist/new', loadComponent: () => import('./supplylist/add-supplylist/add-supplylist.component').then(m => m.AddSupplyListComponent), title: 'Add Supply List Item',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['add_supply_list'] }},
 
   // PDF generator

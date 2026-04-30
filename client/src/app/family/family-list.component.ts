@@ -29,7 +29,7 @@ import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
 
 import { AuthService } from '../auth/auth-service';
-import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } from './delete-family-request-dialog.component';
+import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } from './family-management/delete-family/delete-family-request-dialog.component';
 
 @Component({
   selector: 'app-family',

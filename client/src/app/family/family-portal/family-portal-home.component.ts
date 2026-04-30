@@ -5,7 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 
-import { FamilyChecklist } from '../checklist/checklist';
+import { FamilyChecklist } from '../../checklist/checklist';
 import { FamilyPortalService, FamilyPortalSummary } from './family-portal.service';
 
 @Component({

@@ -9,7 +9,7 @@ import { Observable, of } from 'rxjs';
 // Family Imports
 import { Family, FamilyChecklist } from './family';
 import { FamilyService } from './family.service';
-import { DeleteRequestNotificationService } from './delete-request-notification.service';
+import { DeleteRequestNotificationService } from './family-management/delete-family/delete-request-notification.service';
 
 describe('FamilyService', () => {
   // A small collection of test families

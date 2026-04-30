@@ -14,7 +14,7 @@ import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
 import { InventoryService } from '../inventory/inventory.service';
 import { SelectOption } from '../inventory/inventory';
-import { DialogService } from '../dialog/dialog.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { AuthService } from '../auth/auth-service';
 import { FamilyService } from '../family/family.service';
 
