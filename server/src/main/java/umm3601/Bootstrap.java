@@ -98,6 +98,10 @@ public class Bootstrap {
 
   private static int getPort() {
     String port = getEnv("PORT", Integer.toString(DEFAULT_PORT));
-    return Integer.parseInt(port);
+    try {
+      return Integer.parseInt(port);
+    } catch (NumberFormatException e) {
+      return DEFAULT_PORT;
+    }
   }
 }
