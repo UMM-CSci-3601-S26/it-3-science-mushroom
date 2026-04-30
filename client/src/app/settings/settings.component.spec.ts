@@ -900,7 +900,7 @@ describe('SettingsComponent', () => {
   }));
 
   it('Should call scheduleFamilies and show capacity error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 0 });
+    component.availableSpotsForm.setValue({ availableSpots: 1 });
 
     settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
     familyServiceSpy.scheduleFamilies.and.returnValue(
@@ -921,7 +921,7 @@ describe('SettingsComponent', () => {
   }));
 
   it('Should call scheduleFamilies and show general error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 0 });
+    component.availableSpotsForm.setValue({ availableSpots: 1 });
 
     settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
     familyServiceSpy.scheduleFamilies.and.returnValue(
@@ -940,7 +940,7 @@ describe('SettingsComponent', () => {
   }));
 
   it('Should call scheduleFamilies and show update available spots error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 0 });
+    component.availableSpotsForm.setValue({ availableSpots: 1 });
 
     settingsServiceSpy.updateAvailableSpots.and.returnValue(
       throwError(() => ({

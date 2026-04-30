@@ -161,7 +161,7 @@ describe('InventoryComponent branch coverage', () => {
         { provide: InventoryIndex, useValue: inventoryIndexSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
         { provide: MatDialog, useValue: dialogSpy },
-        { provide: SettingsService, useValue: settingsServiceSpy }
+        { provide: SettingsService, useValue: settingsServiceSpy },
         { provide: AuthService, useValue: { hasPermission: () => true } }
       ]
     });

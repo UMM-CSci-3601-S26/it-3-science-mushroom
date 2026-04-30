@@ -161,12 +161,12 @@ public class SettingsController {
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_TIME)
   @RequirePermission("edit_time_availability")
   public void updateTimeAvailability(Context ctx) {
-
+    Settings.TimeAvailabilityLabels body = ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class);
     Document taDoc = new Document()
-        .append("earlyMorning", ctx.formParam("earlyMorning"))
-        .append("lateMorning", ctx.formParam("lateMorning"))
-        .append("earlyAfternoon", ctx.formParam("earlyAfternoon"))
-        .append("lateAfternoon", ctx.formParam("lateAfternoon"));
+        .append("earlyMorning", body.earlyMorning)
+        .append("lateMorning", body.lateMorning)
+        .append("earlyAfternoon", body.earlyAfternoon)
+        .append("lateAfternoon", body.lateAfternoon);
 
     settingsCollection.updateOne(
         eq("_id", SETTINGS_ID),
@@ -188,7 +188,7 @@ public class SettingsController {
 
     ctx.status(HttpStatus.OK);
   }
-  
+
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_DRIVE_DAY)
   @RequirePermission("edit_drive_day")
   public void updateDriveDay(Context ctx) {
@@ -205,7 +205,7 @@ public class SettingsController {
 
       ctx.status(HttpStatus.OK);
     }
-    
+
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT)
   @RequirePermission("edit_barcode_print_limit")
   public void updateBarcodePrintWarningLimit(Context ctx) {

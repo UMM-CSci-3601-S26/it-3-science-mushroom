@@ -58,61 +58,61 @@ class TermsControllerSpec {
     return iterable;
   }
 
-  /* Needs to be redone with new changes to setup */
-  // @Test
-  // void getTermsMergesAndSortsAllFields() {
-  //   // Pre-create all iterables BEFORE any when() chain to avoid nested-stubbing
-  //   DistinctIterable<String> slItem   = makeIterable(Arrays.asList("Crayon", "Marker"));
-  //   DistinctIterable<String> slBrandA = makeIterable(Arrays.asList("Crayola", "BIC"));
-  //   DistinctIterable<String> slBrandO = makeIterable(Arrays.asList("Expo"));
-  //   DistinctIterable<String> slColorA = makeIterable(Arrays.asList("Red", "Blue"));
-  //   DistinctIterable<String> slColorO = makeIterable(Arrays.asList("Green"));
-  //   DistinctIterable<String> slSize   = makeIterable(Arrays.asList("Large"));
-  //   DistinctIterable<String> slTypeA  = makeIterable(Arrays.asList("Washable"));
-  //   DistinctIterable<String> slTypeO  = makeIterable(Arrays.asList("Permanent"));
-  //   DistinctIterable<String> slMatA   = makeIterable(Arrays.asList("Plastic"));
-  //   DistinctIterable<String> slMatO   = makeIterable(Arrays.asList("Wood"));
+  @Test
+  void getTermsMergesSortsDeduplicatesAndSingularizesAllFields() {
+    DistinctIterable<String> slItem = makeIterable(Arrays.asList("Crayons", "Markers"));
+    DistinctIterable<String> slBrandA = makeIterable(Arrays.asList("Crayola", "BIC"));
+    DistinctIterable<String> slBrandO = makeIterable(Arrays.asList("Expo"));
+    DistinctIterable<String> slColorA = makeIterable(Arrays.asList("Red", "Blue"));
+    DistinctIterable<String> slColorO = makeIterable(Arrays.asList("Green"));
+    DistinctIterable<String> slSizeA = makeIterable(Arrays.asList("Large"));
+    DistinctIterable<String> slSizeO = makeIterable(Arrays.asList("Boxes"));
+    DistinctIterable<String> slTypeA = makeIterable(Arrays.asList("Washable"));
+    DistinctIterable<String> slTypeO = makeIterable(Arrays.asList("Permanent"));
+    DistinctIterable<String> slMatA = makeIterable(Arrays.asList("Plastic"));
+    DistinctIterable<String> slMatO = makeIterable(Arrays.asList("Wood"));
 
-  //   DistinctIterable<String> invItem   = makeIterable(Arrays.asList("Pencil", "crayon"));
-  //   DistinctIterable<String> invBrand  = makeIterable(Arrays.asList("BIC", "Papermate"));
-  //   DistinctIterable<String> invColor  = makeIterable(Arrays.asList("Blue", "Yellow"));
-  //   DistinctIterable<String> invSize   = makeIterable(Arrays.asList("Small"));
-  //   DistinctIterable<String> invType   = makeIterable(Arrays.asList("Permanent", "Dry Erase"));
-  //   DistinctIterable<String> invMat    = makeIterable(Arrays.asList("Metal"));
+    DistinctIterable<String> invItem = makeIterable(Arrays.asList("Pencil", "crayon"));
+    DistinctIterable<String> invBrand = makeIterable(Arrays.asList("BIC", "Papermate"));
+    DistinctIterable<String> invColor = makeIterable(Arrays.asList("Blue", "Yellow"));
+    DistinctIterable<String> invSize = makeIterable(Arrays.asList("Small"));
+    DistinctIterable<String> invType = makeIterable(Arrays.asList("Permanent", "Dry Erase"));
+    DistinctIterable<String> invMat = makeIterable(Arrays.asList("Metal"));
 
-  //   when(supplyListCollection.distinct(eq("item"),          eq(String.class))).thenReturn(slItem);
-  //   when(supplyListCollection.distinct(eq("brand.allOf"),   eq(String.class))).thenReturn(slBrandA);
-  //   when(supplyListCollection.distinct(eq("brand.anyOf"),   eq(String.class))).thenReturn(slBrandO);
-  //   when(supplyListCollection.distinct(eq("color.allOf"),   eq(String.class))).thenReturn(slColorA);
-  //   when(supplyListCollection.distinct(eq("color.anyOf"),   eq(String.class))).thenReturn(slColorO);
-  //   when(supplyListCollection.distinct(eq("size"),          eq(String.class))).thenReturn(slSize);
-  //   when(supplyListCollection.distinct(eq("type.allOf"),    eq(String.class))).thenReturn(slTypeA);
-  //   when(supplyListCollection.distinct(eq("type.anyOf"),    eq(String.class))).thenReturn(slTypeO);
-  //   when(supplyListCollection.distinct(eq("material.allOf"), eq(String.class))).thenReturn(slMatA);
-  //   when(supplyListCollection.distinct(eq("material.anyOf"), eq(String.class))).thenReturn(slMatO);
+    when(supplyListCollection.distinct(eq("item"), eq(String.class))).thenReturn(slItem);
+    when(supplyListCollection.distinct(eq("brand.allOf"), eq(String.class))).thenReturn(slBrandA);
+    when(supplyListCollection.distinct(eq("brand.anyOf"), eq(String.class))).thenReturn(slBrandO);
+    when(supplyListCollection.distinct(eq("color.allOf"), eq(String.class))).thenReturn(slColorA);
+    when(supplyListCollection.distinct(eq("color.anyOf"), eq(String.class))).thenReturn(slColorO);
+    when(supplyListCollection.distinct(eq("size.allOf"), eq(String.class))).thenReturn(slSizeA);
+    when(supplyListCollection.distinct(eq("size.anyOf"), eq(String.class))).thenReturn(slSizeO);
+    when(supplyListCollection.distinct(eq("type.allOf"), eq(String.class))).thenReturn(slTypeA);
+    when(supplyListCollection.distinct(eq("type.anyOf"), eq(String.class))).thenReturn(slTypeO);
+    when(supplyListCollection.distinct(eq("material.allOf"), eq(String.class))).thenReturn(slMatA);
+    when(supplyListCollection.distinct(eq("material.anyOf"), eq(String.class))).thenReturn(slMatO);
 
-  //   when(inventoryCollection.distinct(eq("item"),     eq(String.class))).thenReturn(invItem);
-  //   when(inventoryCollection.distinct(eq("brand"),    eq(String.class))).thenReturn(invBrand);
-  //   when(inventoryCollection.distinct(eq("color"),    eq(String.class))).thenReturn(invColor);
-  //   when(inventoryCollection.distinct(eq("size"),     eq(String.class))).thenReturn(invSize);
-  //   when(inventoryCollection.distinct(eq("type"),     eq(String.class))).thenReturn(invType);
-  //   when(inventoryCollection.distinct(eq("material"), eq(String.class))).thenReturn(invMat);
+    when(inventoryCollection.distinct(eq("item"), eq(String.class))).thenReturn(invItem);
+    when(inventoryCollection.distinct(eq("brand"), eq(String.class))).thenReturn(invBrand);
+    when(inventoryCollection.distinct(eq("color"), eq(String.class))).thenReturn(invColor);
+    when(inventoryCollection.distinct(eq("size"), eq(String.class))).thenReturn(invSize);
+    when(inventoryCollection.distinct(eq("type"), eq(String.class))).thenReturn(invType);
+    when(inventoryCollection.distinct(eq("material"), eq(String.class))).thenReturn(invMat);
 
-  //   doAnswer(inv -> {
-  //     Terms terms = inv.getArgument(0);
-  //     assertEquals(Arrays.asList("Crayon", "Marker", "Pencil"), terms.item);
-  //     assertEquals(Arrays.asList("BIC", "Crayola", "Expo", "Papermate"), terms.brand);
-  //     assertEquals(Arrays.asList("Blue", "Green", "Red", "Yellow"), terms.color);
-  //     assertEquals(Arrays.asList("Large", "Small"), terms.size);
-  //     assertEquals(Arrays.asList("Dry Erase", "Permanent", "Washable"), terms.type);
-  //     assertEquals(Arrays.asList("Metal", "Plastic", "Wood"), terms.material);
-  //     return null;
-  //   }).when(ctx).json(any(Terms.class));
+    doAnswer(inv -> {
+      Terms terms = inv.getArgument(0);
+      assertEquals(Arrays.asList("Crayon", "Marker", "Pencil"), terms.item);
+      assertEquals(Arrays.asList("BIC", "Crayola", "Expo", "Papermate"), terms.brand);
+      assertEquals(Arrays.asList("Blue", "Green", "Red", "Yellow"), terms.color);
+      assertEquals(Arrays.asList("Box", "Large", "Small"), terms.size);
+      assertEquals(Arrays.asList("Dry Erase", "Permanent", "Washable"), terms.type);
+      assertEquals(Arrays.asList("Metal", "Plastic", "Wood"), terms.material);
+      return null;
+    }).when(ctx).json(any(Terms.class));
 
-  //   controller.getTerms(ctx);
-  //   verify(ctx).json(any(Terms.class));
-  //   verify(ctx).status(eq(HttpStatus.OK));
-  // }
+    controller.getTerms(ctx);
+    verify(ctx).json(any(Terms.class));
+    verify(ctx).status(eq(HttpStatus.OK));
+  }
 
   @Test
   void getTermsStripsBlanksAndNulls() {
@@ -147,6 +147,8 @@ class TermsControllerSpec {
     assertEquals("glass", controller.singularize("glasses"));
     assertEquals("bus", controller.singularize("buses"));
     assertEquals("dress", controller.singularize("dresses"));
+    assertEquals("pen", controller.singularize("pens"));
+    assertEquals("cat", controller.singularize("cats"));
     assertEquals("blue", controller.singularize("blue"));
     assertEquals("crayon", controller.singularize("crayon"));
   }

@@ -99,6 +99,7 @@ public class PermissionsService {
       "manage_checklist",
       "view_checklist",
       "edit_available_spots",
+      "edit_barcode_print_limit",
       "edit_drive_day",
       "edit_schools",
       "edit_supply_order",
@@ -389,7 +390,8 @@ public class PermissionsService {
         || permission.contains("drive_day")
         || permission.contains("supply_order")
         || permission.contains("time_availability")
-        || permission.contains("available_spots")) {
+        || permission.contains("available_spots")
+        || permission.contains("barcode_print")) {
       return "Settings";
     }
     if (permission.contains("reports")) {
@@ -425,6 +427,7 @@ public class PermissionsService {
       case "view_checklist" -> "Checklist Viewing";
       case "edit_schools" -> "School Settings Editing";
       case "edit_available_spots" -> "Available Spot Editing";
+      case "edit_barcode_print_limit" -> "Barcode Print Limit Editing";
       case "edit_drive_day" -> "Drive Day Editing";
       case "edit_supply_order" -> "Supply Order Editing";
       case "edit_time_availability" -> "Time Availability Editing";

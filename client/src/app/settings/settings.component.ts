@@ -95,6 +95,10 @@ export class SettingsComponent implements OnInit {
     return this.authService.hasPermission('edit_available_spots');
   }
 
+  get canScheduleFamilies(): boolean {
+    return this.authService.hasPermission('schedule_families');
+  }
+
   get canEditDriveDay(): boolean {
     return this.authService.hasPermission('edit_drive_day');
   }
@@ -241,7 +245,7 @@ export class SettingsComponent implements OnInit {
   // Form for setting drive-day announcement details shown in the family portal
   driveDayForm = new FormGroup({
     date: new FormControl('', Validators.required),
-    message: new FormControl('')
+    location: new FormControl('')
   });
 
   // Drive Order: three buckets of item terms (e.g. "notebook", "folder")
@@ -262,10 +266,10 @@ export class SettingsComponent implements OnInit {
       if (settings.driveDay) {
         this.driveDayForm.patchValue({
           date: settings.driveDay.date,
-          message: settings.driveDay.location ?? ''
+          location: settings.driveDay.location ?? ''
         });
       }
-      
+
       this.barcodePrintForm.patchValue({
         barcodePrintWarningLimit: settings.barcodePrintWarningLimit ?? 25
       });
@@ -436,12 +440,11 @@ export class SettingsComponent implements OnInit {
     }
 
     if (this.availableSpotsForm.valid) {
+      const availableSpots = this.availableSpotsForm.value.availableSpots ?? 5;
       this.settingsService.updateAvailableSpots(
-        this.availableSpotsForm.value as number
+        availableSpots
       ).subscribe({
         next: () => {
-          const availableSpots = this.availableSpotsForm.value.availableSpots;
-          console.log('Updated spots:', availableSpots);
           this.snackBar.open(`Available spots setting saved: ${availableSpots}`, 'OK', { duration: 2000 });
         },
         error: () => this.snackBar.open('Failed to save available spots', 'OK', { duration: 3000 })
@@ -619,7 +622,12 @@ export class SettingsComponent implements OnInit {
   }
 
   scheduleFamilies(): void {
-    this.settingsService.updateAvailableSpots(this.availableSpotsForm.value as number).subscribe({
+    if (!this.canEditAvailableSlots || !this.canScheduleFamilies || !this.availableSpotsForm.valid) {
+      return;
+    }
+
+    const availableSpots = this.availableSpotsForm.value.availableSpots ?? 5;
+    this.settingsService.updateAvailableSpots(availableSpots).subscribe({
       next: () => {
         this.familyService.scheduleFamilies().subscribe({
           next: () => {
@@ -644,6 +652,10 @@ export class SettingsComponent implements OnInit {
   }
 
   saveBarcodePrintSettings(): void {
+    if (!this.canEditBarcode) {
+      return;
+    }
+
     if (this.barcodePrintForm.valid) {
       const warningLimit = this.barcodePrintForm.value.barcodePrintWarningLimit ?? 25;
 
