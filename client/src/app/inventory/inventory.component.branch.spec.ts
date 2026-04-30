@@ -26,6 +26,7 @@ type ScannerStub = {
   removeScannedItem: jasmine.Spy;
   clearScans: jasmine.Spy;
   resolveManualEntry: jasmine.Spy;
+  deactivateMode: jasmine.Spy;
 };
 
 describe('InventoryComponent branch coverage', () => {
@@ -140,7 +141,8 @@ describe('InventoryComponent branch coverage', () => {
       clearHandheldInput: jasmine.createSpy('clearHandheldInput'),
       removeScannedItem: jasmine.createSpy('removeScannedItem'),
       clearScans: jasmine.createSpy('clearScans'),
-      resolveManualEntry: jasmine.createSpy('resolveManualEntry')
+      resolveManualEntry: jasmine.createSpy('resolveManualEntry'),
+      deactivateMode: jasmine.createSpy('deactivateMode')
     };
 
     inventoryServiceSpy.getInventory.and.returnValue(of([]));
@@ -191,6 +193,7 @@ describe('InventoryComponent branch coverage', () => {
     scannerStub.removeScannedItem.calls.reset();
     scannerStub.clearScans.calls.reset();
     scannerStub.resolveManualEntry.calls.reset();
+    scannerStub.deactivateMode.calls.reset();
   }));
 
   it('should refresh the data source and register items in the index', fakeAsync(() => {
@@ -619,14 +622,34 @@ describe('InventoryComponent branch coverage', () => {
     expect(scannerStub.resolveManualEntry).toHaveBeenCalledWith(undefined);
   });
 
-  it('should swap scanner action when toggleScanner is called while open', () => {
+  it('should close the add scanner when toggleScanner is called while add mode is open', () => {
     component.showScanner = true;
-    component.scannerAction.set('remove');
+    component.scannerProcessing = true;
+    component.activeScannerMode = 'handheld';
+    component.scannerAction.set('add');
 
     component.toggleScanner();
 
-    expect(component.showScanner).toBeTrue();
-    expect(component.scannerAction()).toBe('add');
+    expect(scannerStub.deactivateMode).toHaveBeenCalled();
+    expect(component.showScanner).toBeFalse();
+    expect(component.scannerProcessing).toBeFalse();
+    expect(component.activeScannerMode).toBeNull();
+  });
+
+  it('should close the remove scanner when openRemoveScanner is called while remove mode is open', () => {
+    component.showScanner = true;
+    component.scannerProcessing = true;
+    component.activeScannerMode = 'camera';
+    component.scannerAction.set('remove');
+    component.scanCards.set([makeCard()]);
+
+    component.openRemoveScanner();
+
+    expect(scannerStub.deactivateMode).toHaveBeenCalled();
+    expect(component.showScanner).toBeFalse();
+    expect(component.scannerProcessing).toBeFalse();
+    expect(component.activeScannerMode).toBeNull();
+    expect(component.scanCards()).toEqual([makeCard()]);
   });
 
   it('should open the scanner in add mode when toggleScanner is called while closed', () => {
