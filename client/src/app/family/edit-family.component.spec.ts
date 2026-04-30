@@ -5,7 +5,6 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AbstractControl, FormGroup, UntypedFormGroup } from '@angular/forms';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
-import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 // RxJS Imports
@@ -564,85 +563,6 @@ describe('editFamilyComponent', () => {
 
       expect(editFamilyComponent.schools.length).toBe(1);
       expect(editFamilyComponent.schools[0].name).toBe('Test School');
-    });
-  });
-
-  describe('Delete behavior', () => {
-    it('should call deleteFamily and navigate to the family list on successful deletion', () => {
-      const familyService = TestBed.inject(FamilyService);
-      const deleteSpy = spyOn(familyService, 'deleteFamily').and.returnValue(of(void 0));
-      const router = TestBed.inject(Router);
-      const navigateSpy = spyOn(router, 'navigate');
-      const matDialog = TestBed.inject(MatDialog);
-
-      spyOn(matDialog, 'open').and.returnValue({
-        afterClosed: () => of(true)
-      } as MatDialogRef<unknown>);
-
-      editFamilyComponent.deleteForm();
-
-      expect(deleteSpy).toHaveBeenCalled();
-      expect(navigateSpy).toHaveBeenCalledWith(['/family']);
-    });
-
-    it('should show snackBar on 400 error', () => {
-      const familyService = TestBed.inject(FamilyService);
-      spyOn(familyService, 'deleteFamily').and.returnValue(throwError(() => ({ status: 400 })));
-      const snackBar = TestBed.inject(MatSnackBar);
-      const snackBarSpy = spyOn(snackBar, 'open');
-      const matDialog = TestBed.inject(MatDialog);
-
-      spyOn(matDialog, 'open').and.returnValue({
-        afterClosed: () => of(true)
-      } as MatDialogRef<unknown>);
-
-      editFamilyComponent.deleteForm();
-
-      expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringMatching(/illegal family/i),
-        'OK',
-        { duration: 5000 }
-      );
-    });
-
-    it('should show snackBar on 500 error', () => {
-      const familyService = TestBed.inject(FamilyService);
-      spyOn(familyService, 'deleteFamily').and.returnValue(throwError(() => ({ status: 500 })));
-      const snackBar = TestBed.inject(MatSnackBar);
-      const snackBarSpy = spyOn(snackBar, 'open');
-      const matDialog = TestBed.inject(MatDialog);
-
-      spyOn(matDialog, 'open').and.returnValue({
-        afterClosed: () => of(true)
-      } as MatDialogRef<unknown>);
-
-      editFamilyComponent.deleteForm();
-
-      expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringMatching(/server failed to process/i),
-        'OK',
-        { duration: 5000 }
-      );
-    });
-
-    it('should show snackBar on unexpected error status', () => {
-      const familyService = TestBed.inject(FamilyService);
-      spyOn(familyService, 'deleteFamily').and.returnValue(throwError(() => ({ status: 409, message: 'Conflict' })));
-      const snackBar = TestBed.inject(MatSnackBar);
-      const snackBarSpy = spyOn(snackBar, 'open');
-      const matDialog = TestBed.inject(MatDialog);
-
-      spyOn(matDialog, 'open').and.returnValue({
-        afterClosed: () => of(true)
-      } as MatDialogRef<unknown>);
-
-      editFamilyComponent.deleteForm();
-
-      expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringMatching(/unexpected error/i),
-        'OK',
-        { duration: 5000 }
-      );
     });
   });
 });

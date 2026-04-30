@@ -248,20 +248,4 @@ describe('Edit family page', () => {
       page.getSnackBar().should('contain', `Updated family ${expectedFamily.guardianName}`);
     });
   });
-
-  describe('deleting a family', () => {
-
-    it('Should be able to delete a family', () => {
-      cy.get('[data-test=deleteFamilyButton]').click();
-
-      cy.contains('button', 'Confirm').click();
-
-      page.getSnackBar().should('contain', `Deleted family Jane Doe`);
-      cy.url({ timeout: 3000 })
-        .should('match', /\/family$/);
-      cy.get('.family-card-guardianName')
-        .contains('Jane Doe')
-        .should('not.exist');
-    })
-  })
 });
