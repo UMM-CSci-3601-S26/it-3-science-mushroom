@@ -39,7 +39,6 @@ import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode/b
 import { SettingsService } from '../settings/settings.service';
 import { DialogService } from '../dialog/dialog.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ManualEntry, ManualEntryResult } from './manual-entry';
 import { AuthService } from '../auth/auth-service';
 import JsBarcode from 'jsbarcode';
 

@@ -104,7 +104,6 @@ public class BarcodeController {
    * @note Removing quantity is currently handled in a separate method in InventoryController.
    * The client only uses this for adding.
    */
-  
   @Route(method = HttpMethod.POST, path = API_BARCODE_QTY)
   @RequirePermission("edit_inventory_item")
   public void updateQuantity(Context ctx) {

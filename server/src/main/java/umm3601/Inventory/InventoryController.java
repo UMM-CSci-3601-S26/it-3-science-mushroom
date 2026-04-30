@@ -231,10 +231,10 @@ public class InventoryController {
    * @param ctx The context for the HTTP request
    */
 
-  @Route(method = HttpMethod.POST, path = API_INVENTORY + "/remove")
+  @Route(method = HttpMethod.POST, path = API_INVENTORY_REMOVE_QUANTITY)
   @RequirePermission("edit_inventory_item")
-  public void removeInventory(Context ctx) {
-    RemoveInventoryRequest req = ctx.bodyAsClass(RemoveInventoryRequest.class);
+  public void removeQuantity(Context ctx) {
+    RemoveQuantityRequest req = ctx.bodyAsClass(RemoveQuantityRequest.class);
     if (req.internalID == null || req.internalID.isBlank()) {
       throw new BadRequestResponse("internalID is required to update inventory");
     }
@@ -263,6 +263,12 @@ public class InventoryController {
     exists.quantity = newQuantity;
     ctx.json(exists);
     ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.POST, path = API_INVENTORY + "/remove")
+  @RequirePermission("edit_inventory_item")
+  public void removeInventory(Context ctx) {
+    removeQuantity(ctx);
   }
 
   /**

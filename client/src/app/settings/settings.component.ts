@@ -77,7 +77,6 @@ export class SettingsComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private authService = inject(AuthService);
-  private familyService = inject(FamilyService);
 
   get canEditSchools(): boolean {
     return this.authService.hasPermission('edit_schools');
@@ -101,6 +100,10 @@ export class SettingsComponent implements OnInit {
 
   get canEditDriveDay(): boolean {
     return this.authService.hasPermission('edit_drive_day');
+  }
+
+  get canEditBarcode(): boolean {
+    return this.authService.hasPermission('edit_barcode_print_limit');
   }
 
   // Options for filter dropdowns, built from inventory data

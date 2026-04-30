@@ -51,7 +51,7 @@ import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
-// import umm3601.Auth.Role;
+import umm3601.Auth.Role;
 import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
 // Misc Imports
@@ -59,8 +59,8 @@ import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Settings.Settings.TimeAvailabilityLabels;
 import umm3601.SupplyList.SupplyList;
-// import umm3601.Users.Users;
-// import umm3601.Users.UsersService;
+import umm3601.Users.Users;
+import umm3601.Users.UsersService;
 
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength", "checkstyle:ParameterNumber" })
 class FamilyControllerSpec {
@@ -1831,26 +1831,26 @@ class FamilyControllerSpec {
       new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
   }
 
-  // private int invokeAttributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
-  //     throws Exception {
-  //   return invokePrivate("attributeSimilarityScore",
-  //     new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
-  // }
+  private int invokeAttributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
+      throws Exception {
+    return invokePrivate("attributeSimilarityScore",
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
+  }
 
-  // private int invokeColorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue)
-  //     throws Exception {
-  //   return invokePrivate("colorSimilarityScore",
-  //     new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
-  // }
+  private int invokeColorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue)
+      throws Exception {
+    return invokePrivate("colorSimilarityScore",
+      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+  }
 
-  // private int invokeItemSimilarityScore(Inventory inventory, SupplyList supplyList) throws Exception {
-  //   return invokePrivate("itemSimilarityScore", new Class<?>[] {Inventory.class, SupplyList.class},
-  //     inventory, supplyList);
-  // }
+  private int invokeItemSimilarityScore(Inventory inventory, SupplyList supplyList) throws Exception {
+    return invokePrivate("itemSimilarityScore", new Class<?>[] {Inventory.class, SupplyList.class},
+      inventory, supplyList);
+  }
 
-  // private String invokeBestInventoryDescription(Inventory inventory) throws Exception {
-  //   return invokePrivate("bestInventoryDescription", new Class<?>[] {Inventory.class}, inventory);
-  // }
+  private String invokeBestInventoryDescription(Inventory inventory) throws Exception {
+    return invokePrivate("bestInventoryDescription", new Class<?>[] {Inventory.class}, inventory);
+  }
 
   private void invokeValidateChecklistItemForSave(Family.ChecklistItem item) throws Exception {
     invokePrivate("validateChecklistItemForSave", new Class<?>[] {Family.ChecklistItem.class}, item);
@@ -1866,17 +1866,17 @@ class FamilyControllerSpec {
     return invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, status);
   }
 
-  // private void invokeHydrateDeleteRequestRequester(Family family) throws Exception {
-  //   invokePrivate("hydrateDeleteRequestRequester", new Class<?>[] {Family.class}, family);
-  // }
+  private void invokeHydrateDeleteRequestRequester(Family family) throws Exception {
+    invokePrivate("hydrateDeleteRequestRequester", new Class<?>[] {Family.class}, family);
+  }
 
-  // private Users invokeFindUserById(String userId) throws Exception {
-  //   return invokePrivate("findUserById", new Class<?>[] {String.class}, userId);
-  // }
+  private Users invokeFindUserById(String userId) throws Exception {
+    return invokePrivate("findUserById", new Class<?>[] {String.class}, userId);
+  }
 
-  // private String invokeDisplayNameForUser(Users user) throws Exception {
-  //   return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
-  // }
+  private String invokeDisplayNameForUser(Users user) throws Exception {
+    return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
+  }
 
   private String invokeNormalizeToken(String value) throws Exception {
     return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
