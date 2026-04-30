@@ -24,6 +24,11 @@ describe('Stock Report', () => {
     cy.wait('@saveReport');
   });
 
+  afterEach(() => {
+    // Clean up downloads folder
+    cy.exec('rm -rf cypress/downloads || true');
+  });
+
   describe('General Tests', () => {
     it('Should have the correct title', () => {
       page.getAppTitle().should('contain', 'Stock Report');

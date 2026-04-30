@@ -121,15 +121,10 @@
         </div>
         <div class="filter-extra">
           <div class="filter-actions">
-          <!-- N/A Values Toggle -->
-            <mat-slide-toggle
-              [ngModel]="showNAValues()"
-              (ngModelChange)="showNAValues.set($event)"
-              data-cy="toggle-na-values"
-            >
-              Show N/A values
-            </mat-slide-toggle>
-          <!-- Clear Filters Button -->
+            <button mat-stroked-button class="count-display" disabled>
+              <strong>Items: {{ displayedInventory().length }}</strong>
+            </button>
+            <!-- Clear Filters Button -->
             <button
               mat-stroked-button
               type="button"
@@ -138,11 +133,7 @@
               data-cy="filter-clear"
               class="clear-button"
               >
-              Clear
-            </button>
-
-            <button mat-stroked-button class="count-display">
-            Items: {{ displayedInventory().length }}
+              Clear Filters
             </button>
 
             <div class="scanner-actions">
@@ -153,16 +144,16 @@
                 (click)="toggleScanner()"
                 data-cy="scan-button"
                 >
-                {{ showScanner ? 'Close Scanner' : 'Scan Item' }}
+                {{ showScanner && scannerAction() === 'add' ? 'Close Scanner' : 'Scan Item - Add' }}
               </button>
 
               <button
                 mat-stroked-button
                 type="button"
-                (click)="openRemoveScanner()"
+                (click)="showScanner && scannerAction() === 'remove' ? (showScanner = false) : openRemoveScanner()"
                 data-cy="remove-scan-button"
                 >
-                  Remove Item
+                  {{ showScanner && scannerAction() === 'remove' ? 'Close Scanner' : 'Scan Item - Remove' }}
               </button>
             </div>
 
@@ -182,12 +173,43 @@
             </mat-button-toggle-group>
           </div>
 
+          <div class="display-toggles">
+                <!-- N/A Values Toggle -->
+              <mat-slide-toggle
+                [ngModel]="showNAValues()"
+                (ngModelChange)="showNAValues.set($event)"
+                data-cy="toggle-na-values"
+              >
+                Show N/A values
+              </mat-slide-toggle>
+
+              <!-- Out of Stock Items Toggle -->
+              <mat-slide-toggle
+                [ngModel]="showZeroQuantityItems()"
+                (ngModelChange)="showZeroQuantityItems.set($event)"
+                data-cy="toggle-outofstock-quantities"
+              >
+                Show Out of Stock Items
+              </mat-slide-toggle>
+
+              <!-- Only Out of Stock Items Toggle -->
+              <mat-slide-toggle
+                [ngModel]="showOnlyZeroQuantityItems()"
+                (ngModelChange)="showOnlyZeroQuantityItems.set($event)"
+                data-cy="toggle-only-outofstock-quantities"
+              >
+                Show Only Out of Stock Items
+              </mat-slide-toggle>
+            </div>
+
           <div class="scanner-wrapper" *ngIf="showScanner">
-            <p>Scanner is open</p>
+            <p>{{ activeScannerMode === 'camera' ? 'Camera' : activeScannerMode === 'handheld' ? 'Hand Held' : '' }} Scanner is ready</p>
             <app-scanner
+            [currentScannerAction]="scannerAction()"
             (scanned)="onScanned($event)"
             (manualEntryNeeded)="onManualEntryNeeded($event)"
             (processingStarted)="scannerProcessing = true"
+            (activeModeChanged)="activeScannerMode = $event"
             (done)="onScannerDone()"></app-scanner>
           </div>
           <div *ngIf="showRemovePanel() && scanCards().length > 0" class="remove-panel">
@@ -205,7 +227,7 @@
                 </div>
 
                 <mat-form-field appearance="outline">
-                  <mat-label> Amount to remove</mat-label>
+                  <mat-label>Amount to remove</mat-label>
                   <input
                     matInput
                     type="number"
@@ -222,7 +244,15 @@
                     type="button"
                     *ngIf="card.mode === 'remove' && card.item"
                     (click)="confirmSingleRemove(card.id)">
-                    Remove From Inventory
+                    Remove Amount From Inventory
+                  </button>
+                  <button
+                    mat-raised-button
+                    color="warn"
+                    type="button"
+                    *ngIf="card.mode === 'remove' && card.item"
+                    (click)="confirmSingleDelete(card.id)">
+                    Permanently Delete Item
                   </button>
                   <button mat-stroked-button type="button" (click)="removeCard(card.id)">
                     Remove Card

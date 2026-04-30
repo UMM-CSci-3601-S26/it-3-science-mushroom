@@ -112,4 +112,69 @@ describe('InventoryIndex', () => {
     expect(index.getByBarcode('ITEM-99999')).toEqual(updated);
     expect(index.getByBarcode('EXT-9')).toEqual(updated);
   });
+
+  it('unregisters old item when registering item with same id but different internalBarcode', () => {
+    spyOn(console, 'warn');
+
+    const updated: Inventory = {
+      ...pencil,
+      internalBarcode: 'ITEM-NEW'
+    };
+
+    index.registerItem(pencil);
+    expect(index.getByBarcode('ITEM-00001')).toEqual(pencil);
+
+    index.registerItem(updated);
+
+    expect(console.warn).toHaveBeenCalled();
+    expect(index.getByBarcode('ITEM-00001')).toBeNull();
+    expect(index.getByBarcode('ITEM-NEW')).toEqual(updated);
+    expect(index.getByBarcode('TEST-1')).toEqual(updated);
+  });
+
+  it('unregisters old item when registering item with same id but different item name', () => {
+    spyOn(console, 'warn');
+
+    const updated: Inventory = {
+      ...pencil,
+      item: 'Different Name'
+    };
+
+    index.registerItem(pencil);
+    expect(index.getByBarcode('ITEM-00001')).toEqual(pencil);
+
+    index.registerItem(updated);
+
+    expect(console.warn).toHaveBeenCalled();
+    expect(index.getByBarcode('ITEM-00001')).toEqual(updated);
+    expect(index.getByBarcode('TEST-1')).toEqual(updated);
+  });
+
+  it('unregisters and re-registers when updating existing item with same id', () => {
+    const updated: Inventory = {
+      ...pencil,
+      externalBarcode: ['NEW-EXT']
+    };
+
+    index.registerItem(pencil);
+    expect(index.getByBarcode('TEST-1')).toEqual(pencil);
+
+    index.registerItem(updated);
+
+    expect(index.getByBarcode('TEST-1')).toBeNull();
+    expect(index.getByBarcode('NEW-EXT')).toEqual(updated);
+  });
+
+  it('returns null when barcode maps to an internalID with no item in itemMap', () => {
+    index.registerItem(pencil);
+
+    // Manually break the mapping
+    const indexPrivate = index as unknown as { internalBarcodeMap: Map<string, string>, itemMap: Map<string, Inventory> };
+
+    // Delete the item from itemMap but leave the barcode mapping
+    indexPrivate.itemMap.delete('ID-0001');
+
+    // Now getByBarcode should return null due to ?? null fallback
+    expect(index.getByBarcode('ITEM-00001')).toBeNull();
+  });
 })

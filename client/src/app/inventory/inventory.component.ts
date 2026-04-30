@@ -2,7 +2,7 @@
 import { Component, effect, inject, signal, viewChild, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,7 +21,6 @@ import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
-
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -30,14 +29,19 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Inventory, SelectOption } from './inventory';
 import { InventoryService } from './inventory.service';
 import { InventoryIndex } from './inventory-index';
-import { BarcodePrintDialog } from './barcode-print-dialog';
-import { BarcodePrintQuantityDialog } from './barcode-print-quantity-dialog';
-import { MatDialog } from '@angular/material/dialog';
-import { ManualEntry, ManualEntryResult } from './manual-entry';
-import JsBarcode from 'jsbarcode';
-import { BarcodePrintWindowService } from './barcode-print-window.service';
-import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode-print-item';
+
+// Barcode, Manual Entry, Dialog, and Settings Imports
+import { BarcodePrintDialog } from './barcode/barcode-print-dialog';
+import { BarcodePrintQuantityDialog } from './barcode/barcode-print-quantity-dialog';
+import { ManualEntry, ManualEntryResult } from './manual-entry/manual-entry';
+import { BarcodePrintWindowService } from './barcode/barcode-print-window.service';
+import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode/barcode-print-item';
 import { SettingsService } from '../settings/settings.service';
+import { DialogService } from '../dialog/dialog.service';
+import { MatDialog } from '@angular/material/dialog';
+
+// Other Imports
+import JsBarcode from 'jsbarcode';
 
 type ScanCard = {
   id: string;
@@ -89,12 +93,14 @@ export class InventoryComponent {
   private inventoryService = inject(InventoryService);
   private inventoryIndex = inject(InventoryIndex);
   private dialog = inject(MatDialog);
+  private dialogService = inject(DialogService);
   private barcodePrintWindow = inject(BarcodePrintWindowService);
   private settingsService = inject(SettingsService);
 
   reload = signal(0);
   showScanner = false;
   scannerProcessing = false;
+  activeScannerMode: 'camera' | 'handheld' | null = null;
   constructor() {
     effect(() => {
       const items = this.displayedInventory();
@@ -119,6 +125,8 @@ export class InventoryComponent {
   description = signal<string | undefined>(undefined);
   quantity = signal<number | undefined>(undefined);
   showNAValues = signal(true);
+  showZeroQuantityItems = signal(false);
+  showOnlyZeroQuantityItems = signal(false);
   viewType = signal<'detailed' | 'simple'>('detailed');
 
   errMsg = signal<string | undefined>(undefined);
@@ -255,6 +263,7 @@ export class InventoryComponent {
       }
     }
   }
+
   updateCardRemoveAmount(cardId: string, value: number) {
     const safeValue = Number(value);
 
@@ -266,6 +275,7 @@ export class InventoryComponent {
       )
     );
   }
+
   confirmSingleRemove(cardId: string) {
     const card = this.scanCards().find(c => c.id === cardId);
 
@@ -287,7 +297,7 @@ export class InventoryComponent {
       return;
     }
 
-    this.inventoryService.removeInventoryById(card.item.internalID, card.removeAmount).subscribe({
+    this.inventoryService.removeItemQuantityById(card.item.internalID, card.removeAmount).subscribe({
       next: () => {
         this.snackBar.open(`Removed ${card.removeAmount} from ${card.item?.item}.`, 'OK', {
           duration: 3000
@@ -300,12 +310,61 @@ export class InventoryComponent {
         if (this.scanCards().length === 0) {
           this.showRemovePanel.set(false);
         }
-
-        this.reload.update(v => v + 1);
       },
       error: (err) => {
         console.error('single remove failed', err);
         this.snackBar.open('Failed to remove inventory item.', 'OK', { duration: 4000 });
+      }
+    });
+  }
+
+  /**
+   * Checks if card is valid for deletion, then opens a confirmation dialog. If confirmed, uses deleteInventoryById to delete the item.
+   */
+  confirmSingleDelete(cardId: string) {
+    const card = this.scanCards().find(c => c.id === cardId);
+
+    if (!card || card.mode !== 'remove' || !card.item) {
+      this.snackBar.open("This card cannot be deleted from inventory", 'OK', { duration : 3000});
+      return;
+    }
+
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Delete Single',
+      itemName: card.item.item,
+      message: `Are you sure you want to delete the item ${card.item.item}?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Confirm',
+    }, '400px', '200px');
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (!this.inventoryService || !card.item) return;
+        this.snackBar.open(
+          `Deleting item ${card.item.item}...`,
+          `Okay`,
+          { duration: 2000 }
+        );
+
+        this.inventoryService.deleteInventoryById(card.item.internalID).subscribe({
+          next: () => {
+            this.snackBar.open(`Deleted ${card.item?.item}.`, 'OK', {
+              duration: 3000
+            });
+
+            this.scanCards.update(cards => cards.filter(c => c.id !== cardId));
+
+            this.scannerRef()?.removeScannedItem?.(card.barcode);
+
+            if (this.scanCards().length === 0) {
+              this.showRemovePanel.set(false);
+            }
+          },
+          error: (err) => {
+            console.error('single delete failed', err);
+            this.snackBar.open('Failed to delete inventory item.', 'OK', { duration: 4000 });
+          }
+        });
       }
     });
   }
@@ -365,7 +424,7 @@ export class InventoryComponent {
 
     const requests = validRemoveCards.map(card =>
       firstValueFrom(
-        this.inventoryService.removeInventoryById(card.item!.internalID, card.removeAmount)
+        this.inventoryService.removeItemQuantityById(card.item!.internalID, card.removeAmount)
       )
     );
 
@@ -398,7 +457,7 @@ export class InventoryComponent {
   }
 
   toggleScanner() {
-    if (this.showScanner) {
+    if (this.showScanner && this.scannerAction() === 'add') {
       this.showScanner = false;
       return;
     }
@@ -412,6 +471,7 @@ export class InventoryComponent {
   onScannerDone() {
     this.scannerProcessing = false;
     this.showScanner = false;
+    this.activeScannerMode = null;
     this.reload.update(v => v + 1);
   }
 
@@ -424,6 +484,7 @@ export class InventoryComponent {
   matchItem(barcode: string): Inventory | null {
     return this.inventoryIndex.getByBarcode(barcode);
   }
+
   trackByScanCard(index: number, card: ScanCard): string {
     return card.id;
   }
@@ -462,15 +523,38 @@ export class InventoryComponent {
   );
 
   displayedInventory = computed(() => {
-    return this.serverFilteredInventory();
+    return this.showOnlyOutofStock(this.showOutofStockItems(this.serverFilteredInventory()));
   });
 
+  /**
+   * Adjust which cells get displayed based on the appropriate showXValues signals.
+   */
   displayCellValue(value: string | number | null | undefined): string | number {
     if (typeof value === 'string' && !this.showNAValues() && value.trim().toLowerCase() === 'n/a') {
       return '';
     }
 
     return value ?? '';
+  }
+
+  /**
+   * Filters displayed inventory based on showOutofStockQuantities
+   */
+  showOutofStockItems(inventory: Inventory[]): Inventory[] {
+    if (this.showZeroQuantityItems()) {
+      return inventory;
+    }
+    return inventory.filter(item => item.quantity !== 0);
+  }
+
+  /**
+   * Filters displayed inventory to only show 0 quantity items
+   */
+  showOnlyOutofStock(inventory: Inventory[]): Inventory[] {
+    if (!this.showOnlyZeroQuantityItems()) {
+      return inventory;
+    }
+    return inventory.filter(item => item.quantity === 0);
   }
 
   private item$ = toObservable(this.item);

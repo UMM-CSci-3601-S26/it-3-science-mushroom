@@ -9,6 +9,7 @@ import static com.mongodb.client.model.Filters.regex;
 // Java Imports
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 // IO Imports
 import io.javalin.Javalin;
@@ -42,6 +45,9 @@ public class InventoryController implements Controller {
 
   private static final String API_INVENTORY = "/api/inventory";
   private static final String API_INVENTORY_BY_ID = "/api/inventory/{id}";
+  private static final String API_INVENTORY_REMOVE_QUANTITY = "/api/inventory/removeQuantity";
+  private static final String API_INVENTORY_CLEAR = "/api/inventory/clear";
+  private static final String API_INVENTORY_RESET = "/api/inventory/resetQuantity";
 
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";
@@ -50,10 +56,13 @@ public class InventoryController implements Controller {
   static final String COLOR_KEY = "color";
   static final String DESCRIPTION_KEY = "description";
   static final String QUANTITY_KEY = "quantity";
+  static final String MAX_QUANTITY_KEY = "maxQuantity";
+  static final String MIN_QUANTITY_KEY = "minQuantity";
   static final String NOTES_KEY = "notes";
   static final String MATERIAL_KEY = "material";
   static final String TYPE_KEY = "type";
   static final String SORT_ORDER_KEY = "sortorder";
+
   private static final int EXACT_MATCH_SCORE = 3;
   private static final int STARTS_WITH_SCORE = 2;
   private static final int CONTAINS_SCORE = 1;
@@ -95,7 +104,10 @@ public class InventoryController implements Controller {
     return String.format("ITEM-%05d", n);
   }
 
-
+  /**
+   * Scans inventory to find the next available ID number for both internalID and internalBarcode
+   * @return The number to use
+   */
   private int getNextSequence() {
     Inventory maxIdItem = inventoryCollection
     .find(Filters.and(
@@ -111,27 +123,37 @@ public class InventoryController implements Controller {
     int barcodeNum = extractNumber(maxBarcodeItem != null ? maxBarcodeItem.internalBarcode : null);
     return Math.max(idNum, barcodeNum) + 1;
   }
-  private String generateNextID() { // generates the next available internal ID
-      Inventory last = inventoryCollection.find(new Document("internalID", new Document("$exists", true)))
-      .sort(Sorts.descending("internalID"))
-      .first();
-      String prefix = "ID-";
-      int next = 1;
-      if (last != null && last.internalID != null && last.internalID.startsWith(prefix)) {
-        try {
-          next = Integer.parseInt(last.internalID.substring(prefix.length())) + 1;
-        } catch (NumberFormatException e) {
-          // return 1 if not right format
-        }
+
+  /**
+   * Generates the next available internal ID in the format "ID-XXXXX"
+   * @return The generated ID
+   */
+  private String generateNextID() {
+    Inventory last = inventoryCollection.find(new Document("internalID", new Document("$exists", true)))
+    .sort(Sorts.descending("internalID"))
+    .first();
+    String prefix = "ID-";
+    int next = 1;
+    if (last != null && last.internalID != null && last.internalID.startsWith(prefix)) {
+      try {
+        next = Integer.parseInt(last.internalID.substring(prefix.length())) + 1;
+      } catch (NumberFormatException e) {
+        // return 1 if not right format
       }
-      return String.format("ID-%05d", next);
+    }
+    return String.format("ID-%05d", next);
   }
 
+  // Endpoint to generate the next internal ID
   public void generateNextID(Context ctx) {
     ctx.json(generateNextID());
     ctx.status(HttpStatus.OK);
   }
 
+  /**
+   * Endpoint to add inventory, with logic to handle duplicates and quantity updates
+   * @param ctx The context for the HTTP request
+   */
   public void addInventory(Context ctx) {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
     newInv.refreshDescription();
@@ -172,6 +194,7 @@ public class InventoryController implements Controller {
     if (newInv.externalBarcode == null) {
       newInv.externalBarcode = new ArrayList<>();
     }
+
     if (newInv.externalBarcode != null) {
       newInv.externalBarcode = newInv.externalBarcode.stream()
         .filter(code -> code != null && !code.isBlank() && !code.matches("^ITEM-\\d+$"))
@@ -180,7 +203,7 @@ public class InventoryController implements Controller {
     }
 
     if (newInv.quantity <= 0) {
-    newInv.quantity = 1;
+      newInv.quantity = 1;
     }
 
     boolean idExists = inventoryCollection.find(eq("internalID", newInv.internalID)).first() != null;
@@ -189,7 +212,7 @@ public class InventoryController implements Controller {
     if (idExists || barcodeExists) {
       ctx.status(HttpStatus.CONFLICT);
       ctx.result("Duplicate internalID or internalBarcode detected");
-    return;
+      return;
     }
 
     newInv.refreshDescription();
@@ -198,11 +221,15 @@ public class InventoryController implements Controller {
     ctx.status(HttpStatus.CREATED);
   }
 
-  public void removeInventory(Context ctx) {
-    RemoveInventoryRequest req = ctx.bodyAsClass(RemoveInventoryRequest.class);
+  /**
+   * Endpoint to remove a given quantity from a given inventory
+   * @param ctx The context for the HTTP request
+   */
+  public void removeQuantity(Context ctx) {
+    RemoveQuantityRequest req = ctx.bodyAsClass(RemoveQuantityRequest.class);
 
     if (req.internalID == null || req.internalID.isBlank()) {
-      throw new BadRequestResponse("internalID is required to remove inventory");
+      throw new BadRequestResponse("internalID is required to update inventory");
     }
 
     if (req.amount <= 0) {
@@ -221,13 +248,6 @@ public class InventoryController implements Controller {
       throw new BadRequestResponse("Cannot remove more than current quantity");
     }
 
-    if (newQuantity == 0) {
-      inventoryCollection.deleteOne(eq("_id", exists._id));
-      ctx.json(new Document("deleted", true).append("quantity", 0));
-      ctx.status(HttpStatus.OK);
-      return;
-    }
-
     inventoryCollection.updateOne(
       eq("_id", exists._id),
       new Document("$set", new Document(QUANTITY_KEY, newQuantity))
@@ -238,6 +258,76 @@ public class InventoryController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  /**
+   * Deletes a single given inventory item from the database, identified by its internal ID
+   * @param ctx The HTTP request context
+   */
+  public void deleteInventory(Context ctx) {
+    String internalID = ctx.pathParam("id");
+    DeleteResult result = inventoryCollection.deleteOne(eq("internalID", internalID));
+
+    if (result.getDeletedCount() == 0) {
+      throw new NotFoundResponse("The requested inventory item was not found");
+    }
+
+    ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Deletes multiple inventory items from the database based on query parameters, similar to getInventories
+   * @param ctx The HTTP request context
+  */
+  public void deleteInventories(Context ctx) {
+    Bson filter = constructFilter(ctx);
+
+    DeleteResult deleteResult = inventoryCollection.deleteMany(filter);
+    long matchedCount = deleteResult.getDeletedCount();
+    String message = matchedCount == 0
+      ? "No inventory items matched the provided filters."
+      : "Deleted " + matchedCount + " matching inventory item(s).";
+
+    ctx.json(Map.of("matchedCount", matchedCount, "message", message));
+    ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Deletes all inventory items from the database.
+   */
+  public void clearInventory(Context ctx) {
+    inventoryCollection.deleteMany(new Document());
+    ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Sets quantity, minQuantity, and maxQuantity to 0 for all matching inventory items based on query parameters
+   */
+  public void resetQuantities(Context ctx) {
+    Bson filter = constructFilter(ctx);
+
+    UpdateResult updateResult = inventoryCollection.updateMany(
+      filter,
+      Updates.combine(
+        Updates.set(QUANTITY_KEY, 0),
+        Updates.set(MAX_QUANTITY_KEY, 0),
+        Updates.set(MIN_QUANTITY_KEY, 0)
+      )
+    );
+
+    long matchedCount = updateResult.getMatchedCount();
+    String message = matchedCount == 0
+      ? "No inventory items matched the provided filters."
+      : "Reset quantities for " + matchedCount + " matching inventory item(s).";
+
+    ctx.json(Map.of("matchedCount", matchedCount, "message", message));
+    ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Calculates a relevance score for a given value based on how well it matches the search term
+   * @param value The value to compare against the search term
+   * @param search The search term to compare the value to
+   * @return The relevance score, higher values mean a better match
+   */
   private int getRelevanceScore(String value, String search) {
     String v = value.toLowerCase();
     String s = search.toLowerCase();
@@ -255,6 +345,10 @@ public class InventoryController implements Controller {
     return NO_MATCH_SCORE;
   }
 
+  /**
+   * Endpoint to get a single inventory item by its MongoDB ID
+   * @param ctx The context for the HTTP request
+   */
   public void getInventory(Context ctx) {
     String id = ctx.pathParam("id");
     Inventory inv;
@@ -274,6 +368,10 @@ public class InventoryController implements Controller {
     }
   }
 
+  /**
+   * Endpoint to get inventory items based on query parameters
+   * @param ctx The context for the HTTP request
+   */
   public void getInventories(Context ctx) {
     Bson filter = constructFilter(ctx);
 
@@ -305,6 +403,10 @@ public class InventoryController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  /**
+   * Generates a description for the given inventory item based on its properties
+   * @param inv The inventory item to generate a description for
+   */
   private void generateDescription(Inventory inv) {
     if (inv == null) {
       return;
@@ -320,6 +422,11 @@ public class InventoryController implements Controller {
     }
   }
 
+  /**
+   * Constructs a MongoDB filter based on query parameters
+   * @param ctx The context containing query parameters
+   * @return The constructed filter
+   */
   private Bson constructFilter(Context ctx) {
     List<Bson> filters = new ArrayList<>();
 
@@ -427,10 +534,19 @@ public class InventoryController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
+    // GET routes
     server.get(API_INVENTORY, this::getInventories);
-    server.get(API_INVENTORY_BY_ID, this::getInventory);
-    server.post(API_INVENTORY, this::addInventory);
-    server.post(API_INVENTORY + "/remove", this::removeInventory);
     server.get("/api/inventory/nextid", this::generateNextID);
+    server.get(API_INVENTORY_BY_ID, this::getInventory);
+
+    // POST routes
+    server.post(API_INVENTORY, this::addInventory);
+    server.post(API_INVENTORY_REMOVE_QUANTITY, this::removeQuantity);
+    server.post(API_INVENTORY_RESET, this::resetQuantities);
+
+    // DELETE routes
+    server.delete(API_INVENTORY_CLEAR, this::clearInventory);
+    server.delete(API_INVENTORY, this::deleteInventories);
+    server.delete(API_INVENTORY_BY_ID, this::deleteInventory);
   }
 }

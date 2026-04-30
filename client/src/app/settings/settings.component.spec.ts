@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { signal, WritableSignal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -11,6 +12,9 @@ import { SettingsService } from './settings.service';
 import { TermsService } from '../terms/terms.service';
 import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
+import { InventoryService } from '../inventory/inventory.service';
+import { SelectOption } from '../inventory/inventory';
+import { DialogService } from '../dialog/dialog.service';
 import { FamilyService } from '../family/family.service';
 
 describe('SettingsComponent', () => {
@@ -21,6 +25,14 @@ describe('SettingsComponent', () => {
   let familyServiceSpy: jasmine.SpyObj<FamilyService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
+  let dialogServiceSpy: jasmine.SpyObj<DialogService>;
+  let itemOptionsSignal: WritableSignal<SelectOption[]>;
+  let brandOptionsSignal: WritableSignal<SelectOption[]>;
+  let colorOptionsSignal: WritableSignal<SelectOption[]>;
+  let sizeOptionsSignal: WritableSignal<SelectOption[]>;
+  let typeOptionsSignal: WritableSignal<SelectOption[]>;
+  let materialOptionsSignal: WritableSignal<SelectOption[]>;
 
   const mockTerms: Terms = {
     item: ['folder', 'notebook', 'pencil'],
@@ -57,6 +69,29 @@ describe('SettingsComponent', () => {
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
     familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    itemOptionsSignal = signal<SelectOption[]>([]);
+    brandOptionsSignal = signal<SelectOption[]>([]);
+    colorOptionsSignal = signal<SelectOption[]>([]);
+    sizeOptionsSignal = signal<SelectOption[]>([]);
+    typeOptionsSignal = signal<SelectOption[]>([]);
+    materialOptionsSignal = signal<SelectOption[]>([]);
+    inventoryServiceSpy = jasmine.createSpyObj('InventoryService', [
+      'getInventory',
+      'removeItemQuantityById',
+      'loadInventory',
+      'deleteInventories',
+      'clearInventory',
+      'resetAllQuantities',
+      'resetMatchingQuantities'
+    ], {
+      itemOptions: itemOptionsSignal,
+      brandOptions: brandOptionsSignal,
+      colorOptions: colorOptionsSignal,
+      sizeOptions: sizeOptionsSignal,
+      typeOptions: typeOptionsSignal,
+      materialOptions: materialOptionsSignal
+    });
+    dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
 
@@ -64,6 +99,19 @@ describe('SettingsComponent', () => {
     settingsServiceSpy.getSettings.and.returnValue(of(mockSettings));
     termsServiceSpy.getTerms.and.returnValue(of(mockTerms));
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
+    inventoryServiceSpy.getInventory.and.returnValue(of([]));
+    inventoryServiceSpy.removeItemQuantityById.and.returnValue(of(undefined));
+    inventoryServiceSpy.deleteInventories.and.returnValue(of({
+      matchedCount: 1,
+      message: 'Deleted 1 matching inventory item(s).'
+    }));
+    inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+      matchedCount: 1,
+      message: 'Reset quantities for 1 matching inventory item(s).'
+    }));
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
 
     await TestBed.configureTestingModule({
       imports: [SettingsComponent],
@@ -72,6 +120,8 @@ describe('SettingsComponent', () => {
         provideHttpClientTesting(),
         { provide: SettingsService, useValue: settingsServiceSpy },
         { provide: TermsService, useValue: termsServiceSpy },
+        { provide: InventoryService, useValue: inventoryServiceSpy },
+        { provide: DialogService, useValue: dialogServiceSpy },
         { provide: FamilyService, useValue: familyServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
@@ -436,6 +486,394 @@ describe('SettingsComponent', () => {
     component.saveAvailableSpots();
 
     expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
+  });
+
+  it('filters inventory management dropdown options using the typed filter values', () => {
+    itemOptionsSignal.set([
+      { label: 'Markers', value: 'Markers' },
+      { label: 'Folder', value: 'Folder' }
+    ]);
+    brandOptionsSignal.set([
+      { label: 'Crayola', value: 'Crayola' },
+      { label: 'OfficeCo', value: 'OfficeCo' }
+    ]);
+    colorOptionsSignal.set([
+      { label: 'Blue', value: 'Blue' },
+      { label: 'Yellow', value: 'Yellow' }
+    ]);
+    sizeOptionsSignal.set([
+      { label: 'Large', value: 'Large' },
+      { label: 'Small', value: 'Small' }
+    ]);
+    typeOptionsSignal.set([
+      { label: 'School', value: 'School' },
+      { label: 'Writing', value: 'Writing' }
+    ]);
+    materialOptionsSignal.set([
+      { label: 'Plastic', value: 'Plastic' },
+      { label: 'Wood', value: 'Wood' }
+    ]);
+
+    component.item.set('mark');
+    component.brand.set('cray');
+    component.color.set('blu');
+    component.size.set('lar');
+    component.type.set('sch');
+    component.material.set('plas');
+
+    expect(component.filteredItemOptions()).toEqual([
+      { label: 'Markers', value: 'Markers' }
+    ]);
+    expect(component.filteredBrandOptions()).toEqual([
+      { label: 'Crayola', value: 'Crayola' }
+    ]);
+    expect(component.filteredColorOptions()).toEqual([
+      { label: 'Blue', value: 'Blue' }
+    ]);
+    expect(component.filteredSizeOptions()).toEqual([
+      { label: 'Large', value: 'Large' }
+    ]);
+    expect(component.filteredTypeOptions()).toEqual([
+      { label: 'School', value: 'School' }
+    ]);
+    expect(component.filteredMaterialOptions()).toEqual([
+      { label: 'Plastic', value: 'Plastic' }
+    ]);
+  });
+
+  // ---- resetMatchingQuantities ----
+  describe('resetMatchingQuantities', () => {
+    it('resetMatchingQuantities shows error when no filters entered', () => {
+      component.item.set('');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.resetMatchingQuantities();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
+      expect(inventoryServiceSpy.resetMatchingQuantities).not.toHaveBeenCalled();
+    });
+
+    it('resetMatchingQuantities does not proceed if dialog is cancelled', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(false)
+      } as never);
+      component.item.set('Pencil');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.resetMatchingQuantities();
+      tick();
+
+      expect(inventoryServiceSpy.resetMatchingQuantities).not.toHaveBeenCalled();
+    }));
+
+    it('resetMatchingQuantities shows loading message when dialog confirmed', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+        matchedCount: 2,
+        message: 'Reset quantities for 2 matching inventory item(s).'
+      }));
+      component.item.set('Pencil');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.resetMatchingQuantities();
+      tick();
+
+      // Should show loading message first
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Resetting matching inventory items...', 'OK', { duration: 1500 });
+    }));
+
+    it('resetMatchingQuantities with matching filters shows backend response on success', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+        matchedCount: 2,
+        message: 'Reset quantities for 2 matching inventory item(s).'
+      }));
+      component.item.set('Pencil');
+      component.brand.set('Acme');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.resetMatchingQuantities();
+      tick();
+
+      expect(inventoryServiceSpy.resetMatchingQuantities).toHaveBeenCalledWith({ item: 'Pencil', brand: 'Acme' });
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Reset quantities for 2 matching inventory item(s).', 'OK', { duration: 3000 });
+    }));
+
+    it('resetMatchingQuantities with non-matching filters shows no-match response from backend', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.resetMatchingQuantities.and.returnValue(of({
+        matchedCount: 0,
+        message: 'No inventory items matched the provided filters.'
+      }));
+      component.item.set('NonExistent');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.resetMatchingQuantities();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('No inventory items matched the provided filters.', 'OK', { duration: 3000 });
+    }));
+
+    it('resetMatchingQuantities shows error snack bar on backend failure', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.resetMatchingQuantities.and.returnValue(throwError(() => new Error('Network error')));
+      component.item.set('Pencil');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.resetMatchingQuantities();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to reset matching quantities.', 'OK', { duration: 4000 });
+    }));
+  });
+
+  // ---- deleteMatchingInventory ----
+  describe('deleteMatchingInventory', () => {
+    it('deleteMatchingInventory shows error when no filters entered', () => {
+      component.item.set('');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.deleteMatchingInventory();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
+      expect(inventoryServiceSpy.deleteInventories).not.toHaveBeenCalled();
+    });
+
+    it('deleteMatchingInventory does not proceed if dialog is cancelled', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(false)
+      } as never);
+      component.item.set('Notebook');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.deleteMatchingInventory();
+      tick();
+
+      expect(inventoryServiceSpy.deleteInventories).not.toHaveBeenCalled();
+    }));
+
+    it('deleteMatchingInventory shows loading message when dialog confirmed', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.deleteInventories.and.returnValue(of({
+        matchedCount: 2,
+        message: 'Deleted 2 matching inventory item(s).'
+      }));
+      component.item.set('Notebook');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.deleteMatchingInventory();
+      tick();
+
+      // Should show loading message first
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Deleting matching inventory items...', 'OK', { duration: 1500 });
+    }));
+
+    it('deleteMatchingInventory with matching filters shows backend response on success', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.deleteInventories.and.returnValue(of({
+        matchedCount: 2,
+        message: 'Deleted 2 matching inventory item(s).'
+      }));
+      component.item.set('Notebook');
+      component.brand.set('BrandX');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.deleteMatchingInventory();
+      tick();
+
+      expect(inventoryServiceSpy.deleteInventories).toHaveBeenCalledWith({ item: 'Notebook', brand: 'BrandX' });
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Deleted 2 matching inventory item(s).', 'OK', { duration: 3000 });
+    }));
+
+    it('deleteMatchingInventory with non-matching filters shows no-match response from backend', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.deleteInventories.and.returnValue(of({
+        matchedCount: 0,
+        message: 'No inventory items matched the provided filters.'
+      }));
+      component.item.set('NonExistent');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.deleteMatchingInventory();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('No inventory items matched the provided filters.', 'OK', { duration: 3000 });
+    }));
+
+    it('deleteMatchingInventory shows error snack bar on backend failure', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.deleteInventories.and.returnValue(throwError(() => new Error('Network error')));
+      component.item.set('Notebook');
+      component.brand.set('');
+      component.color.set('');
+      component.size.set('');
+      component.type.set('');
+      component.material.set('');
+
+      component.deleteMatchingInventory();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to delete matching inventory items.', 'OK', { duration: 4000 });
+    }));
+  });
+
+  // ---- clearInventory ----
+
+  describe('clearInventory', () => {
+    it('clearInventory does not proceed if dialog is cancelled', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(false)
+      } as never);
+
+      component.clearInventory();
+      tick();
+
+      expect(inventoryServiceSpy.clearInventory).not.toHaveBeenCalled();
+    }));
+
+    it('clearInventory shows loading message when dialog confirmed', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.clearInventory.and.returnValue(of(undefined));
+
+      component.clearInventory();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Clearing inventory...', 'Okay', { duration: 2000 });
+    }));
+
+    it('clearInventory shows success message on completion', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.clearInventory.and.returnValue(of(undefined));
+
+      component.clearInventory();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Cleared inventory.', 'OK', { duration: 3000 });
+    }));
+
+    it('clearInventory shows error snack bar on backend failure', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.clearInventory.and.returnValue(throwError(() => new Error('Network error')));
+
+      component.clearInventory();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to clear inventory.', 'OK', { duration: 4000 });
+    }));
+  });
+
+  // ---- resetAllQuantities ----
+  describe('resetAllQuantities', () => {
+    it('resetAllQuantities does not proceed if dialog is cancelled', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(false)
+      } as never);
+
+      component.resetAllQuantities();
+      tick();
+
+      expect(inventoryServiceSpy.resetAllQuantities).not.toHaveBeenCalled();
+    }));
+
+    it('resetAllQuantities shows loading message when dialog confirmed', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.resetAllQuantities.and.returnValue(of(undefined));
+
+      component.resetAllQuantities();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Resetting quantities...', 'Okay', { duration: 2000 });
+    }));
+
+    it('resetAllQuantities shows success message on completion', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.resetAllQuantities.and.returnValue(of(undefined));
+
+      component.resetAllQuantities();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Quantities reset.', 'OK', { duration: 3000 });
+    }));
+
+    it('resetAllQuantities shows error snack bar on backend failure', fakeAsync(() => {
+      dialogServiceSpy.openDialog.and.returnValue({
+        afterClosed: () => of(true)
+      } as never);
+      inventoryServiceSpy.resetAllQuantities.and.returnValue(throwError(() => new Error('Network error')));
+
+      component.resetAllQuantities();
+      tick();
+
+      expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to reset quantities.', 'OK', { duration: 4000 });
+    }));
   });
 
   it('Should call scheduleFamilies and show successful snackBar', fakeAsync(() => {

@@ -1,9 +1,11 @@
 <div class="scanner-container">
-  <h2>Scan Item</h2>
+  <h2>Scan Item - {{ scannerAction() === 'add' ? 'Add' : 'Remove' }}</h2>
 
-  <div class="scan-mode-toolbar">
+  <div class="flex-row">
     <button
       *ngFor="let mode of scanModes"
+      mat-raised-button
+      color="primary"
       type="button"
       (click)="setMode(mode.key)"
       [disabled]="processing"
@@ -14,11 +16,13 @@
 
     <button
       *ngIf="activeMode"
+      mat-raised-button
+      color="warn"
       type="button"
       (click)="deactivateMode()"
       [disabled]="processing"
     >
-      Stop Scan Mode
+      Exit Current Scan Mode
     </button>
   </div>
 
@@ -41,40 +45,58 @@
   </div>
 
   <div *ngIf="activeMode === 'handheld'" class="handheld-panel">
-    <h3>Hand Held Scan</h3>
+    <!-- <h3>Hand Held Scan</h3> -->
     <p>Click the box if needed, then scan with the handheld barcode reader.</p>
 
-    <input
-      #handheldInput
-      type="text"
-      [(ngModel)]="handheldInputValue"
-      (keydown.enter)="debugEntry(handheldInputValue); submitHandheldScan(handheldInputValue)"
-      [disabled]="processing"
-      placeholder="Scan barcode here"
-      autocomplete="off"
-    />
+    <div class="handheld-input-row">
+      <input
+        #handheldInput
+        type="text"
+        class="handheld-barcode-input"
+        [(ngModel)]="handheldInputValue"
+        (keydown.enter)="debugEntry(handheldInputValue); submitHandheldScan(handheldInputValue)"
+        [disabled]="processing"
+        placeholder="Scan barcode here"
+        autocomplete="off"
+      />
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="debugEntry(handheldInputValue); submitHandheldScan(handheldInputValue)"
+        [disabled]="processing"
+      >
+        Enter Scanned Item
+      </button>
+    </div>
   </div>
 
   <div *ngIf="getScanEntries().length > 0" class="scanned-items-panel">
-    <h3>Scanned Items</h3>
+    <h2>Scanned Items</h2>
 
     <div
       *ngFor="let entry of getScanEntries(); trackBy: trackByBarcode"
       class="scanned-item-row"
     >
-      <div class="barcode-label">
-        {{ entry.key }}
-      </div>
+      <div class="scanned-item-content">
+        <div class="barcode-label">
+          <h3>{{ entry.key }}</h3>
+        </div>
 
-      <div class="quantity-input">
-        <label [attr.for] = "'qty-' + entry.key">Quantity</label>
-        <input
-          [id] = "'qty-' + entry.key"
-          type="number"
-          min="1"
-          [ngModel]="entry.value"
-          (ngModelChange)="updateScanQuantity(entry.key, $event)"
-        />
+        <div class="quantity-input">
+          <h4>Quantity:</h4>
+          <mat-form-field style="width: 80px; height: 80px;">
+            <input
+              matInput
+              [id] = "'qty-' + entry.key"
+              type="number"
+              min="1"
+              label="Quantity"
+              [ngModel]="entry.value"
+              (ngModelChange)="updateScanQuantity(entry.key, $event)"
+            />
+          </mat-form-field>
+        </div>
       </div>
     </div>
   </div>
@@ -85,19 +107,23 @@
 
   <div class="scanner-actions">
     <button
+      mat-raised-button
+      color="primary"
       type="button"
       (click)="onDone()"
       [disabled]="!isScanning || processing"
     >
-      Done
+      Finish Scanning
     </button>
 
     <button
+      mat-raised-button
+      color="warn"
       type="button"
       (click)="clearScans()"
       [disabled]="processing"
     >
-      Clear
+      Clear Scans
     </button>
   </div>
 </div>

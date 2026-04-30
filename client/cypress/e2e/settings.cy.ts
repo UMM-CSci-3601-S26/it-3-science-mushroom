@@ -81,4 +81,48 @@ describe('Settings', () => {
         .and('contain.text', 'Your capacity is too low for the number of families');
     });
   });
+
+  describe('Inventory Management Tab', () => {
+
+    it('Should have Inventory Management tab', () => {
+      page.getInventoryTab().should('exist');
+      page.getInventoryTab().click();
+      cy.contains('Inventory Management').should('be.visible');
+    });
+
+    it('Should have the filters', () => {
+      page.getInventoryTab().click();
+      page.getFilterItem().should('exist');
+      page.getFilterBrand().should('exist');
+      page.getFilterColor().should('exist');
+      page.getFilterSize().should('exist');
+      page.getFilterType().should('exist');
+      page.getFilterMaterial().should('exist');
+    });
+
+    it('Should have the clear filter button', () => {
+      page.getInventoryTab().click();
+      page.getInventoryFilterClear().should('exist');
+    });
+
+    it('Should have the clear inventory button', () => {
+      page.getInventoryTab().click();
+      page.getClearInventoryButton().should('exist');
+    });
+
+    it('Should have the delete matching inventory button', () => {
+      page.getInventoryTab().click();
+      page.getDeleteMatchingInventoryButton().should('exist');
+    });
+
+    it('Should have the reset all quantity button', () => {
+      page.getInventoryTab().click();
+      page.getResetAllQuantityButton().should('exist');
+    });
+
+    it('Should have the reset matching quantity button', () => {
+      page.getInventoryTab().click();
+      page.getResetMatchingQuantityButton().should('exist');
+    });
+  });
 });

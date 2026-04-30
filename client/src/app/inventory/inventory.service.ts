@@ -6,7 +6,7 @@ import { inject, Injectable, signal, computed } from '@angular/core';
 import { Observable } from 'rxjs';
 
 // Inventory Imports
-import { Inventory, SelectOption } from './inventory';
+import { Inventory, InventoryBulkActionResponse, SelectOption } from './inventory';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -50,40 +50,81 @@ export class InventoryService {
   brandOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'brand')
   )
+
   colorOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'color')
   )
+
   sizeOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'size')
   )
+
   typeOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'type')
   )
+
   materialOptions = computed(() =>
     this.optionBuilder(this.inventory(), 'material')
   )
 
+  /**
+   * Look up an inventory item by its barcode
+   * @param barcode Barcode to look up in inventory
+   * @returns Observable of the inventory item
+   */
   lookUpByBarcode(barcode:string): Observable<Inventory> {
     return this.httpClient.get<Inventory>(`${environment.apiUrl}barcode/lookup/${barcode}`);
   }
+
+  /**
+   * Add an inventory item manually
+   * @param item Item to add to inventory
+   * @returns Observable of the added inventory item
+   */
   addManually(item: Inventory): Observable<Inventory> {
     return this.httpClient.post<Inventory>(this.inventoryUrl, item);
   }
-  removeOne(identifier: string): Observable<Inventory> {
-    return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/remove`, { params: { id: identifier } });
-  }
+
+  /**
+   * Add an inventory item to the inventory
+   * @param item Item to add to inventory
+   * @returns Observable of the added inventory item
+   */
   addInventory(item: Inventory): Observable<Inventory> {
     return this.httpClient.post<Inventory>(this.inventoryUrl, item);
   }
+
+  /**
+   * Update the quantity of an inventory item by adding or removing a specified amount
+   * @param barcode Barcode of the item to update
+   * @param action Action to perform ('add' or 'remove')
+   * @param amount Amount of quantity to add or remove
+   * @returns Observable of the updated inventory item
+   */
   updateQuantity(barcode: string, action: 'add' | 'remove', amount: number = 1): Observable<Inventory> {
     return this.httpClient.post<Inventory>(`${this.inventoryUrl}/${barcode}/quantity`, { action, amount });
   }
+
+  /**
+   * Link an external barcode to an inventory item
+   * @param internalID Internal ID of the item to link the barcode to
+   * @param barcode Barcode to link
+   * @param quantity Quantity of the item
+   * @returns Observable of the updated inventory item
+   */
   linkExternalBarcode(internalID: string, barcode: string, quantity: number = 1): Observable<Inventory> {
     return this.httpClient.patch<Inventory>(`${this.inventoryUrl}/${internalID}/link-barcode`, { barcode, quantity });
   }
-  removeInventoryById(internalID: string, amount: number): Observable<unknown> {
+
+  /**
+   * Remove a specified amount of inventory from an item, referenced by its internal ID.
+   * @param internalID Internal ID of item to remove amount from
+   * @param amount Amount of quantity to remove
+   * @returns Observable of the updated inventory item
+   */
+  removeItemQuantityById(internalID: string, amount: number): Observable<unknown> {
     return new Observable(observer => {
-      this.httpClient.post(`${this.inventoryUrl}/remove`, { internalID, amount }).subscribe({
+      this.httpClient.post(`${this.inventoryUrl}/removeQuantity`, { internalID, amount }).subscribe({
         next: (result) => {
           this.loadInventory();
           observer.next(result);
@@ -94,19 +135,84 @@ export class InventoryService {
     });
   }
 
-  // addByScanAndUpdate(barcode: string) {
-  //   this.addByScan(barcode).subscribe(updatedItem => {
-  //     this.syncItem(updatedItem);
-  //   }, (err) => {
-  //     if (err.status ===404) {
-  //       this.openManualEntry(barcode);
-  //     } else {
-  //       console.error('Error adding item by scan:', err);
-  //     }
-  //   }
-  //   );
-  // }
+  /**
+   * Delete a specified amount of inventory from an item, referenced by its internalID
+   * @param internalID Internal ID of item to delete amount from
+   * @param amount Amount of quantity to delete
+   * @returns Observable of the updated inventory item
+   */
+  deleteInventoryById(internalID: string): Observable<unknown> {
+    return new Observable(observer => {
+      this.httpClient.delete(`${this.inventoryUrl}/${internalID}`).subscribe({
+        next: (result) => {
+          this.loadInventory();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
+  }
 
+  /**
+   * Delete all inventory items from the database
+   */
+  clearInventory(): Observable<unknown> {
+    return new Observable(observer => {
+      this.httpClient.delete(`${this.inventoryUrl}/clear`).subscribe({
+        next: (result) => {
+          this.loadInventory();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
+  }
+
+  /**
+   * Resets the quantity of all inventory items to 0
+   */
+  resetAllQuantities(): Observable<unknown> {
+    return new Observable(observer => {
+      this.httpClient.post(`${this.inventoryUrl}/resetQuantity`, {}).subscribe({
+        next: (result) => {
+          //this.loadInventory();
+          observer.next(result);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
+  }
+
+  /* These methods are currently unused and thus commented out. Their tests (if they have any) are also commented out.
+  addByScanAndUpdate(barcode: string) {
+    this.addByScan(barcode).subscribe(updatedItem => {
+      this.syncItem(updatedItem);
+    }, (err) => {
+      if (err.status ===404) {
+        this.openManualEntry(barcode);
+      } else {
+        console.error('Error adding item by scan:', err);
+      }
+    }
+    );
+  }
+
+  /**
+   * Remove one unit of an item from inventory
+   * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
+   * @returns Observable of the updated inventory item after removal
+   *
+  removeOne(identifier: string): Observable<Inventory> {
+    return this.httpClient.delete<Inventory>(`${this.inventoryUrl}/removeQuantity`, { params: { id: identifier } });
+  }
+
+  /**
+   * Remove one unit of an item from inventory and update the inventory state
+   * @param identifier Identifier of the item to remove one unit from (can be internal ID or barcode)
+   *
   removeOneAndUpdate(identifier: string) {
     this.removeOne(identifier).subscribe(item => {
       if (item.quantity <= 0) {
@@ -116,6 +222,11 @@ export class InventoryService {
       }
     });
   }
+
+
+  /**
+   * Sync the inventory state with an updated item. If it exists, it is updated. If it does not, it is added.
+   * @param updatedItem Inventory item with updated information to sync with the inventory state
 
   private syncItem(updatedItem: Inventory) {
     const currentInventory = this.inventory();
@@ -127,8 +238,13 @@ export class InventoryService {
     } else {
       this.inventory.set([...currentInventory, updatedItem]);
     }
-  }
+  }*/
 
+  /**
+   * Get inventory from the server, filtered by optional parameters
+   * @param filters Filters to apply to the API call
+   * @returns The inventory items that match the filters as an Observable
+   */
   getInventory(filters?: {item?: string; description?: string; brand?: string; color?: string;
     count?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<Inventory[]> {
 
@@ -155,6 +271,70 @@ export class InventoryService {
 
     }
     return this.httpClient.get<Inventory[]>(this.inventoryUrl, { params: httpParams });
+  }
+
+  /**
+   * Delete inventory items from the server, filtered by optional parameters
+   * @param filters Filters to apply to the API call
+   * @returns Observable for the delete request
+   */
+  deleteInventories(filters?: {item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string}): Observable<InventoryBulkActionResponse> {
+    let httpParams: HttpParams = new HttpParams();
+
+    if (filters) {
+      if (filters.item) {
+        httpParams = httpParams.set(this.itemKey, filters.item);
+      }
+      if (filters.brand) {
+        httpParams = httpParams.set(this.brandKey, filters.brand);
+      }
+      if (filters.color) {
+        httpParams = httpParams.set(this.colorKey, filters.color);
+      }
+      if (filters.size) {
+        httpParams = httpParams.set(this.sizeKey, filters.size);
+      }
+      if (filters.type) {
+        httpParams = httpParams.set(this.typeKey, filters.type);
+      }
+      if (filters.material) {
+        httpParams = httpParams.set(this.materialKey, filters.material);
+      }
+    }
+
+    return this.httpClient.delete<InventoryBulkActionResponse>(this.inventoryUrl, { params: httpParams });
+  }
+
+  /**
+   * Reset quantities for matching inventory items on the server, filtered by optional parameters
+   * @param filters Filters to apply to the API call
+   * @returns Observable for the reset request
+   */
+  resetMatchingQuantities(filters: {item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string}): Observable<InventoryBulkActionResponse> {
+    let httpParams: HttpParams = new HttpParams();
+
+    if (filters) {
+      if (filters.item) {
+        httpParams = httpParams.set(this.itemKey, filters.item);
+      }
+      if (filters.brand) {
+        httpParams = httpParams.set(this.brandKey, filters.brand);
+      }
+      if (filters.color) {
+        httpParams = httpParams.set(this.colorKey, filters.color);
+      }
+      if (filters.size) {
+        httpParams = httpParams.set(this.sizeKey, filters.size);
+      }
+      if (filters.type) {
+        httpParams = httpParams.set(this.typeKey, filters.type);
+      }
+      if (filters.material) {
+        httpParams = httpParams.set(this.materialKey, filters.material);
+      }
+    }
+
+    return this.httpClient.post<InventoryBulkActionResponse>(`${this.inventoryUrl}/resetQuantity`, {}, { params: httpParams });
   }
 
   optionBuilder(data: Inventory[], key: keyof Inventory): SelectOption[] {

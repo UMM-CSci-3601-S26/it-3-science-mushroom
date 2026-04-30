@@ -1,9 +1,9 @@
 import { FormBuilder, FormControl, ValidationErrors } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
-import { Inventory } from './inventory';
+import { Inventory } from '../inventory';
 import { ManualEntry, ManualEntryResult } from './manual-entry';
-import { InventoryService } from './inventory.service';
+import { InventoryService } from '../inventory.service';
 
 describe('ManualEntry', () => {
   let component: ManualEntry;
@@ -459,6 +459,106 @@ describe('ManualEntry', () => {
 
       component.data.barcode = '04940308';
       expect(component.getDisplayExternalBarcode()).toBe('04940308');
+    });
+
+    it('should default form quantity to data.quantity when data.quantity is provided', () => {
+      createComponent({ barcode: 'UPC-TEST', quantity: 5 });
+      expect(component.form.get('quantity')?.value).toBe(5);
+    });
+
+    it('should default form quantity to 1 when data.quantity is undefined', () => {
+      createComponent({ barcode: 'UPC-TEST', quantity: undefined as unknown as number });
+      expect(component.form.get('quantity')?.value).toBe(1);
+    });
+
+    it('should use fallback values when selecting an item with null/undefined fields', () => {
+      const itemWithNulls: Inventory = {
+        internalID: 'null-test',
+        internalBarcode: 'ITEM-NULL',
+        externalBarcode: [],
+        item: null as unknown as string,
+        description: undefined as unknown as string,
+        brand: null as unknown as string,
+        color: undefined as unknown as string,
+        packageSize: null as unknown as number,
+        size: '',
+        type: null as unknown as string,
+        material: undefined as unknown as string,
+        quantity: 1,
+        notes: null as unknown as string,
+        maxQuantity: null as unknown as number,
+        minQuantity: undefined as unknown as number,
+        stockState: null as unknown as string
+      };
+
+      component.selectExistingItem(itemWithNulls);
+
+      expect(component.form.get('item')?.value).toBe('');
+      expect(component.form.get('description')?.value).toBe('');
+      expect(component.form.get('brand')?.value).toBe('');
+      expect(component.form.get('packageSize')?.value).toBe(1);
+      expect(component.form.get('notes')?.value).toBe('');
+      expect(component.form.get('maxQuantity')?.value).toBe(0);
+      expect(component.form.get('minQuantity')?.value).toBe(0);
+    });
+
+    it('should trim and handle empty string barcode data', () => {
+      createComponent({ barcode: '   ', quantity: 1 });
+      component.form.patchValue({ item: 'Test' });
+
+      component.submit();
+
+      expect(dialogRefSpy.close).toHaveBeenCalledWith(jasmine.objectContaining({
+        newItem: jasmine.objectContaining({
+          externalBarcode: []
+        })
+      }));
+    });
+
+    it('should fallback to an empty string when matches() receives undefined value', () => {
+      const access = component as unknown as {
+        matches: (value: string | undefined, filter: string) => boolean;
+      };
+
+      expect(access.matches(undefined, 'test')).toBeFalse();
+      expect(access.matches(undefined, '')).toBeTrue();
+    });
+
+    it('should handle submitting new item with null fields', () => {
+      component.form.patchValue({
+        item: 'Pen',
+        description: null,
+        brand: undefined,
+        color: null,
+        packageSize: null,
+        size: '',
+        type: undefined,
+        material: null,
+        quantity: 1,
+        notes: null,
+        maxQuantity: null,
+        minQuantity: undefined,
+        stockState: null
+      });
+
+      component.submit();
+
+      expect(dialogRefSpy.close).toHaveBeenCalledWith(jasmine.objectContaining({
+        newItem: jasmine.objectContaining({
+          item: 'Pen',
+          description: '',
+          brand: '',
+          color: '',
+          packageSize: 1,
+          size: '',
+          type: '',
+          material: '',
+          notes: '',
+          maxQuantity: 0,
+          minQuantity: 0,
+          stockState: ''
+        })
+      }));
     });
   });
 });

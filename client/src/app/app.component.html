@@ -16,9 +16,19 @@
         Families
       </a>
 
+      <a mat-list-item routerLink="/point-of-sale" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+        <mat-icon matListItemIcon>shopping_cart</mat-icon>
+        Point of Sale
+      </a>
+
       <a mat-list-item routerLink="/inventory" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
         <mat-icon matListItemIcon>inventory</mat-icon>
         Inventory
+      </a>
+
+      <a mat-list-item routerLink="/stock-report" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
+        <mat-icon matListItemIcon>assessment</mat-icon>
+        Stock Report
       </a>
 
       <a mat-list-item routerLink="/supplylist" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
@@ -31,16 +41,6 @@
         Settings
       </a>
 
-
-      <a mat-list-item routerLink="/stock-report" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>assessment</mat-icon>
-        Stock Report
-      </a>
-
-      <a mat-list-item routerLink="/point-of-sale" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
-        <mat-icon matListItemIcon>shopping_cart</mat-icon>
-        Point of Sale
-      </a>
     </mat-nav-list>
 
   </mat-sidenav>

@@ -139,11 +139,11 @@
         <p>No matching items found.</p>
       </div>
 
-      <div class="match-results" *ngIf="filteredItems.length > 0">
+      <cdk-virtual-scroll-viewport class="match-results" *ngIf="filteredItems.length > 0" itemSize="92">
         <button
           mat-stroked-button
           type="button"
-          *ngFor="let match of filteredItems; trackBy: trackByInternalID"
+          *cdkVirtualFor="let match of filteredItems; trackBy: trackByInternalID"
           class="match-card"
           [class.selected]="selectedItem?.internalID === match.internalID"
           (click)="selectExistingItem(match)"
@@ -167,7 +167,7 @@
             </div>
           </div>
         </button>
-      </div>
+      </cdk-virtual-scroll-viewport>
 
       <div *ngIf="selectedItem" class="selected-match">
         <h4>Selected Item</h4>

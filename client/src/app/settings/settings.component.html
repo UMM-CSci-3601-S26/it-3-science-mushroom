@@ -103,7 +103,7 @@
         </mat-tab>
 
 
-               <!-- ── Available Spots Tab ── -->
+        <!-- ── Available Spots Tab ── -->
         <mat-tab label="Available Spots">
           <div class="tab-content">
             <p class="tab-description">
@@ -272,8 +272,215 @@
                   }
                 </div>
               </div>
-
             </div>
+          </div>
+        </mat-tab>
+
+        <!--Inventory Mass Clear-->
+        <mat-tab label="Inventory Management">
+          <div class="tab-content">
+            <p class="tab-description">
+              Delete all inventory items or reset their quantities. Filters are available to target specific items.
+            </p>
+
+            <p>
+              <strong>Use with caution!</strong> Neither action can be undone.
+            </p>
+
+            <hr>
+
+            <p class="tab-description">
+              Fill in one or more fields below to target a specific set of inventory items.
+              Matching items can then be reset to zero or deleted outright.
+            </p>
+
+              <!-- Filter Fields -->
+              <div class="filter-container">
+                <mat-form-field appearance="outline">
+                <mat-label class="filter">Item</mat-label>
+                <input
+                  matInput
+                  [ngModel]="item() ?? ''"
+                  [matAutocomplete]="itemAuto"
+                  (ngModelChange)="item.set($event?.trim() || undefined)"
+                  placeholder="contains..."
+                  data-cy="filter-item"
+                />
+                <mat-autocomplete #itemAuto="matAutocomplete">
+                  @for (option of filteredItemOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label class="filter">Brand</mat-label>
+                <input
+                  matInput
+                  [ngModel]="brand() ?? ''"
+                  [matAutocomplete]="brandAuto"
+                  (ngModelChange)="brand.set($event?.trim() || undefined)"
+                  placeholder="contains..."
+                  data-cy="filter-brand"
+                />
+                <mat-autocomplete #brandAuto="matAutocomplete">
+                  @for (option of filteredBrandOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label class="filter">Color</mat-label>
+                <input
+                  matInput
+                  [ngModel]="color() ?? ''"
+                  [matAutocomplete]="colorAuto"
+                  (ngModelChange)="color.set($event?.trim() || undefined)"
+                  placeholder="contains..."
+                  data-cy="filter-color"
+                />
+                <mat-autocomplete #colorAuto="matAutocomplete">
+                  @for (option of filteredColorOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label class="filter">Size</mat-label>
+                <input
+                  matInput
+                  [ngModel]="size() ?? ''"
+                  [matAutocomplete]="sizeAuto"
+                  (ngModelChange)="size.set($event?.trim() || undefined)"
+                  placeholder="contains..."
+                  data-cy="filter-size"
+                />
+                <mat-autocomplete #sizeAuto="matAutocomplete">
+                  @for (option of filteredSizeOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label class="filter">Type</mat-label>
+                <input
+                  matInput
+                  [ngModel]="type() ?? ''"
+                  [matAutocomplete]="typeAuto"
+                  (ngModelChange)="type.set($event?.trim() || undefined)"
+                  placeholder="contains..."
+                  data-cy="filter-type"
+                />
+                <mat-autocomplete #typeAuto="matAutocomplete">
+                  @for (option of filteredTypeOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label class="filter">Material</mat-label>
+                <input
+                  matInput
+                  [ngModel]="material() ?? ''"
+                  [matAutocomplete]="matAuto"
+                  (ngModelChange)="material.set($event?.trim() || undefined)"
+                  placeholder="contains..."
+                  data-cy="filter-material"
+                />
+                <mat-autocomplete #matAuto="matAutocomplete">
+                  @for (option of filteredMaterialOptions(); track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              </div>
+
+            <!-- Clear Filters Button -->
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined);
+              type.set(undefined); material.set(undefined)"
+              data-cy="filter-clear"
+              class="clear-button"
+              >
+              Clear Filters
+            </button>
+
+            <hr>
+
+              <div class="flex-row">
+                <button mat-raised-button color="warn" (click)="clearInventory()" data-cy="clear-inventory-button">
+                  <mat-icon>delete_sweep</mat-icon>
+                  Delete All Items
+                </button>
+
+                <button mat-raised-button color="warn" (click)="deleteMatchingInventory()" data-cy="delete-matching-inventory-button">
+                  <mat-icon>delete_forever</mat-icon>
+                  Delete Matching Items
+                </button>
+
+                <button mat-raised-button color="primary" (click)="resetAllQuantities()" data-cy="reset-all-quantities-button">
+                  <mat-icon>refresh</mat-icon>
+                  Reset All Quantities
+                </button>
+
+                <button mat-raised-button color="primary" (click)="resetMatchingQuantities()" data-cy="reset-matching-quantities-button">
+                  <mat-icon>refresh</mat-icon>
+                  Reset Matching Quantities
+                </button>
+              </div>
+
+              <hr>
+              <div>
+                @if (serverFilteredInventory()) {
+                  <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
+                    <!-- Description Column -->
+                    <ng-container matColumnDef="description">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by description">Description</th>
+                      <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ element.description }}</td>
+                    </ng-container>
+
+                    <!-- Quantity Column -->
+                    <ng-container matColumnDef="quantity">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by quantity">Quantity</th>
+                      <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{ element.quantity }}</td>
+                    </ng-container>
+
+                    <!-- Notes Column -->
+                    <ng-container matColumnDef="notes">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by notes">Notes</th>
+                      <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{ element.notes }}</td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsSimple"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsSimple;" data-cy="inventory-row"></tr>
+                  </table>
+
+                  <mat-paginator
+                    data-cy="inventory-paginator"
+                    [length]=" serverFilteredInventory().length "
+                    [pageSize]="25"
+                    [pageSizeOptions]="[10, 25, 50, 100]"
+                    aria-label="Select page"
+                  >
+                  </mat-paginator>
+                } @else {
+                  <div class="flex-1 table-error">
+                    <mat-error>
+                      There was a problem loading the inventory table. The server is possibly down or perhaps there are network
+                      issues.
+                    </mat-error>
+                    <mat-error>
+                      Please wait a bit and try again or start the server.
+                    </mat-error>
+                  </div>
+                }
+              </div>
           </div>
         </mat-tab>
 

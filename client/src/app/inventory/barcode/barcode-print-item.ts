@@ -1,4 +1,4 @@
-import { Inventory } from './inventory';
+import { Inventory } from '../inventory';
 
 export interface PrintableBarcodeItem {
   item: Inventory;
