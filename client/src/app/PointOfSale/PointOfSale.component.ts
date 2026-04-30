@@ -9,6 +9,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterLink } from '@angular/router';
 import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, map, merge, of, startWith, switchMap, tap } from 'rxjs';
 
 import { Family } from '../family/family';
@@ -28,7 +30,9 @@ import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialo
     MatIconModule,
     MatInputModule,
     MatSelectModule,
+    MatTooltipModule,
     ReactiveFormsModule,
+    RouterLink,
     PointOfSaleFamilyCardComponent
   ],
   templateUrl: './PointOfSale.html',

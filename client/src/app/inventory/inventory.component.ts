@@ -20,6 +20,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { RouterLink } from '@angular/router';
 
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
@@ -76,7 +77,8 @@ type ScanCard = {
     MatSlideToggleModule,
     ScannerComponent,
     CommonModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    RouterLink
   ],
 })
 export class InventoryComponent {

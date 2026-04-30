@@ -30,6 +30,13 @@ th.mat-sort-header-sorted {
   flex-direction: column;
 }
 
+.page-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .clear-button {
   border: 1px solid var(--app-divider-color);
   border-radius: 4px;

@@ -12,7 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -43,6 +43,7 @@ import { DialogService } from '../dialog/dialog.service';
 
 @Component({
   selector: 'app-settings',
+  standalone: true,
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
   imports: [
@@ -76,7 +77,19 @@ export class SettingsComponent implements OnInit {
   // Other
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
+
+  readonly settingsTabKeys = [
+    'schools',
+    'time-availability',
+    'drive-day',
+    'available-spots',
+    'barcode-printing',
+    'drive-order',
+    'inventory-management'
+  ] as const;
+  selectedSettingsTabIndex = 0;
 
   get canEditSchools(): boolean {
     return this.authService.hasPermission('edit_schools');
@@ -258,6 +271,13 @@ export class SettingsComponent implements OnInit {
 
   //loads values from backend
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe(params => {
+      const tab = params.get('tab');
+      const tabIndex = this.settingsTabKeys.indexOf(tab as typeof this.settingsTabKeys[number]);
+
+      this.selectedSettingsTabIndex = tabIndex >= 0 ? tabIndex : 0;
+    });
+
     this.settingsService.getSettings().subscribe(settings => {
       this.schools = settings.schools ?? [];
       if (settings.timeAvailability) {
@@ -279,6 +299,21 @@ export class SettingsComponent implements OnInit {
     });
 
     this.loadDriveOrder();
+  }
+
+  selectSettingsTab(index: number): void {
+    if (index === this.selectedSettingsTabIndex) {
+      return;
+    }
+
+    const tab = this.settingsTabKeys[index] ?? this.settingsTabKeys[0];
+    this.selectedSettingsTabIndex = index;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   // Loads the drive order from the server and populates the three term lists accordingly
