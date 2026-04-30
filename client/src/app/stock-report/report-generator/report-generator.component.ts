@@ -20,11 +20,11 @@ import { StockReportService } from '../stock-report.service';
 import { StockReport } from '../stock-report';
 
 // Dialog Imports
-import { DialogComponent } from '../../dialog/dialog.component';
+import { DialogComponent } from '../../shared/dialog/dialog.component';
 import { AuthService } from '../../auth/auth-service';
 
 // DateTime Imports
-import { FormatDateTimeService } from '../../format-date-time/format-date-time.service';
+import { FormatDateTimeService } from '../../shared/format-date-time/format-date-time.service';
 
 // Type for jsPDF with autoTable metadata
 interface jsPDFWithAutoTable extends jsPDFClass {

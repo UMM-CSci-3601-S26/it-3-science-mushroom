@@ -11,8 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 
-import { Family } from './family';
-import { SchoolInfo, TimeAvailabilityLabels } from '../settings/settings';
+import { Family } from '../family';
+import { SchoolInfo, TimeAvailabilityLabels } from '../../settings/settings';
 import { FamilyPortalFormPayload, FamilyPortalService } from './family-portal.service';
 
 @Component({

@@ -14,8 +14,8 @@ import { map, tap } from 'rxjs/operators';
 // Other Imports
 import { environment } from '../../environments/environment';
 import { Family, DashboardStats, FamilyChecklist, SelectOption } from './family';
-import { FormatDateTimeService } from '../format-date-time/format-date-time.service';
-import { DeleteRequestNotificationService } from './delete-request-notification.service';
+import { FormatDateTimeService } from '../shared/format-date-time/format-date-time.service';
+import { DeleteRequestNotificationService } from './family-management/delete-family/delete-request-notification.service';
 
 // Type for jsPDF with autoTable metadata
 interface jsPDFWithAutoTable extends jsPDFClass {

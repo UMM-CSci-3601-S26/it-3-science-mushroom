@@ -13,7 +13,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ActivatedRouteSnapshot, Route, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './auth/auth-service';
 import { Family } from './family/family';
-import { DeleteRequestNotificationService } from './family/delete-request-notification.service';
+import { DeleteRequestNotificationService } from './family/family-management/delete-family/delete-request-notification.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({

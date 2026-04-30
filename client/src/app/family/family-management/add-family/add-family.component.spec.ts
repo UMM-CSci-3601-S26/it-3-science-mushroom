@@ -2,50 +2,45 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AbstractControl, FormGroup, UntypedFormGroup } from '@angular/forms';
+import { AbstractControl, FormGroup , UntypedFormGroup } from '@angular/forms';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 
 // RxJS Imports
 import { throwError, of } from 'rxjs'; //of
 
 // Family Imports
 import { MockFamilyService } from 'src/testing/family.service.mock';
-import { EditFamilyComponent } from './edit-family.component';
-import { FamilyService } from './family.service';
+import { AddFamilyComponent } from './add-family.component';
+import { FamilyService } from '../../family.service';
 
-import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
+// Settings imports
+import { SettingsService } from '../../../settings/settings.service';
+import { AppSettings } from '../../../settings/settings';
 
-// Settings Imports
-import { SettingsService } from '../settings/settings.service';
-import { AppSettings } from '../settings/settings';
-import { AuthService } from '../auth/auth-service';
-
-// Dialog import
-
-describe('editFamilyComponent', () => {
-  let editFamilyComponent: EditFamilyComponent;
-  let editFamilyForm: FormGroup;
-  let fixture: ComponentFixture<EditFamilyComponent>;
-  const activatedRoute: ActivatedRouteStub = new ActivatedRouteStub({
-    id: 'john_id',
-  });
+describe('AddFamilyComponent', () => {
+  let addFamilyComponent: AddFamilyComponent;
+  let addFamilyForm: FormGroup;
+  let fixture: ComponentFixture<AddFamilyComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        EditFamilyComponent,
+        AddFamilyComponent,
         MatSnackBarModule
       ],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: FamilyService, useClass: MockFamilyService },
-        { provide: ActivatedRoute, useValue: activatedRoute },
-        { provide: SettingsService, useValue: { getSettings: () => of({ schools: [{ name: 'Test School', abbreviation: 'TS' }] } as unknown as AppSettings) }},
-        { provide: AuthService, useValue: { hasPermission: () => true } },
-        { provide: Router, useValue: { navigate: () => Promise.resolve(true) } }
+        provideRouter([]),
+        {
+          provide: FamilyService,
+          useClass: MockFamilyService
+        },
+        {
+          provide: SettingsService,
+          useValue: { getSettings: () => of({ schools: [{ name: 'Test School', abbreviation: 'TS' }] } as unknown as AppSettings) }
+        }
       ]
     }).compileComponents().catch(error => {
       expect(error).toBeNull();
@@ -53,23 +48,28 @@ describe('editFamilyComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(EditFamilyComponent);
-    editFamilyComponent = fixture.componentInstance;
+    fixture = TestBed.createComponent(AddFamilyComponent);
+    addFamilyComponent = fixture.componentInstance;
     fixture.detectChanges();
-    editFamilyForm = editFamilyComponent.editFamilyForm;
-    expect(editFamilyForm).toBeDefined();
-    expect(editFamilyForm.controls).toBeDefined();
+    addFamilyForm = addFamilyComponent.addFamilyForm;
+    expect(addFamilyForm).toBeDefined();
+    expect(addFamilyForm.controls).toBeDefined();
   });
 
-
+  // Not terribly important; if the component doesn't create
+  // successfully that will probably blow up a lot of things.
+  // Including it, though, does give us confidence that our
+  // our component definitions don't have errors that would
+  // prevent them from being successfully constructed.
   it('should create the component and form', () => {
-    expect(editFamilyComponent).toBeTruthy();
-    expect(editFamilyForm).toBeTruthy();
+    expect(addFamilyComponent).toBeTruthy();
+    expect(addFamilyForm).toBeTruthy();
   });
 
-  // Tests that a loaded form is valid
+  // Confirms that an initial, empty form is *not* valid, so
+  // people can't submit an empty form.
   it('form should be invalid when empty', () => {
-    expect(editFamilyForm.valid).toBeTruthy();
+    expect(addFamilyForm.valid).toBeFalsy();
   });
 
   describe('Guardian first and last name fields', () => {
@@ -77,13 +77,14 @@ describe('editFamilyComponent', () => {
     let guardianLastNameControl: AbstractControl;
 
     beforeEach(() => {
-      guardianFirstNameControl = editFamilyComponent.editFamilyForm.controls.guardianFirstName;
-      guardianLastNameControl = editFamilyComponent.editFamilyForm.controls.guardianLastName;
+      guardianFirstNameControl = addFamilyComponent.addFamilyForm.controls.guardianFirstName;
+      guardianLastNameControl = addFamilyComponent.addFamilyForm.controls.guardianLastName;
     });
 
     it('should not allow empty guardian names', () => {
       guardianFirstNameControl.setValue('');
       expect(guardianFirstNameControl.valid).toBeFalsy();
+
       guardianLastNameControl.setValue('');
       expect(guardianLastNameControl.valid).toBeFalsy();
     });
@@ -91,6 +92,7 @@ describe('editFamilyComponent', () => {
     it('should be fine with "Chris Smith"', () => {
       guardianFirstNameControl.setValue('Chris');
       expect(guardianFirstNameControl.valid).toBeTruthy();
+
       guardianLastNameControl.setValue('Smith');
       expect(guardianLastNameControl.valid).toBeTruthy();
     });
@@ -99,7 +101,8 @@ describe('editFamilyComponent', () => {
       guardianFirstNameControl.setValue('x');
       expect(guardianFirstNameControl.valid).toBeFalsy();
       expect(guardianFirstNameControl.hasError('minlength')).toBeTruthy();
-      guardianLastNameControl.setValue('y');
+
+      guardianLastNameControl.setValue('x');
       expect(guardianLastNameControl.valid).toBeFalsy();
       expect(guardianLastNameControl.hasError('minlength')).toBeTruthy();
     });
@@ -108,91 +111,60 @@ describe('editFamilyComponent', () => {
       guardianFirstNameControl.setValue('x'.repeat(100));
       expect(guardianFirstNameControl.valid).toBeFalsy();
       expect(guardianFirstNameControl.hasError('maxlength')).toBeTruthy();
-      guardianLastNameControl.setValue('y'.repeat(100));
+
+      guardianLastNameControl.setValue('x'.repeat(100));
       expect(guardianLastNameControl.valid).toBeFalsy();
       expect(guardianLastNameControl.hasError('maxlength')).toBeTruthy();
     });
   });
 
-  describe('The address field', () => {
-    let addressControl: AbstractControl;
-
-    beforeEach(() => {
-      addressControl = editFamilyComponent.editFamilyForm.controls.address;
-    });
-
-    it('should not allow empty addresses', () => {
-      addressControl.setValue('');
-      expect(addressControl.valid).toBeFalsy();
-    });
-
-    it('should allow numbers and letters to input', () => {
-      addressControl.setValue('123 Avenue');
-      expect(addressControl.valid).toBeTruthy();
-    });
-  });
-
-  describe('The email field', () => {
-    let emailControl: AbstractControl;
-
-    beforeEach(() => {
-      emailControl = editFamilyComponent.editFamilyForm.controls.email;
-    });
-
-    it('should not allow empty values', () => {
-      emailControl.setValue(null);
-      expect(emailControl.valid).toBeFalsy();
-      expect(emailControl.hasError('required')).toBeTruthy();
-    });
-
-    it('should accept legal emails', () => {
-      emailControl.setValue('conniestewart@ohmnet.com');
-      expect(emailControl.valid).toBeTruthy();
-    });
-
-    it('should fail without @', () => {
-      emailControl.setValue('conniestewart');
-      expect(emailControl.valid).toBeFalsy();
-      expect(emailControl.hasError('email')).toBeTruthy();
-    });
-  });
-
   describe('Students FormArray', () => {
-
-    it('should start with students in the students array', () => {
-      const students = editFamilyComponent.students;
+    // Confirms we start with an empty field
+    it('should start with an empty students array', () => {
+      const students = addFamilyComponent.students;
       expect(students).toBeDefined();
-      expect(students.length).toBeGreaterThan(0);
+      expect(students.length).toBe(0);
     });
 
     it('should add a student when addStudent() is called', () => {
-      editFamilyComponent.addStudent();
-      const students = editFamilyComponent.students;
+      addFamilyComponent.addStudent();
+      const students = addFamilyComponent.students;
 
-      // Since there is one student in the test family upon editing,
-      // we expect that after adding a student, there will be two students in the form array
-      expect(students.length).toBe(2);
+      expect(students.length).toBe(1);
       expect(students.at(0)).toBeTruthy();
       expect(students.at(0) instanceof FormGroup).toBeTrue();
     });
 
     it('should remove a student when removeStudent() is called', () => {
-      editFamilyComponent.removeStudent(0);
-      const students = editFamilyComponent.students;
+      addFamilyComponent.removeStudent(0);
+      const students = addFamilyComponent.students;
 
       expect(students.length).toBe(0);
       expect(students.at(0)).toBeFalsy();
       expect(students.at(0) instanceof FormGroup).toBeFalse();
     });
 
-    //We are loading the data so it should be valid when the form is initialized.
     it('should be valid when all fields are filled with correct information', () => {
-      expect(editFamilyForm.valid).toBeTrue();
+      addFamilyForm.controls.guardianFirstName.setValue('Chris');
+      addFamilyForm.controls.guardianLastName.setValue('Smith');
+      addFamilyForm.controls.timeSlot.setValue('9:00-10:00');
+      addFamilyForm.controls.address.setValue('123 Avenue');
+      addFamilyForm.controls.email.setValue('csmith@email.com');
+
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
+
+      student.get('name')!.setValue('Jimmy');
+      student.get('grade')!.setValue('3');
+      student.get('school')!.setValue('Morris Elementary');
+      student.get('teacher')!.setValue('Kurtis');
+
+      expect(addFamilyForm.valid).toBeTrue();
     });
 
     it('should validate student name', () => {
-      editFamilyComponent.addStudent();
-      const student = editFamilyComponent.students.at(0);
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
 
       // Name should not be valid if there is no input
       const name = student.get('name')!;
@@ -211,8 +183,8 @@ describe('editFamilyComponent', () => {
     });
 
     it('should validate student grade, "Kindergarten", and "PreK"', () => {
-      editFamilyComponent.addStudent();
-      const student = editFamilyComponent.students.at(0);
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
 
       // Should be invalid with no input
       const grade = student.get('grade')!;
@@ -248,18 +220,18 @@ describe('editFamilyComponent', () => {
       expect(grade.valid).toBeTrue();
 
       // "pre-k" is an an invalid input
-      grade.setValue('prek');
+      grade.setValue('pre-k');
       expect(grade.valid).toBeFalse();
       expect(grade.hasError('pattern')).toBeTrue();
 
-      // "Pre-K" is a valid input
+      // "PreK" is a valid input
       grade.setValue('PreK');
       expect(grade.valid).toBeTrue();
     });
 
     it('should validate student school', () => {
-      editFamilyComponent.addStudent();
-      const student = editFamilyComponent.students.at(0);
+      addFamilyComponent.addStudent();
+      const student = addFamilyComponent.students.at(0);
 
       // Should be invalid without input
       const school = student.get('school')!;
@@ -276,57 +248,93 @@ describe('editFamilyComponent', () => {
       school.setValue('Lincoln Elementary');
       expect(school.valid).toBeTrue();
     });
+  });
 
-    it('should be fine with the teacher field left empty', () => {
-      editFamilyComponent.addStudent();
-      const student = editFamilyComponent.students.at(0);
+  describe('The address field', () => {
+    let addressControl: AbstractControl;
 
-      const teacher = student.get('teacher')!;
-      teacher.setValue('');
-      expect(teacher.valid).toBeTrue();
+    beforeEach(() => {
+      addressControl = addFamilyComponent.addFamilyForm.controls.address;
+    });
+
+    it('should not allow empty addresses', () => {
+      addressControl.setValue('');
+      expect(addressControl.valid).toBeFalsy();
+    });
+
+    it('should allow numbers and letters to input', () => {
+      addressControl.setValue('123 Avenue');
+      expect(addressControl.valid).toBeTruthy();
+    });
+
+
+  });
+
+  describe('The email field', () => {
+    let emailControl: AbstractControl;
+
+    beforeEach(() => {
+      emailControl = addFamilyComponent.addFamilyForm.controls.email;
+    });
+
+    it('should not allow empty values', () => {
+      emailControl.setValue(null);
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('required')).toBeTruthy();
+    });
+
+    it('should fail without @', () => {
+      emailControl.setValue('conniestewart');
+      expect(emailControl.valid).toBeFalsy();
+      expect(emailControl.hasError('pattern')).toBeTruthy();
+    });
+
+    it('should accept legal emails', () => {
+      emailControl.setValue('conniestewart@ohmnet.com');
+      expect(emailControl.valid).toBeTruthy();
     });
   });
 
   describe('control error helper methods', () => {
     it('formControlHasError should return true for invalid touched family control', () => {
       const controlFirstName = 'guardianFirstName';
-      const control1 = editFamilyComponent.editFamilyForm.get(controlFirstName);
+      const control1 = addFamilyComponent.addFamilyForm.get(controlFirstName);
 
       control1?.setValue('');
       control1?.markAsTouched();
 
-      expect(editFamilyComponent.formControlHasError(controlFirstName)).toBeTrue();
+      expect(addFamilyComponent.formControlHasError(controlFirstName)).toBeTrue();
 
       const controlLastName = 'guardianLastName';
-      const control2 = editFamilyComponent.editFamilyForm.get(controlLastName);
+      const control2 = addFamilyComponent.addFamilyForm.get(controlLastName);
 
       control2?.setValue('');
       control2?.markAsTouched();
 
-      expect(editFamilyComponent.formControlHasError(controlLastName)).toBeTrue();
+      expect(addFamilyComponent.formControlHasError(controlLastName)).toBeTrue();
     });
 
     it('studentControlHasError should return true for invalid touched student control', () => {
-      editFamilyComponent.addStudent();
+      addFamilyComponent.addStudent();
       const studentIndex = 0;
       const controlName: 'name' | 'grade' | 'school' = 'name';
-      const control = (editFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
 
       control?.setValue('');
       control?.markAsTouched();
 
-      expect(editFamilyComponent.studentControlHasError(studentIndex, controlName)).toBeTrue();
+      expect(addFamilyComponent.studentControlHasError(studentIndex, controlName)).toBeTrue();
     });
 
     it('studentControlHasError should return false when invalid student control is untouched', () => {
-      editFamilyComponent.addStudent();
+      addFamilyComponent.addStudent();
       const studentIndex = 0;
       const controlName: 'name' | 'grade' | 'school' = 'name';
-      const control = (editFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
 
       control?.setValue('');
 
-      expect(editFamilyComponent.studentControlHasError(studentIndex, controlName)).toBeFalse();
+      expect(addFamilyComponent.studentControlHasError(studentIndex, controlName)).toBeFalse();
     });
   });
 
@@ -335,38 +343,38 @@ describe('editFamilyComponent', () => {
       // The type statement is needed to ensure that `controlName` isn't just any
       // random string, but rather one of the keys of the `addFamilyValidationMessages`
       // map in the component.
-      const controlFirstName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianFirstName';
-      editFamilyComponent.editFamilyForm.get(controlFirstName).setErrors({'required': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlFirstName)).toEqual('Guardian first name is required');
+      const controlFirstName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'guardianFirstName';
+      addFamilyComponent.addFamilyForm.get(controlFirstName).setErrors({'required': true});
+      expect(addFamilyComponent.getFamilyErrorMessage(controlFirstName)).toEqual('Guardian first name is required');
 
-      const controlLastName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianLastName';
-      editFamilyComponent.editFamilyForm.get(controlLastName).setErrors({'required': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlLastName)).toEqual('Guardian last name is required');
+      const controlLastName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'guardianLastName';
+      addFamilyComponent.addFamilyForm.get(controlLastName).setErrors({'required': true});
+      expect(addFamilyComponent.getFamilyErrorMessage(controlLastName)).toEqual('Guardian last name is required');
 
       // Email field should display correct messages
       const controlName = 'email';
-      editFamilyComponent.editFamilyForm.get(controlName).setErrors({'required': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Email is required');
+      addFamilyComponent.addFamilyForm.get(controlName).setErrors({'required': true});
+      expect(addFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Email is required');
 
-      editFamilyComponent.editFamilyForm.get(controlName).setErrors({'email': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Email must be formatted properly');
+      addFamilyComponent.addFamilyForm.get(controlName).setErrors({'email': true});
+      expect(addFamilyComponent.getFamilyErrorMessage(controlName)).toEqual('Email must be formatted properly');
     });
 
     it('should return the correct error message for the student form', () => {
-      editFamilyComponent.addStudent();
+      addFamilyComponent.addStudent();
       const studentIndex = 0;
       const controlName: 'name' | 'grade' | 'school' = 'name';
-      const control = (editFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
 
       // Student field should return correct messages
       control.setErrors({'required': true});
-      expect(editFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name is required');
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name is required');
 
       control.setErrors({'minlength': true});
-      expect(editFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name must be at least 2 characters long');
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name must be at least 2 characters long');
 
       control.setErrors({'maxlength': true});
-      expect(editFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name cannot be more than 50 characters long');
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName)).toEqual('Student name cannot be more than 50 characters long');
     });
 
     // Family form
@@ -374,45 +382,45 @@ describe('editFamilyComponent', () => {
       // The type statement is needed to ensure that `controlName` isn't just any
       // random string, but rather one of the keys of the `addFamilyValidationMessages`
       // map in the component.
-      const controlFirstName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianFirstName';
-      editFamilyComponent.editFamilyForm.get(controlFirstName).setErrors({'unknown': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlFirstName)).toEqual('Unknown error. Please check your form input.');
+      const controlFirstName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'guardianFirstName';
+      addFamilyComponent.addFamilyForm.get(controlFirstName).setErrors({'unknown': true});
+      expect(addFamilyComponent.getFamilyErrorMessage(controlFirstName)).toEqual('Unknown error. Please check your form input.');
 
-      const controlLastName: keyof typeof editFamilyComponent.editFamilyValidationMessages = 'guardianLastName';
-      editFamilyComponent.editFamilyForm.get(controlLastName).setErrors({'unknown': true});
-      expect(editFamilyComponent.getFamilyErrorMessage(controlLastName)).toEqual('Unknown error. Please check your form input.');
+      const controlLastName: keyof typeof addFamilyComponent.addFamilyValidationMessages = 'guardianLastName';
+      addFamilyComponent.addFamilyForm.get(controlLastName).setErrors({'unknown': true});
+      expect(addFamilyComponent.getFamilyErrorMessage(controlLastName)).toEqual('Unknown error. Please check your form input.');
     });
 
     // Student form
     it('should return "Unknown error. Please check your form input." if no error message is found', () => {
       // We don't use a type statement like family does because student form controls are under family, and so are error keys.
       // Instead, we just have to set the control names to be valid keys of the student form controls and error keys.
-      editFamilyComponent.addStudent();
+      addFamilyComponent.addStudent();
       const studentIndex = 0;
       const controlName: 'name' | 'grade' | 'school' = 'name';
 
-      const control = (editFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
+      const control = (addFamilyComponent.students.at(studentIndex) as FormGroup).get(controlName);
       control.setErrors({'unknown': true});
 
-      expect(editFamilyComponent.getStudentErrorMessage(studentIndex, controlName))
+      expect(addFamilyComponent.getStudentErrorMessage(studentIndex, controlName))
         .toEqual('Unknown error. Please check your form input.');
     });
 
     it('should return an empty string if the validation method is not an array', () => {
-      const result = editFamilyComponent.getFamilyErrorMessage('students');
+      const result = addFamilyComponent.getFamilyErrorMessage('students');
       expect(result).toBe('');
     })
   });
 
   describe('Submit behavior', () => {
-    it('should call updateFamily and navigate to the family list on successful submission', () => {
+    it('should call addFamily and navigate to the family list on successful submission', () => {
       const familyService = TestBed.inject(FamilyService);
-      const editFamilySpy = spyOn(familyService, 'updateFamily').and.returnValue(of('1'));
+      const addFamilySpy = spyOn(familyService, 'addFamily').and.returnValue(of('1'));
       const router = TestBed.inject(Router);
       const navigateSpy = spyOn(router, 'navigate');
 
-      editFamilyComponent.addStudent();
-      (editFamilyComponent.editFamilyForm as unknown as UntypedFormGroup).setValue({
+      addFamilyComponent.addStudent();
+      (addFamilyComponent.addFamilyForm as unknown as UntypedFormGroup).setValue({
         guardianFirstName: 'Chris',
         guardianLastName: 'Smith',
         address: '123 Avenue',
@@ -426,36 +434,49 @@ describe('editFamilyComponent', () => {
             teacher: 'N/A',
             backpack: true,
             headphones: false
-          },
+          }
+        ],
+        timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
+        timeSlot: null
+      });
+
+      addFamilyComponent.submitForm();
+
+      expect(addFamilySpy).toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalledWith(['/family']);
+    });
+
+    it('should show snackBar on 400 error', () => {
+      const familyService = TestBed.inject(FamilyService);
+      spyOn(familyService, 'addFamily').and.returnValue(throwError(() => ({ status: 400 })));
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackBarSpy = spyOn(snackBar, 'open');
+
+      addFamilyComponent.addStudent();
+      (addFamilyComponent.addFamilyForm as unknown as UntypedFormGroup).setValue({
+        guardianFirstName: 'Chris',
+        guardianLastName: 'Smith',
+        address: '123 Avenue',
+        accommodations: 'None',
+        email: 'csmith@email.com',
+        students: [
           {
-            name: 'abby',
-            grade: '7',
-            school: 'Morris Middle School',
+            name: 'Jimmy',
+            grade: '3',
+            school: 'Morris Elementary',
             teacher: 'N/A',
             backpack: true,
             headphones: false
           }
         ],
         timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
-        timeSlot: 'TBD'
+        timeSlot: null
       });
 
-      editFamilyComponent.submitForm();
-
-      expect(editFamilySpy).toHaveBeenCalled();
-      expect(navigateSpy).toHaveBeenCalledWith(['/family']);
-    });
-
-    it('should show snackBar on 400 error', () => {
-      const familyService = TestBed.inject(FamilyService);
-      spyOn(familyService, 'updateFamily').and.returnValue(throwError(() => ({ status: 400 })));
-      const snackBar = TestBed.inject(MatSnackBar);
-      const snackBarSpy = spyOn(snackBar, 'open');
-
-      editFamilyComponent.submitForm();
+      addFamilyComponent.submitForm();
 
       expect(snackBarSpy).toHaveBeenCalledWith(
-        jasmine.stringMatching(/illegal family/i),
+        jasmine.stringMatching(/illegal new family/i),
         'OK',
         { duration: 5000 }
       );
@@ -463,11 +484,32 @@ describe('editFamilyComponent', () => {
 
     it('should show snackBar on 500 error', () => {
       const familyService = TestBed.inject(FamilyService);
-      spyOn(familyService, 'updateFamily').and.returnValue(throwError(() => ({ status: 500 })));
+      spyOn(familyService, 'addFamily').and.returnValue(throwError(() => ({ status: 500 })));
       const snackBar = TestBed.inject(MatSnackBar);
       const snackBarSpy = spyOn(snackBar, 'open');
 
-      editFamilyComponent.submitForm();
+      addFamilyComponent.addStudent();
+      (addFamilyComponent.addFamilyForm as unknown as UntypedFormGroup).setValue({
+        guardianFirstName: 'Chris',
+        guardianLastName: 'Smith',
+        address: '123 Avenue',
+        accommodations: 'None',
+        email: 'csmith@email.com',
+        students: [
+          {
+            name: 'Jimmy',
+            grade: '3',
+            school: 'Morris Elementary',
+            teacher: 'N/A',
+            backpack: true,
+            headphones: false
+          }
+        ],
+        timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
+        timeSlot: null
+      });
+
+      addFamilyComponent.submitForm();
 
       expect(snackBarSpy).toHaveBeenCalledWith(
         jasmine.stringMatching(/server failed to process/i),
@@ -478,11 +520,32 @@ describe('editFamilyComponent', () => {
 
     it('should show snackBar on unexpected error status', () => {
       const familyService = TestBed.inject(FamilyService);
-      spyOn(familyService, 'updateFamily').and.returnValue(throwError(() => ({ status: 409, message: 'Conflict' })));
+      spyOn(familyService, 'addFamily').and.returnValue(throwError(() => ({ status: 409, message: 'Conflict' })));
       const snackBar = TestBed.inject(MatSnackBar);
       const snackBarSpy = spyOn(snackBar, 'open');
 
-      editFamilyComponent.submitForm();
+      addFamilyComponent.addStudent();
+      (addFamilyComponent.addFamilyForm as unknown as UntypedFormGroup).setValue({
+        guardianFirstName: 'Chris',
+        guardianLastName: 'Smith',
+        address: '123 Avenue',
+        accommodations: 'None',
+        email: 'csmith@email.com',
+        students: [
+          {
+            name: 'Jimmy',
+            grade: '3',
+            school: 'Morris Elementary',
+            teacher: 'N/A',
+            backpack: true,
+            headphones: false
+          }
+        ],
+        timeAvailability: { earlyMorning: false, lateMorning: true, earlyAfternoon: false, lateAfternoon: false },
+        timeSlot: null
+      });
+
+      addFamilyComponent.submitForm();
 
       expect(snackBarSpy).toHaveBeenCalledWith(
         jasmine.stringMatching(/unexpected error/i),
@@ -493,11 +556,11 @@ describe('editFamilyComponent', () => {
 
     it('should use undefined for null form fields via nullish coalescing', () => {
       const familyService = TestBed.inject(FamilyService);
-      const editFamilySpy = spyOn(familyService, 'updateFamily').and.returnValue(of('1'));
+      const addFamilySpy = spyOn(familyService, 'addFamily').and.returnValue(of('1'));
 
-      editFamilyComponent.addStudent();
+      addFamilyComponent.addStudent();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const setNull = (path: string) => (editFamilyComponent.editFamilyForm.get(path) as any).setValue(null);
+      const setNull = (path: string) => (addFamilyComponent.addFamilyForm.get(path) as any).setValue(null);
       setNull('guardianFirstName');
       setNull('guardianLastName');
       setNull('email');
@@ -508,12 +571,12 @@ describe('editFamilyComponent', () => {
 
       // If statement in the submit form method checks for an invalid form and returns early,
       // so we need to mock the form as valid to test the nullish coalescing behavior.
-      spyOnProperty(editFamilyComponent.editFamilyForm, 'invalid', 'get').and.returnValue(false);
+      spyOnProperty(addFamilyComponent.addFamilyForm, 'invalid', 'get').and.returnValue(false);
 
-      editFamilyComponent.submitForm();
+      addFamilyComponent.submitForm();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const call = editFamilySpy.calls.mostRecent().args[0] as any;
+      const call = addFamilySpy.calls.mostRecent().args[0] as any;
       expect(call.guardianFirstName).toBeUndefined();
       expect(call.guardianLastName).toBeUndefined();
       expect(call.email).toBeUndefined();
@@ -523,23 +586,23 @@ describe('editFamilyComponent', () => {
 
   describe('formControlHasError edge cases', () => {
     it('should return false for a non-existent control name', () => {
-      expect(editFamilyComponent.formControlHasError('nonExistentControl')).toBeFalse();
+      expect(addFamilyComponent.formControlHasError('nonExistentControl')).toBeFalse();
     });
 
     it('should return true if control is invalid and dirty (not touched)', () => {
-      const firstNameControl = editFamilyForm.controls.guardianFirstName;
+      const firstNameControl = addFamilyForm.controls.guardianFirstName;
       firstNameControl.setValue('');
       firstNameControl.markAsDirty();
       firstNameControl.markAsUntouched();
 
-      expect(editFamilyComponent.formControlHasError('guardianFirstName')).toBeTrue();
+      expect(addFamilyComponent.formControlHasError('guardianFirstName')).toBeTrue();
 
-      const lastNameControl = editFamilyForm.controls.guardianLastName;
+      const lastNameControl = addFamilyForm.controls.guardianLastName;
       lastNameControl.setValue('');
       lastNameControl.markAsDirty();
       lastNameControl.markAsUntouched();
 
-      expect(editFamilyComponent.formControlHasError('guardianLastName')).toBeTrue();
+      expect(addFamilyComponent.formControlHasError('guardianLastName')).toBeTrue();
     });
   });
 
@@ -548,9 +611,9 @@ describe('editFamilyComponent', () => {
       const settingsService = TestBed.inject(SettingsService);
       spyOn(settingsService, 'getSettings').and.returnValue(of({ schools: undefined } as unknown as AppSettings));
 
-      editFamilyComponent.ngOnInit();
+      addFamilyComponent.ngOnInit();
 
-      expect(editFamilyComponent.schools).toEqual([]);
+      expect(addFamilyComponent.schools).toEqual([]);
     });
 
     it('should populate schools from settings', () => {
@@ -559,10 +622,11 @@ describe('editFamilyComponent', () => {
         of({ schools: [{ name: 'Test School', abbreviation: 'TS' }] } as unknown as AppSettings)
       );
 
-      editFamilyComponent.ngOnInit();
+      addFamilyComponent.ngOnInit();
 
-      expect(editFamilyComponent.schools.length).toBe(1);
-      expect(editFamilyComponent.schools[0].name).toBe('Test School');
+      expect(addFamilyComponent.schools.length).toBe(1);
+      expect(addFamilyComponent.schools[0].name).toBe('Test School');
     });
   });
 });
+

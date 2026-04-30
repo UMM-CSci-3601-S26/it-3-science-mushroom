@@ -30,7 +30,7 @@ import { CommonModule } from "@angular/common";
 import { FormControl, FormGroup, FormsModule, Validators, ReactiveFormsModule } from "@angular/forms";
 import { Router, RouterLink, RouterModule } from "@angular/router";
 import { AuthService } from "../auth-service";
-import { FamilyPortalService } from "../../family/family-portal.service";
+import { FamilyPortalService } from "../../family/family-portal/family-portal.service";
 import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";

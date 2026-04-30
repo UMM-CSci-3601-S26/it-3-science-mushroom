@@ -32,7 +32,7 @@ import { StockReport } from './stock-report';
 import { ReportGeneratorComponent } from './report-generator/report-generator.component';
 
 // Dialog Imports
-import { DialogService } from '../dialog/dialog.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { AuthService } from '../auth/auth-service';
 
 /**

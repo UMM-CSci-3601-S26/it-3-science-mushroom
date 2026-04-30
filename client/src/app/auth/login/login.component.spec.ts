@@ -8,7 +8,7 @@ import { Observable, of, throwError } from 'rxjs';
 // Component and Dependencies
 import { LoginComponent } from './login.component';
 import { AuthService } from '../auth-service';
-import { FamilyPortalService } from '../../family/family-portal.service';
+import { FamilyPortalService } from '../../family/family-portal/family-portal.service';
 
 /**
  * Tests for LoginComponent — covers component creation, form validation,
