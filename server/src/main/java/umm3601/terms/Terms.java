@@ -1,4 +1,5 @@
-package umm3601.terms;
+
+package umm3601.Terms;
 
 import java.util.List;
 

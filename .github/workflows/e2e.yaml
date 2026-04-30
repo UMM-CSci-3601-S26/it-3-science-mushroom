@@ -42,7 +42,7 @@ jobs:
       run: ${{ github.workspace }}/server/gradlew run -p ${{ github.workspace }}/server/ &
 
     - name: Wait for backend to be ready
-      run: npx wait-on http://localhost:4567/api/inventory
+      run: npx wait-on --timeout 60000 http-get://localhost:4567/api/health
       working-directory: ./client
 
     - name: Run e2e tests
@@ -51,3 +51,10 @@ jobs:
         browser: electron
         command: npm run e2e
         working-directory: ./client
+      env:
+        CYPRESS_E2E_ADMIN_USER: ${{ secrets.CYPRESS_E2E_ADMIN_USER }}
+        CYPRESS_E2E_ADMIN_PASSWORD: ${{ secrets.CYPRESS_E2E_ADMIN_PASSWORD }}
+        CYPRESS_E2E_STAFF_USER: ${{ secrets.CYPRESS_E2E_STAFF_USER }}
+        CYPRESS_E2E_STAFF_PASSWORD: ${{ secrets.CYPRESS_E2E_STAFF_PASSWORD }}
+        CYPRESS_E2E_VIEWER_USER: ${{ secrets.CYPRESS_E2E_VIEWER_USER }}
+        CYPRESS_E2E_VIEWER_PASSWORD: ${{ secrets.CYPRESS_E2E_VIEWER_PASSWORD }}

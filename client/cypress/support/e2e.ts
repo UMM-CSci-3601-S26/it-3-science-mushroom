@@ -18,3 +18,26 @@ import './commands';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
+
+Cypress.Commands.overwrite('visit', (originalFn, url, options) => {
+  const visit = originalFn as (
+    urlOrOptions: string | Partial<Cypress.VisitOptions>,
+    visitOptions?: Partial<Cypress.VisitOptions>
+  ) => Cypress.Chainable<Cypress.AUTWindow>;
+  const requestedUrl = typeof url === 'string' ? url : url.url;
+
+  if (Cypress.env('E2E_ROLE_LOGIN_ACTIVE') || requestedUrl === '/login') {
+    return visit(url, { timeout: 30000, ...options });
+  }
+
+  const username = Cypress.env('E2E_ADMIN_USER');
+  const password = Cypress.env('E2E_ADMIN_PASSWORD');
+
+  if (!username || !password) {
+    return visit(url, { timeout: 30000, ...options });
+  }
+
+  return cy.request('POST', '/api/auth/login', { username, password }).then({ timeout: 30000 }, () => {
+    return visit(url, { timeout: 30000, ...options });
+  });
+});

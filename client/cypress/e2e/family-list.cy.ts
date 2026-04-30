@@ -9,6 +9,7 @@ describe('Family list', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
   });
 
@@ -97,25 +98,7 @@ describe('Family list', () => {
       page.getNavLink('Families').click();
       cy.url().should('match', /\/family$/);
 
-      const errors: string[] = [];
-
-      const recordError = (message: string) => {
-        errors.push(message);
-        cy.log(message);
-        console.warn(message);
-      }
-
-      cy.get('body').then(($body) => {
-        if ($body.find('[data-cy="filter-family"]').length === 0) {
-          recordError(`Empty filter input for family`);
-        }
-      });
-
-      cy.then(() => {
-        if (errors.length > 0) {
-          throw new Error(errors.join('\n'));
-        }
-      });
+      page.getFilterFamily().should('exist');
     });
 
     it("Should be able to take an input and display the correct filtered results", () => {
@@ -190,10 +173,12 @@ describe('Family list', () => {
 
       page.getStudentCards().should('have.length', expectedValuesStudent.length)
         .each((e, i) => {
-          cy.wrap(e).find('.student-name').should('have.text', expectedValuesStudent[i].name);
-          cy.wrap(e).find('.student-school').should('have.text', expectedValuesStudent[i].school);
-          cy.wrap(e).find('.student-grade').should('have.text', expectedValuesStudent[i].grade);
-          cy.wrap(e).find('.student-teacher').should('have.text', expectedValuesStudent[i].teacher);
+          cy.wrap(e).find('[matlistitemtitle]').should('have.text', expectedValuesStudent[i].name.replace('Name: ', ''));
+          cy.wrap(e).find('[matlistitemline]').eq(0).should(
+            'have.text',
+            `${expectedValuesStudent[i].school.replace('School: ', '')} - ${expectedValuesStudent[i].grade.replace('Grade: ', 'Grade ')}`
+          );
+          cy.wrap(e).find('[matlistitemline]').eq(1).should('have.text', expectedValuesStudent[i].teacher);
         });
     });
   });

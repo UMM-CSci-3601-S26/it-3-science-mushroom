@@ -15,9 +15,12 @@ public class Family {
   @SuppressWarnings({"MemberName"})
   public String _id;
 
+  public String ownerUserId; // Guardian-level information (applies to the whole household)
   public String guardianName;
   public String email;
   public String address;
+  // Whether the guardian or volunteer has completed the family profile.
+  public boolean profileComplete;
   public String timeSlot;
   public String accommodations;
   public boolean helped;
@@ -53,6 +56,9 @@ public class Family {
     }
   }
 
+  // Optional delete request metadata used by volunteer->admin approval flow.
+  public DeleteRequest deleteRequest;
+
   public static class StudentInfo {
     public String name;
     public String grade;
@@ -61,6 +67,15 @@ public class Family {
     public String teacher;
     public Boolean backpack;
     public Boolean headphones;
+  }
+
+  public static class DeleteRequest {
+    public boolean requested;
+    public String message;
+    public String requestedByUserId;
+    public String requestedByUserName;
+    public String requestedBySystemRole;
+    public String requestedAt;
   }
 
   @SuppressWarnings({"VisibilityModifier"})

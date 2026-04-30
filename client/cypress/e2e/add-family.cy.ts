@@ -9,6 +9,7 @@ describe('Add family page', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
   });
 
@@ -139,10 +140,6 @@ describe('Add family page', () => {
   });
 
   describe('Adding a new family', () => {
-    beforeEach(() => {
-      cy.task('seed:database');
-    });
-
     it('Should go to the right page, and have the right info', () => {
       const family: Family = {
         _id: null,

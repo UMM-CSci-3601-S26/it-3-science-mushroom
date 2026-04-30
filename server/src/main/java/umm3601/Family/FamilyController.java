@@ -5,8 +5,10 @@ package umm3601.Family;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Updates.unset;
 
 // Java Imports
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,17 +34,20 @@ import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 // Misc Imports
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
+import umm3601.Common.AuthContext;
 import umm3601.Inventory.Inventory;
+import umm3601.Settings.Settings;
 import umm3601.SupplyList.SupplyList;
-import umm3601.settings.Settings;
+import umm3601.Users.Users;
 
 /* FamilyController Contains the Following:
 - getFamilies()
@@ -54,7 +59,7 @@ import umm3601.settings.Settings;
 */
 
 // Controller
-public class FamilyController implements Controller {
+public class FamilyController {
   // API Endpoints
   private static final String API_FAMILY = "/api/family";
   private static final String API_SCHEDULE_FAMILIES = "/api/family/schedule";
@@ -94,12 +99,15 @@ public class FamilyController implements Controller {
   static final String LAST_NAME_KEY = "guardianLastName";
   static final String STATUS_KEY = "status";
   static final String HELPED_KEY = "helped";
+  private static final String API_FAMILY_DELETE_REQUEST = "/api/family/{id}/delete-request";
+  private static final String API_FAMILY_DELETE_REQUESTS = "/api/family/delete-requests";
 
   // Database Collection
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
+  private final JacksonMongoCollection<Users> usersCollection;
 
 
   // Database Constructor
@@ -124,9 +132,16 @@ public class FamilyController implements Controller {
       "settings",
       Settings.class,
       UuidRepresentation.STANDARD);
+    usersCollection = JacksonMongoCollection.builder().build(
+        database,
+        "users",
+        Users.class,
+        UuidRepresentation.STANDARD);
   }
 
   // GET all families
+  @Route(method = HttpMethod.GET, path = API_FAMILY)
+  @RequirePermission("view_families")
   public void getFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
 
@@ -138,6 +153,8 @@ public class FamilyController implements Controller {
   }
 
   // GET family by ID
+  @Route(method = HttpMethod.GET, path = API_FAMILY_BY_ID)
+  @RequirePermission("view_family")
   public void getFamily(Context ctx) {
     String id = ctx.pathParam("id");
     Family family;
@@ -155,6 +172,8 @@ public class FamilyController implements Controller {
     }
   }
 
+  @Route(method = HttpMethod.GET, path = API_FAMILY_FINALIZED_CHECKLIST)
+  @RequirePermission("view_family_checklist")
   public void getFinalizedFamilyChecklist(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
 
@@ -164,6 +183,32 @@ public class FamilyController implements Controller {
 
     ctx.json(family.checklist);
   }
+
+  public Family getByOwnerUserId(String ownerUserId) {
+    Family family = familyCollection.find(eq("ownerUserId", ownerUserId)).first();
+    if (family == null) {
+      throw new NotFoundResponse("No family profile exists for this guardian yet");
+    }
+    return family;
+  }
+
+  public void upsertByOwnerUserId(Family family) {
+    Family existingFamily = familyCollection.find(eq("ownerUserId", family.ownerUserId)).first();
+    normalizeFamilyForPersistence(family, existingFamily);
+    family.profileComplete = true;
+
+    if (existingFamily == null) {
+      familyCollection.insertOne(family);
+      return;
+    }
+
+    family._id = existingFamily._id;
+    family.helped = existingFamily.helped;
+    family.status = determineStatus(existingFamily);
+    family.deleteRequest = existingFamily.deleteRequest;
+    familyCollection.replaceOne(eq("_id", new ObjectId(existingFamily._id)), family);
+  }
+
   // takes the list of families and goes through them one by one sorting them into the first available time slot
   public ArrayList<Family> schedulingAlgorithm(
     ArrayList<Family> families,
@@ -239,6 +284,8 @@ public class FamilyController implements Controller {
     return families;
   }
 
+  @Route(method = HttpMethod.POST, path = API_SCHEDULE_FAMILIES)
+  @RequirePermission("schedule_families")
   public void scheduleFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
 
@@ -308,6 +355,8 @@ public class FamilyController implements Controller {
   }
 
   // POST new family
+  @Route(method = HttpMethod.POST, path = API_FAMILY)
+  @RequirePermission("add_family")
   public void addNewFamily(Context ctx) {
     String body = ctx.body();
     Family newFamily = ctx.bodyValidator(Family.class).get();
@@ -321,6 +370,7 @@ public class FamilyController implements Controller {
     }
 
     normalizeFamilyForPersistence(newFamily, null);
+    newFamily.profileComplete = true;
     familyCollection.insertOne(newFamily);
 
     ctx.json(Map.of("id", newFamily._id));
@@ -328,6 +378,8 @@ public class FamilyController implements Controller {
   }
 
   // UPDATE family
+  @Route(method = HttpMethod.PUT, path = API_FAMILY_BY_ID)
+  @RequirePermission("edit_family")
   public void updateFamily(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
@@ -362,6 +414,8 @@ public class FamilyController implements Controller {
 
     Bson update = new Document("$set", new Document()
       .append("guardianName", updatedFamily.guardianName)
+      .append("ownerUserId", existingFamily.ownerUserId)
+      .append("profileComplete", existingFamily.profileComplete)
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
       .append("accommodations", updatedFamily.accommodations)
@@ -375,6 +429,7 @@ public class FamilyController implements Controller {
       .append("students", studentInfoToDocuments(updatedFamily.students))
       .append("helped", updatedFamily.helped)
       .append("status", updatedFamily.status)
+      .append("deleteRequest", deleteRequestToDocument(existingFamily.deleteRequest))
       .append("checklist", checklistToDocument(updatedFamily.checklist))
     );
 
@@ -387,6 +442,8 @@ public class FamilyController implements Controller {
   }
 
   // DELETE family
+  @Route(method = HttpMethod.DELETE, path = API_FAMILY_BY_ID)
+  @RequirePermission("delete_family")
   public void deleteFamily(Context ctx) {
     String id = ctx.pathParam("id");
     DeleteResult deleteResult;
@@ -409,10 +466,107 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  // DELETE request to delete family (volunteer->admin approval flow)
+  @Route(method = HttpMethod.POST, path = API_FAMILY_DELETE_REQUEST)
+  @RequirePermission("request_family_delete")
+  public void requestToDeleteFamily(Context ctx) {
+    AuthContext authContext = AuthContext.from(ctx);
+    String id = ctx.pathParam("id");
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id wasn't a legal Mongo Object ID.");
+    }
+
+    Family existingFamily = familyCollection.find(eq("_id", familyId)).first();
+
+    if (existingFamily == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+
+    String rawBody = ctx.body();
+    FamilyDeleteRequest deleteRequest = rawBody == null || rawBody.isBlank()
+      ? new FamilyDeleteRequest()
+      : ctx.bodyAsClass(FamilyDeleteRequest.class);
+    String message = deleteRequest.message == null || deleteRequest.message.isBlank()
+      ? "Delete requested"
+      : deleteRequest.message.trim();
+    Users requester = findUserById(authContext.userId());
+
+    Bson update = new Document("$set", new Document()
+      .append("deleteRequest", new Document()
+        .append("requested", true)
+        .append("message", message)
+        .append("requestedByUserId", authContext.userId())
+        .append("requestedByUserName", displayNameForUser(requester))
+        .append("requestedBySystemRole", requester == null || requester.systemRole == null
+          ? authContext.role().name()
+          : requester.systemRole.name())
+        .append("requestedAt", Instant.now().toString())
+      )
+    );
+
+    familyCollection.updateOne(eq("_id", familyId), update);
+
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @SuppressWarnings({"VisibilityModifier"})
+  public static class FamilyDeleteRequest {
+    public String message;
+  }
+
+  @Route(method = HttpMethod.GET, path = API_FAMILY_DELETE_REQUESTS)
+  @RequirePermission("delete_family")
+  public void getDeleteRequests(Context ctx) {
+    List<Family> familiesWithDeleteRequests = familyCollection
+      .find(eq("deleteRequest.requested", true))
+      .into(new ArrayList<>());
+    familiesWithDeleteRequests.forEach(this::hydrateDeleteRequestRequester);
+    ctx.json(familiesWithDeleteRequests);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.DELETE, path = API_FAMILY_DELETE_REQUEST)
+  @RequirePermission("delete_family")
+  public void restoreFamilyDeleteRequest(Context ctx) {
+    String id = ctx.pathParam("id");
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id wasn't a legal Mongo Object ID.");
+    }
+
+    Family existingFamily = familyCollection.find(eq("_id", familyId)).first();
+
+    if (existingFamily == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+
+    Bson update = unset("deleteRequest");
+    familyCollection.updateOne(eq("_id", familyId), update);
+
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_HELPED)
+  @RequirePermission("edit_family")
   public void updateFamilyHelped(Context ctx) {
     updateFamilyStatus(ctx);
   }
 
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_STATUS)
+  @RequirePermission("edit_family")
   public void updateFamilyStatus(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
@@ -456,6 +610,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_CHECKLIST)
+  @RequirePermission("manage_family_help_sessions")
   public void updateFamilyChecklist(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
@@ -491,6 +647,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.GET, path = API_FAMILY_HELP_SESSION)
+  @RequirePermission("manage_family_help_sessions")
   public void getFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     if (family.checklist == null || !family.checklist.snapshot) {
@@ -505,6 +663,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_START)
+  @RequirePermission("manage_family_help_sessions")
   public void startFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
 
@@ -521,6 +681,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_SAVE_CHILD)
+  @RequirePermission("manage_family_help_sessions")
   public void saveFamilyHelpSessionChild(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
@@ -555,6 +717,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_SAVE_ALL)
+  @RequirePermission("manage_family_help_sessions")
   public void saveFamilyHelpSessionAll(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
@@ -584,6 +748,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_CLEAR)
+  @RequirePermission("manage_family_help_sessions")
   public void clearFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
@@ -598,6 +764,8 @@ public class FamilyController implements Controller {
     ctx.status(HttpStatus.OK);
   }
 
+  @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_REVERT)
+  @RequirePermission("manage_family_help_sessions")
   public void revertCompletedFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureCompletedHelpSessionExists(family);
@@ -618,6 +786,8 @@ public class FamilyController implements Controller {
   }
 
   // GET dashboard stats
+  @Route(method = HttpMethod.GET, path = API_DASHBOARD)
+  @RequirePermission("view_dashboard_stats")
   public void getDashboardStats(Context ctx) {
     ArrayList<Family> families = familyCollection
       .find()
@@ -657,6 +827,8 @@ public class FamilyController implements Controller {
   }
 
   // GET export families as CSV
+  @Route(method = HttpMethod.GET, path = API_FAMILY_EXPORT)
+  @RequirePermission("export_families_csv")
   public void exportFamiliesAsCSV(Context ctx) {
     List<Family> families = familyCollection.find().into(new ArrayList<>());
 
@@ -927,6 +1099,7 @@ public class FamilyController implements Controller {
     return 0;
   }
 
+  @SuppressWarnings("unused")
   private boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {
     if (supplyList.item == null || supplyList.item.isEmpty()) {
       return false;
@@ -1521,28 +1694,56 @@ public class FamilyController implements Controller {
       .append("sections", sectionDocuments);
   }
 
-  @Override
-  public void addRoutes(Javalin server) {
-    server.get(API_FAMILY_EXPORT, this::exportFamiliesAsCSV);
-    server.get(API_FAMILY, this::getFamilies);
-    server.get(API_FAMILY_BY_ID, this::getFamily);
-    server.get(API_DASHBOARD, this::getDashboardStats);
-    server.get(API_FAMILY_FINALIZED_CHECKLIST, this::getFinalizedFamilyChecklist);
-    server.get(API_FAMILY_HELP_SESSION, this::getFamilyHelpSession);
-
-    server.put(API_FAMILY_BY_ID, this::updateFamily);
-    server.patch(API_FAMILY_HELPED, this::updateFamilyHelped);
-    server.patch(API_FAMILY_STATUS, this::updateFamilyStatus);
-    server.patch(API_FAMILY_CHECKLIST, this::updateFamilyChecklist);
-
-    server.post(API_FAMILY, this::addNewFamily);
-    server.post(API_SCHEDULE_FAMILIES, this::scheduleFamilies);
-    server.post(API_FAMILY_HELP_SESSION_START, this::startFamilyHelpSession);
-    server.post(API_FAMILY_HELP_SESSION_SAVE_CHILD, this::saveFamilyHelpSessionChild);
-    server.post(API_FAMILY_HELP_SESSION_SAVE_ALL, this::saveFamilyHelpSessionAll);
-    server.post(API_FAMILY_HELP_SESSION_CLEAR, this::clearFamilyHelpSession);
-    server.post(API_FAMILY_HELP_SESSION_REVERT, this::revertCompletedFamilyHelpSession);
-
-    server.delete(API_FAMILY_BY_ID, this::deleteFamily);
+  private Document deleteRequestToDocument(Family.DeleteRequest deleteRequest) {
+    if (deleteRequest == null) {
+      return null;
+    }
+    return new Document()
+      .append("requested", deleteRequest.requested)
+      .append("message", deleteRequest.message)
+      .append("requestedByUserId", deleteRequest.requestedByUserId)
+      .append("requestedByUserName", deleteRequest.requestedByUserName)
+      .append("requestedBySystemRole", deleteRequest.requestedBySystemRole)
+      .append("requestedAt", deleteRequest.requestedAt);
   }
+
+  private void hydrateDeleteRequestRequester(Family family) {
+    if (family == null
+        || family.deleteRequest == null
+        || family.deleteRequest.requestedByUserId == null) {
+      return;
+    }
+
+    Users requester = findUserById(family.deleteRequest.requestedByUserId);
+    if (requester == null) {
+      return;
+    }
+
+    family.deleteRequest.requestedByUserName = displayNameForUser(requester);
+    if (requester.systemRole != null) {
+      family.deleteRequest.requestedBySystemRole = requester.systemRole.name();
+    }
+  }
+
+  private Users findUserById(String userId) {
+    if (userId == null || userId.isBlank()) {
+      return null;
+    }
+    try {
+      return usersCollection.find(eq("_id", new ObjectId(userId))).first();
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private String displayNameForUser(Users user) {
+    if (user == null) {
+      return null;
+    }
+    if (user.fullName != null && !user.fullName.isBlank()) {
+      return user.fullName;
+    }
+    return user.username;
+  }
+
 }

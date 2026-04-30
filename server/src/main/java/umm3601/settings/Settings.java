@@ -1,5 +1,5 @@
 // Package
-package umm3601.settings;
+package umm3601.Settings;
 
 // Java Imports
 import java.util.List;
@@ -32,6 +32,8 @@ public class Settings {
   // Ordered list of supply item statuses used to sort/filter checklists on drive day
   public List<SupplyItemOrder> supplyOrder;
 
+  public DriveDay driveDay;
+
   // Represents a single school entry
   public static class SchoolInfo {
     public String name;         // e.g. "Morris Area High School"
@@ -61,12 +63,17 @@ public class Settings {
 
   /**
    * Records how a single supply list entry should be treated on drive day.
-   * "staged"   – included in the checklist at this exact position in the list
-   * "unstaged" – included in the checklist but appended after all staged items
-   * "notGiven" – excluded from the checklist entirely
+   * "staged"   â€“ included in the checklist at this exact position in the list
+   * "unstaged" â€“ included in the checklist but appended after all staged items
+   * "notGiven" â€“ excluded from the checklist entirely
    */
   public static class SupplyItemOrder {
     public String itemTerm; // general item term, e.g. "notebook", "folder"
     public String status;   // "staged", "unstaged", or "notGiven"
+  }
+
+  public static class DriveDay {
+    public String date; // e.g. "2024-12-14"
+    public String location; // e.g. "Morris Area High School"
   }
 }

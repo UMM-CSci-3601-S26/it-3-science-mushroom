@@ -25,9 +25,14 @@ import { Inventory, SelectOption } from './inventory';
 import { InventoryComponent } from './inventory.component';
 import { BarcodePrintWindowService } from './barcode/barcode-print-window.service';
 import { SettingsService } from '../settings/settings.service';
+import { AuthService } from '../auth/auth-service';
 
 const mockSettingsService = {
   getSettings: () => of({ barcodePrintWarningLimit: 25 })
+};
+
+const mockAuthService = {
+  hasPermission: () => true
 };
 
 describe('Inventory Table', () => {
@@ -59,6 +64,7 @@ describe('Inventory Table', () => {
         provideHttpClientTesting(),
         { provide: InventoryService, useClass: MockInventoryService },
         { provide: SettingsService, useValue: mockSettingsService },
+        { provide: AuthService, useValue: mockAuthService },
         provideRouter([])
       ],
     });
@@ -843,6 +849,7 @@ describe('Filter Dropdown options', () => {
       providers: [
         { provide: InventoryService, useClass: MockInventoryService },
         { provide: SettingsService, useValue: mockSettingsService },
+        { provide: AuthService, useValue: mockAuthService },
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([])
@@ -914,6 +921,7 @@ describe('Misbehaving Inventory Table', () => {
         useValue: inventoryServiceStub
       },
       { provide: SettingsService, useValue: mockSettingsService },
+      { provide: AuthService, useValue: mockAuthService },
       provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     })
       .compileComponents();

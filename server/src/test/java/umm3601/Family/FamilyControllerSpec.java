@@ -51,13 +51,17 @@ import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
+import umm3601.Auth.Role;
 import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
 // Misc Imports
 import umm3601.Inventory.Inventory;
+import umm3601.Settings.Settings;
+import umm3601.Settings.Settings.TimeAvailabilityLabels;
 import umm3601.SupplyList.SupplyList;
-import umm3601.settings.Settings;
-import umm3601.settings.Settings.TimeAvailabilityLabels;
+import umm3601.Users.Users;
+import umm3601.Users.UsersService;
+
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength", "checkstyle:ParameterNumber" })
 class FamilyControllerSpec {
   private FamilyController familyController;
@@ -245,9 +249,7 @@ class FamilyControllerSpec {
   @Test
   void addsRoutes() {
     Javalin mockServer = mock(Javalin.class);
-
-    familyController.addRoutes(mockServer);
-
+    umm3601.Auth.RouteRegistrar.register(mockServer, familyController, null);
     verify(mockServer, Mockito.atLeast(5)).get(any(), any());
     verify(mockServer, Mockito.atLeast(3)).post(any(), any());
     verify(mockServer, Mockito.atLeast(3)).patch(any(), any());
@@ -257,12 +259,9 @@ class FamilyControllerSpec {
   @Test
   void canGetAllFamilies() {
     when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
-
     familyController.getFamilies(ctx);
-
     verify(ctx).json(familyArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
-
     assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
   }
 
@@ -270,15 +269,11 @@ class FamilyControllerSpec {
   void canGetFamilyWithString() {
     Map<String, List<String>> queryParams = new HashMap<>();
     queryParams.put(FamilyController.FAMILY_KEY, List.of("John"));
-
     when(ctx.queryParamMap()).thenReturn(queryParams);
     when(ctx.queryParam(FamilyController.FAMILY_KEY)).thenReturn("John");
-
     familyController.getFamilies(ctx);
-
     verify(ctx).json(familyArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
-
     assertEquals(2, familyArrayListCaptor.getValue().size());
   }
 
@@ -286,12 +281,9 @@ class FamilyControllerSpec {
   void canFilterByGuardianLastName() {
     Map<String, List<String>> queryParams = new HashMap<>();
     queryParams.put("guardianLastName", List.of("Johnson"));
-
     when(ctx.queryParamMap()).thenReturn(queryParams);
     when(ctx.queryParam("guardianLastName")).thenReturn("Johnson");
-
     familyController.getFamilies(ctx);
-
     verify(ctx).json(familyArrayListCaptor.capture());
     assertEquals(1, familyArrayListCaptor.getValue().size());
     assertEquals("John Johnson", familyArrayListCaptor.getValue().get(0).guardianName);
@@ -301,12 +293,9 @@ class FamilyControllerSpec {
   void canFilterByGuardianFirstName() {
     Map<String, List<String>> queryParams = new HashMap<>();
     queryParams.put("guardianFirstName", List.of("Jane"));
-
     when(ctx.queryParamMap()).thenReturn(queryParams);
     when(ctx.queryParam("guardianFirstName")).thenReturn("Jane");
-
     familyController.getFamilies(ctx);
-
     verify(ctx).json(familyArrayListCaptor.capture());
     assertEquals(1, familyArrayListCaptor.getValue().size());
     assertEquals("Jane Doe", familyArrayListCaptor.getValue().get(0).guardianName);
@@ -316,12 +305,9 @@ class FamilyControllerSpec {
   void canFilterFamiliesByStatus() {
     Map<String, List<String>> queryParams = new HashMap<>();
     queryParams.put("status", List.of("helped"));
-
     when(ctx.queryParamMap()).thenReturn(queryParams);
     when(ctx.queryParam("status")).thenReturn("helped");
-
     familyController.getFamilies(ctx);
-
     verify(ctx).json(familyArrayListCaptor.capture());
     assertEquals(1, familyArrayListCaptor.getValue().size());
     assertEquals("John Christensen", familyArrayListCaptor.getValue().get(0).guardianName);
@@ -331,12 +317,9 @@ class FamilyControllerSpec {
   void canFilterFamiliesByHelpedBoolean() {
     Map<String, List<String>> queryParams = new HashMap<>();
     queryParams.put("helped", List.of("false"));
-
     when(ctx.queryParamMap()).thenReturn(queryParams);
     when(ctx.queryParam("helped")).thenReturn("false");
-
     familyController.getFamilies(ctx);
-
     verify(ctx).json(familyArrayListCaptor.capture());
     assertEquals(5, familyArrayListCaptor.getValue().size());
   }
@@ -344,9 +327,7 @@ class FamilyControllerSpec {
   @Test
   void getFamilyWithExistentId() {
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
-
     familyController.getFamily(ctx);
-
     verify(ctx).json(familyCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
     assertEquals("Bob Jones", familyCaptor.getValue().guardianName);
@@ -356,18 +337,14 @@ class FamilyControllerSpec {
   @Test
   void getFamilyWithBadId() {
     when(ctx.pathParam("id")).thenReturn("bad");
-
     Throwable exception = assertThrows(BadRequestResponse.class, () -> familyController.getFamily(ctx));
-
     assertEquals("The requested family id wasn't a legal Mongo Object ID.", exception.getMessage());
   }
 
   @Test
   void getFamiliesWithNonexistentId() {
     when(ctx.pathParam("id")).thenReturn("588935f5c668650dc77df581");
-
     Throwable exception = assertThrows(NotFoundResponse.class, () -> familyController.getFamily(ctx));
-
     assertEquals("The requested family was not found", exception.getMessage());
   }
 
@@ -376,24 +353,19 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     family.checklist.sections.get(0).items.get(1).selected = false;
     family.checklist.sections.get(0).items.get(1).substituteBarcode = "SUB-10001";
-
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
     request.setChecklist(family.checklist);
     String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     when(ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class))
       .thenReturn(new BodyValidator<>(
         json,
         FamilyHelpSessionSaveAllRequest.class,
         () -> javalinJackson.fromJsonString(json, FamilyHelpSessionSaveAllRequest.class)));
-
     familyController.saveFamilyHelpSessionAll(ctx);
     Mockito.clearInvocations(ctx);
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     familyController.getFinalizedFamilyChecklist(ctx);
-
     verify(ctx).json(checklistCaptor.capture());
     assertFalse(checklistCaptor.getValue().snapshot);
     assertTrue(checklistCaptor.getValue().sections.get(0).saved);
@@ -402,9 +374,7 @@ class FamilyControllerSpec {
   @Test
   void getFinalizedFamilyChecklistRejectsActiveSnapshot() {
     startHelpSessionAndGetFamily();
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
-
     Throwable exception = assertThrows(NotFoundResponse.class,
       () -> familyController.getFinalizedFamilyChecklist(ctx));
 
@@ -419,22 +389,17 @@ class FamilyControllerSpec {
     newFamily.address = "789 Pine St";
     newFamily.timeSlot = "Evening";
     newFamily.students = new ArrayList<>();
-
     String json = javalinJackson.toJsonString(newFamily, Family.class);
-
     when(ctx.body()).thenReturn(json);
     when(ctx.bodyValidator(Family.class))
       .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
 
     familyController.addNewFamily(ctx);
-
     verify(ctx).json(mapCaptor.capture());
     verify(ctx).status(HttpStatus.CREATED);
-
     Document added = db.getCollection("family")
       .find(eq("_id", new ObjectId(mapCaptor.getValue().get("id"))))
       .first();
-
     assertEquals("Charlie Brown", added.get("guardianName"));
     assertEquals("charlie@email.com", added.get("email"));
     assertEquals("not_helped", added.get("status"));
@@ -455,9 +420,7 @@ class FamilyControllerSpec {
     when(ctx.body()).thenReturn(json);
     when(ctx.bodyValidator(Family.class))
       .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
-
     BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> familyController.addNewFamily(ctx));
-
     assertTrue(exception.getMessage().contains("email was invalid-email"));
   }
 
@@ -472,13 +435,10 @@ class FamilyControllerSpec {
         "students": []
       }
       """;
-
     when(ctx.body()).thenReturn(json);
     when(ctx.bodyValidator(Family.class))
       .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
-
     BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> familyController.addNewFamily(ctx));
-
     assertTrue(exception.getMessage().contains("valid email"));
     assertTrue(exception.getMessage().contains("email was null"));
   }
@@ -497,22 +457,16 @@ class FamilyControllerSpec {
       updatedFamily.timeAvailability.earlyAfternoon = false;
       updatedFamily.timeAvailability.lateAfternoon = false;
     updatedFamily.students = new ArrayList<>();
-
     String json = javalinJackson.toJsonString(updatedFamily, Family.class);
-
     when(ctx.body()).thenReturn(json);
     when(ctx.bodyValidator(Family.class))
       .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
-
     familyController.updateFamily(ctx);
-
     verify(ctx).json(familyCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
-
     Document added = db.getCollection("family").find(eq("_id", testFamilyId)).first();
     assertEquals("789 7th Ave", added.get("address"));
-
     Family result = familyCaptor.getValue();
     assertEquals("789 7th Ave", result.address);
     assertEquals("Bob Jones", result.guardianName);
@@ -522,18 +476,14 @@ class FamilyControllerSpec {
   @Test
   void updateFamilyWithBadId() {
     when(ctx.pathParam("id")).thenReturn("bad");
-
     Throwable exception = assertThrows(BadRequestResponse.class, () -> familyController.updateFamily(ctx));
-
     assertEquals("The requested family id wasn't a legal Mongo Object ID.", exception.getMessage());
   }
 
   @Test
   void updateFamiliesWithNonexistentId() {
     when(ctx.pathParam("id")).thenReturn("588935f5c668650dc77df581");
-
     Throwable exception = assertThrows(NotFoundResponse.class, () -> familyController.updateFamily(ctx));
-
     assertEquals("The requested family was not found", exception.getMessage());
   }
 
@@ -545,16 +495,12 @@ class FamilyControllerSpec {
     updatedFamily.address = "456 Oak Ave";
     updatedFamily.timeSlot = "2:00-3:00";
     updatedFamily.students = new ArrayList<>();
-
     String json = javalinJackson.toJsonString(updatedFamily, Family.class);
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     when(ctx.body()).thenReturn(json);
     when(ctx.bodyValidator(Family.class))
       .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
-
     BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> familyController.updateFamily(ctx));
-
     assertTrue(exception.getMessage().contains("valid email"));
   }
 
@@ -565,16 +511,13 @@ class FamilyControllerSpec {
         "status": "helped"
       }
       """;
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     when(ctx.bodyValidator(FamilyStatusUpdateRequest.class))
       .thenReturn(new BodyValidator<>(
         json,
         FamilyStatusUpdateRequest.class,
         () -> javalinJackson.fromJsonString(json, FamilyStatusUpdateRequest.class)));
-
     familyController.updateFamilyStatus(ctx);
-
     verify(ctx).json(familyCaptor.capture());
     assertTrue(familyCaptor.getValue().helped);
     assertEquals("helped", familyCaptor.getValue().status);
@@ -587,16 +530,13 @@ class FamilyControllerSpec {
         "status": "being_helped"
       }
       """;
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     when(ctx.bodyValidator(FamilyStatusUpdateRequest.class))
       .thenReturn(new BodyValidator<>(
         json,
         FamilyStatusUpdateRequest.class,
         () -> javalinJackson.fromJsonString(json, FamilyStatusUpdateRequest.class)));
-
     familyController.updateFamilyStatus(ctx);
-
     verify(ctx).json(familyCaptor.capture());
     assertFalse(familyCaptor.getValue().helped);
     assertEquals("being_helped", familyCaptor.getValue().status);
@@ -609,16 +549,13 @@ class FamilyControllerSpec {
         "helped": false
       }
       """;
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     when(ctx.bodyValidator(FamilyStatusUpdateRequest.class))
       .thenReturn(new BodyValidator<>(
         json,
         FamilyStatusUpdateRequest.class,
         () -> javalinJackson.fromJsonString(json, FamilyStatusUpdateRequest.class)));
-
     familyController.updateFamilyHelped(ctx);
-
     verify(ctx).json(familyCaptor.capture());
     assertFalse(familyCaptor.getValue().helped);
     assertEquals("not_helped", familyCaptor.getValue().status);
@@ -627,13 +564,10 @@ class FamilyControllerSpec {
   @Test
   void updateFamilyStatusRejectsBadIdAndMissingFamily() {
     when(ctx.pathParam("id")).thenReturn("bad-id");
-
     BadRequestResponse badId = assertThrows(BadRequestResponse.class,
       () -> familyController.updateFamilyStatus(ctx));
     assertTrue(badId.getMessage().contains("family id was not legal"));
-
     when(ctx.pathParam("id")).thenReturn(new ObjectId().toString());
-
     NotFoundResponse missing = assertThrows(NotFoundResponse.class,
       () -> familyController.updateFamilyStatus(ctx));
     assertTrue(missing.getMessage().contains("family was not found"));
@@ -642,17 +576,14 @@ class FamilyControllerSpec {
   @Test
   void updateFamilyStatusRejectsMissingPayload() {
     String json = "{}";
-
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     when(ctx.bodyValidator(FamilyStatusUpdateRequest.class))
       .thenReturn(new BodyValidator<>(
         json,
         FamilyStatusUpdateRequest.class,
         () -> javalinJackson.fromJsonString(json, FamilyStatusUpdateRequest.class)));
-
     BadRequestResponse exception = assertThrows(BadRequestResponse.class,
        () -> familyController.updateFamilyStatus(ctx));
-
     assertTrue(exception.getMessage().contains("must include either helped or status"));
   }
 
@@ -1515,6 +1446,64 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void deleteRequestRequesterHelpersCoverMissingAndHydratedBranches() throws Exception {
+    Family nullFamily = null;
+    invokeHydrateDeleteRequestRequester(nullFamily);
+
+    Family noRequest = new Family();
+    invokeHydrateDeleteRequestRequester(noRequest);
+
+    Family noRequesterId = new Family();
+    noRequesterId.deleteRequest = new Family.DeleteRequest();
+    invokeHydrateDeleteRequestRequester(noRequesterId);
+
+    Family missingRequester = new Family();
+    missingRequester.deleteRequest = new Family.DeleteRequest();
+    missingRequester.deleteRequest.requestedByUserId = new ObjectId().toHexString();
+    invokeHydrateDeleteRequestRequester(missingRequester);
+    assertNull(missingRequester.deleteRequest.requestedByUserName);
+
+    UsersService usersService = new UsersService(db);
+    usersService.createUser(
+      "helper.user",
+      "hash",
+      "Helper User",
+      "helper@example.com",
+      Role.VOLUNTEER,
+      "volunteer_base");
+    Users helper = usersService.findByUsername("helper.user");
+
+    Family hydrated = new Family();
+    hydrated.deleteRequest = new Family.DeleteRequest();
+    hydrated.deleteRequest.requestedByUserId = helper._id;
+
+    invokeHydrateDeleteRequestRequester(hydrated);
+
+    assertEquals("Helper User", hydrated.deleteRequest.requestedByUserName);
+    assertEquals("VOLUNTEER", hydrated.deleteRequest.requestedBySystemRole);
+  }
+
+  @Test
+  void userLookupAndDisplayNameHelpersCoverFallbackBranches() throws Exception {
+    assertNull(invokeFindUserById(null));
+    assertNull(invokeFindUserById("   "));
+    assertNull(invokeFindUserById("not-a-real-object-id"));
+    assertNull(invokeDisplayNameForUser(null));
+
+    Users usernameOnly = new Users();
+    usernameOnly.username = "fallback.user";
+    usernameOnly.fullName = "   ";
+
+    assertEquals("fallback.user", invokeDisplayNameForUser(usernameOnly));
+
+    Users fullNameUser = new Users();
+    fullNameUser.username = "named.user";
+    fullNameUser.fullName = "Named User";
+
+    assertEquals("Named User", invokeDisplayNameForUser(fullNameUser));
+  }
+
+  @Test
   void privateValidateChecklistItemCoversAdditionalBranches() throws Exception {
     Family.ChecklistItem unavailableSelected = new Family.ChecklistItem();
     unavailableSelected.selected = true;
@@ -1875,6 +1864,18 @@ class FamilyControllerSpec {
 
   private String invokeNormalizeStatusValue(String status) throws Exception {
     return invokePrivate("normalizeStatusValue", new Class<?>[] {String.class}, status);
+  }
+
+  private void invokeHydrateDeleteRequestRequester(Family family) throws Exception {
+    invokePrivate("hydrateDeleteRequestRequester", new Class<?>[] {Family.class}, family);
+  }
+
+  private Users invokeFindUserById(String userId) throws Exception {
+    return invokePrivate("findUserById", new Class<?>[] {String.class}, userId);
+  }
+
+  private String invokeDisplayNameForUser(Users user) throws Exception {
+    return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
   }
 
   private String invokeNormalizeToken(String value) throws Exception {

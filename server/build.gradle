@@ -55,11 +55,23 @@ dependencies {
   // Apache POI for creating XLSX files
   implementation 'org.apache.poi:poi:5.2.3'
   implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
+  implementation 'org.mindrot:jbcrypt:0.4'
+
+  implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+  implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
+  implementation 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 }
 
 application {
   // Define the main class for the application
   mainClass = 'umm3601.Main'
+}
+
+run {
+  // Pass through JWT_SECRET from the environment if set,
+  // otherwise use a dev-only default so `./gradlew run` works locally.
+  environment 'JWT_SECRET', System.getenv('JWT_SECRET') ?: 'dev-secret-change-in-production!'
 }
 
 test {
@@ -91,7 +103,7 @@ jacocoTestReport {
     // to somehow fake incoming HTTP requests), so we are just
     // leaving it out of the coverage report and the coverage limits.
     classDirectories.setFrom(files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Server.class'])
+      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Bootstrap.class', 'umm3601/DatabaseConfig.class'])
     }))
   }
 }
@@ -140,7 +152,7 @@ jacocoTestCoverageVerification {
   // leaving it out of the coverage report and the coverage limits.
   afterEvaluate {
     classDirectories.setFrom(files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Server.class'])
+      fileTree(dir: it, exclude: ['umm3601/Main.class', 'umm3601/Bootstrap.class', 'umm3601/DatabaseConfig.class'])
     }))
   }
 }

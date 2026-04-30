@@ -1,0 +1,91 @@
+.family-portal-form-page {
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: 16px;
+}
+
+.family-portal-form-card {
+  border-left: 6px solid #1565c0;
+}
+
+.loading-text {
+  margin: 16px 0 0;
+}
+
+.form-section {
+  border-top: 1px solid;
+  padding: 20px 0 4px;
+
+  &:first-child {
+    border-top: 0;
+    padding-top: 8px;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    margin: 0 0 12px;
+  }
+}
+
+.section-heading-row,
+.student-panel-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.form-grid,
+.student-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.form-field-wide {
+  grid-column: 1 / -1;
+}
+
+.students-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.student-panel {
+  background: inherit;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.student-panel-header h4,
+.radio-section h5 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.student-needs-row,
+.availability-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.radio-section {
+  background: inherit;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.radio-section mat-radio-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.availability-grid mat-checkbox {
+  background: inherit;
+  border-radius: 8px;
+  padding: 8px 10px;
+}

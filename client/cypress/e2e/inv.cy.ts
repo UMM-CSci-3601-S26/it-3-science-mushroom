@@ -15,6 +15,7 @@ describe('Inventory', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     // Intercept the API call before navigating
     cy.intercept('GET', '/api/inventory*').as('getInventory');
     page.navigateTo();

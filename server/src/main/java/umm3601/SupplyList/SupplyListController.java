@@ -25,16 +25,17 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
 // IO Imports
-import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 
 // Misc Imports
-import umm3601.Controller;
+import umm3601.Auth.HttpMethod;
+import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Route;
 
-public class SupplyListController implements Controller {
+public class SupplyListController {
 
   private static final String API_SUPPLYLIST = "/api/supplylist";
   private static final String API_SUPPLYLIST_BY_ID = "/api/supplylist/{id}";
@@ -72,6 +73,8 @@ public class SupplyListController implements Controller {
    * @throws NotFoundResponse if no Supply List with the requested ID was found
    * @return The Supply List with the requested ID
    */
+  @Route(method = HttpMethod.GET, path = API_SUPPLYLIST_BY_ID)
+  @RequirePermission("view_supply_lists")
   public void getList(Context ctx) {
     String id = ctx.pathParam("id");
     SupplyList supplylistinv;
@@ -94,6 +97,8 @@ public class SupplyListController implements Controller {
    * Get a list of all Supply Lists, filtered by any combination of fields and sorted by any field
    * @param ctx The Javalin HTTP context
    */
+  @Route(method = HttpMethod.GET, path = API_SUPPLYLIST)
+  @RequirePermission("view_supply_lists")
   public void getSupplyLists(Context ctx) {
     Bson filter = constructFilter(ctx);
 
@@ -152,7 +157,7 @@ public class SupplyListController implements Controller {
       filters.add(multipleIntakeFilter(ACADEMIC_YEAR_KEY, ctx.queryParam(ACADEMIC_YEAR_KEY)));
     }
 
-    // For item (array field — matches any element in the list)
+    // For item (array field â€” matches any element in the list)
     if (ctx.queryParamMap().containsKey(ITEM_KEY)) {
       filters.add(multipleIntakeFilter(ITEM_KEY, ctx.queryParam(ITEM_KEY)));
     }
@@ -214,6 +219,8 @@ public class SupplyListController implements Controller {
     return filters.isEmpty() ? new Document() : and(filters);
   }
 
+  @Route(method = HttpMethod.POST, path = API_SUPPLYLIST)
+  @RequirePermission("add_supply_list")
   public void addSupplyList(Context ctx) {
     SupplyList newSupplyList = ctx.bodyValidator(SupplyList.class)
     .check(s -> s.school != null && !s.school.isBlank(), "school must be a non-empty string")
@@ -227,6 +234,8 @@ public class SupplyListController implements Controller {
     ctx.status(HttpStatus.CREATED);
   }
 
+  @Route(method = HttpMethod.DELETE, path = API_SUPPLYLIST_BY_ID)
+  @RequirePermission("delete_supply_list")
   public void deleteSupplyList(Context ctx) {
     String id = ctx.pathParam("id");
     try {
@@ -240,6 +249,8 @@ public class SupplyListController implements Controller {
     }
   }
 
+  @Route(method = HttpMethod.PUT, path = API_SUPPLYLIST_BY_ID)
+  @RequirePermission("edit_supply_list")
   public void editSupplyList(Context ctx) {
     String id = ctx.pathParam("id");
     SupplyList updatedSupplyList = ctx.bodyValidator(SupplyList.class)
@@ -263,13 +274,4 @@ public class SupplyListController implements Controller {
     }
   }
 
-  @Override
-  public void addRoutes(Javalin server) {
-    server.get(API_SUPPLYLIST, this::getSupplyLists);
-    server.get(API_SUPPLYLIST_BY_ID, this::getList);
-
-    server.post(API_SUPPLYLIST, this::addSupplyList);
-    server.delete(API_SUPPLYLIST_BY_ID, this::deleteSupplyList);
-    server.put(API_SUPPLYLIST_BY_ID, this::editSupplyList);
-  }
 }

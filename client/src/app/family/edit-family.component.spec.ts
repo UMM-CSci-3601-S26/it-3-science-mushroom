@@ -21,6 +21,7 @@ import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
 // Settings Imports
 import { SettingsService } from '../settings/settings.service';
 import { AppSettings } from '../settings/settings';
+import { AuthService } from '../auth/auth-service';
 
 // Dialog import
 
@@ -43,7 +44,9 @@ describe('editFamilyComponent', () => {
         provideHttpClientTesting(),
         { provide: FamilyService, useClass: MockFamilyService },
         { provide: ActivatedRoute, useValue: activatedRoute },
-        { provide: SettingsService, useValue: { getSettings: () => of({ schools: [{ name: 'Test School', abbreviation: 'TS' }] } as unknown as AppSettings) }}
+        { provide: SettingsService, useValue: { getSettings: () => of({ schools: [{ name: 'Test School', abbreviation: 'TS' }] } as unknown as AppSettings) }},
+        { provide: AuthService, useValue: { hasPermission: () => true } },
+        { provide: Router, useValue: { navigate: () => Promise.resolve(true) } }
       ]
     }).compileComponents().catch(error => {
       expect(error).toBeNull();

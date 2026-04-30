@@ -48,3 +48,30 @@ jobs:
 
     - name: Lint (npm run lint)
       run: npm run lint
+  cypress:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+    - name: Use Node.js 22
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22
+        cache: 'npm'
+        cache-dependency-path: ./package-lock.json
+    - name: Install dependencies (npm ci)
+      run: npm ci
+    - name: Start Angular app
+      run: npm start &
+    - name: Wait for Angular app
+      run: npx wait-on http://localhost:4200
+    - name: Run Cypress
+      run: npm run cypress:run
+      env:
+        CYPRESS_E2E_ADMIN_USER: ${{ secrets.CYPRESS_E2E_ADMIN_USER }}
+        CYPRESS_E2E_ADMIN_PASSWORD: ${{ secrets.CYPRESS_E2E_ADMIN_PASSWORD }}
+        CYPRESS_E2E_STAFF_USER: ${{ secrets.CYPRESS_E2E_STAFF_USER }}
+        CYPRESS_E2E_STAFF_PASSWORD: ${{ secrets.CYPRESS_E2E_STAFF_PASSWORD }}
+        CYPRESS_E2E_VIEWER_USER: ${{ secrets.CYPRESS_E2E_VIEWER_USER }}
+        CYPRESS_E2E_VIEWER_PASSWORD: ${{ secrets.CYPRESS_E2E_VIEWER_PASSWORD }}

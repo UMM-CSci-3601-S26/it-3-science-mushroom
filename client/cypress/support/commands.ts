@@ -23,3 +23,26 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+type TestRole = 'admin' | 'staff' | 'viewer';
+
+Cypress.Commands.add('loginAsRole', (role: TestRole) => {
+  const roleKey = role.toUpperCase();
+
+  const user = Cypress.env(`E2E_${roleKey}_USER`);
+  const password = Cypress.env(`E2E_${roleKey}_PASSWORD`);
+
+  if (!user || !password) {
+    throw new Error(`Missing Cypress credentials for role: ${role}`);
+  }
+
+  Cypress.env('E2E_ROLE_LOGIN_ACTIVE', true);
+
+  cy.visit('/login');
+
+  cy.get('[data-testid="user-input"]').type(user);
+  cy.get('[data-testid="password-input"]').type(password, { log: false });
+  cy.get('[data-testid="login-button"]').click();
+
+  cy.url().should('not.include', '/login');
+});

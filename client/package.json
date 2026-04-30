@@ -26,6 +26,7 @@
     "@angular/router": "^20.3.16",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
+    "bcrypt": "^6.0.0",
     "eslint": "^9.28.0",
     "jsbarcode": "^3.12.3",
     "jspdf": "^4.2.1",

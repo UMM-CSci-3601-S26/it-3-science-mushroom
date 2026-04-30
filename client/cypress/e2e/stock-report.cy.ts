@@ -8,6 +8,7 @@ describe('Stock Report', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
 
     // Create test reports for download/delete tests
@@ -26,7 +27,7 @@ describe('Stock Report', () => {
 
   afterEach(() => {
     // Clean up downloads folder
-    cy.exec('rm -rf cypress/downloads || true');
+    cy.task('clear:downloads');
   });
 
   describe('General Tests', () => {

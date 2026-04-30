@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 
 // Environment and Settings Interface Imports
 import { environment } from '../../environments/environment';
-import { AppSettings, SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels } from './settings';
+import { AppSettings, SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels, DriveDay } from './settings';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +39,7 @@ export class SettingsService {
 
   // Replaces the availableSpots setting with a new number
   updateAvailableSpots(availableSpots: number): Observable<void> {
-    return this.httpClient.patch<void>(`${this.settingsUrl}/availableSpots`, availableSpots);
+    return this.httpClient.patch<void>(`${this.settingsUrl}/availableSpots`, { availableSpots });
   }
 
   // Replaces the barcode print warning limit setting with a new number
@@ -48,5 +48,9 @@ export class SettingsService {
       `${this.settingsUrl}/barcodePrintWarningLimit`,
       { barcodePrintWarningLimit }
     );
+  }
+
+  updateDriveDay(driveDay: DriveDay): Observable<void> {
+    return this.httpClient.patch<void>(`${this.settingsUrl}/driveDay`, driveDay);
   }
 }

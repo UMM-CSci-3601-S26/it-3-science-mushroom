@@ -41,6 +41,7 @@ describe('FamilyCardComponent', () => {
 
       // Family with two kids
       _id: 'chris_id',
+      ownerUserId: 'guardian-user-id',
       guardianName: 'Chris',
       address: '123 Street',
       accommodations: 'None',
@@ -165,5 +166,32 @@ describe('FamilyCardComponent', () => {
     } as Partial<Family> as Family);
 
     expect(component.getAvailableTimes()).toBe('Early Morning, Late Morning, Late Afternoon');
+  });
+
+  it('should report linked guardian account status', () => {
+    expect(component.hasLinkedGuardianAccount).toBeTrue();
+    expect(component.guardianLinkStatusLabel).toBe('Linked Guardian Account');
+  });
+
+  it('should report manual family status when owner user id is missing', () => {
+    spyOn(component, 'family').and.returnValue({
+      ...expectedFamily,
+      ownerUserId: ' '
+    });
+
+    expect(component.hasLinkedGuardianAccount).toBeFalse();
+    expect(component.guardianLinkStatusLabel).toBe('Manually Added (No Guardian Login)');
+  });
+
+  it('should summarize student names', () => {
+    expect(component.studentNames).toBe('Chris Jr., Christy');
+  });
+
+  it('should emit when requesting delete', () => {
+    spyOn(component.requestDelete, 'emit');
+
+    component.onRequestDelete();
+
+    expect(component.requestDelete.emit).toHaveBeenCalled();
   });
 });

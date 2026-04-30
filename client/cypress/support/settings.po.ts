@@ -4,9 +4,6 @@ export class SettingsPage {
   private readonly title = '.settings-title';
   private readonly button = '[data-test=saveButton]';
   private readonly snackBar = ''
-  private readonly tab = '#mat-tab-group-0-label-2';
-  //tabs are weird and I actually can't find a place to insert [data-test="availableSpotsTab"]
-  //this makes tests pass though
 
   navigateTo() {
     return cy.visit(this.url);
@@ -25,7 +22,7 @@ export class SettingsPage {
   }
 
   getTab() {
-    return cy.get(this.tab);
+    return cy.contains('.mat-mdc-tab', 'Available Spots');
   }
 
   getSnackBar() {
