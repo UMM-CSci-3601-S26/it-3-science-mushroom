@@ -52,6 +52,24 @@
   padding: 1.25rem;
 }
 
+.staff-list-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.staff-user-list {
+  margin-top: 0.25rem;
+  max-height: min(32rem, calc(100vh - 22rem));
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.staff-user-list .user-card:first-child {
+  margin-top: 0;
+}
+
 .user-form {
   display: grid;
   gap: 0.9rem;

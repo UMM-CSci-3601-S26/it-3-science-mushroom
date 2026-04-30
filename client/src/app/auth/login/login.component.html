@@ -10,13 +10,14 @@
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Username</mat-label>
-          <input matInput formControlName="username" type="text" autocomplete="username">
+          <input matInput formControlName="username" type="text" autocomplete="username" data-testid="user-input">
           <mat-icon matSuffix>person</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Password</mat-label>
-          <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" autocomplete="current-password">
+          <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'"
+            autocomplete="current-password" data-testid="password-input">
           <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword" [attr.aria-label]="'Toggle password'">
             <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
@@ -26,7 +27,7 @@
           <mat-error class="auth-error">{{ error }}</mat-error>
         }
 
-        <button mat-raised-button color="primary" type="submit"
+        <button mat-raised-button color="primary" type="submit" data-testid="login-button"
           [disabled]="!loginForm.valid || isLoading" class="full-width submit-btn">
           @if (isLoading) {
             <mat-progress-spinner diameter="20" mode="indeterminate" />
