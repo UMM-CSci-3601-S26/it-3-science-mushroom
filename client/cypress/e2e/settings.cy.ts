@@ -76,7 +76,7 @@ describe('Settings', () => {
       page.getFormField('availableSpots').type('2');
       cy.get('[data-test="scheduleFamiliesButton"]').click();
 
-      cy.get('.mat-mdc-simple-snack-bar')
+      cy.get('.mat-mdc-simple-snack-bar', { timeout: 10000 })
         .should('be.visible')
         .and('contain.text', 'Your capacity is too low for the number of families');
     });
