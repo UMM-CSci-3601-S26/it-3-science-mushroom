@@ -56,6 +56,7 @@ public class AuthMiddleware {
     String path = ctx.path();
     if (path != null && (path.equals("/")
         || path.startsWith("/public")
+        || path.equals("/api/health")
         || path.equals("/api/auth/login")
         || path.equals("/api/auth/signup")
         || path.equals("/api/auth/logout"))) {

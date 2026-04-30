@@ -58,6 +58,7 @@ public class Bootstrap {
   private static Javalin createApp(AuthMiddleware authMiddleware) {
     Javalin app = Javalin.create();
     ApiExceptionHandler.register(app);
+    app.get("/api/health", ctx -> ctx.result("ok"));
     app.before(authMiddleware::handle);
     return app;
   }
