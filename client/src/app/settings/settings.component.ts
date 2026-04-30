@@ -338,9 +338,13 @@ export class SettingsComponent implements OnInit {
             this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
           },
           error: (err) => {
-            console.error('Schedule families error:', err);
-            console.log('Error content:', err.error);
-            if (err.error.title === 'Not all families were able to be sorted, your event capacity may be too low') {
+            const lowCapacityMessage = 'Not all families were able to be sorted, your event capacity may be too low';
+            const errorText = [
+              typeof err?.error === 'string' ? err.error : JSON.stringify(err?.error ?? {}),
+              err?.message ?? ''
+            ].join(' ');
+
+            if (err?.status === 404 || errorText.includes(lowCapacityMessage)) {
               this.snackBar.open('Your capacity is too low for the number of families', 'OK', {duration: 3000});
             } else {
               this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
