@@ -53,6 +53,14 @@ export class ReportGeneratorComponent {
   private formatDateTimeService = inject(FormatDateTimeService);
   private authService = inject(AuthService);
 
+  get canViewReports(): boolean {
+    return this.authService.hasPermission('view_reports');
+  }
+
+  get canManageStockReports(): boolean {
+    return this.authService.hasPermission('manage_stock_reports');
+  }
+
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
       catchError(() => of([]))
