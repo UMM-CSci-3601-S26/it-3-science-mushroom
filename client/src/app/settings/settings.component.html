@@ -294,15 +294,15 @@
               Matching items can then be reset to zero or deleted outright.
             </p>
 
-            <form [formGroup]="inventoryFilterForm">
               <!-- Filter Fields -->
               <div class="filter-container">
                 <mat-form-field appearance="outline">
                 <mat-label class="filter">Item</mat-label>
                 <input
                   matInput
-                  formControlName="item"
+                  [ngModel]="item() ?? ''"
                   [matAutocomplete]="itemAuto"
+                  (ngModelChange)="item.set($event?.trim() || undefined)"
                   placeholder="contains..."
                   data-cy="filter-item"
                 />
@@ -313,12 +313,13 @@
                 </mat-autocomplete>
               </mat-form-field>
 
-                <mat-form-field appearance="outline">
+              <mat-form-field appearance="outline">
                 <mat-label class="filter">Brand</mat-label>
                 <input
                   matInput
-                  formControlName="brand"
+                  [ngModel]="brand() ?? ''"
                   [matAutocomplete]="brandAuto"
+                  (ngModelChange)="brand.set($event?.trim() || undefined)"
                   placeholder="contains..."
                   data-cy="filter-brand"
                 />
@@ -329,12 +330,13 @@
                 </mat-autocomplete>
               </mat-form-field>
 
-                <mat-form-field appearance="outline">
+              <mat-form-field appearance="outline">
                 <mat-label class="filter">Color</mat-label>
                 <input
                   matInput
-                  formControlName="color"
+                  [ngModel]="color() ?? ''"
                   [matAutocomplete]="colorAuto"
+                  (ngModelChange)="color.set($event?.trim() || undefined)"
                   placeholder="contains..."
                   data-cy="filter-color"
                 />
@@ -345,12 +347,13 @@
                 </mat-autocomplete>
               </mat-form-field>
 
-                <mat-form-field appearance="outline">
+              <mat-form-field appearance="outline">
                 <mat-label class="filter">Size</mat-label>
                 <input
                   matInput
-                  formControlName="size"
+                  [ngModel]="size() ?? ''"
                   [matAutocomplete]="sizeAuto"
+                  (ngModelChange)="size.set($event?.trim() || undefined)"
                   placeholder="contains..."
                   data-cy="filter-size"
                 />
@@ -361,12 +364,13 @@
                 </mat-autocomplete>
               </mat-form-field>
 
-                <mat-form-field appearance="outline">
+              <mat-form-field appearance="outline">
                 <mat-label class="filter">Type</mat-label>
                 <input
                   matInput
-                  formControlName="type"
+                  [ngModel]="type() ?? ''"
                   [matAutocomplete]="typeAuto"
+                  (ngModelChange)="type.set($event?.trim() || undefined)"
                   placeholder="contains..."
                   data-cy="filter-type"
                 />
@@ -377,12 +381,13 @@
                 </mat-autocomplete>
               </mat-form-field>
 
-                <mat-form-field appearance="outline">
+              <mat-form-field appearance="outline">
                 <mat-label class="filter">Material</mat-label>
                 <input
                   matInput
-                  formControlName="material"
+                  [ngModel]="material() ?? ''"
                   [matAutocomplete]="matAuto"
+                  (ngModelChange)="material.set($event?.trim() || undefined)"
                   placeholder="contains..."
                   data-cy="filter-material"
                 />
@@ -391,15 +396,15 @@
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 </mat-autocomplete>
-                </mat-form-field>
+              </mat-form-field>
               </div>
-            </form>
 
             <!-- Clear Filters Button -->
             <button
               mat-stroked-button
               type="button"
-              (click)="clearInventoryTargetFilters()"
+              (click)="item.set(undefined); brand.set(undefined); color.set(undefined); size.set(undefined);
+              type.set(undefined); material.set(undefined)"
               data-cy="filter-clear"
               class="clear-button"
               >
@@ -428,6 +433,53 @@
                   <mat-icon>refresh</mat-icon>
                   Reset Matching Quantities
                 </button>
+              </div>
+
+              <hr>
+              <div>
+                @if (serverFilteredInventory()) {
+                  <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
+                    <!-- Description Column -->
+                    <ng-container matColumnDef="description">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by description">Description</th>
+                      <td mat-cell *matCellDef="let element" class="inventory-description" data-cy="inventory-description">{{ element.description }}</td>
+                    </ng-container>
+
+                    <!-- Quantity Column -->
+                    <ng-container matColumnDef="quantity">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by quantity">Quantity</th>
+                      <td mat-cell *matCellDef="let element" class="inventory-quantity" data-cy="inventory-quantity">{{ element.quantity }}</td>
+                    </ng-container>
+
+                    <!-- Notes Column -->
+                    <ng-container matColumnDef="notes">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by notes">Notes</th>
+                      <td mat-cell *matCellDef="let element" class="inventory-notes" data-cy="inventory-notes">{{ element.notes }}</td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsSimple"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsSimple;" data-cy="inventory-row"></tr>
+                  </table>
+
+                  <mat-paginator
+                    data-cy="inventory-paginator"
+                    [length]=" serverFilteredInventory().length "
+                    [pageSize]="25"
+                    [pageSizeOptions]="[10, 25, 50, 100]"
+                    aria-label="Select page"
+                  >
+                  </mat-paginator>
+                } @else {
+                  <div class="flex-1 table-error">
+                    <mat-error>
+                      There was a problem loading the inventory table. The server is possibly down or perhaps there are network
+                      issues.
+                    </mat-error>
+                    <mat-error>
+                      Please wait a bit and try again or start the server.
+                    </mat-error>
+                  </div>
+                }
               </div>
           </div>
         </mat-tab>

@@ -1,5 +1,5 @@
 // Angular and Material Imports
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, viewChild, signal, effect } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -13,9 +13,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 
 // RxJS Imports
-import { forkJoin } from 'rxjs';
+import { catchError, combineLatest, debounceTime, of, switchMap, forkJoin} from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 // Settings Service and Type Imports
 import { SettingsService } from './settings.service';
@@ -29,6 +33,9 @@ import { TermsService } from '../terms/terms.service';
 
 // Inventory Imports
 import { InventoryService } from '../inventory/inventory.service';
+//import { InventoryIndex } from '../inventory/inventory-index';
+import { Inventory } from '../inventory/inventory';
+//import { InventoryComponent } from '../inventory/inventory.component';
 
 // Dialog Imports
 import { DialogService } from '../dialog/dialog.service';
@@ -50,24 +57,88 @@ import { DialogService } from '../dialog/dialog.service';
     MatIconModule,
     MatListModule,
     DragDropModule,
-
+    MatPaginatorModule,
+    MatSortModule,
+    MatTableModule
   ]
 })
 export class SettingsComponent implements OnInit {
+  // Services & Components
   private settingsService = inject(SettingsService);
   private termsService = inject(TermsService);
   private inventoryService = inject(InventoryService);
   private dialogService = inject(DialogService);
+  private familyService = inject(FamilyService);
+  //private inventoryIndex = inject(InventoryIndex);
+  //private inventoryComponent = inject(InventoryComponent);
+
+  // Other
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
-  private familyService = inject(FamilyService);
 
+  // Options for filter dropdowns, built from inventory data
   readonly itemOptions = this.inventoryService.itemOptions;
   readonly brandOptions = this.inventoryService.brandOptions;
   readonly colorOptions = this.inventoryService.colorOptions;
   readonly sizeOptions = this.inventoryService.sizeOptions;
   readonly typeOptions = this.inventoryService.typeOptions;
   readonly materialOptions = this.inventoryService.materialOptions;
+
+  displayedColumnsSimple: string[] = ['description', 'quantity', 'notes'];
+  dataSource = new MatTableDataSource<Inventory>([]);
+  readonly page = viewChild<MatPaginator>(MatPaginator)
+  readonly sort = viewChild<MatSort>(MatSort);
+
+  constructor() {
+    effect(() => {
+      const items = this.serverFilteredInventory();
+      this.dataSource.data = items;
+      this.dataSource.sort = this.sort();
+      this.dataSource.paginator = this.page();
+    });
+  }
+
+  errMsg = signal<string | undefined>(undefined);
+
+  item = signal<string | undefined>(undefined);
+  brand = signal<string | undefined>(undefined);
+  color = signal<string | undefined>(undefined);
+  size = signal<string | undefined>(undefined);
+  type = signal<string | undefined>(undefined);
+  material = signal<string | undefined>(undefined);
+  description = signal<string | undefined>(undefined);
+  quantity = signal<number | undefined>(undefined);
+  reloadTrigger = signal(0);
+
+  private item$ = toObservable(this.item);
+  private brand$ = toObservable(this.brand);
+  private color$ = toObservable(this.color);
+  private size$ = toObservable(this.size);
+  private type$ = toObservable(this.type);
+  private material$ = toObservable(this.material);
+  private description$ = toObservable(this.description);
+  private quantity$ = toObservable(this.quantity);
+  private reloadTrigger$ = toObservable(this.reloadTrigger);
+
+  serverFilteredInventory = toSignal(
+    combineLatest([this.item$, this.brand$, this.color$, this.size$, this.type$, this.material$, this.description$, this.quantity$, this.reloadTrigger$]).pipe(
+      debounceTime(300),
+      switchMap(([ item, brand, color, size, type, material, description, quantity]) =>
+        this.inventoryService.getInventory({ item, brand, color, size, type, material, description, quantity})
+      ),
+      catchError((err) => {
+        let message = "Unknown Error";
+        if (!(err.error instanceof ErrorEvent)) {
+          message = `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`;
+          this.errMsg.set(message);
+        }
+
+        this.snackBar.open(message, 'OK', { duration: 6000 });
+        return of<Inventory[]>([]);
+      })
+    ),
+    { initialValue: [] }
+  );
 
   // Current schools list, loaded from the server on init
   schools: SchoolInfo[] = [];
@@ -268,36 +339,32 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  clearInventoryTargetFilters(): void {
-    this.inventoryFilterForm.reset({
-      item: '',
-      brand: '',
-      color: '',
-      size: '',
-      type: '',
-      material: '',
-    });
-  }
-
-  private getInventoryTargetFilters(): { item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string } {
-    const values = this.inventoryFilterForm.value;
+  /**
+   * Gets filter values from signals and returns an object of only non-empty filters
+   */
+  private getInventoryTargetFilters(item: string | undefined, brand: string | undefined, color: string | undefined, size: string | undefined, type: string | undefined, material: string | undefined): { item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string } {
     const filters: { item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string } = {};
 
-    (['item', 'brand', 'color', 'size', 'type', 'material'] as const).forEach(key => {
-      const value = (values[key] ?? '').trim();
-      if (value) {
-        filters[key] = value;
-      }
-    });
+    if (item) filters.item = item;
+    if (brand) filters.brand = brand;
+    if (color) filters.color = color;
+    if (size) filters.size = size;
+    if (type) filters.type = type;
+    if (material) filters.material = material;
 
     return filters;
+  }
+
+  private reloadInventory(): void {
+    // Refresh inventory data
+    this.reloadTrigger.update(n => n + 1);
   }
 
   /**
    * Resets quantity to 0 for all matching inventory items.
    */
   resetMatchingQuantities(): void {
-    const filters = this.getInventoryTargetFilters();
+    const filters = this.getInventoryTargetFilters(this.item(), this.brand(), this.color(), this.size(), this.type(), this.material());
 
     if (Object.keys(filters).length === 0) {
       this.snackBar.open('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
@@ -320,6 +387,7 @@ export class SettingsComponent implements OnInit {
 
       this.inventoryService.resetMatchingQuantities(filters).subscribe({
         next: response => {
+          this.reloadInventory();
           this.snackBar.open(response.message, 'OK', { duration: 3000 });
         },
         error: (err) => {
@@ -334,7 +402,7 @@ export class SettingsComponent implements OnInit {
    * Deletes all matching inventory items.
    */
   deleteMatchingInventory(): void {
-    const filters = this.getInventoryTargetFilters();
+    const filters = this.getInventoryTargetFilters(this.item(), this.brand(), this.color(), this.size(), this.type(), this.material());
 
     if (Object.keys(filters).length === 0) {
       this.snackBar.open('Enter at least one inventory field to target specific items.', 'OK', { duration: 3000 });
@@ -357,6 +425,7 @@ export class SettingsComponent implements OnInit {
 
       this.inventoryService.deleteInventories(filters).subscribe({
         next: response => {
+          this.reloadInventory();
           this.snackBar.open(response.message, 'OK', { duration: 3000 });
         },
         error: (err) => {
@@ -392,6 +461,7 @@ export class SettingsComponent implements OnInit {
             this.snackBar.open(`Cleared inventory.`, 'OK', {
               duration: 3000
             });
+            this.reloadInventory();
           },
           error: (err) => {
             console.error('inventory clear failed', err);
@@ -427,6 +497,7 @@ export class SettingsComponent implements OnInit {
             this.snackBar.open(`Quantities reset.`, 'OK', {
               duration: 3000
             });
+            this.reloadInventory();
           },
           error: (err) => {
             console.error('inventory reset failed', err);
