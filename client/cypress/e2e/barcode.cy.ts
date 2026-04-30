@@ -6,7 +6,12 @@ const barcode = new BarcodePage();
 
 describe('Barcode / Scanner Feature', () => {
 
+  before(() => {
+    cy.task('seed:database');
+  });
+
   beforeEach(() => {
+    cy.loginAsRole('admin');
     cy.intercept('GET', '/api/inventory*').as('getInventory');
     inventory.navigateTo();
     cy.wait('@getInventory');

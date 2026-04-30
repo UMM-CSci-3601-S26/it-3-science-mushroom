@@ -51,3 +51,10 @@ jobs:
         browser: electron
         command: npm run e2e
         working-directory: ./client
+      env:
+        CYPRESS_E2E_ADMIN_USER: ${{ secrets.CYPRESS_E2E_ADMIN_USER }}
+        CYPRESS_E2E_ADMIN_PASSWORD: ${{ secrets.CYPRESS_E2E_ADMIN_PASSWORD }}
+        CYPRESS_E2E_STAFF_USER: ${{ secrets.CYPRESS_E2E_STAFF_USER }}
+        CYPRESS_E2E_STAFF_PASSWORD: ${{ secrets.CYPRESS_E2E_STAFF_PASSWORD }}
+        CYPRESS_E2E_VIEWER_USER: ${{ secrets.CYPRESS_E2E_VIEWER_USER }}
+        CYPRESS_E2E_VIEWER_PASSWORD: ${{ secrets.CYPRESS_E2E_VIEWER_PASSWORD }}

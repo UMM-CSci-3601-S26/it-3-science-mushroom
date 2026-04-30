@@ -8,6 +8,7 @@ describe('Stock Report', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
 
     // Create test reports for download/delete tests

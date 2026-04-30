@@ -9,6 +9,7 @@ describe('Family list', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
   });
 

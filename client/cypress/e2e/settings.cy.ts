@@ -8,6 +8,7 @@ describe('Settings', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
   });
 

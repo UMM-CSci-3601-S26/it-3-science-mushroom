@@ -18,7 +18,10 @@ describe('Supply List', () => {
     cy.task('seed:database');
   });
 
-  beforeEach(() => page.navigateTo());
+  beforeEach(() => {
+    cy.loginAsRole('admin');
+    page.navigateTo();
+  });
 
   it('Should have the correct title', () => {
     page.getAppTitle().should('contain', 'Supply List');

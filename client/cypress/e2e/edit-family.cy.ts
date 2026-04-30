@@ -4,7 +4,12 @@ import { EditFamilyPage } from '../support/edit-family.po';
 describe('Edit family page', () => {
   const page = new EditFamilyPage();
 
+  before(() => {
+    cy.task('seed:database');
+  });
+
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
   });
 
@@ -133,11 +138,6 @@ describe('Edit family page', () => {
   });
 
   describe('Updating a family', () => {
-    beforeEach(() => {
-      cy.task('seed:database');
-      page.navigateTo();
-    });
-
     it('Should go to the right page, and have the right info', () => {
       const expectedFamily: Family = {
         guardianName: 'Jane Doe',
@@ -262,8 +262,6 @@ describe('Edit family page', () => {
       cy.get('.family-card-guardianName')
         .contains('Jane Doe')
         .should('not.exist');
-
-      cy.task('seed:database');
     })
   })
 });

@@ -23,6 +23,7 @@ describe('Add Supply List Item', () => {
   });
 
   beforeEach(() => {
+    cy.loginAsRole('admin');
     page.navigateTo();
     page.expandGradePanel(TARGET_GROUP.school, TARGET_GROUP.grade);
   });
