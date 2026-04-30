@@ -1,5 +1,5 @@
 // Angular Imports
-import { ChangeDetectorRef, Component, effect, inject, Signal, signal, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -8,28 +8,22 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router, RouterLink, ActivatedRoute, ParamMap } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Router, RouterLink } from '@angular/router';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { CommonModule } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
-// Dialog Imports
-import { DialogService } from '../dialog/dialog.service';
-
 // Family Imports
-import { Family } from './family';
-import { FamilyService } from './family.service';
+import { FamilyService } from '../../family.service';
 
 // Settings Imports
-import { SettingsService } from '../settings/settings.service';
-import { SchoolInfo, TimeAvailabilityLabels } from '../settings/settings';
-import { AuthService } from '../auth/auth-service';
+import { SettingsService } from '../../../settings/settings.service';
+import { SchoolInfo, TimeAvailabilityLabels } from '../../../settings/settings';
 
 @Component({
-  selector: 'app-edit-family',
+  selector: 'app-add-family',
+  templateUrl: './add-family.component.html',
+  styleUrls: ['./add-family.component.scss'],
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -44,25 +38,13 @@ import { AuthService } from '../auth/auth-service';
     MatRadioGroup,
     CommonModule,
     MatCheckboxModule
-  ],
-  templateUrl: './edit-family.component.html',
-  styleUrl: './edit-family.component.scss',
+  ]
 })
-
-export class EditFamilyComponent implements OnInit {
+export class AddFamilyComponent implements OnInit {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private dialogService = inject(DialogService);
   private settingsService = inject(SettingsService);
-  private authService = inject(AuthService);
-
-  get canDeleteFamily(): boolean {
-    return this.authService.hasPermission('delete_family');
-  }
-
-  error = signal({ help: '', httpResponse: '', message: '' });
 
   // Schools loaded from settings — used to populate the school dropdown
   schools: SchoolInfo[] = [];
@@ -90,38 +72,7 @@ export class EditFamilyComponent implements OnInit {
     '6', '7', '8', '9', '10', '11', '12'
   ];
 
-  family: Signal<Family> = toSignal(
-    this.route.paramMap.pipe(
-      // Map the paramMap into the id
-      map((paramMap: ParamMap) => paramMap.get('id')),
-      // Maps the `id` string into the Observable<Family>,
-      // which will emit zero or one values depending on whether there is a
-      // `Family` with that ID.
-      switchMap((id: string) => this.familyService.getFamilyById(id)),
-      catchError((_err) => {
-        this.error.set({
-          help: 'There was a problem loading the family – try again.',
-          httpResponse: _err.message,
-          message: _err.error?.title,
-        });
-        return of();
-      })
-    )
-  );
-
-  // eslint-disable-next-line @angular-eslint/prefer-inject
-  constructor(private cd: ChangeDetectorRef) {}
-
-  makeStudentsVisible = effect(() => {
-    const family = this.family();
-
-    family.students.forEach(() => {
-      this.addStudent();
-      this.cd.detectChanges(); // Force change detection to avoid (NG0100 error) when adding students during the effect
-    });
-  });
-
-  editFamilyForm = new FormGroup({
+  addFamilyForm = new FormGroup({
     guardianFirstName: new FormControl('', Validators.compose([
       Validators.required,
       Validators.minLength(2),
@@ -151,31 +102,17 @@ export class EditFamilyComponent implements OnInit {
     ])),
 
     timeAvailability: new FormGroup({
-      earlyMorning: new FormControl(undefined),
-      lateMorning: new FormControl(undefined),
-      earlyAfternoon: new FormControl(undefined),
-      lateAfternoon: new FormControl(undefined)
+      earlyMorning: new FormControl(false),
+      lateMorning: new FormControl(false),
+      earlyAfternoon: new FormControl(false),
+      lateAfternoon: new FormControl(false)
     }),
 
     students: new FormArray([], Validators.required)
   });
 
-  getGuardianFirstAndLastName = effect(() => {
-    const family = this.family();
-
-    const firstAndLastName = (family.guardianName ?? '').trim().split(/\s+/);
-
-    const firstName = firstAndLastName[0] ?? '';
-    const lastName = firstAndLastName.slice(1).join(' ') ?? '';
-
-    this.editFamilyForm.patchValue({
-      guardianFirstName: firstName,
-      guardianLastName: lastName,
-    });
-  });
-
   get students(): FormArray {
-    return this.editFamilyForm.get('students') as FormArray;
+    return this.addFamilyForm.get('students') as FormArray;
   }
 
   addStudent() {
@@ -193,7 +130,7 @@ export class EditFamilyComponent implements OnInit {
         Validators.required,
         Validators.minLength(2),
       ])),
-      teacher: new FormControl<string>(''),
+      teacher: new FormControl(''),
       backpack: new FormControl<boolean>(undefined),
       headphones: new FormControl<boolean>(undefined),
     }));
@@ -203,7 +140,7 @@ export class EditFamilyComponent implements OnInit {
     this.students.removeAt(index);
   }
 
-  readonly editFamilyValidationMessages = {
+  readonly addFamilyValidationMessages = {
     guardianFirstName: [
       { type: 'required', message: 'Guardian first name is required' },
       { type: 'minlength', message: 'First name must be at least 2 characters long' },
@@ -242,24 +179,24 @@ export class EditFamilyComponent implements OnInit {
 
   // Form validation helper methods
   formControlHasError(controlName: string): boolean {
-    const control = this.editFamilyForm.get(controlName);
+    const control = this.addFamilyForm.get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
   }
 
   // Student form validation helper methods
-  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school'): boolean {
+  studentControlHasError(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): boolean {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
   }
 
   // Error message helper methods
-  getFamilyErrorMessage(controlName: keyof typeof this.editFamilyValidationMessages): string {
-    const messages = this.editFamilyValidationMessages[controlName];
+  getFamilyErrorMessage(controlName: keyof typeof this.addFamilyValidationMessages): string {
+    const messages = this.addFamilyValidationMessages[controlName];
     if (!Array.isArray(messages)) {
       return '';
     }
     for (const { type, message } of messages) {
-      if (this.editFamilyForm.get(controlName)?.hasError(type)) {
+      if (this.addFamilyForm.get(controlName)?.hasError(type)) {
         return message;
       }
     }
@@ -268,10 +205,10 @@ export class EditFamilyComponent implements OnInit {
 
   // Student error message helper method
   // Necessary because the student form is a FormArray nested in FormGroup,
-  // so we need to specify which student and which control we're checking for errors
-  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school'): string {
+  // so we need to specify which student and which control we're checking for erros
+  getStudentErrorMessage(studentIndex: number, controlName: 'name' | 'grade' | 'school' | 'teacher'): string {
     const control = (this.students.at(studentIndex) as FormGroup).get(controlName);
-    const messages = this.editFamilyValidationMessages.students[controlName];
+    const messages = this.addFamilyValidationMessages.students[controlName];
 
     for (const { type, message } of messages) {
       if (control?.hasError(type)) {
@@ -283,13 +220,12 @@ export class EditFamilyComponent implements OnInit {
   }
 
   submitForm() {
-    if (this.editFamilyForm.invalid) {
-      this.editFamilyForm.markAllAsTouched();
+    if (this.addFamilyForm.invalid) {
+      this.addFamilyForm.markAllAsTouched();
       return;
     }
 
-    const familyId = this.route.snapshot.paramMap.get('id');
-    const rawForm = this.editFamilyForm.value;
+    const rawForm = this.addFamilyForm.value;
 
     type RawStudent = {
       name: string | null;
@@ -306,7 +242,7 @@ export class EditFamilyComponent implements OnInit {
 
     const guardianName = (firstName + ' ' + lastName).trim();
 
-    const payload: Partial<import('./family').Family> = {
+    const payload: Partial<import('../../family').Family> = {
       guardianName: guardianName ?? undefined,
       email: rawForm.email ?? undefined,
       address: rawForm.address ?? undefined,
@@ -337,25 +273,25 @@ export class EditFamilyComponent implements OnInit {
 
     //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
 
-    this.familyService.updateFamily(familyId, payload).subscribe({
+    this.familyService.addFamily(payload).subscribe({
       next: () => {
         this.snackBar.open(
-          `Updated family ${guardianName}`,
+          `Added family ${guardianName}`,
           null,
-          { duration: 5000 }
+          { duration: 2000 }
         );
         this.router.navigate(['/family']);
       },
       error: err => {
         if (err.status === 400) {
           this.snackBar.open(
-            `Tried to update an illegal family – Error Code: ${err.status}\nMessage: ${err.message}`,
+            `Tried to add an illegal new family – Error Code: ${err.status}\nMessage: ${err.message}`,
             'OK',
             { duration: 5000 }
           );
         } else if (err.status === 500) {
           this.snackBar.open(
-            `The server failed to process your request to update a family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
+            `The server failed to process your request to add a new family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
             'OK',
             { duration: 5000 }
           );
@@ -367,67 +303,6 @@ export class EditFamilyComponent implements OnInit {
           );
         }
       },
-    });
-  }
-
-  deleteForm() {
-    if (!this.canDeleteFamily) {
-      this.snackBar.open('You do not have permission to delete families.', 'OK', { duration: 3000 });
-      return;
-    }
-
-    const familyId = this.route.snapshot.paramMap.get('id');
-    const rawForm = this.editFamilyForm.value;
-
-    const firstName = rawForm.guardianFirstName || '';
-    const lastName = rawForm.guardianLastName || '';
-
-    const guardianName = (firstName + ' ' + lastName).trim();
-
-    const dialogRef = this.dialogService.openDialog({
-      title: 'Confirm Delete',
-      familyName: guardianName,
-      message: `Are you sure you want to delete the family ${guardianName}?`,
-      buttonOne: 'Cancel',
-      buttonTwo: 'Confirm',
-    }, '400px', '200px');
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        //console.log("Submitting:", JSON.stringify(payload, null, 2)); // Only uncomment during debugging
-
-        this.familyService.deleteFamily(familyId).subscribe({
-          next: () => {
-            this.snackBar.open(
-              `Deleted family ${guardianName}`,
-              null,
-              { duration: 5000 }
-            );
-            this.router.navigate(['/family']);
-          },
-          error: err => {
-            if (err.status === 400) {
-              this.snackBar.open(
-                `Tried to delete an illegal family – Error Code: ${err.status}\nMessage: ${err.message}`,
-                'OK',
-                { duration: 5000 }
-              );
-            } else if (err.status === 500) {
-              this.snackBar.open(
-                `The server failed to process your request to delete a family. Is the server up? – Error Code: ${err.status}\nMessage: ${err.message}`,
-                'OK',
-                { duration: 5000 }
-              );
-            } else {
-              this.snackBar.open(
-                `An unexpected error occurred – Error Code: ${err.status}\nMessage: ${err.message}`,
-                'OK',
-                { duration: 5000 }
-              );
-            }
-          },
-        });
-      }
     });
   }
 }

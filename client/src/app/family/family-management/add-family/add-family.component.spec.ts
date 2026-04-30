@@ -12,11 +12,11 @@ import { throwError, of } from 'rxjs'; //of
 // Family Imports
 import { MockFamilyService } from 'src/testing/family.service.mock';
 import { AddFamilyComponent } from './add-family.component';
-import { FamilyService } from './family.service';
+import { FamilyService } from '../../family.service';
 
 // Settings imports
-import { SettingsService } from '../settings/settings.service';
-import { AppSettings } from '../settings/settings';
+import { SettingsService } from '../../../settings/settings.service';
+import { AppSettings } from '../../../settings/settings';
 
 describe('AddFamilyComponent', () => {
   let addFamilyComponent: AddFamilyComponent;

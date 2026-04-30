@@ -5,7 +5,11 @@
     </mat-card-header>
 
     <mat-card-content>
-      <mat-tab-group dynamicHeight>
+      <mat-tab-group
+        dynamicHeight
+        class="vertical-settings-tabs"
+        [selectedIndex]="selectedSettingsTabIndex"
+        (selectedTabChange)="selectSettingsTab($event.index)">
 
         <!-- ── Schools Tab ── -->
         <mat-tab label="Schools">

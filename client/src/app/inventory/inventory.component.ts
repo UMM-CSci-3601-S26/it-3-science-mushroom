@@ -20,6 +20,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { ScannerComponent } from '../scanner/scanner.component';
 import { CommonModule } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { RouterLink } from '@angular/router';
 
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, firstValueFrom, of, switchMap } from 'rxjs';
@@ -37,7 +38,7 @@ import { ManualEntry, ManualEntryResult } from './manual-entry/manual-entry';
 import { BarcodePrintWindowService } from './barcode/barcode-print-window.service';
 import { BarcodePrintQuantitySelection, PrintableBarcodeItem } from './barcode/barcode-print-item';
 import { SettingsService } from '../settings/settings.service';
-import { DialogService } from '../dialog/dialog.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../auth/auth-service';
 import JsBarcode from 'jsbarcode';
@@ -76,7 +77,8 @@ type ScanCard = {
     MatSlideToggleModule,
     ScannerComponent,
     CommonModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    RouterLink
   ],
 })
 export class InventoryComponent {
@@ -408,6 +410,11 @@ export class InventoryComponent {
   }
 
   openRemoveScanner() {
+    if (this.showScanner && this.scannerAction() === 'remove') {
+      this.closeScanner();
+      return;
+    }
+
     if (!this.canEditInventoryItem) {
       this.snackBar.open('You do not have permission to remove inventory items.', 'OK', { duration: 3000 });
       return;
@@ -496,7 +503,7 @@ export class InventoryComponent {
 
   toggleScanner() {
     if (this.showScanner && this.scannerAction() === 'add') {
-      this.showScanner = false;
+      this.closeScanner();
       return;
     }
     if (!this.canAddInventoryItem) {
@@ -510,10 +517,15 @@ export class InventoryComponent {
     this.scanCards.set([]);
   }
 
-  onScannerDone() {
-    this.scannerProcessing = false;
+  private closeScanner(): void {
+    this.scannerRef()?.deactivateMode?.();
     this.showScanner = false;
+    this.scannerProcessing = false;
     this.activeScannerMode = null;
+  }
+
+  onScannerDone() {
+    this.closeScanner();
     this.reload.update(v => v + 1);
   }
 

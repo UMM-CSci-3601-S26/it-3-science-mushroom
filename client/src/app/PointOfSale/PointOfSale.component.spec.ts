@@ -3,6 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 
 import { Family } from '../family/family';
@@ -51,6 +52,7 @@ describe('PointOfSaleComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
         { provide: FamilyService, useValue: familyService },
         { provide: MatDialog, useValue: dialog }
       ]

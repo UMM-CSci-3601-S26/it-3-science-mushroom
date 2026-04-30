@@ -1,8 +1,17 @@
 <div class="flex-row">
   <div class="flex-1">
     <mat-card class="search-grid">
-      <mat-card-header>
+      <mat-card-header class="page-card-header">
         <mat-card-title class="inventory-title">Inventory</mat-card-title>
+        <button
+          mat-icon-button
+          matTooltip="Inventory settings"
+          aria-label="Inventory settings"
+          routerLink="/settings"
+          [queryParams]="{ tab: 'inventory-management' }"
+          data-cy="inventory-settings-button">
+          <mat-icon>settings</mat-icon>
+        </button>
       </mat-card-header>
 
       <mat-card-content>
@@ -148,7 +157,7 @@
                   {{ showScanner && scannerAction() === 'add' ? 'Close Scanner' : 'Scan Item - Add' }}
                 </button>
               }
-              
+
               @if (canEditInventoryItem) {
                 <button
                   mat-stroked-button
@@ -159,7 +168,7 @@
                   {{ showScanner && scannerAction() === 'remove' ? 'Close Scanner' : 'Scan Item - Remove' }}
                 </button>
               }
-                  
+
             </div>
 
             <div class="print-barcode" data-cy="barcode-print">
@@ -169,6 +178,15 @@
               (click)="openBarcodePrintDialog()">
                 <mat-icon>print</mat-icon>
                   Print Barcodes
+              </button>
+              <button
+                mat-icon-button
+                matTooltip="Barcode print settings"
+                aria-label="Barcode print settings"
+                routerLink="/settings"
+                [queryParams]="{ tab: 'barcode-printing' }"
+                data-cy="barcode-settings-button">
+                <mat-icon>settings</mat-icon>
               </button>
             </div>
 

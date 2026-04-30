@@ -3,7 +3,7 @@ import { signal, WritableSignal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
@@ -14,7 +14,7 @@ import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
 import { InventoryService } from '../inventory/inventory.service';
 import { SelectOption } from '../inventory/inventory';
-import { DialogService } from '../dialog/dialog.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { AuthService } from '../auth/auth-service';
 import { FamilyService } from '../family/family.service';
 
@@ -35,6 +35,9 @@ describe('SettingsComponent', () => {
   let typeOptionsSignal: WritableSignal<SelectOption[]>;
   let materialOptionsSignal: WritableSignal<SelectOption[]>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
+  const activatedRouteStub = {
+    queryParamMap: of(convertToParamMap({}))
+  };
 
   const mockTerms: Terms = {
     item: ['folder', 'notebook', 'pencil'],
@@ -129,6 +132,7 @@ describe('SettingsComponent', () => {
         { provide: DialogService, useValue: dialogServiceSpy },
         { provide: FamilyService, useValue: familyServiceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: ActivatedRoute, useValue: activatedRouteStub },
         { provide: MatSnackBar, useValue: snackBarSpy },
         { provide: AuthService, useValue: authServiceSpy },
       ],

@@ -17,7 +17,7 @@ import { By } from '@angular/platform-browser';
 import { Observable, of, throwError } from 'rxjs';
 
 // Dialog Imports
-import { DialogService } from '../dialog/dialog.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 
 // Inventory Imports
 import { MockInventoryService } from 'src/testing/inventory.service.mock';

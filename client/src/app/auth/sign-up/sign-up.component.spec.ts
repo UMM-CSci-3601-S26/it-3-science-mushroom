@@ -6,7 +6,7 @@ import { Observable, of, throwError } from 'rxjs';
 
 import { SignUpComponent } from './sign-up.component';
 import { AuthService } from '../auth-service';
-import { FamilyPortalService } from '../../family/family-portal.service';
+import { FamilyPortalService } from '../../family/family-portal/family-portal.service';
 
 describe('SignUpComponent', () => {
   let component: SignUpComponent;

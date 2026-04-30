@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, input } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
-import { forkJoin } from 'rxjs';
+import { Subject, forkJoin, interval } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../auth/auth-service';
 import { JobRoleConfig, PermissionCatalogEntry, User, UserService, UserUpsertRequest } from './user.service';
 
@@ -95,7 +96,9 @@ const PERMISSION_LABEL_FALLBACKS = new Map<string, string>([
     MatTabsModule,
   ]
 })
-export class UserManagementComponent implements OnInit {
+export class UserManagementComponent implements OnInit, OnDestroy {
+  private readonly autoRefreshMs = 5000;
+  private readonly destroy$ = new Subject<void>();
   section = input<'users' | 'permissions' | 'all'>('all');
   users: User[] = [];
   systemRoles: SystemRole[] = ['ADMIN', 'VOLUNTEER', 'GUARDIAN'];
@@ -106,6 +109,8 @@ export class UserManagementComponent implements OnInit {
   selectedJobRole: JobRoleView | null = null;
   newJobRoleName = '';
   isLoading = true;
+  isRefreshing = false;
+  lastRefreshedAt: Date | null = null;
 
   private userService = inject(UserService);
   private fb = inject(FormBuilder);
@@ -120,6 +125,12 @@ export class UserManagementComponent implements OnInit {
 
   ngOnInit() {
     this.loadAdminData();
+    interval(this.autoRefreshMs)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadAdminData({ quiet: true }));
+
+    document.addEventListener('visibilitychange', this.refreshWhenVisible);
+
     this.userForm.get('systemRole')?.valueChanges.subscribe(role => {
       if (role === 'VOLUNTEER') {
         const currentValue = this.userForm.get('jobRole')?.value;
@@ -132,8 +143,16 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  loadAdminData() {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    document.removeEventListener('visibilitychange', this.refreshWhenVisible);
+  }
+
+  loadAdminData(options: { quiet?: boolean } = {}) {
+    const quiet = options.quiet || this.users.length > 0;
+    this.isLoading = !quiet;
+    this.isRefreshing = quiet;
     forkJoin({
       users: this.userService.getUsers(),
       overview: this.userService.getRoleOverview()
@@ -152,13 +171,22 @@ export class UserManagementComponent implements OnInit {
           }
         }
         this.isLoading = false;
+        this.isRefreshing = false;
+        this.lastRefreshedAt = new Date();
       },
       error: () => {
         this.isLoading = false;
+        this.isRefreshing = false;
         this.snackBar.open('Unable to load user management data.', 'Close', { duration: 3000 });
       }
     });
   }
+
+  private refreshWhenVisible = () => {
+    if (document.visibilityState === 'visible') {
+      this.loadAdminData({ quiet: true });
+    }
+  };
 
   startEdit(user: User) {
     this.editingUser = user;

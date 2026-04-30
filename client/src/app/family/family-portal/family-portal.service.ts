@@ -2,10 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../environments/environment';
-import { FamilyChecklist } from '../checklist/checklist';
-import { Family, StudentInfo } from './family';
-import { SchoolInfo, TimeAvailabilityLabels } from '../settings/settings';
+import { environment } from '../../../environments/environment';
+import { FamilyChecklist } from '../../checklist/checklist';
+import { Family, StudentInfo } from '../family';
+import { SchoolInfo, TimeAvailabilityLabels } from '../../settings/settings';
 
 export interface FamilyPortalFormPayload {
   guardianName: string;

@@ -11,11 +11,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { map, startWith } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { SupplyListService } from './supplylist.service';
-import { TermsService } from '../terms/terms.service';
-import { Terms } from '../terms/terms';
-import { GRADES } from './supplylist';
-import { SettingsService } from '../settings/settings.service';
+import { SupplyListService } from '../supplylist.service';
+import { TermsService } from '../../terms/terms.service';
+import { Terms } from '../../terms/terms';
+import { GRADES } from '../supplylist';
+import { SettingsService } from '../../settings/settings.service';
 
 @Component({
   selector: 'app-add-supplylist',
@@ -409,7 +409,7 @@ export class AddSupplyListComponent implements OnInit {
   submitForm() {
     const raw = this.addSupplyListForm.value;
     // For AttributeOptions fields, '|' means anyOf; otherwise value is stored in allOf.
-    const toAttr = (val: string | null | undefined): import('./supplylist').AttributeOptions => {
+    const toAttr = (val: string | null | undefined): import('../supplylist').AttributeOptions => {
       if (!val || !val.trim()) {
         return { allOf: '', anyOf: [] };
       }
@@ -420,7 +420,7 @@ export class AddSupplyListComponent implements OnInit {
     };
 
     // Color keeps allOf/anyOf as string arrays.
-    const toColorAttr = (val: string | null | undefined): import('./supplylist').ColorAttributeOptions => {
+    const toColorAttr = (val: string | null | undefined): import('../supplylist').ColorAttributeOptions => {
       if (!val || !val.trim()) {
         return { allOf: [], anyOf: [] };
       }
@@ -430,7 +430,7 @@ export class AddSupplyListComponent implements OnInit {
       return { allOf: val.split(',').map(s => s.trim()).filter(Boolean), anyOf: [] };
     };
 
-    const formData: Partial<import('./supplylist').SupplyList> = {
+    const formData: Partial<import('../supplylist').SupplyList> = {
       school: raw.school ?? undefined,
       grade: raw.grade ?? undefined,
       item: raw.item ? raw.item.split(',').map(s => s.trim()).filter(Boolean) : undefined,

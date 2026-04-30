@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -46,7 +46,13 @@ export class UserService {
   private readonly authUrl = `${environment.apiUrl}auth`;
 
   getUsers(): Observable<User[]> {
-    return this.httpClient.get<User[]>(this.usersUrl);
+    return this.httpClient.get<User[]>(this.usersUrl, {
+      headers: new HttpHeaders({
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      }),
+      params: new HttpParams().set('_refresh', Date.now().toString())
+    });
   }
 
   addUser(user: UserUpsertRequest): Observable<User> {

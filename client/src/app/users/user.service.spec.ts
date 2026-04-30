@@ -29,8 +29,12 @@ describe('UserService', () => {
   it('should fetch users from the users endpoint', () => {
     service.getUsers().subscribe();
 
-    const req = httpTestingController.expectOne(`${environment.apiUrl}users`);
+    const req = httpTestingController.expectOne(request =>
+      request.url === `${environment.apiUrl}users`
+      && request.params.has('_refresh'));
     expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Cache-Control')).toBe('no-cache');
+    expect(req.request.headers.get('Pragma')).toBe('no-cache');
     req.flush([]);
   });
 

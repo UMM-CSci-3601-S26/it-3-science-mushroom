@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MockSupplyListService } from 'src/testing/supplylist.service.mock';
 import { AddSupplyListComponent } from './add-supplylist.component';
-import { SupplyListService } from './supplylist.service';
-import { GRADES } from './supplylist';
+import { SupplyListService } from '../supplylist.service';
+import { GRADES } from '../supplylist';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -12,7 +12,7 @@ import { AbstractControl, FormGroup } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { Location } from '@angular/common';
-import { TermsService } from '../terms/terms.service';
+import { TermsService } from '../../terms/terms.service';
 
 // Minimal terms object reused across parse / helper tests
 const testTerms = {
