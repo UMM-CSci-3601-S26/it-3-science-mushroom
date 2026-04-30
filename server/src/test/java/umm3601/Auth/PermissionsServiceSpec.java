@@ -78,6 +78,46 @@ class PermissionsServiceSpec {
   }
 
   @Test
+  void getPermissionsBootstrapsWhenRolesMapIsMissingOrLacksVolunteerBase() {
+    db.getCollection("permissions").insertOne(new org.bson.Document()
+        .append("_id", "role-permissions")
+        .append("roles", null));
+
+    RolePermissions missingRoles = permissionsService.getPermissions();
+
+    assertTrue(missingRoles.roles.containsKey("volunteer_base"));
+
+    db.getCollection("permissions").drop();
+    permissionsService = new PermissionsService(db);
+    db.getCollection("permissions").insertOne(new org.bson.Document()
+        .append("_id", "role-permissions")
+        .append("roles", new org.bson.Document()
+            .append("frontdesk", new org.bson.Document()
+                .append("permissions", List.of("view_inventory"))
+                .append("inherits", List.of()))));
+
+    RolePermissions missingVolunteerBase = permissionsService.getPermissions();
+
+    assertTrue(missingVolunteerBase.roles.containsKey("volunteer_base"));
+  }
+
+  @Test
+  void getPermissionsCleansVolunteerBasePermissionsAndInheritance() {
+    db.getCollection("permissions").insertOne(new org.bson.Document()
+        .append("_id", "role-permissions")
+        .append("roles", new org.bson.Document()
+            .append("volunteer_base", new org.bson.Document()
+                .append("permissions", Arrays.asList("view_inventory", null, "", "view_inventory"))
+                .append("inherits", Arrays.asList(null, "", "volunteer_base", "frontdesk")))));
+
+    RolePermissions perms = permissionsService.getPermissions();
+
+    assertFalse(perms.roles.get("volunteer_base").permissions.contains(null));
+    assertFalse(perms.roles.get("volunteer_base").permissions.contains(""));
+    assertEquals(List.of("frontdesk"), perms.roles.get("volunteer_base").inherits);
+  }
+
+  @Test
   void getPermissionsRepairsVolunteerBaseSelfInheritance() {
     db.getCollection("permissions").insertOne(new org.bson.Document()
         .append("_id", "role-permissions")
@@ -137,6 +177,31 @@ class PermissionsServiceSpec {
     config.inherits = List.of("volunteer_base");
 
     assertThrows(BadRequestResponse.class, () -> permissionsService.updateRole("volunteer_base", config));
+  }
+
+  @Test
+  void updateRoleRejectsInvalidConfigsAndParents() {
+    assertThrows(BadRequestResponse.class, () -> permissionsService.updateRole("frontdesk", null));
+
+    RoleConfig duplicateParents = new RoleConfig();
+    duplicateParents.permissions = List.of("view_inventory");
+    duplicateParents.inherits = List.of("volunteer_base", "volunteer_base");
+    assertThrows(BadRequestResponse.class, () -> permissionsService.updateRole("frontdesk", duplicateParents));
+
+    RoleConfig blankParent = new RoleConfig();
+    blankParent.permissions = List.of("view_inventory");
+    blankParent.inherits = List.of(" ");
+    assertThrows(BadRequestResponse.class, () -> permissionsService.updateRole("frontdesk", blankParent));
+
+    RoleConfig selfParent = new RoleConfig();
+    selfParent.permissions = List.of("view_inventory");
+    selfParent.inherits = List.of("frontdesk");
+    assertThrows(BadRequestResponse.class, () -> permissionsService.updateRole("frontdesk", selfParent));
+
+    RoleConfig missingParent = new RoleConfig();
+    missingParent.permissions = List.of("view_inventory");
+    missingParent.inherits = List.of("missing");
+    assertThrows(BadRequestResponse.class, () -> permissionsService.updateRole("frontdesk", missingParent));
   }
 
   @Test
@@ -227,6 +292,10 @@ class PermissionsServiceSpec {
         .filter(entry -> "schedule_families".equals(entry.permission))
         .findFirst()
         .orElse(null);
+    PermissionsService.PermissionCatalogEntry barcodePrintLimit = permissionsService.getPermissionCatalog().stream()
+        .filter(entry -> "edit_barcode_print_limit".equals(entry.permission))
+        .findFirst()
+        .orElse(null);
 
     assertNotNull(checklist);
     assertEquals("Checklist", checklist.group);
@@ -247,5 +316,10 @@ class PermissionsServiceSpec {
 
     assertNotNull(scheduleFamilies);
     assertFalse(scheduleFamilies.volunteerAssignable);
+
+    assertNotNull(barcodePrintLimit);
+    assertEquals("Settings", barcodePrintLimit.group);
+    assertEquals("Barcode Print Limit Editing", barcodePrintLimit.label);
+    assertTrue(barcodePrintLimit.volunteerAssignable);
   }
 }

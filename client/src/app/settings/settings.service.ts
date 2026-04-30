@@ -39,7 +39,7 @@ export class SettingsService {
 
   // Replaces the availableSpots setting with a new number
   updateAvailableSpots(availableSpots: number): Observable<void> {
-    return this.httpClient.patch<void>(`${this.settingsUrl}/availableSpots`, availableSpots);
+    return this.httpClient.patch<void>(`${this.settingsUrl}/availableSpots`, { availableSpots });
   }
 
   // Replaces the barcode print warning limit setting with a new number

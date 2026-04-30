@@ -143,7 +143,7 @@ describe('SettingsService', () => {
 
       const req = httpTestingController.expectOne(`${settingsUrl}/availableSpots`);
       expect(req.request.method).toBe('PATCH');
-      expect(req.request.body).toEqual(updatedValue);
+      expect(req.request.body).toEqual({ availableSpots: updatedValue });
       req.flush(null);
     });
   });
