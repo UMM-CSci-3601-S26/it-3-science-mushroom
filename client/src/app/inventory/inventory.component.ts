@@ -318,6 +318,9 @@ export class InventoryComponent {
     });
   }
 
+  /**
+   * Checks if card is valid for deletion, then opens a confirmation dialog. If confirmed, uses deleteInventoryById to delete the item.
+   */
   confirmSingleDelete(cardId: string) {
     const card = this.scanCards().find(c => c.id === cardId);
 
