@@ -46,7 +46,7 @@
     "@angular-eslint/schematics": "~20.7.0",
     "@angular-eslint/template-parser": "~20.7.0",
     "@angular/cli": "^20.3.14",
-    "@angular/compiler-cli": "^20.3.16",
+    "@angular/compiler-cli": "^21.2.11",
     "@angular/language-service": "^20.3.16",
     "@cypress/schematic": "^3.0.0",
     "@eslint/eslintrc": "^3.3.1",
