@@ -1,7 +1,7 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/W5Xj1XiW)
-# CSCI 3601 - HGBT Iteration 1
+# CSCI 3601 - HGBT Iteration 3
 
-- [CSCI 3601 - HGBT Iteration 1](#csci-3601---hgbt-iteration-1)
+- [CSCI 3601 - HGBT Iteration 3](#csci-3601---hgbt-iteration-3)
   - [Development](#development)
     - [Common commands](#common-commands)
   - [Deployment](#deployment)
