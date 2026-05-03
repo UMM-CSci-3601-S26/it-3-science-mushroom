@@ -1,70 +1,73 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/W5Xj1XiW)
-# CSCI 3601 - HGBT Iteration 1
+# Ready4Learning Interface
 
-- [CSCI 3601 - HGBT Iteration 1](#csci-3601---hgbt-iteration-1)
-  - [Development](#development)
-    - [Common commands](#common-commands)
-  - [Deployment](#deployment)
-  - [Resources](#resources)
+[![Server Build Status](../../actions/workflows/server.yml/badge.svg)](../../actions/workflows/server.yml)
+[![Client Build Status](../../actions/workflows/client.yaml/badge.svg)](../../actions/workflows/client.yaml)
+[![End to End Build Status](../../actions/workflows/e2e.yaml/badge.svg)](../../actions/workflows/e2e.yaml)
+
+## Table of Contents
+
+- [Ready4Learning Interface](#ready4learning-interface)
+  - [Table of Contents](#table-of-contents)
+  - [Project Description:](#project-description)
+  - [Project Features:](#project-features)
+  - [Technical Document](#technical-document)
+  - [To-Do List](#to-do-list)
+  - [Customer Pamphlet](#customer-pamphlet)
   - [Contributors](#contributors)
 
-This is your starter code for Iteration 1.
+## Project Description:
+The Ready4Learning interface is a system designed to improve the ease of management and quality of life for the staff, volunteers, and family participating in the drive hosted by the Office of Community Engagement (OoCE) here at the University of Minnesota Morris.
 
-There is quite a lot of example code in this production template that you don't
-want or need down the road, but is included to help you get started.
-As you work on your project, you should replace these pieces with
-elements of your project and _remove whatever you don't need_ (e.g., markdown
-files, JSON data files, or any remnants of the labs). We include, for example,
-the `User` parts of the previous labs. These are almost certainly not relevant
-to your project and should be removed once you've started.
+## Project Features:
+- Users and Login
+  - A login system ensures only the individuals with proper access can utilize parts of the interface.
+  - Families can log in and edit their information at any time, such as changing availability or adding a student. Families are also able to see information pertaining to them posted by staff.
+  - Staff are able to choose exactly who can see and do what, giving near complete control over how users of the interface interact with the system.
+  - Requests for deletion of families is also tracked, allowing staff to restore or permanently delete families.
+  - Staff can also see specific users, and change their roles/delete them at any time.
+  - Permissions for individual roles can also be adjusted at any point, as well as the addition or removal of roles.
+- Inventory Management
+  - The inventory management system allows users of the system to track the status of items, edit them at will, and link existing items to those stored in the database.
+  - The barcode scanning system allows for one or more pre-existing barcodes to be linked to a single item stored in the database. The system also has the capability to generate custom barcodes for items.
+  - Item adding/editing/removal can be done by manually entering its barcode, or by using a device's camera or an external handheld scanner to automatically input the barcode.
+  - The Stock Reports page will automatically organize items based on their Stock State, allowing for a quick and easy view of what items are at what stock level. The reports can also be stored and/or exported as a PDF or XLSX file.
+  - The main inventory page also includes filters, item counts, and changing of the level of detail of displayed items.
+- Supply List
+  - The Supply List page holds the required items for each teacher of each grade of each school supported by the drive.
+  - Filters allow for showing specific items, such as showing only items for Kindergarten students.
+  - Each item can be modified/deleted, and new items for specific teachers/grades/schools can be added.
+- Families
+  - Staff are able to see at a glance specific numbers of students and families for each grade and school.
+  - The page also allows for manual adding/editing/deleting of individual families
+  - Each individual family displays contact info, students in that family, time slot, available times, and email.
+  - Filters allow for sorting by guardian name, or by whether a family was added manually or was added by a family and thus linked to a specific email.
+- Point of Sale
+  - The Point of Sale system allows volunteers to easily assist individual families during drive day.
+  - Families can be searched by family name or status (helped, in progress, or not helped)
+  - When helping a family, volunteers/staff are able to see time slot, address, and the information for each student in that family.
+  - The system will show how much of a specific item is currently in the inventory, and how much will be removed by this family.
+  - Items can also be subsituted for others, or simply not given at all. Substituted items are selected by barcode scanning, in the same way the inventory system handles it.
+  - Sessions can also be reset at any point, should the need arise.
+- Settings
+  - Various settings allow for control of time availability, available schools, announcements sent to families, slots per time slot, automatic family scheduling, mass inventory item management, adjusting barcode printing settings, and finally order of the stations during drive day.
+  - Settings can only be adjusted/interacted with by staff, preventing tampering by unknown individuals.
 
-:bangbang: Keeping things like the support for our `User` types will
-artificially inflate your test coverage results, making it look like you have
-much better coverage than you actually do. This is neither cool nor helpful,
-so you really should remove our code fairly early in your iteration. You can always
-look back at previous repositories to see those examples.
+## [Technical Document](DEPLOYMENT.md)
 
-:exclamation: You should remove this sentence and the text above, and
-replace them with at least an elevator pitch description of your project so that
-if someone comes to this repo they'll know what the project is about.
+A document that describes the technical details of the project.
 
-## [Development](DEVELOPMENT.md)
+## [To-Do List](TO-DO-LIST.md)
 
-Instructions on setting up the development environment and working with the code are in [the development guide](DEVELOPMENT.md).
+List of known issues and areas for improvements.
 
-### Common commands
-
-From the `server` directory:
-
-- `./gradlew run` to start the server
-- `./gradlew test` to test the server
-- `./gradlew checkstyleMain` to run Checkstyle on the server Java code in the `src/main` folder
-- `./gradlew checkstyleTest` to run Checkstyle on the server Java code in the `src/test` folder
-- `./gradlew check` will run the tests, run the Checkstyle checks, and generate coverage reports in one command
-
-From the `client` directory:
-
-- `ng serve` to run the client
-- `ng test` to test the client
-  - Or `ng test --no-watch --code-coverage` to run the client tests once and
-    also compute the code coverage.
-- `ng e2e` and `ng e2e --watch` to run end-to-end tests
-
-From the `database` directory:
-
-- `./mongoseed.sh` (or `.\mongoseed.bat` on Windows) to seed the database
-
-## [Deployment](DEPLOYMENT.md)
-
-Instructions on how to create a DigitalOcean Droplet and setup your project are in [the deployment guide](DEPLOYMENT.md).
-
-## [Resources](RESOURCES.md)
-
-Additional resources on tooling and techniques are in [the resources list](RESOURCES.md).
+## [Customer Pamphlet]()
 
 ## Contributors
 
-There have been many [contributors to this project](../../graphs/contributors).
+The contributors to this project can be seen [here](../../graphs/contributors).
+
+Special thanks to these individuals for laying the groundwork for this project.
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
