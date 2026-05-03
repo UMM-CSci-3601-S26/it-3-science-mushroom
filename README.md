@@ -16,7 +16,7 @@
   - [Contributors](#contributors)
 
 ## Project Description:
-The Ready4Learning interface is a system designed to improve the ease of management and quality of life for the staff, volunteers, and family participating in the drive hosted by the Office of BLANK here at the University of Minnesota Morris.
+The Ready4Learning interface is a system designed to improve the ease of management and quality of life for the staff, volunteers, and family participating in the drive hosted by the Office of Community Engagement (OoCE) here at the University of Minnesota Morris.
 
 ## Project Features:
 - Users and Login
