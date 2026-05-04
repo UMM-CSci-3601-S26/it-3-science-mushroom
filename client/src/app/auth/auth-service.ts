@@ -1,6 +1,6 @@
 /**
- * AuthService — the single source of truth for authentication state in the
- * Angular app.
+ * AuthService is the client-side source of truth for the signed-in user's
+ * access profile.
  *
  * How authentication works end-to-end
  * ------------------------------------
@@ -8,7 +8,7 @@
  * 2. This service POSTs the credentials to the server over HTTPS.
  * 3. The server validates the credentials, creates a signed JWT, and writes it
  *    into an HttpOnly cookie called "auth_token".  Because the cookie is
- *    HttpOnly, JavaScript in this app can NEVER read or steal the token —
+ *    HttpOnly, JavaScript in this app can never read or steal the token;
  *    that is the key XSS protection.
  * 4. The server returns an access profile ({ systemRole, jobRole, permissions })
  *    in the JSON body. We store that in sessionStorage so we know what UI
@@ -43,6 +43,8 @@ export class AuthService {
 
   http = inject(HttpClient);
 
+  // Store only the access profile used by route guards and templates. The JWT
+  // stays in the server-issued HttpOnly cookie and is never readable here.
   private saveAccessProfile(profile: AuthPermissionsResponse) {
     sessionStorage.setItem(this.roleKey, profile.systemRole);
     sessionStorage.setItem(this.permissionsKey, JSON.stringify(profile.permissions ?? []));
@@ -84,6 +86,8 @@ export class AuthService {
   }
 
   private consumeAccessProfile(response: AuthAccessResponse): Observable<AuthPermissionsResponse> {
+    // Login and signup should return a complete access profile. The fallback
+    // keeps this service compatible with any endpoint that only sets the cookie.
     if (response.systemRole && Array.isArray(response.permissions)) {
       const profile: AuthPermissionsResponse = {
         systemRole: response.systemRole,
@@ -178,6 +182,8 @@ export class AuthService {
   }
 
   hasPermission(permission: string): boolean {
+    // Admins bypass permission checks on the server; mirroring that here keeps
+    // the UI consistent with the server's final authorization decision.
     if (this.isAdmin()) {
       return true;
     }
@@ -228,7 +234,7 @@ export class AuthService {
     );
   }
 
-  // Role checkers
+  // Convenience role checkers used by guards and templates.
   isAdmin(): boolean {
     return this.systemRole === 'ADMIN';
   }

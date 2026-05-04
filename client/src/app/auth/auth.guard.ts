@@ -1,5 +1,5 @@
 /**
- * AuthGuard — prevents unauthenticated users from reaching protected routes.
+ * AuthGuard prevents unauthenticated users from reaching protected routes.
  *
  * How it works
  * ------------
@@ -29,6 +29,8 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    // A refresh/reopen can leave the HttpOnly cookie valid while sessionStorage
+    // is empty, so try restoring the profile before redirecting to login.
     return this.authService.syncAccessProfile().pipe(
       map(() => true),
       catchError(() => {
