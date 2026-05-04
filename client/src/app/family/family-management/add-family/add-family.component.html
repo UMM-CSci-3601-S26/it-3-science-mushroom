@@ -1,12 +1,16 @@
+<!-- New Family Form -->
 <div class="flex-row">
   <div class="flex-1">
     <form [formGroup]="addFamilyForm" (ngSubmit)="submitForm();">
       <mat-card class="add-family-card">
+        <!-- Form Title-->
         <mat-card-header>
           <mat-card-title class="add-family-title">New Family</mat-card-title>
         </mat-card-header>
+        <!-- Guardian Information -->
         <mat-card-content>
           <div class="flex-col">
+            <!-- Guardian First Name -->
             <mat-form-field>
               <mat-label>Guardian First Name</mat-label>
               <input matInput formControlName="guardianFirstName"
@@ -18,6 +22,7 @@
               }
             </mat-form-field>
 
+            <!-- Guardian Last Name -->
             <mat-form-field>
               <mat-label>Guardian Last Name</mat-label>
               <input matInput formControlName="guardianLastName"
@@ -29,6 +34,7 @@
               }
             </mat-form-field>
 
+            <!-- Email -->
             <mat-form-field>
               <mat-label>Email</mat-label>
               <input matInput type="email"
@@ -40,6 +46,7 @@
               }
             </mat-form-field>
 
+            <!-- Address -->
             <mat-form-field>
               <mat-label>Address</mat-label>
               <input matInput type="text"
@@ -51,12 +58,14 @@
               }
             </mat-form-field>
 
+            <!-- Accommodations -->
             <mat-form-field>
               <mat-label>Any Accommodations Needed?</mat-label>
               <input matInput type="text"
                 formControlName="accommodations">
             </mat-form-field>
 
+            <!-- Time Availability -->
             <h3>Available Times</h3>
             <div formGroupName="timeAvailability">
               <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox">
@@ -75,11 +84,13 @@
 
             <h3>Students</h3>
 
+            <!-- Student Fields -->
             <div formArrayName="students">
               @for (student of students.controls; track $index; let i = $index) {
                 <div [formGroupName]="i">
                   <div class="student-fields">
 
+                    <!-- Student Name -->
                     <mat-form-field>
                       <mat-label>Name</mat-label>
                       <input matInput formControlName="name" required>
@@ -90,6 +101,7 @@
                       }
                     </mat-form-field>
 
+                    <!-- Student Grade -->
                     <mat-form-field>
                       <mat-label>Grade</mat-label>
                       <mat-select formControlName="grade" required>
@@ -102,6 +114,7 @@
                       }
                     </mat-form-field>
 
+                    <!-- Student School -->
                     <mat-form-field class="student-school">
                       <mat-label>School</mat-label>
                       <mat-select formControlName="school" required>
@@ -116,6 +129,7 @@
                       }
                     </mat-form-field>
 
+                    <!-- Teacher Last Name -->
                     <mat-form-field>
                       <mat-label>Teacher Last Name</mat-label>
                       <input matInput formControlName="teacher">
@@ -126,6 +140,7 @@
                       }
                     </mat-form-field>
 
+                    <!-- Remove Student Button -->
                     <button
                     mat-flat-button
                     type="button"
@@ -135,6 +150,7 @@
                       Remove Student
                     </button>
 
+                    <!-- Backpack and Headphones Radio Buttons -->
                     <div class="radio-group">
                       <div class="radio-section">
                         <h4 style="font-size: 15px;">Backpack Needed?</h4>
@@ -156,7 +172,7 @@
                 </div>
               }
             </div>
-
+    <!-- Add Student Button -->
     <button
       mat-flat-button
       type="button"
@@ -167,6 +183,7 @@
 
         </mat-card-content>
         <mat-card-actions align="end">
+          <!-- Back Button -->
           <button
             mat-button
             type="button"
@@ -176,6 +193,7 @@
             >
             BACK
           </button>
+          <!-- Submit Button -->
           <button
             mat-button
             type="button"
