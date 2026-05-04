@@ -1,10 +1,22 @@
+// Package
 package umm3601.Users;
 
+// Org imports
 import org.bson.types.ObjectId;
+
+// Javalin imports
 import io.javalin.http.BadRequestResponse;
+
+// App imports
 import umm3601.Auth.PermissionsService;
 import umm3601.Auth.Role;
 
+/**
+ * Validation for admin user-management requests.
+ *
+ * This validator also normalizes role-dependent fields, especially volunteer
+ * job roles and guardian email requirements.
+ */
 public class UsersValidator {
   public static final String EMAIL_REGEX = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
   private final PermissionsService permissionsService;
@@ -39,6 +51,7 @@ public class UsersValidator {
     String normalized = email == null ? "" : email.trim();
     if (normalized.isBlank()) {
       if (systemRole == Role.GUARDIAN) {
+        // Guardian emails can be collected later through the family portal form.
         return null;
       }
       throw new BadRequestResponse("Email is required");
@@ -77,6 +90,7 @@ public class UsersValidator {
 
   public String normalizeJobRole(Role systemRole, String jobRole) {
     if (systemRole != Role.VOLUNTEER) {
+      // Only volunteers participate in configurable job-role permissions.
       return null;
     }
 
