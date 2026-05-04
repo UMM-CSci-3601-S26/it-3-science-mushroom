@@ -36,6 +36,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   ]
 })
 
+/**
+ * AppComponent is the root component of the application. It manages the main layout,
+ * handles user authentication state, and controls access to different routes based on
+ * user roles and permissions. It also listens for changes in delete request notifications
+ * and updates the UI accordingly.
+ */
+
 export class AppComponent implements OnInit {
   title = 'Ready 4 Learning Interface';
   authService = inject(AuthService);
@@ -45,6 +52,7 @@ export class AppComponent implements OnInit {
   private clipboard = inject(Clipboard);
   private snackBar = inject(MatSnackBar);
 
+  // Method to copy the volunteer sign-up link to the clipboard and show a confirmation message
   copyVolunteerSignUpLink() {
     const link = window.location.origin + '/sign-up';
     this.clipboard.copy(link);
@@ -60,6 +68,7 @@ export class AppComponent implements OnInit {
     this.syncAccessProfileSilently();
   }
 
+  // Method to log out the user, clear pending delete request count, and navigate to the login page
   logout() {
     this.authService.logout().subscribe({
       next: () => {
@@ -73,6 +82,7 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Method to refresh the count of pending delete requests by fetching them from the server
   refreshDeleteRequestCount() {
     if (!this.authService.hasPermission('delete_family')) {
       this.pendingDeleteRequestCount = 0;
@@ -89,11 +99,14 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Host listener for window focus to synchronize the access profile and refresh delete request count
   @HostListener('window:focus')
   onWindowFocus() {
     this.syncAccessProfileSilently();
   }
 
+  // Host listener for document visibility change to synchronize the access profile and refresh
+  // delete request count when the user returns to the tab
   @HostListener('document:visibilitychange')
   onVisibilityChange() {
     if (document.visibilityState === 'visible') {
@@ -101,6 +114,8 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Method to synchronize the user's access profile with the server without interrupting the user
+  // experience, and then enforce route access and refresh delete request count
   private syncAccessProfileSilently() {
     this.authService.syncAccessProfile().subscribe({
       next: () => {
@@ -114,6 +129,9 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Method to enforce route access based on the user's authentication status, roles, and permissions.
+  // It evaluates the access requirements of the current route and redirects the user to the appropriate
+  // page if they do not have access.
   private enforceRouteAccess() {
     const snapshot = this.deepestRoute(this.router.routerState.snapshot.root);
     const access = this.evaluateAccess(snapshot.data);
@@ -128,16 +146,22 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Getter to determine if the current user has an admin role
   get isAdmin() {
     return this.authService.systemRole === 'ADMIN';
   }
 
+  // Method to check if the user can access a specific path based on the route configuration and the
+  // user's authentication status, roles, and permissions
   canAccessPath(path: string): boolean {
     const normalizedPath = path.replace(/^\//, '');
     const route = this.router.config.find(candidate => candidate.path === normalizedPath);
     return this.evaluateAccess(route?.data) === 'allow';
   }
 
+  // Method to evaluate the access requirements of a route based on its data properties (roles and
+  // permissions) and the user's authentication status, roles, and permissions. It returns 'allow'
+  // if access is granted, 'login' if the user needs to log in, and 'deny' if access is denied.
   private evaluateAccess(data?: Route['data']): 'allow' | 'login' | 'deny' {
     const allowed = (data?.['roles'] as string[] | undefined) ?? [];
     const requiredPermissions = (data?.['permissions'] as string[] | undefined) ?? [];
@@ -161,6 +185,8 @@ export class AppComponent implements OnInit {
     return 'allow';
   }
 
+  // Method to find the deepest child route snapshot, which represents the currently active route,
+  // by traversing the route snapshot tree
   private deepestRoute(snapshot: ActivatedRouteSnapshot): ActivatedRouteSnapshot {
     let current = snapshot;
     while (current.firstChild) {

@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
+// Shape returned by the admin user API. passwordHash is intentionally omitted.
 export interface User {
   _id: string;
   username: string;
@@ -46,6 +47,8 @@ export class UserService {
   private readonly authUrl = `${environment.apiUrl}auth`;
 
   getUsers(): Observable<User[]> {
+    // The admin page auto-refreshes; cache-busting avoids showing stale user
+    // roles after another admin updates accounts or permissions.
     return this.httpClient.get<User[]>(this.usersUrl, {
       headers: new HttpHeaders({
         'Cache-Control': 'no-cache',
@@ -72,6 +75,8 @@ export class UserService {
   }
 
   getRoleOverview(): Observable<AllRolePermissionsResponse> {
+    // One combined payload keeps the permission editor in sync with the server's
+    // current system roles, volunteer job roles, and permission catalog.
     return this.httpClient.get<AllRolePermissionsResponse>(`${this.authUrl}/permissions/all`);
   }
 

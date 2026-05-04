@@ -1,18 +1,33 @@
+// Package
 package umm3601.Users;
 
+// Static imports
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.ne;
 import static com.mongodb.client.model.Sorts.ascending;
 import static com.mongodb.client.model.Updates.set;
 
+// Java imports
 import java.util.ArrayList;
 import java.util.List;
+
+// Com imports
 import com.mongodb.client.MongoDatabase;
+
+// Org imports
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
+
+// App imports
 import umm3601.Auth.Role;
 
+/**
+ * Mongo access layer for Users.
+ *
+ * Keeping raw queries here lets UsersService focus on business rules instead of
+ * collection mechanics.
+ */
 public class UsersRepository {
   private final JacksonMongoCollection<Users> users;
 
@@ -29,6 +44,8 @@ public class UsersRepository {
   }
 
   public List<Users> findManagedUsers() {
+    // Guardian accounts are tied to family portal records and are intentionally
+    // omitted from the internal staff management list.
     return users.find(ne("systemRole", Role.GUARDIAN))
         .sort(ascending("systemRole", "fullName", "username"))
         .into(new ArrayList<>());

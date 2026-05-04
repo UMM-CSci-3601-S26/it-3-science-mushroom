@@ -40,12 +40,15 @@ export class UsersComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
+      // Query params let other admin links jump directly to the users or
+      // permissions tab while keeping delete requests as the default review tab.
       const tab = params.get('tab');
       this.selectedTabIndex = tab === 'users' ? 1 : tab === 'permissions' ? 2 : 0;
     });
     this.loadRequests();
   }
 
+  // Method to load the pending delete requests from the server and update the component state accordingly. It also handles loading state and error notifications.
   loadRequests(): void {
     this.isLoading = true;
     this.familyService.getDeleteRequests().subscribe({
@@ -60,11 +63,16 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  // Method to approve a delete request for a family. It prompts the admin for confirmation, checks for linked
+  // guardian accounts, and then calls the family service to delete the family. It also updates the pending
+  // delete requests list and shows notifications based on the outcome.
   approveDelete(family: Family): void {
     if (!family._id) {
       return;
     }
     const hasLinkedGuardianAccount = !!family.ownerUserId?.trim();
+    // Linked guardian accounts are removed with the family profile, so call out
+    // the extra consequence before the admin confirms.
     const warning = hasLinkedGuardianAccount
       ? `Delete ${family.guardianName}'s family profile permanently? This will also delete their linked guardian login account.`
       : `Delete ${family.guardianName}'s family profile permanently?`;
@@ -84,6 +92,8 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  // Method to restore a pending delete request for a family. It calls the family service to restore the delete request,
+  // updates the pending delete requests list, and shows notifications based on the outcome.
   restoreFamily(family: Family): void {
     if (!family._id) {
       return;
@@ -100,12 +110,18 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  // Method to track family items in the template by their unique ID, which helps Angular optimize rendering of
+  // lists by identifying items that have changed.
   trackByFamilyId(index: number, family: Family) {
     return family._id;
   }
 
+  // Method to generate a label for the requester of a delete request based on the requester's name and role.
+  // It handles cases where requester information may be incomplete and formats the role for display.
   getRequesterLabel(family: Family): string {
     const request = family.deleteRequest;
+    // Older requests may not have complete requester metadata; keep the admin
+    // list readable instead of showing blank labels.
     const name = request?.requestedByUserName?.trim() || 'Unknown user';
     const role = request?.requestedBySystemRole?.trim();
 

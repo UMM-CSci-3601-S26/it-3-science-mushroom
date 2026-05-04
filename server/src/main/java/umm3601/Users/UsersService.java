@@ -1,14 +1,24 @@
+// Package
 package umm3601.Users;
 
+// Java imports
 import java.util.List;
+
+// Com imports
 import com.mongodb.client.MongoDatabase;
+
+// Javalin imports
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
+
+// App imports
 import umm3601.Auth.Role;
 
 /**
  * Service for user-related business logic.
  * Controllers should depend on this class instead of talking to Mongo directly.
+ * This is where cross-record rules live, such as keeping at least one admin in
+ * the system.
  */
 public class UsersService {
   private final UsersRepository repository;
@@ -36,6 +46,8 @@ public class UsersService {
   public void deleteUserById(String userId) {
     Users existing = repository.findById(userId);
     if (existing != null) {
+      // Prevent deleting the final administrator before doing the destructive
+      // database operation.
       ensureNotLastAdmin(existing.systemRole, null);
     }
     long deleted = repository.deleteById(userId);
@@ -53,12 +65,15 @@ public class UsersService {
     if (linkedUser == null || linkedUser.systemRole != Role.GUARDIAN) {
       return 0;
     }
+    // Family deletion may clean up a linked guardian login, but it should never
+    // delete a staff account by accident.
     return repository.deleteById(userId);
   }
 
   public void updateUserSystemRole(String username, Role newRole) {
     repository.updateSystemRole(username, newRole);
     if (newRole != Role.VOLUNTEER) {
+      // Admins and guardians do not use volunteer job-role permissions.
       repository.updateJobRole(username, null);
     }
   }
@@ -123,6 +138,8 @@ public class UsersService {
   }
 
   private void ensureNotLastAdmin(Role currentRole, Role nextRole) {
+    // Only matters when an existing admin is being deleted or changed to a
+    // non-admin role.
     if (currentRole != Role.ADMIN) {
       return;
     }

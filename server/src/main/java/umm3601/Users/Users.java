@@ -1,13 +1,23 @@
+// Package
 package umm3601.Users;
 
+// Java imports
 import java.util.Objects;
 
+// Org imports
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
+
+// App imports
 import umm3601.Auth.Role;
 
-// Set users password to "password123"
-
+/**
+ * Mongo-backed login account.
+ *
+ * systemRole controls the broad account type. jobRole is only used for
+ * volunteers, where it points to a configurable permission bundle such as
+ * volunteer_base or inventory_manager.
+ */
 @SuppressWarnings({ "VisibilityModifier" })
 public class Users {
   @ObjectId
@@ -19,9 +29,11 @@ public class Users {
   public String fullName;
   public String email;
 
-  public Role systemRole; // admin, volunteer, guardian (now an enum)
-  public String jobRole;    // nullable unless volunteer
+  public Role systemRole;
+  public String jobRole;
 
+  // Equality is based on Mongo identity so separate loaded copies of the same
+  // account compare as the same user.
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof Users)) {

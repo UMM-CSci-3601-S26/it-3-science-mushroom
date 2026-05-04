@@ -1,16 +1,36 @@
+// Package
+package umm3601.Middleware;
+
+// Java imports
+import java.util.Set;
+
+// Javalin imports
+import io.javalin.http.Context;
+import io.javalin.http.UnauthorizedResponse;
+import io.javalin.http.ForbiddenResponse;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+
+// App imports
+import umm3601.Auth.JwtUtils;
+import umm3601.Auth.PermissionsService;
+import umm3601.Auth.Role;
+import umm3601.Users.Users;
+import umm3601.Users.UsersService;
+
 /**
- * AuthMiddleware â€” validates JWTs and enforces role-based access control (RBAC)
+ * AuthMiddleware validates JWTs and enforces role-based access control (RBAC)
  * on every protected API route.
  *
  * How it fits into a request
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * __________________________________________________________________________________
  * Each protected route handler calls authMiddleware.handle(ctx) at the top of
  * the method.  This keeps the middleware opt-in per-route rather than being a
  * blanket Javalin before() hook, which makes it easy to see exactly which
  * endpoints are protected.
  *
  * Token extraction order
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * __________________________________________________________________________________
  * 1. HttpOnly cookie "auth_token"  â€” used by the Angular browser client.
  *    The cookie is set by AuthController on login/signup and is never readable
  *    by JavaScript, making it safe against XSS attacks.
@@ -25,24 +45,9 @@
  * requireRole() is a static helper that reads the systemRole attribute and throws
  * 403 Forbidden if it is not among the allowed values.
  */
-package umm3601.Middleware;
-
-import java.util.Set;
-
-import io.javalin.http.Context;
-import io.javalin.http.UnauthorizedResponse;
-import io.javalin.http.ForbiddenResponse;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import umm3601.Auth.JwtUtils;
-import umm3601.Auth.PermissionsService;
-import umm3601.Auth.Role;
-import umm3601.Users.Users;
-import umm3601.Users.UsersService;
-
 public class AuthMiddleware {
   private static final String GUARDIAN_PORTAL_PERMISSION = "family_portal_access";
-  private static final int BEARER_PREFIX_LENGTH = 7;
+  private static final int BEARER_PREFIX_LENGTH = 7; // Length of "Bearer " prefix in the Authorization header
 
   private final String jwtSecret;
   private final UsersService usersService;
@@ -52,6 +57,14 @@ public class AuthMiddleware {
     this.usersService = usersService;
   }
 
+  /**
+   * The handle method is called by Javalin when a request matches a protected route that has called this middleware.
+   * It attempts to extract a JWT from either the "auth_token" cookie or the "Authorization" header, and validates the token using the JwtUtils class.
+   * If the token is valid, it retrieves the associated user from the database and stores relevant user information (userId, systemRole, jobRole, username, fullName, email) as context attributes for downstream handlers to access.
+   * If the token is missing, invalid, expired, or if the user account no longer exists or lacks a system role, it throws an UnauthorizedResponse with an appropriate error message.
+   * @param ctx the Javalin Context object representing the HTTP request and response
+   * @throws UnauthorizedResponse if the token is missing, invalid, expired, or if the user account is not valid
+   */
   public void handle(Context ctx) {
     String path = ctx.path();
     if (path != null && (path.equals("/")
@@ -107,6 +120,7 @@ public class AuthMiddleware {
     }
   }
 
+  // Static helper methods for enforcing role and permission checks in route handlers
   public static void requireRole(Context ctx, Role required) {
     Role role = ctx.attribute("systemRole");
 
@@ -115,6 +129,7 @@ public class AuthMiddleware {
     }
   }
 
+  // requirePermission checks if the user's system role and job role grant them the specified permission, throwing a ForbiddenResponse if not. Admins bypass all permission checks, while Guardians can only access the family portal surface.
   public static void requirePermission(Context ctx, PermissionsService permissionsService, String permission) {
     Role systemRole = ctx.attribute("systemRole");
 

@@ -1,4 +1,4 @@
-// Package declaration
+// Package
 package umm3601.Auth;
 
 /**
@@ -8,13 +8,8 @@ package umm3601.Auth;
  * The atLeast method allows for easy comparison of roles to determine if a user
  * has sufficient privileges for a given action.
  *
- * Functions provided by this enum include:
- * - atLeast
- * - fromString
- * - dbName
- *
  * Why use an enum for roles?
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ___________________________________________
  * Using an enum for roles provides a clear and type-safe way to manage user
  * roles within the application. It allows us to define a fixed set of roles
  * with associated levels, making it easier to implement and maintain access
