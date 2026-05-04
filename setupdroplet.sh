@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-
+# generateSecret simply generates a secure random hex string of numbers and letters that is used for the JWT_SECRET
+# "Command -v openssl" checks if openssl exists on the machine
+# "openssl rand -hex 64" generates a random code of 128 characters (64 bytes encoded into hexadecimal)
+# the output is stored in secret
+# There are multiple fallback options that account for most if not all tools
+# The fallback options support common systems where OpenSSL, Python, Node, or PowerShell may be available.
 generateSecret() {
   local secret
 
