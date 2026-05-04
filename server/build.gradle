@@ -56,8 +56,10 @@ dependencies {
   implementation 'org.apache.poi:poi:5.2.3'
   implementation 'org.apache.poi:poi-ooxml:5.2.3'
 
+  // jBCrypt for password hashing
   implementation 'org.mindrot:jbcrypt:0.4'
 
+  // JJWT for JSON Web Token handling
   implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
   implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
   implementation 'io.jsonwebtoken:jjwt-jackson:0.12.5'
