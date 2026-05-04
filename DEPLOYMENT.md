@@ -192,7 +192,9 @@ If you have made changes and wish to update what is running on the server:
   - `docker-compose logs --follow` will open the logs and follow their output so you can see new messages as they come. Exiting out of `logs --follow` does not stop the server containers.
 - `docker-compose ps` lists the running containers
 - `docker-compose stop` just stops all the containers, it does not remove anything.
+  - Use `docker-compose start` to start those same stopped containers again.
 - `docker-compose down` stops the containers and removes them.
+  - After `docker-compose down`, use `docker-compose up -d` to create and start the containers again.
   - `docker-compose down --rmi all` removes all the images. It will then require rebuilding the images next time.
   - More [Docker options](https://docs.docker.com/compose/reference/down/)
 - `docker-compose build` will build the images if things have changed in them
