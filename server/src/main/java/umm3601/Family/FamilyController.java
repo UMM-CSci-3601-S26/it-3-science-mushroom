@@ -209,7 +209,10 @@ public class FamilyController {
     familyCollection.replaceOne(eq("_id", new ObjectId(existingFamily._id)), family);
   }
 
-  // takes the list of families and goes through them one by one sorting them into the first available time slot
+  /**
+  * Takes the list of families and goes through them one by one sorting them into the first available time slot.
+  * Families with fewer preferences are prioritized. Earliest drive times are also prioritized.
+  */
   public ArrayList<Family> schedulingAlgorithm(
     ArrayList<Family> families,
     int capacity,
@@ -286,6 +289,9 @@ public class FamilyController {
 
   @Route(method = HttpMethod.POST, path = API_SCHEDULE_FAMILIES)
   @RequirePermission("schedule_families")
+  /*
+  * Calls scheduling algorithm to sort families into their ideal time slots
+  */
   public void scheduleFamilies(Context ctx) {
     Bson filter = constructDatabaseFilter(ctx);
 
