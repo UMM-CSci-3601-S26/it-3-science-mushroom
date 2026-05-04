@@ -37,9 +37,12 @@ public class AuthValidator {
   }
 
   /**
-   * validateSignup ensures that the signup request body contains a username, password, and full name, and that the password meets the minimum length requirement. The email field is optional and will be validated separately if provided.
+   * validateSignup ensures that the signup request body contains a username, password, and
+   * full name, and that the password meets the minimum length requirement. The email field
+   * is optional and will be validated separately if provided.
    * @param req the signup request body
-   * @throws BadRequestResponse if the request body is null or missing required fields, or if the password does not meet the minimum length requirement
+   * @throws BadRequestResponse if the request body is null or missing required fields, or if
+   * the password does not meet the minimum length requirement
    */
   public void validateSignup(AuthRequests.SignupRequest req) {
     if (req == null) {
@@ -57,11 +60,15 @@ public class AuthValidator {
   }
 
   /**
-   * normalizeSignupEmail takes the raw email from the signup request and normalizes it by trimming whitespace. It also validates that the email is in a proper format if it's provided. If the email is blank and the requested system role is GUARDIAN, it returns null since guardians are not required to have an email. For any other system role, a valid email is required.
+   * normalizeSignupEmail takes the raw email from the signup request and normalizes it by trimming whitespace.
+   * It also validates that the email is in a proper format if it's provided. If the email is blank and
+   * the requested system role is GUARDIAN, it returns null since guardians are not required to have an
+   * email. For any other system role, a valid email is required.
    * @param systemRole the system role requested in the signup, used to determine if email is required
    * @param email the raw email from the signup request
    * @return the normalized email, or null if the email is not required for the given system role
-   * @throws BadRequestResponse if the email is required but not provided, or if the provided email is not in a valid format
+   * @throws BadRequestResponse if the email is required but not provided, or if the provided email
+   *                            is not in a valid format
    */
   public String normalizeSignupEmail(Role systemRole, String email) {
     String normalized = email == null ? "" : email.trim();
@@ -78,7 +85,10 @@ public class AuthValidator {
   }
 
   /**
-   * signupSystemRole determines the system role to assign to a new user based on the requested role in the signup request. To prevent privilege escalation, it only allows users to sign up as GUARDIAN or VOLUNTEER. If the requested role is GUARDIAN, it returns GUARDIAN; for any other requested role (including ADMIN), it defaults to VOLUNTEER.
+   * signupSystemRole determines the system role to assign to a new user based on the requested role
+   * in the signup request. To prevent privilege escalation, it only allows users to sign up as GUARDIAN
+   * or VOLUNTEER. If the requested role is GUARDIAN, it returns GUARDIAN; for any other requested role
+   * (including ADMIN), it defaults to VOLUNTEER.
    * @param requestedRole the system role requested in the signup request
    * @return the system role that should be assigned to the new user, which will be either GUARDIAN or VOLUNTEER
    */
@@ -89,7 +99,11 @@ public class AuthValidator {
   }
 
   /**
-   * normalizeRoleConfig takes a raw RoleConfig object from the request body and normalizes it by ensuring that the permissions list is not null (defaulting to an empty list if it is) and that the inherits list is not null (defaulting to a list containing "volunteer_base" if it is). This ensures that the role config has valid data for the AuthService to work with, and also provides a default inheritance for new custom volunteer job roles.
+   * normalizeRoleConfig takes a raw RoleConfig object from the request body and normalizes
+   * it by ensuring that the permissions list is not null (defaulting to an empty list if it is)
+   * and that the inherits list is not null (defaulting to a list containing "volunteer_base"
+   * if it is). This ensures that the role config has valid data for the AuthService to work with,
+   * and also provides a default inheritance for new custom volunteer job roles.
    * @param raw the raw RoleConfig object from the request body
    * @return a normalized RoleConfig object with non-null permissions and inherits lists
    * @throws BadRequestResponse if the raw RoleConfig is null
@@ -107,7 +121,11 @@ public class AuthValidator {
   }
 
   /**
-   * validateJobRoleName ensures that a job role name is provided and does not use reserved system role names. This is used to validate the job role name when creating or updating custom volunteer job roles. The method checks that the job role name is not null or blank, and that it does not match any of the system role names (admin, guardian, volunteer) to prevent confusion and potential security issues with overlapping role names.
+   * validateJobRoleName ensures that a job role name is provided and does not use reserved
+   * system role names. This is used to validate the job role name when creating or updating
+   * custom volunteer job roles. The method checks that the job role name is not null or blank,
+   * and that it does not match any of the system role names (admin, guardian, volunteer) to
+   * prevent confusion and potential security issues with overlapping role names.
    * @param jobRole the job role name to validate
    * @return the validated job role name if it is valid
    * @throws BadRequestResponse if the job role name is null, blank, or matches a reserved system role name
@@ -125,7 +143,11 @@ public class AuthValidator {
   }
 
   /**
-   * requireAssignedJobRole validates the job role name provided in the AssignJobRoleRequest body when assigning a job role to a user. It ensures that the job role name is present and valid according to the rules defined in validateJobRoleName. This method is used in the route handler for assigning a job role to ensure that the request contains a valid job role name before proceeding with the assignment.
+   * requireAssignedJobRole validates the job role name provided in the AssignJobRoleRequest
+   * body when assigning a job role to a user. It ensures that the job role name is present
+   * and valid according to the rules defined in validateJobRoleName. This method is used in
+   * the route handler for assigning a job role to ensure that the request contains a valid
+   * job role name before proceeding with the assignment.
    * @param req the AssignJobRoleRequest containing the job role name to validate
    * @return the validated job role name if it is valid
    * @throws BadRequestResponse if the request body is null, or if the job role name is missing or invalid

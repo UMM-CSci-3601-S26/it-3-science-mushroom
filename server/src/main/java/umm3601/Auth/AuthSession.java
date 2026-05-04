@@ -23,7 +23,8 @@ public final class AuthSession {
     return token;
   }
 
-  // The access profile is a map that contains the user's permissions and other relevant information for the client to use.
+  // The access profile is a map that contains the user's permissions and other
+  // relevant information for the client to use.
   public Map<String, Object> accessProfile() {
     return accessProfile;
   }

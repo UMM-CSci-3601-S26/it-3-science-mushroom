@@ -62,9 +62,10 @@ public class SettingsController {
   }
 
   /**
-   * getSettings retrieves the singleton settings document and returns it as JSON. If the document doesn't exist, it returns a new Settings
-   * object with default values (except for _id which is set to SETTINGS_ID). The client can use this endpoint to get the current application
-   * settings, including the list of schools, time availability labels, supply item order, available spots, barcode print warning limit,
+   * getSettings retrieves the singleton settings document and returns it as JSON. If the document doesn't exist,
+   * it returns a new Settings object with default values (except for _id which is set to SETTINGS_ID). The
+   * client can use this endpoint to get the current application settings, including the list of schools,
+   * time availability labels, supply item order, available spots, barcode print warning limit,
    * and drive day information.
    * @param ctx
    */
@@ -162,9 +163,11 @@ public class SettingsController {
 
   /**
    * updateTimeAvailability updates the time availability labels in the settings document with the provided values.
-   * The request body must include an object with 'earlyMorning', 'lateMorning', 'earlyAfternoon', and 'lateAfternoon' fields.
-   * This endpoint allows operators to configure the human-readable time labels that correspond to the availability slots families select in their profiles.
-   * The method validates the input and updates the settings document in the database, creating it if it doesn't exist.
+   * The request body must include an object with 'earlyMorning', 'lateMorning', 'earlyAfternoon', and
+   * 'lateAfternoon' fields.
+   * This endpoint allows operators to configure the human-readable time labels that correspond to the
+   * availability slots families select in their profiles. The method validates the input and updates the settings
+   * document in the database, creating it if it doesn't exist.
    * @param ctx
    * @throws BadRequestResponse if the request body is missing or does not include all required time availability fields
    */
@@ -189,8 +192,9 @@ public class SettingsController {
   /**
    * updateSpotAvailability updates the number of available spots for drive day in the settings document.
    * The request body must include an 'availableSpots' field with a positive integer value.
-   * This endpoint allows operators to manage how many families can be scheduled for each time slot on drive day based on their preferences.
-   * The method validates the input and updates the settings document in the database, creating it if it doesn't exist.
+   * This endpoint allows operators to manage how many families can be scheduled for each time slot
+   * on drive day based on their preferences. The method validates the input and updates the settings
+   * document in the database, creating it if it doesn't exist.
    * @param ctx
    * @throws BadRequestResponse if the request body is missing or does not include a valid 'availableSpots' value
    */
@@ -210,8 +214,9 @@ public class SettingsController {
   /**
    * updateDriveDay updates the drive day information in the settings document with the provided date and location.
    * The request body must include a 'date' field (in ISO format) and a 'location' field (string).
-   * This endpoint allows operators to set the date and location for the upcoming drive day, which can be displayed to families in the portal.
-   * The method validates the input and updates the settings document in the database, creating it if it doesn't exist.
+   * This endpoint allows operators to set the date and location for the upcoming drive day, which can be displayed to
+   * families in the portal. The method validates the input and updates the settings document in the database,
+   * creating it if it doesn't exist.
    * @param ctx
    * @throws BadRequestResponse if the request body is missing or does not include valid 'date' and 'location' fields
    */
@@ -235,10 +240,12 @@ public class SettingsController {
   /**
    * updateBarcodePrintWarningLimit updates the barcode print warning limit in the settings document.
    * The request body must include a 'barcodePrintWarningLimit' field with a positive integer value.
-   * This endpoint allows operators to set a threshold for how many barcode labels can be printed for a single item before a warning is shown, helping to prevent excessive printing.
+   * This endpoint allows operators to set a threshold for how many barcode labels can be printed for a single
+   * item before a warning is shown, helping to prevent excessive printing.
    * The method validates the input and updates the settings document in the database, creating it if it doesn't exist.
    * @param ctx
-   * @throws BadRequestResponse if the request body is missing or does not include a valid 'barcodePrintWarningLimit' value
+   * @throws BadRequestResponse if the request body is missing or does not include a valid
+   *                            'barcodePrintWarningLimit' value
    */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT)
   @RequirePermission("edit_barcode_print_limit")

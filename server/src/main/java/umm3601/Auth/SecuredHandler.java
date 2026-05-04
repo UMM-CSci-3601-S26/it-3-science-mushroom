@@ -29,10 +29,13 @@ public class SecuredHandler implements Handler {
     this.permissionsService = permissionsService;
   }
 
-  /* The handle method is called by Javalin when a request matches the route associated with this handler.
+  /**
+   * The handle method is called by Javalin when a request matches the route associated with this handler.
    * It checks for the presence of @RequireRole and @RequirePermission annotations on the controller method,
-   * and enforces the specified role and permission requirements using AuthMiddleware before invoking the controller method.
-   * If the user does not meet the role or permission requirements, an appropriate error response is sent and the controller method is not invoked.
+   * and enforces the specified role and permission requirements using AuthMiddleware before invoking the
+   * controller method.
+   * If the user does not meet the role or permission requirements, an appropriate error response is
+   * sent and the controller method is not invoked.
    * @param ctx the Javalin Context object representing the HTTP request and response
    * @throws Exception if an error occurs while invoking the controller method
    */

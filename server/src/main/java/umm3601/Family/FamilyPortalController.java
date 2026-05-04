@@ -51,8 +51,10 @@ public class FamilyPortalController {
 
   /**
    * The getPortalSummary method handles GET requests to the family portal summary endpoint.
-   * It retrieves the authenticated user's family profile and relevant settings, and returns a summary of the family's portal information.
-   * If the user does not have a family profile, it returns a summary with default values indicating an incomplete profile.
+   * It retrieves the authenticated user's family profile and relevant settings, and returns
+   * a summary of the family's portal information.
+   * If the user does not have a family profile, it returns a summary with default values
+   * indicating an incomplete profile.
    * @param ctx
    */
   @Route(method = HttpMethod.GET, path = API_PORTAL_BASE)
@@ -88,8 +90,10 @@ public class FamilyPortalController {
 
   /**
    * The upsertPortalForm method handles PUT requests to the family portal form endpoint.
-   * It validates the submitted family profile data, ensures that the authenticated user is a guardian, and then creates or updates the family profile associated with the user's account.
-   * The method also keeps the user's email in sync between their login account and their family profile. Finally, it returns a response indicating that the profile is complete.
+   * It validates the submitted family profile data, ensures that the authenticated user is
+   * a guardian, and then creates or updates the family profile associated with the user's account.
+   * The method also keeps the user's email in sync between their login account and their family
+   * profile. Finally, it returns a response indicating that the profile is complete.
    * @param ctx
    */
   @Route(method = HttpMethod.PUT, path = API_PORTAL_FORM)
@@ -117,8 +121,10 @@ public class FamilyPortalController {
 
   /**
    * The getPortalChecklist method handles GET requests to the family portal checklist endpoint.
-   * It retrieves the authenticated user's family profile and returns the checklist information for that family.
-   * If the user does not have a family profile or if the profile is not complete, it returns an appropriate error response.
+   * It retrieves the authenticated user's family profile and returns the checklist
+   * information for that family.
+   * If the user does not have a family profile or if the profile is not complete,
+   * it returns an appropriate error response.
    * @param ctx
    */
   @Route(method = HttpMethod.GET, path = API_PORTAL_CHECKLIST)
@@ -135,8 +141,10 @@ public class FamilyPortalController {
 
   /**
    * The getPortalDriveDay method handles GET requests to the family portal drive day endpoint.
-   * It retrieves the authenticated user's family profile and the relevant settings, and returns the drive day information for that family.
-   * If the user does not have a family profile or if the profile is not complete, it returns an appropriate error response.
+   * It retrieves the authenticated user's family profile and the relevant settings, and returns
+   * the drive day information for that family.
+   * If the user does not have a family profile or if the profile is not complete,
+   * it returns an appropriate error response.
    * @param ctx
    */
   @Route(method = HttpMethod.GET, path = API_PORTAL_DRIVE_DAY)
@@ -168,7 +176,8 @@ public class FamilyPortalController {
     return authContext;
   }
 
-  // The family portal checklist and drive day details depend on a submitted profile, so requireCompletedProfile enforces that before allowing access to those endpoints.
+  // The family portal checklist and drive day details depend on a submitted profile, so requireCompletedProfile
+  // enforces that before allowing access to those endpoints.
   private void requireCompletedProfile(Family family) {
     // Checklist and drive-day details depend on a submitted profile.
     if (!family.profileComplete) {
@@ -177,9 +186,10 @@ public class FamilyPortalController {
   }
 
   /**
-   * validatePortalFormBody checks that the submitted family profile contains all required fields and that they are in the correct format.
-   * It ensures that the guardian name, email, address, and student information are provided and valid before allowing the profile to be
-   * created or updated. If any validation checks fail, it throws a BadRequestResponse with an appropriate error message.
+   * validatePortalFormBody checks that the submitted family profile contains all required fields and that
+   * they are in the correct format. It ensures that the guardian name, email, address, and student
+   * information are provided and valid before allowing the profile to be created or updated. If any validation
+   * checks fail, it throws a BadRequestResponse with an appropriate error message.
    * @param family the family profile submitted in the request body
    * @return the validated family profile if all checks pass
    * @throws BadRequestResponse if the family profile is missing required fields or contains invalid data
@@ -208,7 +218,8 @@ public class FamilyPortalController {
     return family;
   }
 
-  // Each student must have a name, grade, and school to ensure the family profile is complete enough for portal use and drive day logistics.
+  // Each student must have a name, grade, and school to ensure the family profile is complete enough for portal
+  // use and drive day logistics.
   private void validatePortalStudent(Family.StudentInfo student) {
     if (student == null
         || student.name == null || student.name.isBlank()

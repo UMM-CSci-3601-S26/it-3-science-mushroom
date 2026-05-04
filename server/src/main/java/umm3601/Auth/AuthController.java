@@ -23,9 +23,11 @@ import umm3601.Users.UsersService;
  * response bodies.
  */
 public class AuthController {
-  private static final int AUTH_TOKEN_HOURS = 8; // JWT tokens are valid for 8 hours, which means the auth cookie should also be valid for 8 hours.
+  // JWT tokens are valid for 8 hours, which means the auth cookie should also be valid for 8 hours.
+  private static final int AUTH_TOKEN_HOURS = 8;
 
-  // 8 hours in seconds, since the cookie maxAge is in seconds. This means the cookie will expire at the same time as the JWT token,
+  // 8 hours in seconds, since the cookie maxAge is in seconds. This means the cookie will expire
+  // at the same time as the JWT token,
   // so we won't have expired tokens sitting around in cookies if the server restarts while users are logged in.
   private static final int MINUTES_PER_HOUR = 60;
   private static final int SECONDS_PER_MINUTE = 60;
@@ -115,7 +117,8 @@ public class AuthController {
    * also includes the user's username, full name, and email in the response. This is used by the
    * Angular UI to resync the user's permissions and profile info without needing to log out and back in again.
    * @param ctx
-   * @throws UnauthorizedResponse if the user is not authenticated or if their account is in an invalid state (e.g. missing system role)
+   * @throws UnauthorizedResponse if the user is not authenticated or if their account is in an invalid
+   *                              state (e.g. missing system role)
    */
   @Route(path = "/api/auth/permissions", method = HttpMethod.GET)
   public void getUserPermissions(Context ctx) {
@@ -143,8 +146,9 @@ public class AuthController {
   }
 
   /**
-   * getAllRolePermissions is an admin-only endpoint that returns the full list of system roles, job roles, and permissions.
-   * This is used by the Angular admin UI to manage users and roles in a single combined view without needing to make separate
+   * getAllRolePermissions is an admin-only endpoint that returns the full list of system roles,
+   * job roles, and permissions. This is used by the Angular admin UI to manage users and roles
+   * in a single combined view without needing to make separate
    * round trips for each permission source.
    * @param ctx
    */
@@ -192,7 +196,9 @@ public class AuthController {
    * can't be deleted, since it's used to give basic permissions to volunteers
    * without any assigned job role.
    * @param ctx
-   * @throws BadRequestResponse if the client tries to delete the volunteer_base job role, since that role is required as a default for volunteers with no assigned job role
+   * @throws BadRequestResponse if the client tries to delete the volunteer_base job role, since
+   *                            that role is required as a default for volunteers with no assigned
+   *                            job role
    */
   @Route(path = "/api/auth/job-roles/{jobRole}", method = HttpMethod.DELETE)
   @RequireRole(Role.ADMIN)

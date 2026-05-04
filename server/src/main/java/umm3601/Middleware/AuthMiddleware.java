@@ -59,9 +59,11 @@ public class AuthMiddleware {
 
   /**
    * The handle method is called by Javalin when a request matches a protected route that has called this middleware.
-   * It attempts to extract a JWT from either the "auth_token" cookie or the "Authorization" header, and validates the token using the JwtUtils class.
-   * If the token is valid, it retrieves the associated user from the database and stores relevant user information (userId, systemRole, jobRole, username, fullName, email) as context attributes for downstream handlers to access.
-   * If the token is missing, invalid, expired, or if the user account no longer exists or lacks a system role, it throws an UnauthorizedResponse with an appropriate error message.
+   * It attempts to extract a JWT from either the "auth_token" cookie or the "Authorization" header, and validates the
+   * token using the JwtUtils class. If the token is valid, it retrieves the associated user from the database and
+   * stores relevant user information (userId, systemRole, jobRole, username, fullName, email) as context attributes
+   * for downstream handlers to access. If the token is missing, invalid, expired, or if the user account no longer
+   * exists or lacks a system role, it throws an UnauthorizedResponse with an appropriate error message.
    * @param ctx the Javalin Context object representing the HTTP request and response
    * @throws UnauthorizedResponse if the token is missing, invalid, expired, or if the user account is not valid
    */
@@ -129,7 +131,9 @@ public class AuthMiddleware {
     }
   }
 
-  // requirePermission checks if the user's system role and job role grant them the specified permission, throwing a ForbiddenResponse if not. Admins bypass all permission checks, while Guardians can only access the family portal surface.
+  // requirePermission checks if the user's system role and job role grant them the specified permission,
+  // throwing a ForbiddenResponse if not. Admins bypass all permission checks, while Guardians can only
+  // access the family portal surface.
   public static void requirePermission(Context ctx, PermissionsService permissionsService, String permission) {
     Role systemRole = ctx.attribute("systemRole");
 

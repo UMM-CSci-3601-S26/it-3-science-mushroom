@@ -51,9 +51,11 @@ import umm3601.SupplyList.SupplyListController;
  * hardcoding them into the application.
  */
 public class PermissionsService {
-  private static final String PERMISSIONS_ID = "role-permissions"; // Singleton document ID for permissions configuration
+  // Singleton document ID for permissions configuration
+  private static final String PERMISSIONS_ID = "role-permissions";
 
-  // Permissions that are defined in code but not assignable to volunteers through the API, typically because they are required for baseline access or are only relevant for staff roles.
+  // Permissions that are defined in code but not assignable to volunteers through the API,
+  // typically because they are required for baseline access or are only relevant for staff roles.
   private static final Set<String> NON_ASSIGNABLE_PERMISSIONS = Set.of(
       "edit_available_spots",
       "family_portal_access",
@@ -66,15 +68,17 @@ public class PermissionsService {
       "view_family",
       "view_family_checklist");
 
-  // List of controller classes to scan for @RequirePermission annotations to build the catalog of available permissions.
+  // List of controller classes to scan for @RequirePermission annotations to build the catalog of
+  // available permissions.
   private static final List<Class<?>> PERMISSION_SOURCES = List.of(
       FamilyController.class,
       InventoryController.class,
       SupplyListController.class,
       SettingsController.class);
 
-  // Baseline permissions that are always included in the "volunteer_base" role to ensure that volunteers have the necessary access
-  // to use the application effectively. These permissions cover basic viewing and interaction capabilities with families, inventory,
+  // Baseline permissions that are always included in the "volunteer_base" role to ensure that
+  // volunteers have the necessary access to use the application effectively. These permissions
+  // cover basic viewing and interaction capabilities with families, inventory,
   // supply lists, and dashboard statistics.
   private static final List<String> ROUTE_PERMISSIONS = List.of(
       "add_family",
@@ -249,7 +253,8 @@ public class PermissionsService {
    * @param role          The role being validated.
    * @param config        The configuration for the role being validated.
    * @param existingRoles The map of existing roles to check for valid inheritance.
-   * @throws BadRequestResponse if the configuration is invalid, such as containing null values, unknown inherited roles, or inheritance cycles.
+   * @throws BadRequestResponse if the configuration is invalid, such as containing
+   *                            null values, unknown inherited roles, or inheritance cycles.
    */
   private void validateRoleConfig(String role, RoleConfig config, Map<String, RoleConfig> existingRoles) {
     if (config == null) {
@@ -292,8 +297,10 @@ public class PermissionsService {
   }
 
   /**
-   * Helper method to detect cycles in the role inheritance graph using depth-first search. This method checks if there is a cycle in the inheritance
-   * hierarchy by keeping track of visiting and visited nodes. If it encounters a node that is currently being visited, it indicates a cycle.
+   * Helper method to detect cycles in the role inheritance graph using depth-first search.
+   * This method checks if there is a cycle in the inheritance
+   * hierarchy by keeping track of visiting and visited nodes.
+   * If it encounters a node that is currently being visited, it indicates a cycle.
    * @param role The role to check for cycles.
    * @param roles The map of roles and their configurations.
    * @param visiting The set of roles currently being visited in the DFS.
@@ -323,7 +330,9 @@ public class PermissionsService {
   }
 
   /**
-   * Builds the default permissions configuration with baseline roles and permissions. This method creates a RolePermissions object with a "volunteer_base" role that includes the predefined baseline permissions, and returns it as the default configuration.
+   * Builds the default permissions configuration with baseline roles and permissions.
+   * This method creates a RolePermissions object with a "volunteer_base" role that
+   * includes the predefined baseline permissions, and returns it as the default configuration.
    * @return A RolePermissions object representing the default permissions configuration.
    */
   private List<String> append(List<String> source, String value) {
@@ -374,7 +383,11 @@ public class PermissionsService {
 
   /**
    * Retrieves a list of all available permissions in the system by scanning the
-   * specified controller classes for methods annotated with @RequirePermission. This method collects permissions from both the hardcoded ROUTE_PERMISSIONS list and any permissions defined in code through annotations, ensuring that the catalog of available permissions is comprehensive and up-to-date with the application's codebase.
+   * specified controller classes for methods annotated with @RequirePermission.
+   * This method collects permissions from both the hardcoded ROUTE_PERMISSIONS
+   * list and any permissions defined in code through annotations, ensuring that
+   * the catalog of available permissions is comprehensive and up-to-date with the
+   * application's codebase.
    *
    * @return A list of all available permissions in the system.
    */
@@ -392,7 +405,11 @@ public class PermissionsService {
   }
 
   /**
-   * Retrieves a catalog of all available permissions in the system, including metadata such as grouping and labeling for UI purposes. This method builds a list of PermissionCatalogEntry objects by scanning the available permissions and categorizing them based on their names. The resulting catalog provides a structured representation of permissions that can be used in administrative interfaces for managing role permissions.
+   * Retrieves a catalog of all available permissions in the system, including metadata such
+   * as grouping and labeling for UI purposes. This method builds a list of PermissionCatalogEntry
+   * objects by scanning the available permissions and categorizing them based on their names.
+   * The resulting catalog provides a structured representation of permissions that can be used
+   * in administrative interfaces for managing role permissions.
    *
    * @return A list of PermissionCatalogEntry objects representing the permission catalog.
    */
@@ -403,7 +420,10 @@ public class PermissionsService {
   }
 
   /**
-   * Converts a permission string into a PermissionCatalogEntry object with metadata for grouping and labeling. This method determines the group and label for a permission based on its name, and also indicates whether the permission is assignable to volunteers. The resulting PermissionCatalogEntry provides a structured representation of the permission for use in administrative interfaces.
+   * Converts a permission string into a PermissionCatalogEntry object with metadata for grouping and
+   * labeling. This method determines the group and label for a permission based on its name, and
+   * also indicates whether the permission is assignable to volunteers. The resulting PermissionCatalogEntry
+   * provides a structured representation of the permission for use in administrative interfaces.
    *
    * @param permission The permission string to convert.
    * @return A PermissionCatalogEntry object representing the permission with metadata.

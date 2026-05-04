@@ -18,13 +18,15 @@ import io.javalin.http.Handler;
  * SecuredHandler so role and permission annotations are enforced consistently.
  */
 public class RouteRegistrar {
-  private static final int DYNAMIC_SEGMENT_SCORE = 1; // Dynamic segments are less specific than static ones, so they get a lower score.
+  // Dynamic segments are less specific than static ones, so they get a lower score.
+  private static final int DYNAMIC_SEGMENT_SCORE = 1;
+
   private static final int STATIC_SEGMENT_SCORE = 10; // Static segments are more specific, so they get a higher score.
 
   /**
-   * Scans the given controller for methods annotated with @Route and registers them with the provided Javalin app.
-   * Methods are sorted by route specificity to ensure that more specific routes are registered before less specific ones,
-   * preventing route conflicts.
+   * Scans the given controller for methods annotated with @Route and registers them with the
+   * provided Javalin app. Methods are sorted by route specificity to ensure that more specific
+   * routes are registered before less specific ones, preventing route conflicts.
    * @param app the Javalin app to register routes on
    * @param controller the controller instance containing the @Route methods
    * @param permissionsService the service used to enforce role and permission checks in the SecuredHandler

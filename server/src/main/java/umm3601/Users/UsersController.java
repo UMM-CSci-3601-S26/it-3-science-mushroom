@@ -63,7 +63,8 @@ public class UsersController {
    * required fields are present and meet the necessary criteria. The password is hashed
    * before being stored in the database.
    * @param ctx
-   * @throws BadRequestResponse if the request body is missing required fields, if the username already exists, or if any field fails validation criteria
+   * @throws BadRequestResponse if the request body is missing required fields, if the username
+   *                            already exists, or if any field fails validation criteria
    */
   @Route(method = HttpMethod.POST, path = API_USERS)
   @RequireRole(Role.ADMIN)
@@ -104,7 +105,8 @@ public class UsersController {
    * stored in the database.
    * @param ctx
    * @throws NotFoundResponse if no user with the specified ID exists
-   * @throws BadRequestResponse if the request body is missing required fields, if the username already exists for a different user, or if any field fails validation criteria
+   * @throws BadRequestResponse if the request body is missing required fields, if the username already
+   *                            exists for a different user, or if any field fails validation criteria
    */
   @Route(method = HttpMethod.PUT, path = API_USERS_BY_ID)
   @RequireRole(Role.ADMIN)
