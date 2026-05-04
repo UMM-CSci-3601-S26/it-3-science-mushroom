@@ -15,6 +15,7 @@
 - [Additional Docker Compose commands](#additional-docker-compose-commands)
 - [Using a custom domain](#using-a-custom-domain)
 - [Troubleshooting](#troubleshooting)
+  - [Client debugging](#client-debugging)
 
 ## Summary
 
@@ -212,3 +213,30 @@ DNS `A record` to the IP of your droplet. Stop and remove your containers with `
 - If HTTPS does not work, confirm that `APP_HOST` points to the droplet and that ports `80` and `443` are open.
 - If the app starts but API requests fail, check `docker-compose logs server`.
 - If the database is empty or has old data, check whether the Mongo volume already exists. Seed data only runs automatically when the Mongo volume is first created.
+
+### Client debugging
+
+The `client` container serves the Angular build through Caddy and reverse proxies `/api` requests to the server container.
+
+Check the client container logs:
+
+```bash
+docker-compose logs client
+```
+
+Follow client logs live:
+
+```bash
+docker-compose logs --follow client
+```
+
+Rebuild only the client image after frontend changes:
+
+```bash
+docker-compose build client
+docker-compose up -d client
+```
+
+If the page loads but data does not, open the browser developer tools and check the Network tab. Requests to `/api/...` should return from the same deployed host. If those API requests fail, check `docker-compose logs server`.
+
+If the page does not load at all, check that the `client` container is running with `docker-compose ps`, then check `docker-compose logs client` for Caddy errors.
