@@ -3,6 +3,7 @@
 [![Server Build Status](../../actions/workflows/server.yml/badge.svg)](../../actions/workflows/server.yml)
 [![Client Build Status](../../actions/workflows/client.yaml/badge.svg)](../../actions/workflows/client.yaml)
 [![End to End Build Status](../../actions/workflows/e2e.yaml/badge.svg)](../../actions/workflows/e2e.yaml)
+[![Code Quality Status](../../actions/workflows/e2e.yaml/badge.svg)](../../actions/workflows/codeql.yaml)
 
 ## Table of Contents
 
