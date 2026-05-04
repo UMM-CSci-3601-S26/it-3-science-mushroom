@@ -28,9 +28,17 @@ import { FamilyCardComponent } from './family-card.component';
 import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
 
+// Auth Imports
 import { AuthService } from '../auth/auth-service';
 import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } from './family-management/delete-family/delete-family-request-dialog.component';
 
+/**
+ * FamilyListComponent is responsible for displaying a paginated list of families,
+ * along with filtering options and actions such as exporting data and requesting family deletion.
+ * It interacts with FamilyService to fetch family data and dashboard statistics,
+ * and uses AuthService to determine user permissions for various actions.
+ * The component also handles error scenarios gracefully by displaying appropriate messages using MatSnackBar.
+ */
 @Component({
   selector: 'app-family',
   templateUrl: './family-list.component.html',
@@ -90,22 +98,43 @@ export class FamilyListComponent {
     return this.authService.hasPermission('request_family_delete');
   }
 
+  /**
+   * The component uses several signals to manage state related to family data, filtering options,
+   * pagination, and error messages.
+   * - guardianName: Tracks the current input for filtering families by guardian name.
+   * - errMsg: Stores error messages to be displayed in case of server communication issues.
+   * - showOptionsMenu: Controls the visibility of the options menu for exporting data.
+   */
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
   showOptionsMenu = signal<boolean>(false);
 
+  /**
+   * families signal is populated by fetching family data from the server using FamilyService.
+   */
   families = toSignal <Family[]>(
     this.familyService.getFamilies().pipe(
       catchError(() => of([]))
     )
   );
 
+  /**
+   * dashboardStats signal fetches summary statistics for the dashboard, such as students per school and grade,
+   * total families, and total students. It handles errors by returning undefined if the server request fails.
+   */
   dashboardStats = toSignal <DashboardStats | undefined>(
     this.familyService.getDashboardStats().pipe(
       catchError(() => of(undefined))
     )
   );
 
+  /**
+   * Sorts families by grade, with PreK coming first and Kindergarten coming second.
+   * @param a the first grade to compare
+   * @param b the second grade to compare
+   * @returns a negative number if a should come before b, a positive number if b should come before a,
+   *  or 0 if they are equal
+   */
   gradeSort = (a: { key: string }, b: { key: string }) => {
     // PreK comes first
     if (a.key === 'PreK' && b.key === 'PreK') return 0;
@@ -121,6 +150,13 @@ export class FamilyListComponent {
     return Number(a.key) - Number(b.key);
   };
 
+  /**
+   * Filters the given options based on the input string. It performs a case-insensitive search on both the label and value of each option.
+   * If the input is empty or undefined, it returns the original list of options.
+   * @param options the list of options to filter
+   * @param input the input string to filter by
+   * @returns a filtered list of options that match the input string
+   */
   private filterOptions(options: SelectOption[], input:string): SelectOption[] {
     if (!input) return options;
     const lower = input.toLowerCase();
@@ -154,12 +190,27 @@ export class FamilyListComponent {
     this.pageNum.set(0);
   }
 
+  /**
+   * filteredFamilyOptions is a computed signal that provides a filtered list of family options based on the current value of guardianName.
+   * It uses the filterOptions method to perform the filtering, allowing for dynamic updates to the options as the guardianName input changes.
+   * This is typically used for an autocomplete or dropdown filter in the UI to help users find families by guardian name more easily.
+   */
   filteredFamilyOptions = computed(() =>
     this.filterOptions(this.familyService.familyOptions(), (this.guardianName() || '').toLowerCase())
   );
 
+  /**
+   * guardianName$ is an observable that emits the current value of the guardianName signal.
+   * It is used to trigger server-side filtering of families whenever the guardianName changes.
+   * The serverFilteredFamilies signal listens to changes in guardianName$ and makes a request to the server to fetch families that match the current guardian name filter.
+   */
   private guardianName$ = toObservable(this.guardianName);
 
+  /**
+   * serverFilteredFamilies is a signal that holds the list of families fetched from the server based on the current guardianName filter.
+   * It combines the guardianName$ observable with a switchMap to make a request to the server for families that match the guardian name.
+   * If there is an error during the server request, it catches the error, sets an appropriate error message, and returns an empty list of families.
+   */
   serverFilteredFamilies =
     toSignal(
       combineLatest([

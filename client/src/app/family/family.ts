@@ -1,3 +1,4 @@
+// student information interface
 export interface StudentInfo {
   name: string;
   grade: string;
@@ -8,6 +9,7 @@ export interface StudentInfo {
   backpack: boolean;
 }
 
+// family information interface, apart of the general family information
 export interface AvailabilityOptions {
   earlyMorning: boolean;
   lateMorning: boolean;
@@ -49,6 +51,7 @@ export interface FamilyChecklist {
   sections: ChecklistSection[];
 }
 
+// main family interface, which includes general family information and an array of students in the family
 export interface Family {
   _id?: string;
   ownerUserId?: string;
@@ -75,6 +78,7 @@ export interface FamilyDeleteRequest {
   requestedAt?: string;
 }
 
+// dashboard statistics interface
 export interface DashboardStats {
   studentsPerSchool: { [school: string]: number};
   studentsPerGrade: { [grade: string]: number};
@@ -82,6 +86,7 @@ export interface DashboardStats {
   totalStudents: number;
 }
 
+// select option interface for dropdown filters
 export interface SelectOption {
   label: string;
   value: string;

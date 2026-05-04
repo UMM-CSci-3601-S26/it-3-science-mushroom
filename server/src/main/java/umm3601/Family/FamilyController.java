@@ -53,6 +53,7 @@ import umm3601.Users.Users;
 - getFamilies()
 - getFamily() /By ID/
 - addNewFamily()
+- updateFamily() /By ID/
 - deleteFamily() /By ID/
 - getDashboardStats() /Has its own API/
 - exportFamiliesAsCSV()
@@ -140,6 +141,12 @@ public class FamilyController {
   }
 
   // GET all families
+  /**
+   * Gets a list of all families, filtered by query parameters if applicable.
+   * Supported query parameters are: Guardian Name, Guardian First Name, Guardian Last Name,
+   * Status (helped, not_helped, being_helped), and Helped (true/false).
+   * @param ctx the Javalin context containing the families query
+   */
   @Route(method = HttpMethod.GET, path = API_FAMILY)
   @RequirePermission("view_families")
   public void getFamilies(Context ctx) {
@@ -153,6 +160,12 @@ public class FamilyController {
   }
 
   // GET family by ID
+  /**
+   * Gets a family by its ID.
+   * @param ctx the Javalin context containing the family ID
+   * @throws BadRequestResponse if the provided ID is not a legal Mongo Object ID
+   * @throws NotFoundResponse if no family with the provided ID is found
+   */
   @Route(method = HttpMethod.GET, path = API_FAMILY_BY_ID)
   @RequirePermission("view_family")
   public void getFamily(Context ctx) {
@@ -317,6 +330,12 @@ public class FamilyController {
   }
 
   // Filter for families
+  /**
+   * Constructs a MongoDB filter based on the query parameters in the provided Javalin context.
+   * Supported query parameters are: Guardian Name
+   * @param ctx the Javalin context containing the family query parameters
+   * @return a Bson filter to be used in MongoDB queries for families
+   */
   private Bson constructDatabaseFilter(Context ctx) {
     List<Bson> filters = new ArrayList<>();
 
@@ -355,6 +374,12 @@ public class FamilyController {
   }
 
   // POST new family
+  /**
+   * Adds a new family to the database based on the JSON body of the provided Javalin context.
+   * @param ctx the Javalin context containing the new family data
+   * @throws BadRequestResponse if the provided family data is invalid
+   * (e.g. missing required fields, invalid email format)
+   */
   @Route(method = HttpMethod.POST, path = API_FAMILY)
   @RequirePermission("add_family")
   public void addNewFamily(Context ctx) {
@@ -378,6 +403,16 @@ public class FamilyController {
   }
 
   // UPDATE family
+  /**
+   * Updates an existing family in the database based on the family ID in the path parameter
+   * and the updated family data in the JSON body of the provided Javalin context.
+   * @param ctx the Javalin context containing the updated family data
+   * @throws BadRequestResponse if the provided family ID is not a legal Mongo Object ID,
+   * or if the updated family data is invalid (e.g. missing required fields, invalid email format)
+   * @throws NotFoundResponse if no family with the provided ID is found
+   * @throws BadRequestResponse if the updated family data is invalid (e.g. invalid email format)
+   * @returns the updated family data as JSON in the response body
+   */
   @Route(method = HttpMethod.PUT, path = API_FAMILY_BY_ID)
   @RequirePermission("edit_family")
   public void updateFamily(Context ctx) {
@@ -442,6 +477,14 @@ public class FamilyController {
   }
 
   // DELETE family
+  /**
+   * Deletes an existing family from the database based on the family ID
+   * in the path parameter of the provided Javalin context.
+   * @param ctx the Javalin context containing the family ID
+   * @throws BadRequestResponse if the provided family ID is not a legal Mongo Object ID
+   * @throws NotFoundResponse if no family with the provided ID is found, or if the family
+   * could not be deleted for some reason (e.g. database error)
+   */
   @Route(method = HttpMethod.DELETE, path = API_FAMILY_BY_ID)
   @RequirePermission("delete_family")
   public void deleteFamily(Context ctx) {
@@ -786,6 +829,12 @@ public class FamilyController {
   }
 
   // GET dashboard stats
+  /**
+   * Gets dashboard statistics including total number of families, total number of students,
+   * students per school, and students per grade.
+   * @param ctx the Javalin context for the request
+   * @returns a JSON object containing the dashboard statistics in the response body
+   */
   @Route(method = HttpMethod.GET, path = API_DASHBOARD)
   @RequirePermission("view_dashboard_stats")
   public void getDashboardStats(Context ctx) {
@@ -1626,6 +1675,11 @@ public class FamilyController {
     return nameParts[nameParts.length - 1];
   }
 
+  /**
+   * Converts a list of StudentInfo objects to a list of Documents for MongoDB storage.
+   * @param students the list of StudentInfo objects to convert
+   * @return the list of Documents representing the student information
+   */
   private List<Document> studentInfoToDocuments(List<Family.StudentInfo> students) {
     List<Document> updatedStudentInfo = new ArrayList<>();
     if (students == null) {
