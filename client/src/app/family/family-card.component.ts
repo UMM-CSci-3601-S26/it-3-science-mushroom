@@ -66,6 +66,10 @@ export class FamilyCardComponent {
     this.requestDelete.emit();
   }
 
+  /**
+   * getAvailableTimes is a method that returns a string representation of the available time slots for a family based on their timeAvailability property.
+   * @returns A string listing the available time slots (e.g., "Early Morning, Late Afternoon") or "None" if no time slots are available.
+   */
   getAvailableTimes(): string {
     const a = this.family().timeAvailability;
     if (!a) {
