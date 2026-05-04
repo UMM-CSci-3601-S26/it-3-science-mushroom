@@ -16,6 +16,7 @@
 - [Using a custom domain](#using-a-custom-domain)
 - [Troubleshooting](#troubleshooting)
   - [Client debugging](#client-debugging)
+  - [Server debugging](#server-debugging)
 
 ## Summary
 
@@ -240,3 +241,53 @@ docker-compose up -d client
 If the page loads but data does not, open the browser developer tools and check the Network tab. Requests to `/api/...` should return from the same deployed host. If those API requests fail, check `docker-compose logs server`.
 
 If the page does not load at all, check that the `client` container is running with `docker-compose ps`, then check `docker-compose logs client` for Caddy errors.
+
+### Server debugging
+
+The `server` container runs the Java API. It is not exposed directly to the droplet host; Caddy reaches it inside Docker at `server:4567`.
+
+Check the server container logs:
+
+```bash
+docker-compose logs server
+```
+
+Follow server logs live:
+
+```bash
+docker-compose logs --follow server
+```
+
+Check whether the server container is running:
+
+```bash
+docker-compose ps server
+```
+
+Test the server through the deployed Caddy route:
+
+```bash
+curl "https://$(grep '^APP_HOST=' .env | cut -d '=' -f2-)/api/health"
+```
+
+This should return `ok`. Do not use `curl http://localhost:4567/api/health` from the droplet host unless you have temporarily published the server port in `docker-compose.yml`.
+
+If the server exits immediately, check that `.env` contains `JWT_SECRET`:
+
+```bash
+grep '^JWT_SECRET=' .env
+```
+
+If the server starts but database-backed requests fail, check whether Mongo is running:
+
+```bash
+docker-compose ps mongo
+docker-compose logs mongo
+```
+
+If code changed on the server, rebuild only the server image:
+
+```bash
+docker-compose build server
+docker-compose up -d server
+```
