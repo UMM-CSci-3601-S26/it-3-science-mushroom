@@ -3,19 +3,56 @@
 generateSecret() {
   local secret
 
-  if ! command -v openssl >/dev/null 2>&1; then
-    echo "OpenSSL is required to generate JWT_SECRET. Install it with 'apt install openssl' and rerun this script." >&2
-    exit 1
+  if command -v openssl >/dev/null 2>&1; then
+    secret="$(openssl rand -hex 64 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
   fi
 
-  secret="$(openssl rand -hex 64)"
-
-  if [[ -z "$secret" ]]; then
-    echo "Failed to generate JWT_SECRET." >&2
-    exit 1
+  if command -v python3 >/dev/null 2>&1; then
+    secret="$(python3 -c 'import secrets; print(secrets.token_hex(64))' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
   fi
 
-  echo "$secret"
+  if command -v python >/dev/null 2>&1; then
+    secret="$(python -c 'import secrets; print(secrets.token_hex(64))' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v node >/dev/null 2>&1; then
+    secret="$(node -e 'console.log(require("crypto").randomBytes(64).toString("hex"))' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v pwsh >/dev/null 2>&1; then
+    secret="$(pwsh -NoProfile -Command '$bytes = New-Object byte[] 64; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); ([BitConverter]::ToString($bytes) -replace "-", "").ToLower()' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v powershell.exe >/dev/null 2>&1; then
+    secret="$(powershell.exe -NoProfile -Command '$bytes = New-Object byte[] 64; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); ([BitConverter]::ToString($bytes) -replace "-", "").ToLower()' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  echo "Could not generate JWT_SECRET. Install OpenSSL, Python, Node.js, or PowerShell and rerun this script." >&2
+  exit 1
 }
 
 if [[ ! -e /swapfile ]]; then
