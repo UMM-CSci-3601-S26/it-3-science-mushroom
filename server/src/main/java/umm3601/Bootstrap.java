@@ -1,9 +1,14 @@
+// Package
 package umm3601;
 
+// Com imports
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
+// Javalin imports
 import io.javalin.Javalin;
+
+// App imports
 import umm3601.Auth.AuthController;
 import umm3601.Auth.PermissionsService;
 import umm3601.Auth.RouteRegistrar;
@@ -22,10 +27,16 @@ import umm3601.Users.UsersPolicy;
 import umm3601.Users.UsersService;
 import umm3601.Users.UsersValidator;
 
-
+/**
+ * Bootstrap is the entry point for the application. It wires together the
+ * controllers, services, and database connection, then starts the Javalin
+ * server.
+ */
 public class Bootstrap {
   private static final int DEFAULT_PORT = 4567;
 
+  // Prevent instantiation since this class is just a container for the main
+  // method.
   public static void start() {
     String jwtSecret = System.getenv("JWT_SECRET");
     if (jwtSecret == null || jwtSecret.isBlank()) {
@@ -44,10 +55,14 @@ public class Bootstrap {
     app.start(getPort());
   }
 
+  // Helper methods for bootstrapping the app. These are kept separate from the
+  // main method for readability and testability.
   private static String getEnv(String key, String fallback) {
     return System.getenv().getOrDefault(key, fallback);
   }
 
+  // Connect to MongoDB using the address and database name from environment
+  // variables, with defaults for local development.
   private static MongoDatabase connectToDatabase() {
     String mongoAddr = getEnv("MONGO_ADDR", "localhost");
     String dbName = getEnv("MONGO_DB", "dev");
@@ -55,6 +70,7 @@ public class Bootstrap {
     return mongoClient.getDatabase(dbName);
   }
 
+  // Create a Javalin app with global middleware and exception handling.
   private static Javalin createApp(AuthMiddleware authMiddleware) {
     Javalin app = Javalin.create();
     ApiExceptionHandler.register(app);
@@ -63,6 +79,8 @@ public class Bootstrap {
     return app;
   }
 
+  // Instantiate the controllers with their required dependencies. This keeps the
+  // main method clean and makes it easier to test controllers in isolation.
   private static Object[] buildControllers(
       MongoDatabase db,
       String jwtSecret,
@@ -90,12 +108,16 @@ public class Bootstrap {
     };
   }
 
+  // Register the routes for each controller with the Javalin app.
   private static void registerRoutes(Javalin app, PermissionsService permissionsService, Object[] controllers) {
     for (Object controller : controllers) {
       RouteRegistrar.register(app, controller, permissionsService);
     }
   }
 
+  // Get the port number from the environment variable or use the default. This
+  // allows flexibility for deployment while providing a sensible default for
+  // local development.
   private static int getPort() {
     String port = getEnv("PORT", Integer.toString(DEFAULT_PORT));
     try {
