@@ -140,11 +140,13 @@ Check only the server logs:
 docker-compose logs server
 ```
 
-The server exposes a health endpoint inside the droplet:
+The deployed app exposes a health endpoint at the host stored in `.env`:
 
 ```bash
-curl http://localhost:4567/api/health
+curl "https://$(grep '^APP_HOST=' .env | cut -d '=' -f2-)/api/health"
 ```
+
+This should return `ok`. The Java server's port `4567` is only available inside Docker's private network, so `curl http://localhost:4567/api/health` from the droplet host will not work unless you temporarily publish that port in `docker-compose.yml`.
 
 You can also confirm that `.env` contains the required keys:
 
