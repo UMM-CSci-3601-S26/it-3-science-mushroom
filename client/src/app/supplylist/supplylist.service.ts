@@ -4,6 +4,20 @@ import { Observable } from 'rxjs';
 import { SupplyList } from './supplylist';
 import { environment } from 'src/environments/environment';
 
+type SupplyListFilters = {
+  school?: string;
+  grade?: string;
+  item?: string;
+  brand?: string;
+  color?: string;
+  packageSize?: number;
+  size?: string;
+  type?: string;
+  material?: string;
+  quantity?: number;
+  notes?: string;
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,9 +38,10 @@ export class SupplyListService {
   private readonly quantityKey = 'quantity';
   private readonly notesKey = 'notes';
 
-  getSupplyList(filters?: {school?: string; grade?: string; item?: string; brand?: string; color?: string;
-    packageSize?: number; size?: string; type?: string; material?: string; quantity?: number; notes?: string}): Observable<SupplyList[]> {
-
+  getSupplyList(filters?: SupplyListFilters): Observable<SupplyList[]> {
+    // Keep filter names aligned with SupplyListController query keys. The
+    // server owns the actual Mongo filtering so the client does not need a full
+    // copy of the supply list before narrowing results.
     let httpParams: HttpParams = new HttpParams();
     if (filters) {
       if (filters.school) {
@@ -52,6 +67,15 @@ export class SupplyListService {
       }
       if (filters.material) {
         httpParams = httpParams.set(this.materialKey, filters.material);
+      }
+      if (filters.packageSize) {
+        httpParams = httpParams.set(this.packageSizeKey, filters.packageSize);
+      }
+      if (filters.quantity) {
+        httpParams = httpParams.set(this.quantityKey, filters.quantity);
+      }
+      if (filters.notes) {
+        httpParams = httpParams.set(this.notesKey, filters.notes);
       }
     }
     return this.httpClient.get<SupplyList[]>(this.supplylistUrl, { params: httpParams });

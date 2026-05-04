@@ -51,8 +51,6 @@ import { AuthService } from '../auth/auth-service';
     MatIconModule,
     MatTreeModule,
     MatExpansionModule,
-    MatIconModule,
-    MatButtonModule,
     CommonModule,
     RouterLink
   ],
@@ -60,7 +58,7 @@ import { AuthService } from '../auth/auth-service';
 })
 
 export class SupplyListComponent {
-  // Define the columns to be displayed in the table, including an 'actions' column for the menu
+  // Table columns mirror the fields users scan when comparing supply needs.
   displayedColumns: string[] = [
     'school',
     'grade',
@@ -75,12 +73,9 @@ export class SupplyListComponent {
     'notes'
   ];
 
-
-  // Columns to display in the Material table
   dataSource = new MatTableDataSource<SupplyList>([]);
   readonly sort = viewChild<MatSort>(MatSort);
 
-  // Inject the MatSnackBar for displaying error messages and the InventoryService for fetching inventory data
   private snackBar = inject(MatSnackBar);
   private supplylistService = inject(SupplyListService);
   private authService = inject(AuthService);
@@ -97,19 +92,20 @@ export class SupplyListComponent {
     return this.authService.hasPermission('delete_supply_list');
   }
 
-  // Constructor sets up an effect to update the table data whenever the serverFilteredSupplyList signal changes, and assigns the sorting and pagination components to the data source
   constructor() {
+    // Keep the Material data source in sync with the signal-backed server data.
     effect(() => {
       this.dataSource.data = this.serverFilteredSupplyList();
     });
-    // Reset grade when school changes so the grade dropdown stays valid
+    // Reset grade when school changes so the grade dropdown stays valid.
     effect(() => {
       this.school();
       this.grade.set(undefined);
     });
   }
 
-  // Signals for each filter
+  // Signals hold the current filter state; toObservable bridges them into the
+  // debounced server request below.
   school = signal<string | undefined>(undefined);
   grade = signal<string | undefined>(undefined);
   item = signal<string | undefined>(undefined);
@@ -145,15 +141,27 @@ export class SupplyListComponent {
   private refresh$ = toObservable(this.refreshTrigger);
 
   /**
-   * Combines all filter signals into one stream that then triggers a new server request when a filter changes
-   * Includes a debounce of 300ms to prevent excessive requests when filters are changed rapidly
-  */
+   * Combines filter signals into one debounced request stream. Filtering on the
+   * server keeps the grouped view responsive even as the supply list grows.
+   */
   serverFilteredSupplyList = toSignal(
-    combineLatest([this.school$, this.grade$, this.item$, this.brand$, this.color$, this.size$, this.type$, this.material$, this.refresh$]).pipe(
+    combineLatest([
+      this.school$,
+      this.grade$,
+      this.item$,
+      this.brand$,
+      this.color$,
+      this.size$,
+      this.type$,
+      this.material$,
+      this.quantity$,
+      this.refresh$
+    ]).pipe(
       debounceTime(300),
-      switchMap(([ school, grade, item, brand, color, size, type, material]) =>
-        this.supplylistService.getSupplyList({ school, grade, item, brand, color, size, type, material})
-      ),
+      switchMap(([ school, grade, item, brand, color, size, type, material, quantity]) => {
+        const filters = { school, grade, item, brand, color, size, type, material, ...(quantity === undefined ? {} : { quantity }) };
+        return this.supplylistService.getSupplyList(filters);
+      }),
       catchError((err) => {
         const msg = `Problem contacting the server - Error Code: ${err.status}\nMessage: ${err.message}`;
         this.errMsg.set(msg);
@@ -171,26 +179,23 @@ export class SupplyListComponent {
   );
 
   groupedSupplyList = computed(() => {
-    // Types for the grouping structure
+    // Group by school -> grade -> teacher to match how staff distribute supply lists.
     type TeacherGroup = { teacher: string; items: SupplyList[] };
     type GradeGroup = { grade: string; teachers: TeacherGroup[] };
     type SchoolGroup = { school: string; grades: GradeGroup[] };
     const byName = (a: string, b: string) => a.localeCompare(b);
 
-    // Nested map for grouping: school -> grade -> teacher -> items
     const schoolMap = new Map<string, Map<string, Map<string, SupplyList[]>>>();
     const getOrCreate = <T>(map: Map<string, T>, key: string, init: () => T) => {
       if (!map.has(key)) map.set(key, init());
       return map.get(key)!;
     };
 
-    // Group supplies by school, grade, and teacher
     for (const supply of this.serverFilteredSupplyList()) {
       const school = supply.school || 'Unknown School';
       const grade = supply.grade || 'Unknown Grade';
       const teacher = supply.teacher || 'N/A';
 
-      // Make maps for each level of grouping
       const gradeMap = getOrCreate(schoolMap, school, () => new Map<string, Map<string, SupplyList[]>>());
       const teacherMap = getOrCreate(gradeMap, grade, () => new Map<string, SupplyList[]>());
       const items = getOrCreate(teacherMap, teacher, () => []);
@@ -198,22 +203,18 @@ export class SupplyListComponent {
       items.push(supply);
     }
 
-    // Sort schools, grades, and teachers alphabetically
     const sortedSchools = Array.from(schoolMap.keys()).sort(byName);
 
-    // Turn maps into the proper array structure
     return sortedSchools.map((school): SchoolGroup => {
       const gradeMap = schoolMap.get(school)!;
       const sortedGrades = Array.from(gradeMap.keys()).sort(byName);
 
-      // For each grade, sort teachers and their items
       return {
         school,
         grades: sortedGrades.map((grade): GradeGroup => {
           const teacherMap = gradeMap.get(grade)!;
           const sortedTeachers = Array.from(teacherMap.keys()).sort(byName);
 
-          // For each teacher, sort their items by item name
           return {
             grade,
             teachers: sortedTeachers.map((teacher): TeacherGroup => ({
@@ -323,6 +324,7 @@ export class SupplyListComponent {
     this.material.set(undefined);
     this.school.set(undefined);
     this.grade.set(undefined);
+    this.quantity.set(undefined);
   }
 }
 export { SupplyListService };
