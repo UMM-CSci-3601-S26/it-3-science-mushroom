@@ -3,23 +3,22 @@
 [![Server Build Status](../../actions/workflows/server.yml/badge.svg)](../../actions/workflows/server.yml)
 [![Client Build Status](../../actions/workflows/client.yaml/badge.svg)](../../actions/workflows/client.yaml)
 [![End to End Build Status](../../actions/workflows/e2e.yaml/badge.svg)](../../actions/workflows/e2e.yaml)
-[![Code Quality Status](../../actions/workflows/e2e.yaml/badge.svg)](../../actions/workflows/codeql.yaml)
 
 ## Table of Contents
 
 - [Ready4Learning Interface](#ready4learning-interface)
   - [Table of Contents](#table-of-contents)
-  - [Project Description:](#project-description)
-  - [Project Features:](#project-features)
+  - [Project Description](#project-description)
+  - [Project Features](#project-features)
   - [Technical Document](#technical-document)
   - [To-Do List](#to-do-list)
   - [Customer Pamphlet](#customer-pamphlet)
   - [Contributors](#contributors)
 
-## Project Description:
+## Project Description
 The Ready4Learning interface is a system designed to improve the ease of management and quality of life for the staff, volunteers, and family participating in the drive hosted by the Office of Community Engagement (OoCE) here at the University of Minnesota Morris.
 
-## Project Features:
+## Project Features
 - Users and Login
   - A login system ensures only the individuals with proper access can utilize parts of the interface.
   - Families can log in and edit their information at any time, such as changing availability or adding a student. Families are also able to see information pertaining to them posted by staff.
@@ -62,8 +61,6 @@ A document that describes the technical details of the project.
 List of known issues and areas for improvements.
 
 ## [Customer Pamphlet](R4LPamphlet.pdf)
-
-A pamphlet that customers can bring to conferences to share, highlighting the value of the system. It can also be used when speaking with potential users.
 
 ## Contributors
 
