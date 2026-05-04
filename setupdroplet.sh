@@ -1,4 +1,23 @@
 #!/usr/bin/env bash
+
+generateSecret() {
+  local secret
+
+  if ! command -v openssl >/dev/null 2>&1; then
+    echo "OpenSSL is required to generate JWT_SECRET. Install it with 'apt install openssl' and rerun this script." >&2
+    exit 1
+  fi
+
+  secret="$(openssl rand -hex 64)"
+
+  if [[ -z "$secret" ]]; then
+    echo "Failed to generate JWT_SECRET." >&2
+    exit 1
+  fi
+
+  echo "$secret"
+}
+
 if [[ ! -e /swapfile ]]; then
   echo "/swapfile does not exist, setting up swap"
   # Set up swap space
@@ -18,6 +37,14 @@ domain="${ip}.nip.io"
 echo
 echo "Setting APP_HOST to ${domain}"
 echo "APP_HOST=${domain}" > .env
+jwt_secret="$(generateSecret)"
+if [[ -z "$jwt_secret" ]]; then
+  echo "JWT_SECRET was not generated; stopping setup." >&2
+  exit 1
+fi
+echo "JWT_SECRET=${jwt_secret}" >> .env
+chmod 600 .env
+echo "Generated JWT_SECRET and saved it to .env"
 echo
 echo "Your site will be served over HTTPS automatically using Let's Encrypt or ZeroSSL."
 echo "By continuing, you agree to the Let's Encrypt Subscriber Agreement at:"
