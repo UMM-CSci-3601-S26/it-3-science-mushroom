@@ -39,22 +39,44 @@ export class FamilyService {
 
   private readonly familyKey = 'guardianName';
 
+  /**
+   * Constructor for FamilyService, which initializes the service by loading the families from the server and setting up the necessary dependencies.
+   * The service provides methods for components to interact with family data (API calls, data transformations, etc.)
+   * and manages a signal to keep track of the current list of families for components to subscribe to.
+   */
   constructor() {
     this.loadFamilies();
   }
 
+  /**
+   * Signal to hold the current list of families, which components can subscribe to for updates.
+   * Initialized as an empty array and updated when loadFamilies() is called to fetch data from the server.
+   */
   family = signal<Family[]>([]);
 
+  /**
+   * Loads the list of families from the server, optionally applying filters for guardian name and status.
+   * @param filters Optional filters for fetching families, including guardianName and status.
+   * If provided, these will be sent as query parameters in the API request to filter results on the server side.
+   */
   loadFamilies(filters?: Family): void {
     this.getFamilies(filters).subscribe(data => {
       this.family.set(data);
     })
   }
 
+  /**
+   * Computed signal to generate dropdown options for filtering families by guardian name, based on the current list of families.
+   */
   familyOptions = computed(() =>
     this.optionBuilder(this.family(), 'guardianName')
   );
 
+  /**
+   * Fetches the list of families from the server, applying optional filters for guardian name and status.
+   * @param filters Optional filters for fetching families, including guardianName and status.
+   * @returns An Observable of the list of families returned from the server, which can be subscribed to for updates.
+   */
   getFamilies(filters?: { guardianName?: string; status?: string }): Observable<Family[]> {
     let httpParams: HttpParams = new HttpParams();
 
@@ -72,6 +94,11 @@ export class FamilyService {
     });
   }
 
+  /**
+   * Fetches a family by their ID from the server.
+   * @param id The ID of the family to fetch.
+   * @returns An Observable of the family object returned from the server.
+   */
   getFamilyById(id: string): Observable<Family> {
     return this.httpClient.get<Family>(`${this.familyUrl}/${id}`);
   }
@@ -100,6 +127,11 @@ export class FamilyService {
     return this.httpClient.post<Family>(`${this.familyUrl}/${id}/help-session/save-all`, { checklist });
   }
 
+  /**
+   * Adds a new family to the database by sending a POST request to the server with the new family data.
+   * @param newFamily The new family data to add.
+   * @returns An Observable of the ID of the newly added family.
+   */
   addFamily(newFamily: Partial<Family>): Observable<string> {
     return this.httpClient.post<{id: string}>(this.familyUrl, newFamily).pipe(
       map(response => response.id),
@@ -107,6 +139,12 @@ export class FamilyService {
     );
   }
 
+  /**
+   * Updates an existing family in the database based on the family ID and the updated family data.
+   * @param id ID of the family to update
+   * @param updatedFamily The updated family data to save, which can be a partial family object containing only the fields to update
+   * @returns An Observable of the ID of the updated family.
+   */
   updateFamily(id: string, updatedFamily: Partial<Family>): Observable<string> {
     return this.httpClient.put<{id: string}>(`${this.familyUrl}/${id}`, updatedFamily).pipe(
       map(response => response.id),
@@ -114,6 +152,12 @@ export class FamilyService {
     );
   }
 
+  /**
+   * Deletes a family from the database by sending a DELETE request to the server with the family ID.
+   * @param id ID of the family to delete
+   * @returns An Observable of void, which can be subscribed to for completion of the delete operation.
+   * After deletion, the family list is reloaded and delete request notifications are triggered.
+   */
   deleteFamily(id: string): Observable<void> {
     return this.httpClient.delete<void>(`${this.familyUrl}/${id}`).pipe(
       tap(() => {
@@ -144,6 +188,10 @@ export class FamilyService {
     return this.httpClient.post<Family[]>(`${this.familyUrl}/schedule`, {});
   }
 
+  /**
+   * Fetches dashboard statistics from the server, including total families, total students, students per school, and students per grade.
+   * @returns An Observable of the dashboard statistics.
+   */
   getDashboardStats(): Observable<DashboardStats> {
     const httpParams: HttpParams = new HttpParams();
     return this.httpClient.get<DashboardStats>(this.dashboardUrl, {
@@ -157,6 +205,12 @@ export class FamilyService {
     });
   }
 
+  /**
+   * Helper function to build dropdown options for a given key in the family data, used for filtering families in the UI.
+   * @param data The array of family data to extract options from
+   * @param key The key in the family data to build options for (e.g. 'guardianName')
+   * @returns An array of SelectOption objects for the dropdown, with unique values from the specified key in the family data
+   */
   optionBuilder(data: Family[], key: keyof Family): SelectOption[] {
     return [...new Set(
       data.map(item => item[key]).filter((v): v is string => typeof v === 'string' && v.trim() !== '')
