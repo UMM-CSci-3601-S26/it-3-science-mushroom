@@ -1,3 +1,4 @@
+<!-- Family Card -->
 @if (family()) {
   <mat-card
     class="family-card"
@@ -8,6 +9,7 @@
     }"
   >
 
+    <!-- Header with Guardian Name -->
     <mat-card-header class="family-card-header">
       <mat-card-title class="family-card-guardianName">{{ family().guardianName }}</mat-card-title>
       <mat-card-subtitle class="family-card-email">{{ family().email }}</mat-card-subtitle>
@@ -19,6 +21,7 @@
       }
     </mat-card-header>
 
+    <!-- Edit Family Button -->
     @if (canEditFamily()) {
       <button mat-fab class="edit-family-fab" matTooltip="Edit Family" matTooltipPosition="left" [routerLink]="['/family', family()._id]" data-test="editFamilyButton">
         <mat-icon class="md-24" aria-label="Edit Family">edit</mat-icon>
@@ -65,11 +68,13 @@
         </div>
       } @else {
         <mat-list>
+          <!-- Students Section -->
           <mat-list-item>
             <mat-icon matListItemIcon>people</mat-icon>
             <p matListItemTitle>Students</p>
           </mat-list-item>
 
+          <!-- Student List -->
           <mat-list dense class="student-list">
             @for (student of family().students ?? []; track student.name) {
               <mat-list-item class="student-item">
@@ -83,6 +88,7 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <!-- Address Section -->
           <mat-list-item>
             <mat-icon matListItemIcon>home</mat-icon>
             <p matListItemTitle>Address</p>
@@ -91,12 +97,14 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <!-- Time Slot Section -->
           <mat-list-item>
             <mat-icon matListItemIcon>schedule</mat-icon>
             <p matListItemTitle>Time Slot</p>
             <p matListItemLine class="family-card-timeSlot">{{ family().timeSlot || 'to be assigned' }}</p>
           </mat-list-item>
 
+          <!-- Available Times Section -->
           <mat-list-item>
             <mat-icon matListItemIcon>schedule</mat-icon>
             <p matListItemTitle>Available Times</p>
@@ -105,6 +113,7 @@
 
           <mat-divider [inset]="true"></mat-divider>
 
+          <!-- Email Section -->
           <mat-list-item>
             <a href="mailto:{{family().email}}"  matListItemIcon><mat-icon>mail</mat-icon></a>
             <p matListItemTitle>Email</p>
@@ -116,6 +125,7 @@
       }
     </mat-card-content>
 
+    <!-- Request Delete Button -->
     @if (showRequestDeleteAction() && canRequestDelete) {
       <mat-card-actions class="family-card-actions">
         <button
