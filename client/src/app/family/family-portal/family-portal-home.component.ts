@@ -50,10 +50,14 @@ export class FamilyPortalHomeComponent implements OnInit {
       next: summary => {
         this.summary = summary;
         if (!summary.profileComplete) {
+          // First-time guardians should complete the profile before seeing
+          // checklist or drive-day details that depend on that family record.
           this.router.navigate(['/family-portal/form']);
           return;
         }
 
+        // Checklist is requested after the summary so the server can reject
+        // incomplete profiles consistently.
         this.familyPortalService.getChecklist().subscribe({
           next: checklist => {
             this.checklist = checklist;

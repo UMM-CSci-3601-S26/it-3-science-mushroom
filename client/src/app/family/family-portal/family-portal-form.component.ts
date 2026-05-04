@@ -48,6 +48,8 @@ export class FamilyPortalFormComponent implements OnInit {
     lateAfternoon: '1:00-2:00 PM',
   };
 
+  // Keep the portal grade list explicit because guardians enter student data
+  // without seeing the full internal family-management screens.
   readonly grades: string[] = [
     'PreK', 'Kindergarten', '1', '2', '3', '4', '5',
     '6', '7', '8', '9', '10', '11', '12'
@@ -128,6 +130,8 @@ export class FamilyPortalFormComponent implements OnInit {
   ngOnInit(): void {
     this.familyPortalService.getSummary().subscribe({
       next: summary => {
+        // The summary supplies settings-backed options and any previously saved
+        // profile, letting guardians resume an incomplete or existing form.
         this.schools = summary.schools ?? [];
         if (summary.timeAvailability) {
           this.timeAvailabilityLabels = summary.timeAvailability;
@@ -141,6 +145,8 @@ export class FamilyPortalFormComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
+        // If the summary fails, leave the form usable with default labels so the
+        // page does not render empty.
         this.addStudent();
         this.isLoading = false;
       }
@@ -240,6 +246,8 @@ export class FamilyPortalFormComponent implements OnInit {
       accommodations: raw.accommodations ?? '',
       timeSlot: raw.timeSlot ?? 'to be assigned',
       students: (raw.students ?? []).map(student => {
+        // The select stores either the school abbreviation or name. Send both so
+        // staff views can display the full name while preserving abbreviation.
         const school = this.schools.find(
           item => item.abbreviation === student?.school || item.name === student?.school
         );
@@ -264,6 +272,8 @@ export class FamilyPortalFormComponent implements OnInit {
   }
 
   private patchFromFamily(family: Partial<Family>) {
+    // Existing data stores guardianName as one field, while the portal form
+    // edits it as first/last name inputs.
     const nameParts = (family.guardianName ?? '').trim().split(/\s+/);
     const guardianFirstName = nameParts[0] ?? '';
     const guardianLastName = nameParts.slice(1).join(' ');
