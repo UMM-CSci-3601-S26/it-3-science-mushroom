@@ -2,16 +2,19 @@
 
 - [Summary](#summary)
   - [Some terminology](#some-terminology)
-- [Environmental Variables](#environmental-variables)
+- [Environment Variables](#environment-variables)
   - [Required Values](#required-values)
 - [Step 1: Creating an account](#step-1-creating-an-account)
 - [Step 2: Creating a droplet](#step-2-creating-a-droplet)
 - [Step 3: Setting up your droplet and running your project](#step-3-setting-up-your-droplet-and-running-your-project)
+- [Verifying deployment](#verifying-deployment)
 - [Common tasks](#common-tasks)
+  - [Rerunning setupdroplet.sh](#rerunning-setupdropletsh)
   - [Resetting the database](#resetting-the-database)
   - [Updating the server or client code](#updating-the-server-or-client-code)
 - [Additional Docker Compose commands](#additional-docker-compose-commands)
 - [Using a custom domain](#using-a-custom-domain)
+- [Troubleshooting](#troubleshooting)
 
 ## Summary
 
@@ -45,21 +48,21 @@ One for the Java server, one for hosting the client files, and one for the datab
 - **Compose** is a tool for running multiple containers together and setting up storage and communication between them. We will be using the command `docker-compose` for much of the management of our containers.
   - The project has a [`docker-compose.yml`](docker-compose.yml) file that instructs Docker Compose on how to run our server, client, and database containers together.
 
-## Environmental Variables
+## Environment Variables
 
-Deployment uses a `.env` file in the root of the repository.
+Deployment uses a `.env` file in the root of the repository. Docker Compose reads this file when starting the containers.
 
 ### Required Values
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `APP_HOST` | Yes | The hostname Caddy uses to serve the site, such as `your-domain'.nip.io` |
+| `APP_HOST` | Yes | The hostname Caddy uses to serve the site, such as `your-domain.nip.io`. |
 | `JWT_SECRET` | Yes | A private random secret used by the server to sign and authenticate tokens. |
 | `APP_CADDY_GLOBAL_OPTIONS` | No | Optional Caddy global config used for setting an email address for HTTPS certificate notifications. |
 
-The `setupdroplet.sh` script creates `.env` automatically, It sets `APP_HOST`, generates `JWT_SECRET`, and optionally writes `APP_CADDY_GLOBAL_OPTIONS` if an email is entered.
+The `setupdroplet.sh` script creates `.env` automatically. It sets `APP_HOST`, generates `JWT_SECRET`, and optionally writes `APP_CADDY_GLOBAL_OPTIONS` if an email is entered.
 
-**Important:** Do not commit `.env`. It contains `JWT_SECRET`. which must stay private.
+> **Important:** Do not commit `.env`. It contains `JWT_SECRET`, which must stay private.
 
 ## Step 1: Creating an account
 
@@ -103,10 +106,11 @@ The `setupdroplet.sh` script creates `.env` automatically, It sets `APP_HOST`, g
 - Install `docker-compose` with the command `apt install docker-compose`.
 - `git clone` your repository
 - `cd` into the newly created directory
+- If needed, run `chmod +x setupdroplet.sh` to make the setup script executable.
 - run `./setupdroplet.sh` to go through the initial setup steps
   - It will ask for your email address, which will be used for any relevant alerts about your HTTPS certificate (you probably won't get any emails from them). Entering your email signifies agreement to the [Let's Encrypt Subscriber Agreement](https://letsencrypt.org/documents/2017.11.15-LE-SA-v1.2.pdf) and the [ZeroSSL Terms of Service](https://zerossl.com/terms/) (either one of those providers may be used to setup your certificate).
-  - It will generate a JWT_SECRET automatically that is saved in the `.env` file docker uses (do not commit the `.env` file)
-  - Rerunning the `./setupdroplet.sh` will create a new `.env` with a new JWT_SECRET. This will invalidate existing login sessions.
+  - It will generate `JWT_SECRET` automatically and save it in the `.env` file Docker Compose uses.
+  - Rerunning `./setupdroplet.sh` will create a new `.env` with a new `JWT_SECRET`. This will invalidate existing login sessions.
   - We are using a service called [nip.io](https://nip.io/) to give us the valid domains we need for HTTPS. The script will tell you the `nip.io` address your app will be hosted on. Copy this down for later.
 - To build and start your server, run `docker-compose up -d`
   - The `-d` means detached and you can then run `docker-compose logs` to see the output at any time.
@@ -116,16 +120,60 @@ The `setupdroplet.sh` script creates `.env` automatically, It sets `APP_HOST`, g
     this all that often, but using a higher tier (i.e., more expensive) droplet
     will speed the process up.
 
+## Verifying deployment
+
+After starting the containers, check that they are running:
+
+```bash
+docker-compose ps
+```
+
+Check the logs if something failed:
+
+```bash
+docker-compose logs
+```
+
+Check only the server logs:
+
+```bash
+docker-compose logs server
+```
+
+The server exposes a health endpoint inside the droplet:
+
+```bash
+curl http://localhost:4567/api/health
+```
+
+You can also confirm that `.env` contains the required keys:
+
+```bash
+grep -E '^(APP_HOST|JWT_SECRET)=' .env
+```
+
+Do not print or share the full `JWT_SECRET` value.
+
 ## Common tasks
 
 Do all of these from within the base directory of the repo.
+
+### Rerunning setupdroplet.sh
+
+`setupdroplet.sh` creates a new `.env` file. If you rerun it, it will generate a new `JWT_SECRET`.
+
+Changing `JWT_SECRET` does not delete application data, but it does invalidate existing login sessions. Users may need to log in again.
 
 ### Resetting the database
 
 To clear the current database and have it seeded again:
 
+> **Warning:** `docker-compose down -v` deletes the MongoDB volume. This removes production data and causes the database to be reseeded from `database/seed` on the next startup.
+
 - `docker-compose down -v` to stop and remove containers and volumes.
 - `docker-compose up -d` to build and start the containers again.
+
+> **Important:** The production database is seeded from `database/seed` the first time the Mongo volume is created. Review the seeded users and remove or change any default accounts before using the deployment with real data.
 
 ### Updating the server or client code
 
@@ -153,3 +201,10 @@ There are many more commands and options for `docker-compose`. They are all docu
 
 If you have purchased a domain for your project and would like to use it, set its
 DNS `A record` to the IP of your droplet. Stop and remove your containers with `docker-compose down` and then you can use `nano` or similar to edit the `.env` file and change `APP_HOST` to the domain you wish to use. After that use `docker-compose up -d` to start it up again.
+
+## Troubleshooting
+
+- If `docker-compose up -d` fails with `JWT_SECRET environment variable must be set`, rerun `./setupdroplet.sh` or check that `.env` contains `JWT_SECRET`.
+- If HTTPS does not work, confirm that `APP_HOST` points to the droplet and that ports `80` and `443` are open.
+- If the app starts but API requests fail, check `docker-compose logs server`.
+- If the database is empty or has old data, check whether the Mongo volume already exists. Seed data only runs automatically when the Mongo volume is first created.
