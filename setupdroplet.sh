@@ -79,12 +79,17 @@ domain="${ip}.nip.io"
 echo
 echo "Setting APP_HOST to ${domain}"
 echo "APP_HOST=${domain}" > .env
+# calls generateSecret function and captures a secure random hex string
 jwt_secret="$(generateSecret)"
+# checks if the secret was generated.
 if [[ -z "$jwt_secret" ]]; then
+  # echoes to console that it failed to generate and exits droplet setup.
   echo "JWT_SECRET was not generated; stopping setup." >&2
   exit 1
 fi
+# Append JWT_SECRET to the .env used by docker
 echo "JWT_SECRET=${jwt_secret}" >> .env
+# limits .env permissions since it contains secrets
 chmod 600 .env
 echo "Generated JWT_SECRET and saved it to .env"
 echo
