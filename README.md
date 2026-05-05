@@ -82,6 +82,8 @@ List of known issues and areas for improvements.
 
 ## [Customer Pamphlet](R4LPamphlet.pdf)
 
+A document outlining the core features of the application in two short pages.
+
 ## Contributors
 
 The contributors to this project can be seen [here](../../graphs/contributors).
