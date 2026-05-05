@@ -7,6 +7,14 @@ import { RoleGuard } from './auth/role.guard';
 // Note: Any routes for adding new items need to come before the routes for getting an item by an individual ID
 // Ie: 'user/new' comes before 'users/:id'
 
+/**
+ * AppRoutingModule defines the routing configuration for the application. It sets up the routes for different
+ * pages and components, along with route guards to control access based on user authentication, roles, and
+ * permissions. Each route is associated with a specific component that will be loaded when the route is accessed,
+ * and some routes have additional data properties that specify the required roles and permissions for access.
+ * The module imports RouterModule with the defined routes and exports it for use in the main application module.
+ */
+
 const routes: Routes = [
   // Home page
   {path: '', loadComponent: () => import('./home/home.component').then(m => m.HomeComponent), title: 'Home'},

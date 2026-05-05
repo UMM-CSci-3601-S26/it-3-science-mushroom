@@ -1,6 +1,7 @@
-
+// Package
 package umm3601.Terms;
 
+// Java imports
 import java.util.List;
 
 /**

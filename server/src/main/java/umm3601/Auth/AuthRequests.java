@@ -1,5 +1,9 @@
+// Package
 package umm3601.Auth;
 
+/**
+ * Request bodies for AuthController routes.
+ */
 public final class AuthRequests {
   private AuthRequests() {
   }

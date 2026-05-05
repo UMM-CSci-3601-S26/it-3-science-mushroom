@@ -1,7 +1,7 @@
-// Package declaration
+// Package
 package umm3601.Auth;
 
-// IO Imports
+// JJWT imports
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
@@ -23,7 +23,7 @@ import java.util.Date;
  * parseToken: Validates and parses a JWT using the provided secret key, returning the claims contained in the token.
  *
  * Why use JWTs?
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ___________________________________________
  * JSON Web Tokens (JWTs) provide a secure and compact way to transmit
  * information between parties as a JSON object.
  * They are widely used for authentication and authorization in web

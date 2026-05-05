@@ -52,7 +52,7 @@ public class Settings {
     public String lateAfternoon;
   }
 
-    /**
+  /**
    * Spots available per time slot at the drive
    * Used to schedule families between the different time slots based on their preferences
    */

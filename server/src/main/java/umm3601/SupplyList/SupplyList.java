@@ -1,12 +1,20 @@
+// Package
 package umm3601.SupplyList;
 
+// Java imports
 import java.util.List;
 
 // Org Imports
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
 
-// Supply List Class
+/**
+ * Mongo-backed school supply-list item.
+ *
+ * AttributeOptions fields support both required traits (allOf) and acceptable
+ * alternatives (anyOf), which lets a list say things like "blue and plastic" or
+ * "Crayola or RoseArt".
+ */
 @SuppressWarnings({ "VisibilityModifier" })
 public class SupplyList {
 
@@ -26,21 +34,23 @@ public class SupplyList {
   public AttributeOptions size;
   public AttributeOptions type;
   public AttributeOptions material;
-    // Helper class for allOf/anyOf attributes
-    public static class AttributeOptions {
-      public String allOf;
-      public List<String> anyOf;
-    }
-    // Separate helper class for color where allOf is a list
-    public static class ColorAttributeOptions {
-      public List<String> allOf;
-      public List<String> anyOf;
-    }
   public Integer packageSize;
   public Integer quantity;
   public String notes;
 
-  // Override equals and hashCode for proper comparison and hashing based on _id
+  public static class AttributeOptions {
+    public String allOf;
+    public List<String> anyOf;
+  }
+
+  // Color stores allOf as a list because users commonly enter several colors.
+  public static class ColorAttributeOptions {
+    public List<String> allOf;
+    public List<String> anyOf;
+  }
+
+  // Equality is based on Mongo identity so tests and collection operations treat
+  // two copies of the same database document as the same item.
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof SupplyList)) {
@@ -50,13 +60,12 @@ public class SupplyList {
     return _id != null && _id.equals(other._id);
   }
 
-  // Hash code based on _id for use in hash-based collections
   @Override
   public int hashCode() {
     return _id == null ? 0 : _id.hashCode();
   }
 
-  // Override toString for easier debugging and logging
+  // Human-readable label used by debugging/tests and mirrored by the Angular UI.
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

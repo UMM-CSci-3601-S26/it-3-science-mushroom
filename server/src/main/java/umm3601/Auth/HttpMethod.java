@@ -1,4 +1,4 @@
-// Package declaration
+// Package
 package umm3601.Auth;
 
 /**
