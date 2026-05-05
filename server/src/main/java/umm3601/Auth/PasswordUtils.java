@@ -5,15 +5,15 @@ package umm3601.Auth;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
- * PasswordUtils â€” bcrypt password hashing helpers.
+ * PasswordUtils is an bcrypt password hashing helper.
  *
  * Why bcrypt?
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ___________________________________________
  * Bcrypt is a key-derivation function designed to be slow. Unlike fast hashes
  * (MD5, SHA-256), its cost factor makes brute-force and dictionary attacks
  * impractical even if the database is leaked.
  *
- * Cost factor 12 â€” each hash requires ~250 ms on modern hardware. That is
+ * Cost factor 12 per each hash requires ~250 ms on modern hardware. That is
  * acceptable for a login request but prohibitively expensive for an attacker
  * iterating over millions of guesses.
  *
@@ -26,7 +26,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * checkPassword
  *
  * Why use PasswordUtils?
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ___________________________________________
  * Centralizing password hashing and verification in a utility class promotes
  * code reuse and consistency across the application. It ensures that all
  * password handling follows best practices for security, such as using a strong

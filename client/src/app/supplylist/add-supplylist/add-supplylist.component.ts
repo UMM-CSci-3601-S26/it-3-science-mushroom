@@ -54,7 +54,7 @@ export class AddSupplyListComponent implements OnInit {
   // All terms loaded from the server
   private terms: Terms = { item: [], brand: [], color: [], size: [], type: [], material: [] };
 
-  // Maps well-known brand names (lowercase) → item keywords to try when no item is detected.
+  // Maps well-known brand names (lowercase) to item keywords to try when no item is detected.
   // Keywords are checked against this.terms.item using the same plural-aware matching.
   private readonly brandItemHints: Record<string, string[]> = {
     // Tissues
@@ -160,7 +160,7 @@ export class AddSupplyListComponent implements OnInit {
         this.filteredMaterial$ = this.filterFor('material', terms.material);
       },
       error: () => {
-        // Terms are optional — autocomplete just won't suggest anything
+        // Terms are optional; autocomplete just will not suggest anything.
         this.filteredItem$ = of([]);
         this.filteredBrand$ = of([]);
         this.filteredColor$ = of([]);
@@ -214,13 +214,13 @@ export class AddSupplyListComponent implements OnInit {
     const lower = input.toLowerCase();
     const patch: Record<string, string> = {};
 
-    // Detect whether the input uses "or" to join options (→ anyOf) vs
-    // "and" / commas (→ allOf). This drives how multi-value fields are stored.
+    // Detect whether the input uses "or" to join options (anyOf) versus
+    // "and" / commas (allOf). This drives how multi-value fields are stored.
     const hasOr = /\bor\b/.test(lower);
-    // Separator written into the form field value — toAttr() reads this.
+    // Separator written into the form field value; toAttr() reads this.
     const sep = hasOr ? ' | ' : ', ';
 
-    // ── Quantity ──────────────────────────────────────────────────────────────
+    // Quantity: "2 boxes of ...", "2 packs", or a bare leading number.
     // "2 boxes of ...", "2 packs", or a bare leading number
     const qtyMatch = lower.match(/^(\d+)\s+(?:box(?:es)?|pack(?:s)?|set(?:s)?|bag(?:s)?|roll(?:s)?|ream(?:s)?|sheet(?:s)?|piece(?:s)?|pair(?:s)?)/);
     if (qtyMatch) {
@@ -232,7 +232,7 @@ export class AddSupplyListComponent implements OnInit {
       }
     }
 
-    // ── Count ─────────────────────────────────────────────────────────────────
+    // Package size: "24 count", "24ct", "pack of 24", or "box of 24".
     // "24 count", "24ct", "24-count", "pack of 24", "box of 24"
     const packageSizeMatch = lower.match(/(\d+)\s*[-]?\s*(?:count|ct|pk|pack)\b/)
       || lower.match(/(?:pack|box|set)\s+of\s+(\d+)/);
@@ -240,16 +240,16 @@ export class AddSupplyListComponent implements OnInit {
       patch['packageSize'] = packageSizeMatch[1];
     }
 
-    // ── Brand ─────────────────────────────────────────────────────────────────
+    // Brand: detect this first so it can hint at the item category.
     // Detect brand first so we can use it as a hint for item inference below.
     const matchedBrand = this.bestTermMatch(lower, this.terms.brand);
     if (matchedBrand) {
       patch['brand'] = matchedBrand;
     }
 
-    // ── Item ──────────────────────────────────────────────────────────────────
+    // Item: longest matching term wins to avoid "pen" matching "pencil".
     // Longest matching term wins (avoids "pen" matching "pencil").
-    // If no item found directly, use the brand→item hint map as a fallback.
+    // If no item is found directly, use the brand-to-item hint map as a fallback.
     let matchedItem = this.bestTermMatch(lower, this.terms.item);
     if (!matchedItem && matchedBrand) {
       const hints = this.brandItemHints[matchedBrand.toLowerCase()] ?? [];
@@ -260,14 +260,14 @@ export class AddSupplyListComponent implements OnInit {
       patch['item'] = matchedItem;
     }
 
-    // ── Color ─────────────────────────────────────────────────────────────────
+    // Color: collect all matching color terms.
     // Collect ALL color terms; join with sep so 'or' routes to anyOf in toAttr.
     const matchedColors = this.allTermMatches(lower, this.terms.color);
     if (matchedColors.length) {
       patch['color'] = matchedColors.join(sep);
     }
 
-    // ── Size ──────────────────────────────────────────────────────────────────
+    // Size: keep explicit size terms before inferring a container type.
     // Size is entered as a simple text field in the form and converted to
     // AttributeOptions during submit.
     const sizeTermMatches = this.allTermMatches(lower, this.terms.size);
@@ -278,7 +278,7 @@ export class AddSupplyListComponent implements OnInit {
       patch['size'] = fallbackSize;
     }
 
-    // ── Default container size for new system (Option B: "Box of 24") ─────────────
+    // Default container size for descriptions like "2 boxes of 24 crayons".
     // If quantity > 1 and no size was detected from the new DB terms,
     // infer a container type. If a count exists, include it.
     if (!patch['size'] && patch['quantity']) {
@@ -289,23 +289,22 @@ export class AddSupplyListComponent implements OnInit {
       }
     }
 
-    // ── Type ─────────────
+    // Type.
     const matchedTypes = this.allTermMatches(lower, this.terms.type);
     if (matchedTypes.length) {
       patch['type'] = matchedTypes.join(sep);
     }
 
-    // ── Material ─────────────────────────────────────────────────────────────
+    // Material.
     const matchedMaterials = this.allTermMatches(lower, this.terms.material);
     if (matchedMaterials.length) {
       patch['material'] = matchedMaterials.join(sep);
     }
 
-    // ── Notes ─────────────────────────────────────────────────────────────────
-    // Anything in parentheses is a note — UNLESS it looks like a count/quantity
+    // Notes: parenthetical text is a note unless it looks like a count/quantity
     // or matches a known term (color, size, etc.), in which case it was already
     // handled above and should not be duplicated into notes.
-    // e.g. "(24 ct.)" → count, skip;  "(for art class)" → notes
+    // e.g. "(24 ct.)" is count data and "(for art class)" is a note.
     const structuredParenPattern = /^\d+\s*(?:count|ct\.?|pk\.?|pack\.?|oz\.?|lb\.?|ml\.?|g\.?|mm\.?|cm\.?|in\.?|ft\.?)?\s*$/i;
     const allTermWords = [
       ...this.terms.item, ...this.terms.brand, ...this.terms.color,
@@ -318,10 +317,10 @@ export class AddSupplyListComponent implements OnInit {
           return false;
         }
         if (structuredParenPattern.test(fragment)) {
-          return false; // looks like "24 ct." — already parsed as count
+          return false; // looks like "24 ct."; already parsed as count
         }
         if (this.bestTermMatch(fragment.toLowerCase(), allTermWords)) {
-          return false; // matches a known term — already captured in a field
+          return false; // matches a known term; already captured in a field
         }
         return true;
       });
@@ -333,9 +332,6 @@ export class AddSupplyListComponent implements OnInit {
     this.addSupplyListForm.patchValue(patch);
     this.showPreview = true;
 
-    console.log("Brand match:", this.bestTermMatch(lower, this.terms.brand));
-    console.log("Item match:", this.bestTermMatch(lower, this.terms.item));
-    console.log("Loaded terms:", this.terms);
   }
 
   /** Returns the longest term from the list that appears as a whole word in the input, or null.
@@ -377,20 +373,20 @@ export class AddSupplyListComponent implements OnInit {
     const forms = new Set<string>([t]);
     // Add plural
     if (t.endsWith('y') && t.length > 2 && !/[aeiou]y$/.test(t)) {
-      forms.add(t.slice(0, -1) + 'ies');     // candy → candies
+      forms.add(t.slice(0, -1) + 'ies');     // candy to candies
     } else if (/(?:ch|sh|x|z|s)$/.test(t)) {
-      forms.add(t + 'es');                    // brush → brushes
+      forms.add(t + 'es');                    // brush to brushes
     } else if (!t.endsWith('s')) {
-      forms.add(t + 's');                     // crayon → crayons
+      forms.add(t + 's');                     // crayon to crayons
     }
     // Add singular (strip common plural suffixes)
     if (t.endsWith('ies') && t.length > 4) {
-      forms.add(t.slice(0, -3) + 'y');       // candies → candy
+      forms.add(t.slice(0, -3) + 'y');       // candies to candy
     } else if (t.endsWith('es') && t.length > 3) {
-      forms.add(t.slice(0, -2));             // brushes → brush
-      forms.add(t.slice(0, -1));             // –es edge case
+      forms.add(t.slice(0, -2));             // brushes to brush
+      forms.add(t.slice(0, -1));             // -es edge case
     } else if (t.endsWith('s') && t.length > 2) {
-      forms.add(t.slice(0, -1));             // crayons → crayon
+      forms.add(t.slice(0, -1));             // crayons to crayon
     }
     return [...forms];
   }
@@ -451,7 +447,7 @@ export class AddSupplyListComponent implements OnInit {
       },
       error: (err) => {
         this.snackBar.open(
-          `Failed to add item – Error Code: ${err.status}\nMessage: ${err.message}`,
+          `Failed to add item - Error Code: ${err.status}\nMessage: ${err.message}`,
           'OK',
           { duration: 6000 }
         );

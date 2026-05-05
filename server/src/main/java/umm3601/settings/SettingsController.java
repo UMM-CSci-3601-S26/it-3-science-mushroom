@@ -31,12 +31,6 @@ import umm3601.Auth.Route;
 /**
  * Controller for the singleton app settings document.
  *
- * Routes:
- *  - GET  /api/settings                     â†’ returns the full settings document
- *  - PATCH /api/settings/schools            â†’ replaces the schools list
- *  - PATCH /api/settings/timeAvailability   â†’ replaces the time availability labels
- *  - PATCH /api/settings/availableSpots     â†’ replaces the availableSpots integer
- *
  * Patching by section prevents one tab from overwriting another's changes.
  * All patch operations use upsert so the document is created on first write.
  */
@@ -51,11 +45,11 @@ public class SettingsController {
   private static final String API_SETTINGS_SUPPLY_ORDER = "/api/settings/supplyOrder";
   private static final String API_SETTINGS_AVAILABLE_SPOTS = "/api/settings/availableSpots";
   private static final String API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT = "/api/settings/barcodePrintWarningLimit";
+  private static final String API_SETTINGS_DRIVE_DAY = "/api/settings/driveDay";
 
+  // Default values for settings fields if the document doesn't exist yet or is missing fields.
   private static final int DEFAULT_AVAILABLE_SPOTS = 5;
   private static final int DEFAULT_BARCODE_PRINT_WARNING_LIMIT = 25;
-
-  private static final String API_SETTINGS_DRIVE_DAY = "/api/settings/driveDay";
 
   private final JacksonMongoCollection<Settings> settingsCollection;
 
@@ -68,8 +62,12 @@ public class SettingsController {
   }
 
   /**
-   * GET /api/settings
-   * Returns the settings document, or a safe default if none exists yet.
+   * getSettings retrieves the singleton settings document and returns it as JSON. If the document doesn't exist,
+   * it returns a new Settings object with default values (except for _id which is set to SETTINGS_ID). The
+   * client can use this endpoint to get the current application settings, including the list of schools,
+   * time availability labels, supply item order, available spots, barcode print warning limit,
+   * and drive day information.
+   * @param ctx
    */
   @Route(method = HttpMethod.GET, path = API_SETTINGS)
   @RequirePermission("view_settings")
@@ -79,6 +77,9 @@ public class SettingsController {
     ctx.status(HttpStatus.OK);
   }
 
+  // getSettingsDocument is a helper method that retrieves the settings document from the database,
+  // applying default values for any missing fields to ensure the returned Settings object is always
+  // complete and usable by the client.
   public Settings getSettingsDocument() {
     Settings settings = settingsCollection.find(eq("_id", SETTINGS_ID)).first();
     if (settings == null) {
@@ -99,8 +100,12 @@ public class SettingsController {
   }
 
   /**
-   * PATCH /api/settings/schools
-   * Replaces the schools list. Body: { "schools": [{ "name": "...", "abbreviation": "..." }] }
+   * updateSchools replaces the list of schools in the settings document with the provided list.
+   * The request body must include a 'schools' array, where each entry has a 'name' and 'abbreviation'.
+   * This endpoint allows operators to manage the schools that families can select from when filling out their profiles.
+   * The method validates the input and updates the settings document in the database, creating it if it doesn't exist.
+   * @param ctx
+   * @throws BadRequestResponse if the request body is missing or does not include a valid 'schools' array
    */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_SCHOOLS)
   @RequirePermission("edit_schools")
@@ -124,9 +129,12 @@ public class SettingsController {
   }
 
   /**
-   * PATCH /api/settings/supplyOrder
-   * Replaces the supply item ordering used when generating checklists.
-   * Body: { "supplyOrder": [{ "supplyId": "...", "status": "staged|unstaged|notGiven" }] }
+   * updateSupplyOrder replaces the supplyOrder list in the settings document with the provided list.
+   * The request body must include a 'supplyOrder' array, where each entry has an 'itemTerm' and 'status'.
+   * This endpoint allows operators to manage how supply items are categorized for drive day checklists.
+   * The method validates the input and updates the settings document in the database, creating it if it doesn't exist.
+   * @param ctx
+   * @throws BadRequestResponse if the request body is missing or does not include a valid 'supplyOrder' array
    */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_SUPPLY_ORDER)
   @RequirePermission("edit_supply_order")
@@ -154,9 +162,14 @@ public class SettingsController {
   }
 
   /**
-   * PATCH /api/settings/timeAvailability
-   * Replaces the time availability labels.
-   * Body: { "earlyMorning": "8:00â€“9:00 AM", "lateMorning": "...", ... }
+   * updateTimeAvailability updates the time availability labels in the settings document with the provided values.
+   * The request body must include an object with 'earlyMorning', 'lateMorning', 'earlyAfternoon', and
+   * 'lateAfternoon' fields.
+   * This endpoint allows operators to configure the human-readable time labels that correspond to the
+   * availability slots families select in their profiles. The method validates the input and updates the settings
+   * document in the database, creating it if it doesn't exist.
+   * @param ctx
+   * @throws BadRequestResponse if the request body is missing or does not include all required time availability fields
    */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_TIME)
   @RequirePermission("edit_time_availability")
@@ -177,8 +190,14 @@ public class SettingsController {
   }
 
   /**
-  * Update the available spots field based on input from the client.
-  */
+   * updateSpotAvailability updates the number of available spots for drive day in the settings document.
+   * The request body must include an 'availableSpots' field with a positive integer value.
+   * This endpoint allows operators to manage how many families can be scheduled for each time slot
+   * on drive day based on their preferences. The method validates the input and updates the settings
+   * document in the database, creating it if it doesn't exist.
+   * @param ctx
+   * @throws BadRequestResponse if the request body is missing or does not include a valid 'availableSpots' value
+   */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_AVAILABLE_SPOTS)
   @RequirePermission("edit_available_spots")
   public void updateSpotAvailability(Context ctx) {
@@ -192,6 +211,15 @@ public class SettingsController {
     ctx.status(HttpStatus.OK);
   }
 
+  /**
+   * updateDriveDay updates the drive day information in the settings document with the provided date and location.
+   * The request body must include a 'date' field (in ISO format) and a 'location' field (string).
+   * This endpoint allows operators to set the date and location for the upcoming drive day, which can be displayed to
+   * families in the portal. The method validates the input and updates the settings document in the database,
+   * creating it if it doesn't exist.
+   * @param ctx
+   * @throws BadRequestResponse if the request body is missing or does not include valid 'date' and 'location' fields
+   */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_DRIVE_DAY)
   @RequirePermission("edit_drive_day")
   public void updateDriveDay(Context ctx) {
@@ -209,6 +237,16 @@ public class SettingsController {
       ctx.status(HttpStatus.OK);
     }
 
+  /**
+   * updateBarcodePrintWarningLimit updates the barcode print warning limit in the settings document.
+   * The request body must include a 'barcodePrintWarningLimit' field with a positive integer value.
+   * This endpoint allows operators to set a threshold for how many barcode labels can be printed for a single
+   * item before a warning is shown, helping to prevent excessive printing.
+   * The method validates the input and updates the settings document in the database, creating it if it doesn't exist.
+   * @param ctx
+   * @throws BadRequestResponse if the request body is missing or does not include a valid
+   *                            'barcodePrintWarningLimit' value
+   */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT)
   @RequirePermission("edit_barcode_print_limit")
   public void updateBarcodePrintWarningLimit(Context ctx) {

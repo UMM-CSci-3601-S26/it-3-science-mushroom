@@ -1,17 +1,23 @@
-
+// Package
 package umm3601.Terms;
 
+// Java imports
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+// Org imports
 import org.bson.Document;
 
+// Com imports
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+// Javalin imports
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+
+// App imports
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.Route;
 
@@ -19,9 +25,6 @@ import umm3601.Auth.Route;
  * Controller that aggregates distinct vocabulary terms from both the
  * supplylist and inventory collections, providing a single endpoint
  * to power autocomplete on the add-item forms.
- *
- * Route:
- *  - GET /api/terms â†’ returns distinct sorted values per shared field
  */
 public class TermsController {
 
@@ -36,10 +39,11 @@ public class TermsController {
   }
 
   /**
-   * GET /api/terms
-   * Returns a Terms object containing sorted, case-deduplicated lists for
-   * item, brand, color, size, type, and material â€” pulling values from
-   * both the supplylist and inventory collections.
+   * getTerms merges distinct values from supplylist and inventory collections for each of the term categories:
+   * item, brand, color, size, type, and material. It normalizes the terms by trimming whitespace and converting
+   * plurals to singular form. The merged lists are case-insensitively deduplicated and sorted before being returned
+   * as a JSON response with a 200 OK status.
+   * @param ctx
    */
   @Route(method = HttpMethod.GET, path = API_TERMS)
   public void getTerms(Context ctx) {

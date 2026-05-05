@@ -1,17 +1,14 @@
+// Package
 package umm3601;
 
+// Com imports
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
 /**
- * Utility class for server configuration, such as database connection setup.
- * This is not intended to be instantiated, but rather to provide static helper
- * methods for other classes in the server package.
- *
- * Server no longer directly start the server or manage the application
- * lifecycle, so this class is focused on database configuration. Server startup
- * and lifecycle management is now handled by Bootstrap.java, which allows for
- * better separation of concerns and easier testing.
+ * DatabaseConfig is a utility class that provides a method to configure and
+ * create a MongoClient instance based on a given host string. It ensures that
+ * the host string is properly formatted with the correct MongoDB URI prefix.
  */
 public class DatabaseConfig {
   public static MongoClient configureDatabase(String host) {
