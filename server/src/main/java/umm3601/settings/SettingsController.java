@@ -176,6 +176,9 @@ public class SettingsController {
     ctx.status(HttpStatus.OK);
   }
 
+  /**
+  * Update the available spots field based on input from the client.
+  */
   @Route(method = HttpMethod.PATCH, path = API_SETTINGS_AVAILABLE_SPOTS)
   @RequirePermission("edit_available_spots")
   public void updateSpotAvailability(Context ctx) {
