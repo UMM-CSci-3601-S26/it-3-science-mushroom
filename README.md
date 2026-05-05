@@ -10,7 +10,11 @@
   - [Table of Contents](#table-of-contents)
   - [Project Description](#project-description)
   - [Project Features](#project-features)
-  - [Technical Document](#technical-document)
+  - [Technical Documents](#technical-documents)
+    - [Deployment Document](#deployment-document)
+    - [Development Document](#development-document)
+    - [Family Module Document](#family-module-document)
+    - [Authorization Document](#authorization-document)
   - [To-Do List](#to-do-list)
   - [Customer Pamphlet](#customer-pamphlet)
   - [Contributors](#contributors)
@@ -52,9 +56,25 @@ The Ready4Learning interface is a system designed to improve the ease of managem
   - Various settings allow for control of time availability, available schools, announcements sent to families, slots per time slot, automatic family scheduling, mass inventory item management, adjusting barcode printing settings, and finally order of the stations during drive day.
   - Settings can only be adjusted/interacted with by staff, preventing tampering by unknown individuals.
 
-## [Technical Document](DEPLOYMENT.md)
+## Technical Documents
 
-A document that describes the technical details of the project.
+These documents explain different aspects of the application.
+
+### [Deployment Document](DEPLOYMENT.md)
+
+A document that explains how to set-up and manage a DigitalOcean Droplet of the application. This is the main technical document.
+
+### [Development Document](DEVELOPMENT.md)
+
+A document that describes the development set-up process.
+
+### [Family Module Document](server/FAMILY_MODULE_REFERENCE.md)
+
+A document that describes the family system.
+
+### [Authorization Document](AUTHORIZATION_CHANGES.md)
+
+A document that describes the authorization system.
 
 ## [To-Do List](TO-DO-LIST.md)
 
