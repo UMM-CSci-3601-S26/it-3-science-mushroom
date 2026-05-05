@@ -26,8 +26,19 @@ import { FamilyService } from '../../family.service';
 // Settings Imports
 import { SettingsService } from '../../../settings/settings.service';
 import { SchoolInfo, TimeAvailabilityLabels } from '../../../settings/settings';
+
+// Auth Imports
 import { AuthService } from '../../../auth/auth-service';
 
+/**
+ * EditFamilyComponent is responsible for displaying a form to edit an existing family's information, including guardian details and student details.
+ * It retrieves the family data based on the ID in the route parameters, populates the form, and allows the user to submit updates to the server.
+ * The component also handles form validation and displays appropriate error messages for invalid input.
+ * It uses FamilyService to retrieve and update family data, SettingsService to get school and time availability information for form options, and DialogService to display any necessary dialogs.
+ * The component is protected by authentication and authorization, allowing only users with the appropriate permissions to access it.
+ * Upon successful update, the user is navigated back to the family management page with a success message.
+ * If there are errors during data retrieval or submission, appropriate error messages are displayed to the user via MatSnackBar.
+ */
 @Component({
   selector: 'app-edit-family',
   imports: [
@@ -71,6 +82,10 @@ export class EditFamilyComponent implements OnInit {
     lateAfternoon: '1:00–2:00 PM'
   };
 
+  /**
+   * OnInit lifecycle hook to load family data and settings when the component initializes.
+   * It loads school information and time availability labels from settings to populate form options and labels.
+   */
   ngOnInit(): void {
     this.settingsService.getSettings().subscribe(settings => {
       this.schools = settings.schools ?? [];
@@ -86,6 +101,11 @@ export class EditFamilyComponent implements OnInit {
     '6', '7', '8', '9', '10', '11', '12'
   ];
 
+  /**
+   * family is a Signal that holds the current family's data, which is loaded based on the ID from the route parameters.
+   * It uses the familyService to fetch the family data from the server and handles any errors that occur during loading.
+   * The family data is then used to populate the form fields for editing.
+   */
   family: Signal<Family> = toSignal(
     this.route.paramMap.pipe(
       // Map the paramMap into the id
@@ -105,6 +125,12 @@ export class EditFamilyComponent implements OnInit {
     )
   );
 
+  /**
+   * The constructor injects necessary services and initializes the component.
+   * It also sets up an effect to make students visible in the form when the family data is loaded, by adding student form groups for each student in the family.
+   * The ChangeDetectorRef is used to trigger change detection after adding student form groups to avoid Angular's NG0100 error when modifying the form array during an effect.
+   * @param cd ChangeDetectorRef for triggering change detection after modifying the form array in the effect.
+   */
   // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private cd: ChangeDetectorRef) {}
 
@@ -117,6 +143,13 @@ export class EditFamilyComponent implements OnInit {
     });
   });
 
+  /**
+   * editFamilyForm is a FormGroup that defines the structure and validation rules for the edit family form.
+   * It includes form controls for guardian first name, last name, email, address, accommodations, time slot, time availability checkboxes, and a FormArray for students.
+   * Each form control has appropriate validators to ensure the input is valid before submission.
+   * The students FormArray allows dynamic addition and removal of student form groups, each containing controls for student name, grade, school, teacher, backpack, and headphones.
+   * The form is used to capture the user's input when editing a family's information and is submitted to the server for updating the family data.
+   */
   editFamilyForm = new FormGroup({
     guardianFirstName: new FormControl('', Validators.compose([
       Validators.required,
@@ -156,6 +189,12 @@ export class EditFamilyComponent implements OnInit {
     students: new FormArray([], Validators.required)
   });
 
+  /**
+   * getGuardianFirstAndLastName is an effect that listens for changes to the family signal and updates the guardian first name and last name form controls based on the guardianName property of the family.
+   * It splits the guardianName into first and last name by splitting on whitespace, and then patches the form values for guardianFirstName and guardianLastName.
+   * This allows the form to display the guardian's first and last name in separate input fields while still maintaining a single guardianName property in the family data model.
+   * The effect ensures that any changes to the family signal will automatically update the form controls accordingly.
+   */
   getGuardianFirstAndLastName = effect(() => {
     const family = this.family();
 
@@ -170,10 +209,26 @@ export class EditFamilyComponent implements OnInit {
     });
   });
 
+  /**
+   * students is a getter that returns the FormArray of students from the editFamilyForm.
+   * It is used to dynamically add and remove student form groups within the form.
+   * Each student form group contains controls for student name, grade, school, teacher, backpack, and headphones.
+   * The students FormArray allows the user to manage multiple students associated with the family,
+   * and the getter provides easy access to this array for adding or removing students as needed.
+   * @returns FormArray of students in the edit family form.
+   */
   get students(): FormArray {
     return this.editFamilyForm.get('students') as FormArray;
   }
 
+  /**
+   * addStudent is a method that adds a new FormGroup to the students FormArray in the editFamilyForm.
+   * Each FormGroup represents a student and contains form controls for the student's name, grade, school, teacher, backpack, and headphones.
+   * This allows the user to dynamically add multiple students to the family when editing the family's information.
+   * The form controls for each student include validation rules such as required fields and specific patterns for grade input.
+   * When the user clicks the "Add Student" button in the form, this method is called to add a new student form group to the form array,
+   * allowing the user to input information for an additional student.
+   */
   addStudent() {
     this.students.push(new FormGroup({
       name: new FormControl('', Validators.compose([
@@ -195,10 +250,22 @@ export class EditFamilyComponent implements OnInit {
     }));
   }
 
+  /**
+   * removeStudent is a method that removes a FormGroup from the students FormArray in the editFamilyForm based on the provided index.
+   * This allows the user to dynamically remove a student from the family when editing the family's information.
+   * When the user clicks the "Remove" button next to a student in the form, this method is called with the index of that student form group,
+   * and it removes the corresponding FormGroup from the FormArray, effectively removing that student from the form.
+   * @param index The index of the student form group to remove from the students FormArray.
+   */
   removeStudent(index: number) {
     this.students.removeAt(index);
   }
 
+  /**
+   * editFamilyValidationMessages is an object that defines the validation messages for each form control in the edit family form.
+   * It includes messages for the guardian's first name, last name, email, address, and student details such as name, grade, and school.
+   * Each form control has an array of validation rules with corresponding error messages that are displayed when the control is invalid.
+   */
   readonly editFamilyValidationMessages = {
     guardianFirstName: [
       { type: 'required', message: 'Guardian first name is required' },
@@ -278,6 +345,12 @@ export class EditFamilyComponent implements OnInit {
     return 'Unknown error. Please check your form input.';
   }
 
+  /**
+   * submitForm is a method that is called when the user submits the edit family form.
+   * It first checks if the form is valid, and if not, it marks all controls as touched to trigger validation messages and returns early.
+   * If the form is valid, it constructs a payload object based on the form values,
+   * including splitting the guardian's full name into first and last name, and mapping the students FormArray into an array of student objects.
+   */
   submitForm() {
     if (this.editFamilyForm.invalid) {
       this.editFamilyForm.markAllAsTouched();

@@ -2,11 +2,13 @@
   <div class="flex-1">
     <form [formGroup]="editFamilyForm" (ngSubmit)="submitForm();">
       <mat-card class="edit-family-card">
+        <!-- Edit Family Form Title -->
         <mat-card-header>
           <mat-card-title class="edit-family-title">Edit Family</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="flex-col">
+            <!-- Guardian First Name -->
             <mat-form-field>
               <mat-label>Guardian First Name</mat-label>
               <input matInput formControlName="guardianFirstName"
@@ -18,6 +20,7 @@
               }
             </mat-form-field>
 
+            <!-- Guardian Last Name -->
             <mat-form-field>
               <mat-label>Guardian Last Name</mat-label>
               <input matInput formControlName="guardianLastName"
@@ -29,6 +32,7 @@
               }
             </mat-form-field>
 
+            <!-- Email -->
             <mat-form-field>
               <mat-label>Email</mat-label>
               <input matInput type="email"
@@ -40,6 +44,7 @@
               }
             </mat-form-field>
 
+            <!-- Address -->
             <mat-form-field>
               <mat-label>Address</mat-label>
               <input matInput type="text"
@@ -51,12 +56,14 @@
               }
             </mat-form-field>
 
+            <!-- Accommodations -->
             <mat-form-field>
               <mat-label>Accommodations</mat-label>
               <input matInput type="text"
                 formControlName="accommodations" [ngModel]="family().accommodations">
             </mat-form-field>
 
+            <!-- Time Availability -->
             <h3>Available Times</h3>
             <div formGroupName="timeAvailability">
               <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox" [ngModel]="family().timeAvailability?.earlyMorning">
@@ -75,11 +82,13 @@
 
             <h3>Students</h3>
 
+            <!-- Student Form Array -->
             <div formArrayName="students">
               @for (student of students.controls; track $index; let i = $index) {
                 <div [formGroupName]="i" class="student-row">
                   <div class="student-fields">
 
+                    <!-- Student Name -->
                     <mat-form-field>
                       <mat-label>Name</mat-label>
                       <input matInput formControlName="name" required [ngModel]="family().students[i]?.name">
@@ -90,6 +99,7 @@
                       }
                     </mat-form-field>
 
+                    <!-- Student Grade -->
                     <mat-form-field>
                       <mat-label>Grade</mat-label>
                       <mat-select formControlName="grade" required [ngModel]="family().students[i]?.grade">
@@ -102,6 +112,7 @@
                       }
                     </mat-form-field>
 
+                    <!-- Student School -->
                     <mat-form-field class="student-school">
                       <mat-label>School</mat-label>
                       <mat-select formControlName="school" required [ngModel]="family().students[i]?.schoolAbbreviation">
@@ -116,15 +127,18 @@
                       }
                     </mat-form-field>
 
+                    <!-- Student Teacher -->
                     <mat-form-field>
                       <mat-label>Teacher</mat-label>
                       <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
                     </mat-form-field>
 
+                    <!-- Remove Student Button -->
                     <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
                       Remove Student
                     </button>
 
+                    <!-- Backpack and Headphones Radio Buttons -->
                     <div class="radio-group">
                       <div class="radio-section">
                         <h4 style="font-size: 15px;">Backpack Needed?</h4>
@@ -147,11 +161,13 @@
               }
             </div>
 
+    <!-- Add Student Button -->
     <button mat-flat-button color="primary" class="add-student-button" type="button" (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>
         <mat-card-actions align="end">
+          <!-- Back Button -->
           <button
             mat-button
             type="button"
@@ -161,6 +177,7 @@
             >
             BACK
           </button>
+          <!-- Save Button -->
           <button
             mat-button
             type="button"

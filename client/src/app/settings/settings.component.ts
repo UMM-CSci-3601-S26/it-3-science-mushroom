@@ -472,6 +472,9 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  /**
+  * Saves the input in the available spots field to the server
+  */
   saveAvailableSpots(): void {
     if (!this.canEditAvailableSlots) {
       return;
@@ -659,6 +662,10 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  /**
+  * Schedules families in first available timeslot according to the scheduling algorithm.
+  * The scheduling algorithm prioritizes people with the fewest selections and the earliest times.
+  */
   scheduleFamilies(): void {
     if (!this.canEditAvailableSlots || !this.canScheduleFamilies || !this.availableSpotsForm.valid) {
       return;

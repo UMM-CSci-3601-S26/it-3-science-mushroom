@@ -20,6 +20,11 @@ import { FamilyService } from '../../family.service';
 import { SettingsService } from '../../../settings/settings.service';
 import { SchoolInfo, TimeAvailabilityLabels } from '../../../settings/settings';
 
+/**
+ * AddFamilyComponent is responsible for rendering the form to add a new family, validating the form input,
+ * and submitting the new family data to the server via FamilyService.
+ * It also loads necessary settings (like schools and time availability labels) from SettingsService to populate dropdowns and labels in the form.
+ */
 @Component({
   selector: 'app-add-family',
   templateUrl: './add-family.component.html',
@@ -57,6 +62,10 @@ export class AddFamilyComponent implements OnInit {
     lateAfternoon: '1:00–2:00 PM'
   };
 
+  /**
+   * OnInit lifecycle hook to load necessary settings for the form, such as schools and time availability labels, from the server via SettingsService.
+   * This ensures that the form is populated with the most up-to-date settings when the component is initialized.
+   */
   ngOnInit(): void {
     this.settingsService.getSettings().subscribe(settings => {
       this.schools = settings.schools ?? [];
@@ -72,6 +81,10 @@ export class AddFamilyComponent implements OnInit {
     '6', '7', '8', '9', '10', '11', '12'
   ];
 
+  /**
+   * FormGroup representing the add family form, with nested FormArray for students and FormGroup for time availability checkboxes.
+   * Each form control has validators to ensure the input is valid before submission.
+   */
   addFamilyForm = new FormGroup({
     guardianFirstName: new FormControl('', Validators.compose([
       Validators.required,
@@ -111,10 +124,18 @@ export class AddFamilyComponent implements OnInit {
     students: new FormArray([], Validators.required)
   });
 
+  /**
+   * Getter for the students FormArray, which allows us to easily add and remove student FormGroups from the form.
+   * Each student FormGroup contains controls for name, grade, school, teacher, backpack, and headphones, with appropriate validators.
+   */
   get students(): FormArray {
     return this.addFamilyForm.get('students') as FormArray;
   }
 
+  /**
+   * Adds a new student FormGroup to the students FormArray, allowing the user to input information for an additional student.
+   * Each new student FormGroup is initialized with empty controls and validators to ensure valid input.
+   */
   addStudent() {
     this.students.push(new FormGroup({
       name: new FormControl('', Validators.compose([
@@ -136,10 +157,19 @@ export class AddFamilyComponent implements OnInit {
     }));
   }
 
+  /**
+   * Removes a student FormGroup from the students FormArray at the specified index, allowing the user to delete a student's information from the form.
+   * @param index The index of the student FormGroup to remove from the FormArray
+   */
   removeStudent(index: number) {
     this.students.removeAt(index);
   }
 
+  /**
+   * Validation messages for the add family form, organized by form control name.
+   * Each control has an array of possible validation errors, each with a type and a user-friendly message to display when that error occurs.
+   * This structure allows the component to easily look up and display the appropriate error message for each form control based on its validation state.
+   */
   readonly addFamilyValidationMessages = {
     guardianFirstName: [
       { type: 'required', message: 'Guardian first name is required' },
@@ -219,6 +249,10 @@ export class AddFamilyComponent implements OnInit {
     return 'Unknown error. Please check your form input.';
   }
 
+  /**
+   * Submits the add family form, first validating that the form input is valid.
+   * If the form is invalid, it marks all controls as touched to trigger validation messages.
+   */
   submitForm() {
     if (this.addFamilyForm.invalid) {
       this.addFamilyForm.markAllAsTouched();

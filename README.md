@@ -60,7 +60,9 @@ A document that describes the technical details of the project.
 
 List of known issues and areas for improvements.
 
-## [Customer Pamphlet]()
+## [Customer Pamphlet](R4LPamphlet.pdf)
+
+A pamphlet that customers can bring to conferences to share, highlighting the value of the system. It can also be used when speaking with potential users.
 
 ## Contributors
 
