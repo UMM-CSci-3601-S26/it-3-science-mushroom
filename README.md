@@ -8,17 +8,21 @@
 
 - [Ready4Learning Interface](#ready4learning-interface)
   - [Table of Contents](#table-of-contents)
-  - [Project Description:](#project-description)
-  - [Project Features:](#project-features)
-  - [Technical Document](#technical-document)
+  - [Project Description](#project-description)
+  - [Project Features](#project-features)
+  - [Technical Documents](#technical-documents)
+    - [Deployment Document](#deployment-document)
+    - [Development Document](#development-document)
+    - [Family Module Document](#family-module-document)
+    - [Authorization Document](#authorization-document)
   - [To-Do List](#to-do-list)
   - [Customer Pamphlet](#customer-pamphlet)
   - [Contributors](#contributors)
 
-## Project Description:
+## Project Description
 The Ready4Learning interface is a system designed to improve the ease of management and quality of life for the staff, volunteers, and family participating in the drive hosted by the Office of Community Engagement (OoCE) here at the University of Minnesota Morris.
 
-## Project Features:
+## Project Features
 - Users and Login
   - A login system ensures only the individuals with proper access can utilize parts of the interface.
   - Families can log in and edit their information at any time, such as changing availability or adding a student. Families are also able to see information pertaining to them posted by staff.
@@ -52,9 +56,25 @@ The Ready4Learning interface is a system designed to improve the ease of managem
   - Various settings allow for control of time availability, available schools, announcements sent to families, slots per time slot, automatic family scheduling, mass inventory item management, adjusting barcode printing settings, and finally order of the stations during drive day.
   - Settings can only be adjusted/interacted with by staff, preventing tampering by unknown individuals.
 
-## [Technical Document](DEPLOYMENT.md)
+## Technical Documents
 
-A document that describes the technical details of the project.
+These documents explain different aspects of the application.
+
+### [Deployment Document](DEPLOYMENT.md)
+
+A document that explains how to set-up and manage a DigitalOcean Droplet of the application. This is the main technical document.
+
+### [Development Document](DEVELOPMENT.md)
+
+A document that describes the development set-up process.
+
+### [Family Module Document](server/FAMILY_MODULE_REFERENCE.md)
+
+A document that describes the family system.
+
+### [Authorization Document](AUTHORIZATION_CHANGES.md)
+
+A document that describes the authorization system.
 
 ## [To-Do List](TO-DO-LIST.md)
 
@@ -62,7 +82,7 @@ List of known issues and areas for improvements.
 
 ## [Customer Pamphlet](R4LPamphlet.pdf)
 
-A pamphlet that customers can bring to conferences to share, highlighting the value of the system. It can also be used when speaking with potential users.
+A document outlining the core features of the application in two short pages.
 
 ## Contributors
 
