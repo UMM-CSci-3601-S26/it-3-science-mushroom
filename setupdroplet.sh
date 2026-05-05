@@ -1,4 +1,65 @@
 #!/usr/bin/env bash
+# generateSecret simply generates a secure random hex string of numbers and letters that is used for the JWT_SECRET
+# "Command -v openssl" checks if openssl exists on the machine
+# "openssl rand -hex 64" generates a random code of 128 characters (64 bytes encoded into hexadecimal)
+# the output is stored in secret
+# There are multiple fallback options that account for most if not all tools
+# The fallback options support common systems where OpenSSL, Python, Node, or PowerShell may be available.
+generateSecret() {
+  local secret
+
+  if command -v openssl >/dev/null 2>&1; then
+    secret="$(openssl rand -hex 64 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v python3 >/dev/null 2>&1; then
+    secret="$(python3 -c 'import secrets; print(secrets.token_hex(64))' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v python >/dev/null 2>&1; then
+    secret="$(python -c 'import secrets; print(secrets.token_hex(64))' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v node >/dev/null 2>&1; then
+    secret="$(node -e 'console.log(require("crypto").randomBytes(64).toString("hex"))' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v pwsh >/dev/null 2>&1; then
+    secret="$(pwsh -NoProfile -Command '$bytes = New-Object byte[] 64; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); ([BitConverter]::ToString($bytes) -replace "-", "").ToLower()' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  if command -v powershell.exe >/dev/null 2>&1; then
+    secret="$(powershell.exe -NoProfile -Command '$bytes = New-Object byte[] 64; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes); ([BitConverter]::ToString($bytes) -replace "-", "").ToLower()' 2>/dev/null)"
+    if [[ -n "$secret" ]]; then
+      echo "$secret"
+      return
+    fi
+  fi
+
+  echo "Could not generate JWT_SECRET. Install OpenSSL, Python, Node.js, or PowerShell and rerun this script." >&2
+  exit 1
+}
+
 if [[ ! -e /swapfile ]]; then
   echo "/swapfile does not exist, setting up swap"
   # Set up swap space
@@ -18,6 +79,19 @@ domain="${ip}.nip.io"
 echo
 echo "Setting APP_HOST to ${domain}"
 echo "APP_HOST=${domain}" > .env
+# calls generateSecret function and captures a secure random hex string
+jwt_secret="$(generateSecret)"
+# checks if the secret was generated.
+if [[ -z "$jwt_secret" ]]; then
+  # echoes to console that it failed to generate and exits droplet setup.
+  echo "JWT_SECRET was not generated; stopping setup." >&2
+  exit 1
+fi
+# Append JWT_SECRET to the .env used by docker
+echo "JWT_SECRET=${jwt_secret}" >> .env
+# limits .env permissions since it contains secrets
+chmod 600 .env
+echo "Generated JWT_SECRET and saved it to .env"
 echo
 echo "Your site will be served over HTTPS automatically using Let's Encrypt or ZeroSSL."
 echo "By continuing, you agree to the Let's Encrypt Subscriber Agreement at:"
