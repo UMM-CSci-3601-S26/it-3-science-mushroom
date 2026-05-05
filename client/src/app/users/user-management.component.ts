@@ -33,6 +33,9 @@ interface PermissionBundle {
   description: string;
 }
 
+// Permission bundles are higher-level permissions that implicitly grant several lower-level permissions together.
+// They are not stored in the database but are a UI convenience to make it easier for admins to assign common
+// sets of permissions without needing to know every individual permission required for a feature.
 const PERMISSION_BUNDLES: PermissionBundle[] = [
   {
     permission: 'access_families',
@@ -59,6 +62,9 @@ const PERMISSION_BUNDLES: PermissionBundle[] = [
     description: 'This allows volunteers to set available drive spots and run family scheduling.'
   }
 ];
+
+// Hide lower-level implementation permissions from the checkbox list when a
+// friendlier bundle permission grants the same access.
 const HIDDEN_IMPLEMENTATION_PERMISSIONS = new Set([
   'edit_available_spots',
   'view_families',
@@ -70,6 +76,9 @@ const HIDDEN_IMPLEMENTATION_PERMISSIONS = new Set([
   'view_checklist',
   'manage_checklist'
 ]);
+
+// Fallback labels for permissions that are not in the catalog. This ensures that all permissions have a readable label
+// in the UI, even if the catalog is missing entries for some permissions.
 const PERMISSION_LABEL_FALLBACKS = new Map<string, string>([
   ['edit_available_spots', 'Available Spot Editing'],
   ['manage_family_help_sessions', 'Family Help Sessions'],
@@ -99,6 +108,7 @@ const PERMISSION_LABEL_FALLBACKS = new Map<string, string>([
 export class UserManagementComponent implements OnInit, OnDestroy {
   private readonly autoRefreshMs = 5000;
   private readonly destroy$ = new Subject<void>();
+
   section = input<'users' | 'permissions' | 'all'>('all');
   users: User[] = [];
   systemRoles: SystemRole[] = ['ADMIN', 'VOLUNTEER', 'GUARDIAN'];
@@ -125,6 +135,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadAdminData();
+    // Refresh quietly so admins see role changes made elsewhere without losing
+    // their current tab or edit context.
     interval(this.autoRefreshMs)
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.loadAdminData({ quiet: true }));
@@ -132,6 +144,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     document.addEventListener('visibilitychange', this.refreshWhenVisible);
 
     this.userForm.get('systemRole')?.valueChanges.subscribe(role => {
+      // Only volunteers should carry a jobRole. Switching to admin/guardian
+      // clears the field so the server receives the same normalized shape.
       if (role === 'VOLUNTEER') {
         const currentValue = this.userForm.get('jobRole')?.value;
         if (!currentValue) {
@@ -143,12 +157,17 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Method to build a mapping of job role names to their configurations, which is used to display job roles in the UI
+  // and manage their permissions.
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
     document.removeEventListener('visibilitychange', this.refreshWhenVisible);
   }
 
+  // Method to load the administrative data for the user management page, including the list of users, system roles,
+  // job roles, and permission groups. It handles loading state and error notifications, and it also preserves the
+  // current edit context across refreshes when possible.
   loadAdminData(options: { quiet?: boolean } = {}) {
     const quiet = options.quiet || this.users.length > 0;
     this.isLoading = !quiet;
@@ -163,6 +182,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.jobRoles = this.mapJobRoles(overview.jobRoles);
         this.groupedPermissions = this.buildPermissionGroups(overview.permissionCatalog);
         if (this.editingUser) {
+          // Preserve the edit panel across refreshes, but drop it if the user was
+          // deleted by another admin.
           const refreshedUser = users.find(user => user._id === this.editingUser?._id) ?? null;
           if (refreshedUser) {
             this.startEdit(refreshedUser);
@@ -182,12 +203,15 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Method to refresh the administrative data when the document becomes visible again, ensuring that
+  // admins see the most up-to-date information after switching back to the tab.
   private refreshWhenVisible = () => {
     if (document.visibilityState === 'visible') {
       this.loadAdminData({ quiet: true });
     }
   };
 
+  // Method to map the job roles received from the server into a format suitable for display and interaction in the UI.
   startEdit(user: User) {
     this.editingUser = user;
     this.userForm.reset({
@@ -196,6 +220,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Method to cancel the editing of a user, resetting the form and clearing the editing state.
   cancelEdit() {
     this.editingUser = null;
     this.userForm.reset({
@@ -204,6 +229,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Method to submit the changes made to a user's roles, handling validation, error notifications,
+  // and updating the administrative data. It also includes a client-side check to prevent removing
+  // the last admin role from the system, which mirrors a server-side protection.
   submit() {
     if (this.userForm.invalid || !this.editingUser) {
       this.userForm.markAllAsTouched();
@@ -229,10 +257,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Method to determine if the user being edited is the only admin in the system, which is used to prevent removing
+  // the last admin account.
   canDeleteUser(user: User): boolean {
     return !this.isOnlyAdmin(user);
   }
 
+  // Method to check if the specified user is the only admin in the system by counting the number of users with the admin role.
   deleteUser(user: User) {
     if (!this.canDeleteUser(user)) {
       this.snackBar.open('At least one admin account must remain in the system.', 'Close', { duration: 3500 });
@@ -256,7 +287,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Method to build the payload for updating a user's roles based on the form values, ensuring that the payload
+  // is correctly structured for the server.
   selectJobRole(role: JobRoleView) {
+    // Work on a copy so unsaved checkbox changes do not mutate the list view.
     this.selectedJobRole = {
       name: role.name,
       permissions: [...role.permissions],
@@ -273,6 +307,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       ? []
       : (this.selectedJobRole.inherits.length ? this.selectedJobRole.inherits : ['volunteer_base']);
 
+    // Sort permissions before saving to keep the Mongo document stable and easy
+    // to diff in seed/export workflows.
     const config: JobRoleConfig = {
       permissions: [...this.selectedJobRole.permissions].sort(),
       inherits
@@ -300,6 +336,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // New job roles inherit volunteer_base by default so they keep the baseline
+    // access needed by ordinary volunteer workflows.
     this.userService.saveJobRole(name, { permissions: [], inherits: ['volunteer_base'] }).subscribe({
       next: () => {
         this.newJobRoleName = '';
@@ -314,6 +352,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   deleteJobRole(name: string) {
     if (name === 'volunteer_base') {
+      // volunteer_base is the fallback role for volunteers and must always exist.
       return;
     }
     if (!confirm(`Delete job role ${this.formatRoleName(name)}?`)) {
@@ -334,6 +373,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Method to toggle a permission for the selected job role, handling both enabling and disabling permissions,
+  // as well as managing permission bundles and ensuring that the UI reflects the current state of permissions accurately.
   togglePermission(permission: string, enabled: boolean, event?: MatCheckboxChange) {
     if (!this.selectedJobRole) {
       return;
@@ -341,6 +382,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     if (enabled) {
       if (this.isBundlePermission(permission)) {
+        // Bundle permissions add several implementation permissions together so
+        // admins do not have to know every low-level route permission.
         const enabledBundle = this.enablePermissionBundle(permission);
         if (!enabledBundle && event) {
           event.source.checked = false;
@@ -356,10 +399,12 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.selectedJobRole.permissions = this.selectedJobRole.permissions.filter(item => item !== permission);
   }
 
+  // Method to check if a permission is a bundle permission, which grants multiple underlying permissions together.
   isSelectedPermission(permission: string): boolean {
     return this.selectedJobRole?.permissions.includes(permission) ?? false;
   }
 
+  // Method to check if a permission is a bundle permission, which grants multiple underlying permissions together.
   isInheritedPermission(permission: string): boolean {
     if (!this.selectedJobRole || this.selectedJobRole.name === 'volunteer_base') {
       return false;
@@ -367,14 +412,18 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     return this.basePermissions.has(permission);
   }
 
+  // Method to check if a permission is a bundle permission, which grants multiple underlying permissions together.
   isPointOfSaleBundledPermission(permission: string): boolean {
     return this.bundleSourceLabel(permission) === 'Included by Point of Sale';
   }
 
+  // Method to check if a permission is a bundle permission, which grants multiple underlying permissions together.
   isPermissionLocked(permission: string): boolean {
     return this.isInheritedPermission(permission) || !!this.bundleSourceLabel(permission);
   }
 
+  // Method to enable a permission bundle, which adds all underlying permissions to the selected job role. It returns
+  // true if the bundle was successfully enabled, or false if the permission is not a recognized bundle.
   permissionSourceLabel(permission: string): string {
     if (this.isInheritedPermission(permission)) {
       return 'Included by volunteer base';
@@ -408,6 +457,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   get availableSystemRoles(): SystemRole[] {
     if (this.isOnlyAdmin(this.editingUser)) {
+      // Client-side guard mirrors the server's last-admin protection and gives
+      // immediate feedback before a save attempt.
       return ['ADMIN'];
     }
     return this.systemRoles;
@@ -467,6 +518,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       throw new Error('Cannot build a user payload without a selected user');
     }
     return {
+      // The current form edits only roles, so preserve identity fields from the
+      // selected user record.
       username: this.editingUser.username,
       fullName: this.editingUser.fullName,
       email: this.editingUser.email ?? null,
@@ -496,6 +549,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       entry.volunteerAssignable && !HIDDEN_IMPLEMENTATION_PERMISSIONS.has(entry.permission)
     );
 
+    // Add friendly bundle permissions even though the server ultimately enforces
+    // the lower-level permissions they expand to.
     for (const bundle of PERMISSION_BUNDLES) {
       if (!assignablePermissions.some(entry => entry.permission === bundle.permission)) {
         assignablePermissions.push({
@@ -537,6 +592,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
     const missingPermissions = bundle.permissions
       .filter(permission => !this.selectedJobRole!.permissions.includes(permission));
+    // Confirm before expanding a bundle because enabling one visible checkbox
+    // may add several route-level permissions.
     const missingPermissionLabels = missingPermissions.map(permission => this.permissionLabel(permission));
     const message = missingPermissions.length === 0
       ? `${bundle.label} is a bundle permission. ${bundle.description} Enable it?`

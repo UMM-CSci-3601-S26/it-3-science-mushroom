@@ -45,6 +45,12 @@ export interface FamilyPortalDriveDay {
   timeSlotStatus?: 'pending' | 'assigned';
 }
 
+/**
+ * Client API for the guardian family portal.
+ *
+ * Every call goes through the normal auth interceptor, so the server identifies
+ * the guardian by the HttpOnly auth cookie and returns only that user's family.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -53,6 +59,8 @@ export class FamilyPortalService {
 
   private readonly familyPortalUrl = `${environment.apiUrl}family-portal`;
 
+  // Summary contains both the saved family profile and settings-driven display
+  // data so the portal can decide whether to show the home page or form.
   getSummary(): Observable<FamilyPortalSummary> {
     return this.httpClient.get<FamilyPortalSummary>(this.familyPortalUrl);
   }

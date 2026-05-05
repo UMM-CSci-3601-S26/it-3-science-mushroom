@@ -1,5 +1,6 @@
 /**
- * RoleGuard — prevents users with insufficient role from accessing a route.
+ * RoleGuard prevents users with insufficient role or permissions from accessing
+ * a route.
  *
  * How it works
  * ------------
@@ -12,7 +13,7 @@
  * them against AuthService.role (stored in sessionStorage after login).
  *
  *  - If the user is not logged in at all, AuthGuard (which runs first) will
- *    have already redirected them to /login — RoleGuard is not reached.
+ *    have already redirected them to /login before RoleGuard is reached.
  *  - If the user IS logged in but has the wrong role, RoleGuard redirects
  *    to '/' (the home page) so they see a graceful denial instead of a
  *    blank screen.
@@ -33,6 +34,8 @@ export class RoleGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot) {
     return this.authService.syncAccessProfile().pipe(
       map(() => {
+        // Always refresh before checking route metadata so permission changes
+        // made by an admin are reflected without a full logout/login cycle.
         const allowed = (route.data['roles'] as string[] | undefined) ?? [];
         if (!this.authService.loggedIn) {
           this.router.navigate(['/login']);
