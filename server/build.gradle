@@ -38,7 +38,7 @@ dependencies {
   implementation 'org.mongojack:mongojack:5.1.0'
 
   // Simple Logging Facade for Java
-  implementation 'org.slf4j:slf4j-simple:2.0.17'
+  implementation 'org.slf4j:slf4j-simple:2.0.18'
 
   // JUnit Jupiter API for testing.
   testImplementation 'org.junit.jupiter:junit-jupiter-api:6.0.3'
