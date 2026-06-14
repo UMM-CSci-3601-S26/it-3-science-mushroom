@@ -1,14 +1,3 @@
-
-:host {
-  --app-primary-color: var(--mat-sys-primary, #1565c0);
-  --app-primary-on-color: var(--mat-sys-on-primary, #ffffff);
-  --app-warn-color: var(--mat-sys-error, #d32f2f);
-  --app-warn-on-color: var(--mat-sys-on-error, #ffffff);
-  --app-text-color: var(--mat-sys-on-surface, rgba(255, 255, 255, 0.87));
-  --app-hover-color: var(--mat-sys-surface-container-high, #4a4a4a);
-  --app-divider-color: var(--mat-sys-outline-variant, rgba(255, 255, 255, 0.22));
-}
-
 .admin-header,
 .panel-title-row,
 .user-card,
@@ -217,7 +206,7 @@
 }
 
 :host ::ng-deep .mat-mdc-select-panel {
-  background: color-mix(in srgb, var(--app-hover-color) 82%, #111) !important;
+  background: color-mix(in srgb, var(--app-hover-color) 82%, var(--app-bg)) !important;
 }
 
 :host ::ng-deep .mat-mdc-option .mdc-list-item__primary-text {

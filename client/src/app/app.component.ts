@@ -1,5 +1,6 @@
 // Angular Imports
 import { Component, DestroyRef, HostListener, inject, OnInit } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { HttpClient } from '@angular/common/http';
@@ -52,6 +53,13 @@ export class AppComponent implements OnInit {
   private clipboard = inject(Clipboard);
   private snackBar = inject(MatSnackBar);
 
+  // State variable to track whether the dark mode theme is currently active.
+  // It is initialized to false (light mode) and is updated based on user
+  // interactions and system preferences.
+  isDarkMode = false;
+  private document = inject(DOCUMENT);
+  private readonly themeStorageKey = 'r4l-theme-mode';
+
   // Method to copy the volunteer sign-up link to the clipboard and show a confirmation message
   copyVolunteerSignUpLink() {
     const link = window.location.origin + '/sign-up';
@@ -62,10 +70,19 @@ export class AppComponent implements OnInit {
   pendingDeleteRequestCount = 0;
 
   ngOnInit(): void {
+    // Apply the theme class before the rest of the shell work so Material and
+    // custom token styles agree as soon as the app renders.
+    this.initializeTheme();
     this.deleteRequestNotifications.changes$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.refreshDeleteRequestCount());
     this.syncAccessProfileSilently();
+  }
+
+  // Toggle only the root theme class; Angular Material's theme CSS and the
+  // app-level CSS variables in styles.scss handle the actual colors.
+  toggleTheme() {
+    this.applyTheme(this.isDarkMode ? 'light' : 'dark');
   }
 
   // Method to log out the user, clear pending delete request count, and navigate to the login page
@@ -127,6 +144,28 @@ export class AppComponent implements OnInit {
         this.enforceRouteAccess();
       }
     });
+  }
+
+  // Method to initialize the theme based on the user's saved preference or system preference, and apply
+  // the corresponding theme class to the document root element to ensure that the correct theme is applied
+  // as soon as the app loads.
+  private initializeTheme() {
+    const savedTheme = localStorage.getItem(this.themeStorageKey);
+    const theme = savedTheme === 'dark' || savedTheme === 'light'
+      ? savedTheme
+      : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    this.applyTheme(theme);
+  }
+
+  // The root classes are used by styles.scss to scope both Material color
+  // mixins and app CSS variables.
+  private applyTheme(theme: 'light' | 'dark') {
+    const root = this.document.documentElement;
+    root.classList.toggle('app-theme-dark', theme === 'dark');
+    root.classList.toggle('app-theme-light', theme === 'light');
+    localStorage.setItem(this.themeStorageKey, theme);
+    this.isDarkMode = theme === 'dark';
   }
 
   // Method to enforce route access based on the user's authentication status, roles, and permissions.

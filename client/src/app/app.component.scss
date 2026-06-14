@@ -5,6 +5,8 @@
 mat-sidenav-content {
   position: relative;
   z-index: 0;
+  background: var(--app-bg);
+  color: var(--app-text);
 }
 
 .sidenav {
@@ -20,7 +22,7 @@ mat-toolbar.mat-primary {
   top: 0;
   z-index: 1000;
   background: var(--mat-toolbar-container-background-color, inherit);
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--app-divider-color) 35%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--app-shadow-color) 35%, transparent);
 }
 
 .app-title {
@@ -37,9 +39,14 @@ mat-toolbar.mat-primary {
   gap: 4px;
 }
 
+.theme-toggle-button {
+  flex: 0 0 auto;
+  margin-right: 4px;
+}
+
 .account-menu-panel {
   background: var(--mat-menu-container-color, transparent);
-  color: var(--mat-menu-item-label-text-color, rgba(0, 0, 0, 0.87));
+  color: var(--mat-menu-item-label-text-color, var(--app-contrast));
   min-width: 280px;
   padding: 8px 0;
 }
@@ -83,17 +90,14 @@ mat-toolbar.mat-primary {
   overflow-wrap: anywhere;
 }
 
-@media (prefers-color-scheme: dark) {
-  .account-menu-panel {
-    color: var(--mat-menu-item-label-text-color, rgba(255, 255, 255, 0.87));
-  }
-}
-
 .main-content {
   margin: auto;
+  // vh stands for viewport height, so this makes the main content area fill the height of the viewport minus the height of the toolbar (64px).
+  min-height: calc(100vh - 64px);
   padding: 24px;
   position: relative;
   z-index: 0;
+  background: var(--app-bg);
   @media (max-width: 599px) {
     padding: 16px;
   }
@@ -105,11 +109,13 @@ mat-toolbar.mat-primary {
 }
 
 .main-content:has(app-point-of-sale) {
+  // POS gets a subtle themed backdrop, while POS panels themselves stay solid
+  // surfaces for readability.
   max-width: none;
   min-height: calc(100vh - 64px);
   padding: 0;
   background:
-    radial-gradient(circle at 10% 5%, rgba(59, 130, 246, 0.16), transparent 28rem),
-    radial-gradient(circle at 92% 8%, rgba(20, 184, 166, 0.13), transparent 26rem),
-    linear-gradient(180deg, #f8fafc 0%, #eef6fb 52%, #f8fafc 100%);
+    radial-gradient(circle at 10% 5%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 28rem),
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--app-success) 13%, transparent), transparent 26rem),
+    linear-gradient(180deg, var(--app-bg) 0%, var(--app-surface-muted) 52%, var(--app-bg) 100%);
 }
