@@ -1,5 +1,31 @@
 :host {
-  display: block;
+  --pos-dialog-card-bg: #ffffff;
+  --pos-dialog-card-border: #919fa7;
+  --pos-dialog-card-text: #374151;
+
+  --pos-dialog-status-pill-bg: #ffffff;
+  --pos-dialog-pill-bg: #ffffff;
+  --pos-dialog-pill-border: #838383;
+  --pos-dialog-pill-txt: #162844;
+
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --pos-muted-text: #d1d5db;
+    --pos-dialog-bg: #1f2937;
+    --pos-body-text: #f3f4f6;
+    --pos-vibrant-text: #74849b;
+
+    --pos-dialog-card-bg: #1f2937;
+    --pos-dialog-card-border: #5c636d;
+    --pos-dialog-card-text: #e5e7eb;
+
+    --pos-dialog-status-pill-bg: #eeeeee;
+    --pos-dialog-pill-bg: #1f2937;
+    --pos-dialog-pill-border: #b8b8b8;
+    --pos-dialog-pill-txt: #f3f4f6;
+  }
 }
 
 .session-shell {
@@ -11,7 +37,7 @@
   overflow: hidden;
   box-sizing: border-box;
   padding: 1.25rem;
-  background: radial-gradient(circle at top right, rgba(14,165,233,.08), transparent 18rem), #fff;
+  background: radial-gradient(circle at top right, rgba(14,165,233,.08), transparent 18rem), var(--pos-dialog-bg);
 }
 
 .session-header {
@@ -24,7 +50,7 @@
 
 .session-title {
   margin: 0;
-  color: #0f172a;
+  color: var(--pos-body-text);
   font-size: 1.45rem;
   font-weight: 900;
   letter-spacing: -0.03em;
@@ -32,7 +58,7 @@
 
 .session-subtitle {
   margin: 0.3rem 0 0;
-  color: #475569;
+  color: var(--pos-body-text);
   font-weight: 600;
 }
 
@@ -41,7 +67,8 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
   padding: 0.85rem;
-  border: 1px solid #e2e8f0;
+  background: var(--pos-dialog-card-bg);
+  border: 1px solid var(--pos-dialog-card-border);
   border-radius: 16px;
   box-shadow: none;
 }
@@ -51,8 +78,9 @@
   gap: 0.18rem;
   min-width: 0;
   padding: 0.7rem 0.8rem;
+  border: 1px solid var(--pos-dialog-card-border);
   border-radius: 13px;
-  background: #f8fafc;
+  background: var(--pos-dialog-card-bg);
 }
 
 .session-error p,
@@ -61,7 +89,7 @@
 }
 
 .session-summary span {
-  color: #64748b;
+  color: var(--pos-dialog-card-text);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -71,7 +99,7 @@
 .session-summary strong {
   min-width: 0;
   overflow: hidden;
-  color: #0f172a;
+  color: var(--pos-dialog-card-text);
   font-size: 0.98rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -112,8 +140,8 @@
 
 .student-session-card {
   border-radius: 18px;
-  border: 1px solid #d9e1ea;
-  background: #ffffff;
+  border: 1px solid var(--pos-dialog-card-border);
+  background: var(--pos-dialog-card-bg);
   box-shadow: none;
   padding: 0.85rem;
 }
@@ -127,7 +155,7 @@
 
 .student-session-card h3 {
   margin: 0 0 0.55rem;
-  color: #0f172a;
+  color: var(--pos-dialog-card-text);
   font-size: 1.1rem;
   font-weight: 900;
 }
@@ -141,8 +169,8 @@
 .student-details span {
   padding: 0.24rem 0.55rem;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
+  background: var(--pos-dialog-pill-bg);
+  color: var(--pos-dialog-pill-txt);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -163,7 +191,7 @@
 
 .placeholder-text {
   margin-top: 0.85rem;
-  color: #475569;
+  color: #694f47;
   font-style: italic;
 }
 
@@ -181,9 +209,9 @@
   column-gap: 0.9rem;
   row-gap: 0.45rem;
   padding: 0.8rem 0.9rem;
-  border: 1px solid #d9e1ea;
+  border: 1px solid var(--pos-dialog-card-border);
   border-radius: 16px;
-  background: #f8fafc;
+  background: var(--pos-dialog-card-bg);
 }
 
 .checklist-item.not-in-inventory {
@@ -194,7 +222,7 @@
 
 .item-label {
   margin: 0;
-  color: #0f172a;
+  color: var(--pos-dialog-card-text);
   font-weight: 850;
   line-height: 1.35;
   overflow-wrap: anywhere;
@@ -209,7 +237,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem 0.55rem;
-  color: #475569;
+  color: var(--pos-dialog-card-text);
   font-size: 0.86rem;
 }
 
@@ -308,12 +336,19 @@
   justify-content: flex-end;
   padding-top: 0.9rem;
   border-top: 1px solid #e2e8f0;
-  background: #fff;
+  background: var(--pos-dialog-pill-bg);
+}
+
+.draft-session-button {
+  border-color: #2460d1;
+  background: var(--pos-dialog-pill-bg);
+  color: #5d8adf;
 }
 
 .clear-session-button {
-  border-color: #fecaca;
-  color: #991b1b;
+  border-color: #ee0202;
+  background: var(--pos-dialog-pill-bg);
+  color: #aa4040;
 }
 
 @media (max-width: 640px) {

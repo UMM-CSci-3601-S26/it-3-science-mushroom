@@ -179,7 +179,12 @@
       (click)="clearSessionAndClose()">
       Clear Session
     </button>
-    <button mat-stroked-button type="button" [disabled]="saving" (click)="closeAndSaveDraft()">
+    <button
+      mat-stroked-button
+      type="button"
+      class="draft-session-button"
+      [disabled]="saving"
+      (click)="closeAndSaveDraft()">
       Draft Session
     </button>
     <button

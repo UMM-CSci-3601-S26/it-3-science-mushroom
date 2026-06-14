@@ -4,6 +4,27 @@
   padding: clamp(2rem, 4vw, 4rem);
   box-sizing: border-box;
   background: transparent;
+
+  --pos-muted-text: #4b5563;
+  --pos-vibrant-text: #3d4652;
+  --pos-body-text: #111827;
+
+  --pos-card-bg: #ffffff;
+  --pos-card-border: #b3c3cc;
+  --pos-card-text: #374151;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --pos-muted-text: #d1d5db;
+    --pos-body-text: #f3f4f6;
+    --pos-vibrant-text: #74849b;
+
+    --pos-card-bg: #1f2937;
+    --pos-card-border: #5c636d;
+    --pos-card-text: #e5e7eb;
+
+  }
 }
 
 .flex-row {
@@ -18,10 +39,10 @@
 
 .pos-card {
   overflow: hidden;
-  border: 1px solid #dbe3ee;
+  border: var(--pos-card-border);
   border-radius: 30px;
   margin-bottom: 1rem;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--pos-card-bg);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
 }
 
@@ -35,7 +56,7 @@
 
 .pos-title {
   margin: 0;
-  color: #0f172a;
+  color: var(--pos-card-text);
   font-size: 1.75rem;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -43,17 +64,17 @@
 
 .pos-subtitle {
   margin-top: 0.35rem;
-  color: #64748b;
+  color: var(--pos-card-text);
   font-size: 0.95rem;
 }
 
 .family-count {
   flex: 0 0 auto;
   padding: 0.5rem 0.9rem;
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--pos-card-border);
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: var(--pos-card-bg);
+  color: var(--pos-card-text);
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -72,24 +93,22 @@ mat-card-content {
   grid-template-columns: minmax(230px, 0.35fr) minmax(420px, 1fr);
   align-items: center;
   gap: 1.25rem;
-  border: 1px solid #d7e0ea;
+  border: 1px solid var(--pos-card-border);
   border-radius: 22px;
   padding: 1.15rem 1.25rem;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%),
-    linear-gradient(90deg, #dbeafe, #ccfbf1);
+  background: var(--pos-card-bg);
   box-sizing: border-box;
 }
 
 .filter-label {
   margin: 0;
-  color: #0f172a;
+  color: var(--pos-muted-text);
   font-weight: 800;
 }
 
 .filter-hint {
   margin: 0.25rem 0 0;
-  color: #64748b;
+  color: var(--pos-vibrant-text);
   font-size: 0.9rem;
 }
 
@@ -131,12 +150,12 @@ mat-card-content {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.2rem 0.15rem;
-  color: #64748b;
+  color: var(--pos-vibrant-text);
   font-size: 0.88rem;
 }
 
 .family-list-heading span:first-child {
-  color: #0f172a;
+  color: var(--pos-vibrant-text);
   font-weight: 800;
 }
 
@@ -146,8 +165,8 @@ mat-card-content {
   place-items: center;
   border: 1px dashed #cbd5e1;
   border-radius: 18px;
-  background: #f8fafc;
-  color: #64748b;
+  background: var(--pos-card-bg);
+  color: var(--pos-muted-text);
   font-weight: 700;
 }
 

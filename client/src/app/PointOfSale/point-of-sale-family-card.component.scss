@@ -1,15 +1,47 @@
+:host {
+  --pos-muted-text: #4b5563;
+  --pos-vibrant-text: #3d4652;
+  --pos-body-text: #111827;
+
+  --pos-family-card-bg: #ffffff;
+  --pos-family-card-border: #919fa7;
+  --pos-family-card-text: #374151;
+
+  --pos-family-status-pill-bg: #ffffff;
+  --pos-family-pill-bg: #ffffff;
+  --pos-family-pill-border: #838383;
+  --pos-family-pill-txt: #162844;
+
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --pos-muted-text: #d1d5db;
+    --pos-body-text: #f3f4f6;
+    --pos-vibrant-text: #74849b;
+
+    --pos-family-card-bg: #1f2937;
+    --pos-family-card-border: #5c636d;
+    --pos-family-card-text: #e5e7eb;
+
+    --pos-family-status-pill-bg: #eeeeee;
+    --pos-family-pill-bg: #1f2937;
+    --pos-family-pill-border: #b8b8b8;
+    --pos-family-pill-txt: #f3f4f6;
+  }
+}
+
 .family-card {
   overflow: hidden;
   border-radius: 20px;
-  border: 1px solid #dbe3ee;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  border: 1px solid var(--pos-family-card-border);
+  background: var(--pos-family-card-bg);
   box-shadow: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .family-card:hover {
-  border-color: #93c5fd;
+  border-color: var(--pos-family-card-border);
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
   transform: translateY(-1px);
 }
@@ -39,7 +71,7 @@
 
 .family-name {
   margin: 0;
-  color: #0f172a;
+  color: var(--pos-body-text);
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -60,17 +92,20 @@
 }
 
 .status-not-helped {
-  background: #eff6ff;
+  background: var(--pos-family-status-pill-bg);
+  border: 1px solid var(--pos-family-pill-border);
   color: #1d4ed8;
 }
 
 .status-in-progress {
   background: #fef3c7;
+  border: 1px solid var(--pos-family-pill-border);
   color: #92400e;
 }
 
 .status-helped {
   background: #dcfce7;
+  border: 1px solid var(--pos-family-pill-border);
   color: #166534;
 }
 
@@ -84,8 +119,8 @@
 .family-meta span {
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--pos-family-pill-bg);
+  color: var(--pos-family-pill-txt);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -116,7 +151,7 @@
 
 .family-address {
   margin: 0;
-  color: #334155;
+  color: var(--pos-family-pill-txt);
   font-size: 0.95rem;
   overflow: hidden;
   text-overflow: ellipsis;

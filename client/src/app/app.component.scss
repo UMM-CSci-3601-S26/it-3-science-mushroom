@@ -1,3 +1,5 @@
+
+
 .sidenav-container {
   height: 100%;
 }
@@ -108,8 +110,4 @@ mat-toolbar.mat-primary {
   max-width: none;
   min-height: calc(100vh - 64px);
   padding: 0;
-  background:
-    radial-gradient(circle at 10% 5%, rgba(59, 130, 246, 0.16), transparent 28rem),
-    radial-gradient(circle at 92% 8%, rgba(20, 184, 166, 0.13), transparent 26rem),
-    linear-gradient(180deg, #f8fafc 0%, #eef6fb 52%, #f8fafc 100%);
 }
