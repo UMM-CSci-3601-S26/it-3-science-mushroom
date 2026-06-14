@@ -50,14 +50,14 @@
 .stat-row-school {
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--app-border);
   padding-bottom: 4px;
 }
 
 .stat-row-grade {
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--app-border);
   padding-bottom: 4px;
 }
 

@@ -1,10 +1,5 @@
 :host {
   display: block;
-  --app-primary-color: var(--mat-sys-primary, #1565c0);
-  --app-warn-color: var(--mat-sys-error, #d32f2f);
-  --app-text-color: var(--mat-sys-on-surface, rgba(255, 255, 255, 0.87));
-  --app-hover-color: var(--mat-sys-surface-container-high, #4a4a4a);
-  --app-divider-color: var(--mat-sys-outline-variant, rgba(255, 255, 255, 0.22));
 }
 
 mat-card {

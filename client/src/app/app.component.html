@@ -38,7 +38,7 @@
           Stock Report
         </a>
       }
-      
+
       @if (canAccessPath('/supplylist')) {
         <a mat-list-item routerLink="/supplylist" routerLinkActive="drawer-list-item-active" (click)="drawer.close()">
           <mat-icon matListItemIcon>list</mat-icon>
@@ -59,7 +59,7 @@
           Users
         </a>
       }
-      
+
     </mat-nav-list>
 
   </mat-sidenav>
@@ -71,6 +71,16 @@
       </button>
       <span class="app-title">{{title}}</span>
       <span class="toolbar-spacer"></span>
+      <!-- Button to toggle between light and dark mode -->
+      <button
+        type="button"
+        mat-icon-button
+        class="theme-toggle-button"
+        [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+        [title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+        (click)="toggleTheme()">
+        <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
       @if (authService.loggedIn) {
         <button
           mat-button

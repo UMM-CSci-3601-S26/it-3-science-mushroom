@@ -27,11 +27,11 @@
 }
 
 .family-card-linked {
-  border-left-color: #4394c4;
+  border-left-color: var(--app-primary);
 }
 
 .family-card-manual {
-  border-left-color: #e8d43f;
+  border-left-color: var(--app-warning);
 }
 
 .family-card-compact {
@@ -78,11 +78,11 @@
 }
 
 .guardian-link-status-linked {
-  color: #4394c4;
+  color: var(--app-primary);
 }
 
 .guardian-link-status-manual {
-  color: #e8d43f;
+  color: var(--app-warning);
 }
 
 .family-compact-grid {
@@ -139,8 +139,8 @@
 
 .edit-family-button {
   margin-left: auto;
-  background-color: #2196F3;
-  color: white;
+  background-color: var(--app-primary);
+  color: var(--app-on-primary);
   width: 50px;
   height: 50px;
   display: flex;

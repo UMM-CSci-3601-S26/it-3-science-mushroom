@@ -18,22 +18,10 @@
 
   // Extract the palettes you need from the theme definition.
   $primary: map.get($color-config, primary);
-  $accent: map.get($color-config, accent);
-  $warn: map.get($color-config, warn);
-
-  $background: map.get($color-config, background);
   $foreground: map.get($color-config, foreground);
-
-  $is-dark: map.get($color-config, is-dark);
 
   // Define any styles affected by the theme.
 
-  @if $is-dark {
-    .mat-toolbar.mat-primary {
-      background: mat.m2-get-color-from-palette($background, app-bar);
-      color: mat.m2-get-color-from-palette($foreground, text);
-    }
-  }
   .drawer-list-item-active {
     background-color: color.change(mat.m2-get-color-from-palette($primary), $alpha: 0.15) !important;
     color: mat.m2-get-color-from-palette($primary) !important;
@@ -48,6 +36,46 @@
       margin-right: 16px;
     }
   }
+}
+
+// App-level CSS variables bridge Angular Material palettes to custom component
+// styles. Components should consume these tokens instead of hard-coding colors.
+@mixin app-color-tokens($theme) {
+  $color-config: mat.m2-get-color-config($theme);
+  $primary: map.get($color-config, primary);
+  $accent: map.get($color-config, accent);
+  $warn: map.get($color-config, warn);
+  $background: map.get($color-config, background);
+  $foreground: map.get($color-config, foreground);
+  $is-dark: map.get($color-config, is-dark);
+
+  --app-bg: #{mat.m2-get-color-from-palette($background, background)};
+  --app-surface: #{mat.m2-get-color-from-palette($background, card)};
+  --app-surface-muted: #{mat.m2-get-color-from-palette($background, hover)};
+  --app-text: #{mat.m2-get-color-from-palette($foreground, text)};
+  --app-text-muted: #{mat.m2-get-color-from-palette($foreground, secondary-text)};
+  --app-contrast: #{if($is-dark, #ffffff, #000000)};
+  --app-border: #{mat.m2-get-color-from-palette($foreground, divider)};
+
+  --app-primary: #{mat.m2-get-color-from-palette($primary)};
+  --app-on-primary: #{mat.m2-get-color-from-palette($primary, default-contrast)};
+  --app-accent: #{mat.m2-get-color-from-palette($accent)};
+  --app-on-accent: #{mat.m2-get-color-from-palette($accent, default-contrast)};
+  --app-warn: #{mat.m2-get-color-from-palette($warn)};
+  --app-on-warn: #{mat.m2-get-color-from-palette($warn, default-contrast)};
+
+  --app-success: #2e7d32;
+  --app-warning: #ed6c02;
+  --app-shadow-color: rgba(0, 0, 0, 0.16);
+
+  --app-primary-color: var(--app-primary);
+  --app-primary-on-color: var(--app-on-primary);
+  --app-warn-color: var(--app-warn);
+  --app-warn-on-color: var(--app-on-warn);
+  --app-warn-muted-color: var(--app-warning);
+  --app-text-color: var(--app-text);
+  --app-hover-color: var(--app-surface-muted);
+  --app-divider-color: var(--app-border);
 }
 
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
@@ -175,18 +203,74 @@ html, body {
   height: 100%;
 }
 
+:root {
+  // Light is the default theme so the app has stable colors before Angular boots.
+  @include app-color-tokens($light-theme);
+  color-scheme: light;
+}
+
 body {
   margin: 0;
+  background: var(--app-bg);
+  color: var(--app-text);
 }
 
 // This media query detects if the user has dark-mode turned on on their OS or browser
 // If you don't want to apply dark theme automatically,
 // you can also make this a normal class and add it to body or html dynamically.
 @media (prefers-color-scheme: dark) {
+  // Respect the OS/browser dark preference unless the user has chosen light mode
+  // with the in-app testing toggle.
+  :root:not(.app-theme-light) {
+    @include app-color-tokens($dark-theme);
+    color-scheme: dark;
+  }
+
   // Sets up the theming for built in material components with the dark theme
-  @include mat.all-component-colors($dark-theme);
+  :root:not(.app-theme-light) {
+    @include mat.all-component-colors($dark-theme);
+  }
+
   // Sets up theming for our custom components with the dark theme
+  :root:not(.app-theme-light) {
+    @include app-theming($dark-theme);
+  }
+}
+
+// Manual testing overrides. These class scopes intentionally wrap Angular
+// Material's color mixins so Material components and custom app tokens switch together.
+:root.app-theme-light {
+  @include app-color-tokens($light-theme);
+  color-scheme: light;
+  @include mat.all-component-colors($light-theme);
+  @include app-theming($light-theme);
+}
+
+:root.app-theme-dark {
+  @include app-color-tokens($dark-theme);
+  color-scheme: dark;
+  @include mat.all-component-colors($dark-theme);
   @include app-theming($dark-theme);
+}
+
+.mat-app-background,
+.mat-drawer-container,
+.mat-drawer-content,
+.mat-sidenav-content {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}
+
+// Shared button-toggle theme tokens keep segmented controls consistent across
+// current and future mat-button-toggle groups.
+.mat-button-toggle-group,
+.mat-button-toggle-standalone {
+  --mat-button-toggle-background-color: var(--app-surface);
+  --mat-button-toggle-button-toggle-text-color: var(--app-text);
+  --mat-button-toggle-disabled-state-text-color: var(--app-text-muted);
+  --mat-button-toggle-divider-color: var(--app-border);
+  --mat-button-toggle-selected-state-background-color: var(--app-primary);
+  --mat-button-toggle-selected-state-text-color: var(--app-on-primary);
 }
 
 // Use uppercase text on buttons
