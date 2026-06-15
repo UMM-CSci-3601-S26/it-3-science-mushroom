@@ -52,6 +52,8 @@ export class ReportGeneratorComponent {
   private snackBar = inject(MatSnackBar);
   private formatDateTimeService = inject(FormatDateTimeService);
   private authService = inject(AuthService);
+  private readonly pageBreakThreshold = 0.75; // Percentage of page height to trigger page break
+  private readonly tablePageTopY = 15;
 
   get canViewReports(): boolean {
     return this.authService.hasPermission('view_reports');
@@ -93,6 +95,31 @@ export class ReportGeneratorComponent {
   });
 
   /**
+   * Custom helper function to add text with specified styling
+   */
+  private addText(doc: jsPDF, text: string, x: number, y: number, size: number, weight: string, font: string): void {
+    doc.setFont(undefined, weight);
+    doc.setFontSize(size);
+    doc.text(text, x, y);
+    doc.setFont(undefined, font);
+  }
+
+  /**
+   * Moves a new table to a new page if there isn't enough space left on the current page
+   * @returns Y coordinate to start new table
+   */
+  private checkForPageBreak(doc: jsPDFWithAutoTable, tableStartY: number): number {
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    if (tableStartY >= pageHeight * this.pageBreakThreshold) {
+      doc.addPage();
+      return this.tablePageTopY;
+    }
+
+    return tableStartY;
+  }
+
+  /**
    * Generates a PDF report of the inventory, grouped by Stock State. Each group has its own table with item description, quantity, max quantity, and min quantity.
    * The PDF is saved with the name "StockReport_MM-DD-YYYY.pdf", using formatDateTime to get the formatted date. The PDF also includes a title and description with the date.
    * @param savePdf boolean indicating whether to save PDF to server (true) or download to client machine (false)
@@ -109,18 +136,19 @@ export class ReportGeneratorComponent {
 
     const doc = new jsPDF() as jsPDFWithAutoTable;
     // Title
-    doc.setFontSize(16);
-    doc.text("Stock Report", 10, 10);
+    this.addText(doc, "Stock Report", 10, 10, 16, 'bold', 'normal');
     // Description
-    doc.setFontSize(12);
-    doc.text("This is a Stock Report of the inventory on ${formattedDate}".replace("${formattedDate}", this.formatDateTimeService.formatDateTime(this.dateTime)[0]), 10, 20);
+    this.addText(doc, `Report generated on ${this.formatDateTimeService.formatDateTime(this.dateTime)[0]}`, 10, 25, 12, 'normal', 'normal');
+    doc.line(10, 28, 200, 28); // Horizontal line under title and description
 
     // Table Constants
     const headers = [["Item Description", "Quantity", "Max Quantity", "Min Quantity", "Notes"]];
-    const tableSpace = 10; // 10mm of space
-    const titleSpace = 1; // 5mm of space
+    const tableSpace = 20; // 20mm of space
+    const titleSpace = 3; // 3mm of space
     const itemSpace = 80; // Item column width
     const quantitySpace = 20; // Quantity/Max/Min column width
+    const startY = 35; // Starting Y position for the first table
+    const tableX = 15; // X position for all tables
     const columnStyling = {
       0: { // Item
         cellWidth: itemSpace
@@ -137,25 +165,21 @@ export class ReportGeneratorComponent {
     };
 
     // Stocked Table
-    const startY1 = 30; // Starting Y position for the first table
-
-    doc.setFontSize(12);
-    doc.text("Stocked Items", 15, 30);
+    this.addText(doc, "Stocked Items", tableX, startY, 12, 'normal', 'normal');
     autoTable(doc, {
       head: headers,
       body: this.stockedItems(),
-      startY: startY1+titleSpace,
+      startY: startY+titleSpace,
       theme: 'striped',
       columnStyles: columnStyling
     });
 
     // Calculate the startY for the second table
     // doc.lastAutoTable.finalY holds the Y-coordinate of the last drawn point of the table
-    const startY2 = (doc.lastAutoTable?.finalY) + tableSpace;
+    const startY2 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY) + tableSpace);
 
     // Out of Stock Table
-    doc.setFontSize(12);
-    doc.text("Out of Stock Items", 15, startY2);
+    this.addText(doc, "Out of Stock Items", tableX, startY2, 12, 'normal', 'normal');
     autoTable(doc, {
       head: headers,
       body: this.outOfStockItems(),
@@ -164,11 +188,10 @@ export class ReportGeneratorComponent {
       columnStyles: columnStyling
     });
 
-    const startY3 = (doc.lastAutoTable?.finalY) + tableSpace;
+    const startY3 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY2) + tableSpace);
 
     // Overstocked Table
-    doc.setFontSize(12);
-    doc.text("Overstocked Items", 15, startY3);
+    this.addText(doc, "Overstocked Items", tableX, startY3, 12, 'normal', 'normal');
     autoTable(doc, {
       head: headers,
       body: this.overstockedItems(),
@@ -177,11 +200,10 @@ export class ReportGeneratorComponent {
       columnStyles: columnStyling
     });
 
-    const startY4 = (doc.lastAutoTable?.finalY) + tableSpace;
+    const startY4 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY3) + tableSpace);
 
     // Understocked Table
-    doc.setFontSize(12);
-    doc.text("Understocked Items", 15, startY4);
+    this.addText(doc, "Understocked Items", tableX, startY4, 12, 'normal', 'normal');
     autoTable(doc, {
       head: headers,
       body: this.understockedItems(),
