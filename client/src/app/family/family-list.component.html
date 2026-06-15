@@ -139,7 +139,7 @@
                 class="family-card"
                 [family]="family"
                 [canEditFamily]="canEditFamily"
-                [compact]="linkStatusFilter() !== 'all'"
+                [compact]="compactView()"
                 (requestDelete)="submitDeleteRequest(family)">
               </app-family-card>
               }
