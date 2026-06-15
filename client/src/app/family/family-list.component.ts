@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, effect, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule, MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
@@ -17,6 +17,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatPaginatorModule, PageEvent, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
 
 // RxJS Imports
 import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
@@ -71,7 +72,8 @@ import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } f
     MatAutocompleteModule,
     MatDialogModule,
     MatSnackBarModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatPaginator
   ],
 })
 
@@ -81,7 +83,17 @@ export class FamilyListComponent {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
+  paginator = viewChild(MatPaginator);
 
+  constructor() {
+    effect(() => {
+      this.guardianName();
+      this.linkStatusFilter();
+      this.pageNum.set(0);
+      this.paginator()?.firstPage();
+
+    })
+  }
   get canExportFamilies(): boolean {
     return this.authService.hasPermission('export_families_csv');
   }
@@ -187,7 +199,6 @@ export class FamilyListComponent {
   clearFamilyFilters() {
     this.linkStatusFilter.set('all');
     this.guardianName.set(undefined);
-    this.pageNum.set(0);
   }
 
   /**
