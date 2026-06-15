@@ -199,6 +199,7 @@ export class FamilyListComponent {
   clearFamilyFilters() {
     this.linkStatusFilter.set('all');
     this.guardianName.set(undefined);
+    this.pageNum.set(0);
   }
 
   /**
