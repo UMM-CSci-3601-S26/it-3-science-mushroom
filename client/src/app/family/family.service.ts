@@ -344,7 +344,6 @@ export class FamilyService {
     const accomBoxX = detailsBoxWidth + 5; // Offset from details box
     const accomBoxWidth = accomBoxX + boxWidth; // Width of accommodations box, next box is offset from this
     const accomMaxWidth = boxWidth - 10; // Max width for text in box
-    const accomBoxHeight = 10; // Minimum height, will expand if text is long
 
     // Accommodations label
     this.addText(doc, "Accommodations:", accomBoxX + labelOffsetX, boxY + labelOffsetY, 12, "bold", "normal");
@@ -355,7 +354,8 @@ export class FamilyService {
     });
 
     // Accomodations box
-    const accomDynamicHeight = Math.max(accomBoxHeight, (5 + lineSpacing) + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * (lineHeight + lineSpacing)));
+    // Dynamic height based on number of lines + some padding (defaults to same size as contact details box if no adjustments are needed)
+    const accomDynamicHeight = Math.max(boxHeight, (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * (lineHeight*1.1 + lineSpacing*1.1)));
     doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
 
     // Time Slot and Availability \\
