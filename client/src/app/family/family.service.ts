@@ -225,7 +225,12 @@ export class FamilyService {
   private formatSchoolsList(schoolsData: Record<string, number>): string {
     return Object.entries(schoolsData)
       .sort(([schoolA], [schoolB]) => schoolA.localeCompare(schoolB))
-      .map(([school, count]) => `  • ${school}: ${count}`)
+      .map(([school, count]) => {
+        const cleaned = school
+          .replace('School', '') // remove the word 'School'
+          .trim();
+        return `  • ${cleaned}: ${count}`;
+      })
       .join('\n');
   }
 
@@ -484,7 +489,7 @@ export class FamilyService {
 
           // School Stats List
           this.addText(doc, "Students Per School", schoolBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
-          this.addText(doc, studentsPerSchool, schoolBoxX + labelOffsetX, boxY + labelOffsetY + 5, 10, "normal", "normal");
+          this.addText(doc, studentsPerSchool, schoolBoxX + labelOffsetX - 2, boxY + labelOffsetY + 5, 10, "normal", "normal");
 
           // Grade Stats box
           const gradeLines = Math.max(gradesLeft.split('\n').length, gradesRight.split('\n').length);
