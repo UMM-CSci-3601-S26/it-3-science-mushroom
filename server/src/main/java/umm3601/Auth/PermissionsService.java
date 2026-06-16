@@ -98,6 +98,7 @@ public class PermissionsService {
       "edit_inventory_item",
       "view_inventory",
       "view_inventory_item",
+      "clear_inventory",
       "add_supply_list",
       "delete_supply_list",
       "edit_supply_list",
@@ -511,6 +512,7 @@ public class PermissionsService {
       case "manage_stock_reports" -> "Stock Report Management";
       case "view_reports" -> "Report Viewing";
       case "view_settings" -> "Settings Viewing";
+      case "clear_inventory" -> "Clear Inventory";
       default -> permission;
     };
   }
