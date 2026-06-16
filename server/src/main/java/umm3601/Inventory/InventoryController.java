@@ -306,6 +306,8 @@ public class InventoryController {
   /**
    * Deletes all inventory items from the database.
    */
+  @Route(method = HttpMethod.DELETE, path = API_INVENTORY_CLEAR)
+  @RequirePermission("clear_inventory")
   public void clearInventory(Context ctx) {
     inventoryCollection.deleteMany(new Document());
     ctx.status(HttpStatus.OK);
