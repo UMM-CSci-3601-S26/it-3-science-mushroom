@@ -320,6 +320,8 @@ public class InventoryController {
   /**
    * Sets quantity, minQuantity, and maxQuantity to 0 for all matching inventory items based on query parameters
    */
+  @Route(method = HttpMethod.PATCH, path = API_INVENTORY_RESET)
+  @RequirePermission("reset_item_quantities")
   public void resetQuantities(Context ctx) {
     Bson filter = constructFilter(ctx);
 
