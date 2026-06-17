@@ -99,6 +99,7 @@ public class PermissionsService {
       "view_inventory",
       "view_inventory_item",
       "clear_inventory",
+      "reset_item_quantities",
       "add_supply_list",
       "delete_supply_list",
       "edit_supply_list",
@@ -497,6 +498,7 @@ public class PermissionsService {
       case "edit_inventory_item" -> "Inventory Item Editing";
       case "view_inventory" -> "Inventory Viewing";
       case "view_inventory_item" -> "Inventory Item Viewing";
+      case "reset_item_quantities" -> "Reset Item Quantities";
       case "add_supply_list" -> "Supply List Creation";
       case "delete_supply_list" -> "Supply List Deletion";
       case "edit_supply_list" -> "Supply List Editing";
