@@ -292,7 +292,7 @@ public class InventoryController {
    * Deletes multiple inventory items from the database based on query parameters, similar to getInventories
    * @param ctx The HTTP request context
   */
-  @Route(method = HttpMethod.DELETE, path = API_INVENTORY_BY_ID)
+  @Route(method = HttpMethod.DELETE, path = API_INVENTORY)
   @RequirePermission("delete_inventory_item")
   public void deleteInventories(Context ctx) {
     Bson filter = constructFilter(ctx);
