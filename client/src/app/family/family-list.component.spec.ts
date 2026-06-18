@@ -18,18 +18,28 @@ import { FamilyListComponent } from './family-list.component';
 import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
 
+// Auth Imports
+import { AuthService } from '../auth/auth-service';
+
 describe('Family list', () => {
   let familyList: FamilyListComponent;
   let fixture: ComponentFixture<FamilyListComponent>;
   let familyService: FamilyService;
+  let authService: jasmine.SpyObj<AuthService>
 
   beforeEach(() => {
+    authService = jasmine.createSpyObj<AuthService>('AuthService', ['hasPermission'])
+
+    authService.hasPermission.and.callFake(permission =>
+      ['add_family', 'export_families_csv', "edit_family", "request_familiy_delete",].includes(permission)
+    )
     TestBed.configureTestingModule({
       imports: [FamilyListComponent],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: FamilyService, useClass: MockFamilyService },
+        { provide: AuthService, useValue: authService },
         provideRouter([])
       ],
     });

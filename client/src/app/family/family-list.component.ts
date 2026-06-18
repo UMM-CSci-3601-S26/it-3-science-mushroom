@@ -98,6 +98,10 @@ export class FamilyListComponent {
     return this.authService.hasPermission('request_family_delete');
   }
 
+  get canUseFamilyOptionsMenu() : boolean {
+    return this.canAddFamily || this.canExportFamilies;
+  }
+
   /**
    * The component uses several signals to manage state related to family data, filtering options,
    * pagination, and error messages.
@@ -252,10 +256,17 @@ export class FamilyListComponent {
   }
 
   toggleOptionsMenu() {
+
+    if(!this.canUseFamilyOptionsMenu) {
+      return
+    }
     this.showOptionsMenu.update(value => !value);
   }
 
   downloadCSV() {
+    if (!this.canUseFamilyOptionsMenu) {
+      return
+    }
     this.familyService.exportFamilies().subscribe(csvData => {
       const blob = new Blob([csvData], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
