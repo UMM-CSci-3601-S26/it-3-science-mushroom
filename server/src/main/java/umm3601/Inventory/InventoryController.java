@@ -275,6 +275,8 @@ public class InventoryController {
    * Deletes a single given inventory item from the database, identified by its internal ID
    * @param ctx The HTTP request context
    */
+  @Route(method = HttpMethod.DELETE, path = API_INVENTORY_BY_ID)
+  @RequirePermission("delete_inventory_item")
   public void deleteInventory(Context ctx) {
     String internalID = ctx.pathParam("id");
     DeleteResult result = inventoryCollection.deleteOne(eq("internalID", internalID));
@@ -290,6 +292,8 @@ public class InventoryController {
    * Deletes multiple inventory items from the database based on query parameters, similar to getInventories
    * @param ctx The HTTP request context
   */
+  @Route(method = HttpMethod.DELETE, path = API_INVENTORY)
+  @RequirePermission("delete_inventory_item")
   public void deleteInventories(Context ctx) {
     Bson filter = constructFilter(ctx);
 
@@ -306,6 +310,8 @@ public class InventoryController {
   /**
    * Deletes all inventory items from the database.
    */
+  @Route(method = HttpMethod.DELETE, path = API_INVENTORY_CLEAR)
+  @RequirePermission("clear_inventory")
   public void clearInventory(Context ctx) {
     inventoryCollection.deleteMany(new Document());
     ctx.status(HttpStatus.OK);
@@ -314,6 +320,8 @@ public class InventoryController {
   /**
    * Sets quantity, minQuantity, and maxQuantity to 0 for all matching inventory items based on query parameters
    */
+  @Route(method = HttpMethod.PATCH, path = API_INVENTORY_RESET)
+  @RequirePermission("reset_item_quantities")
   public void resetQuantities(Context ctx) {
     Bson filter = constructFilter(ctx);
 
