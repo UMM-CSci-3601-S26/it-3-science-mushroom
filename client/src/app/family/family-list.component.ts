@@ -108,10 +108,12 @@ export class FamilyListComponent {
    * - guardianName: Tracks the current input for filtering families by guardian name.
    * - errMsg: Stores error messages to be displayed in case of server communication issues.
    * - showOptionsMenu: Controls the visibility of the options menu for exporting data.
+   * - compactView: Controls the compact view effect with a signal.
    */
   guardianName = signal<string | undefined>(undefined);
   errMsg = signal<string | undefined>(undefined);
   showOptionsMenu = signal<boolean>(false);
+  readonly compactView = signal(false);
 
   /**
    * families signal is populated by fetching family data from the server using FamilyService.
