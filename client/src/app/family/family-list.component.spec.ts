@@ -25,7 +25,7 @@ describe('Family list', () => {
   let familyList: FamilyListComponent;
   let fixture: ComponentFixture<FamilyListComponent>;
   let familyService: FamilyService;
-  let authService: jasmine.SpyObj<AuthService>
+  let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
     authService = jasmine.createSpyObj<AuthService>('AuthService', ['hasPermission'])
