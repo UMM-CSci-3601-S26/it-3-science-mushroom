@@ -36,11 +36,11 @@
 
     <video
       #video
+      class="scanner-video"
       autoplay
       muted
       playsinline
       [style.display]="isScanning ? 'block' : 'none'"
-      style="width: 100%; max-width: 700px; height: 320px; border: 2px solid #ccc;"
     ></video>
   </div>
 
@@ -49,16 +49,18 @@
     <p>Click the box if needed, then scan with the handheld barcode reader.</p>
 
     <div class="handheld-input-row">
-      <input
-        #handheldInput
-        type="text"
-        class="handheld-barcode-input"
-        [(ngModel)]="handheldInputValue"
-        (keydown.enter)="debugEntry(handheldInputValue); submitHandheldScan(handheldInputValue)"
-        [disabled]="processing"
-        placeholder="Scan barcode here"
-        autocomplete="off"
-      />
+      <mat-form-field appearance="outline" class="handheld-barcode-field">
+        <input
+          matInput
+          #handheldInput
+          type="text"
+          [(ngModel)]="handheldInputValue"
+          (keydown.enter)="debugEntry(handheldInputValue); submitHandheldScan(handheldInputValue)"
+          [disabled]="processing"
+          placeholder="Scan barcode here"
+          autocomplete="off"
+        />
+      </mat-form-field>
       <button
         mat-raised-button
         color="primary"
@@ -85,7 +87,7 @@
 
         <div class="quantity-input">
           <h4>Quantity:</h4>
-          <mat-form-field style="width: 80px; height: 80px;">
+          <mat-form-field class="quantity-field">
             <input
               matInput
               [id] = "'qty-' + entry.key"

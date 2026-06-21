@@ -101,16 +101,16 @@
                         </p>
                       }
                       @if (needsReason(item)) {
-                        <label class="reason-field">
-                          <span>Why not given?</span>
-                          <select
+                        <mat-form-field appearance="outline" class="reason-field">
+                          <mat-label>Why not given?</mat-label>
+                          <mat-select
                             [value]="item.notPickedUpReason || ''"
-                            (change)="setNotPickedUpReason(item, $any($event.target).value)">
-                            <option value="">Choose a reason</option>
-                            <option value="available_didnt_need">Family did not need this item</option>
-                            <option value="item_not_avaliable">Item not avaliable</option>
-                          </select>
-                        </label>
+                            (selectionChange)="setNotPickedUpReason(item, $event.value)">
+                            <mat-option value="">Choose a reason</mat-option>
+                            <mat-option value="available_didnt_need">Family did not need this item</mat-option>
+                            <mat-option value="item_not_avaliable">Item not available</mat-option>
+                          </mat-select>
+                        </mat-form-field>
                       }
                     </div>
 

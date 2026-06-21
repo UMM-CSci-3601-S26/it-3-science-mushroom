@@ -304,7 +304,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     fixture.detectChanges();
 
     const errorText = fixture.nativeElement.querySelector('.session-error')?.textContent;
-    const reasonSelect = fixture.nativeElement.querySelector('.reason-field select');
+    const reasonSelect = fixture.nativeElement.querySelector('.reason-field mat-select');
 
     expect(errorText).toContain('Choose why');
     expect(reasonSelect).not.toBeNull();

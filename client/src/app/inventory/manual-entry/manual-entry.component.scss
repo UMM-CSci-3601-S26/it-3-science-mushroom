@@ -13,15 +13,15 @@
 .quantity-block {
   flex: 1 1 200px;
   padding: 0.9rem 1rem;
-  border: 1px solid #d8dce3;
+  border: 1px solid var(--app-border);
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--app-surface-muted);
 
   .label {
     display: block;
     font-size: 0.82rem;
     font-weight: 700;
-    color: #6b7280;
+    color: var(--app-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     margin-bottom: 0.35rem;
@@ -31,7 +31,7 @@
     display: block;
     font-size: 1rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--app-text);
     word-break: break-word;
   }
 }
@@ -50,9 +50,9 @@
 
 .form-section,
 .results-section {
-  border: 1px solid #dde2e8;
+  border: 1px solid var(--app-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--app-surface);
   padding: 1rem;
 }
 
@@ -66,9 +66,9 @@
 .barcode-panel {
   margin-bottom: 1rem;
   padding: 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--app-border);
   border-radius: 12px;
-  background: #f9fafb;
+  background: var(--app-surface-muted);
 
   h4 {
     margin: 0 0 0.85rem;
@@ -85,15 +85,15 @@
 
 .barcode-info-card {
   padding: 0.8rem;
-  border: 1px solid #dde2e8;
+  border: 1px solid var(--app-border);
   border-radius: 10px;
-  background: white;
+  background: var(--app-surface);
 
   .info-label {
     display: block;
     font-size: 0.78rem;
     font-weight: 700;
-    color: #6b7280;
+    color: var(--app-text-muted);
     text-transform: uppercase;
     margin-bottom: 0.3rem;
   }
@@ -102,7 +102,7 @@
     display: block;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--app-text);
     word-break: break-word;
   }
 }
@@ -126,18 +126,18 @@
 
   p {
     margin: 0.25rem 0 0;
-    color: #6b7280;
+    color: var(--app-text-muted);
     line-height: 1.4;
   }
 }
 
 .empty-state {
   padding: 1rem;
-  border: 1px dashed #cfd6de;
+  border: 1px dashed var(--app-border);
   border-radius: 12px;
-  background: #fafafa;
+  background: var(--app-surface-muted);
   text-align: center;
-  color: #6b7280;
+  color: var(--app-text-muted);
 }
 
 .match-results {
@@ -158,8 +158,8 @@
   margin-bottom: 0.75rem;
 
   &.selected {
-    border-color: #2563eb !important;
-    background: #eff6ff !important;
+    border-color: var(--app-primary) !important;
+    background: color-mix(in srgb, var(--app-primary) 14%, var(--app-surface)) !important;
   }
 }
 
@@ -182,7 +182,7 @@
 
 .match-title {
   font-weight: 700;
-  color: #111827;
+  color: var(--app-text);
   flex: 1 1 220px;
   min-width: 0;
   overflow-wrap: break-word;
@@ -191,7 +191,7 @@
 
 .match-id {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--app-text-muted);
   font-family: monospace;
   flex: 0 0 auto;
   white-space: nowrap;
@@ -201,7 +201,7 @@
 .match-summary,
 .match-description {
   display: block;
-  color: #4b5563;
+  color: var(--app-text-muted);
   line-height: 1.4;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -211,9 +211,9 @@
 .selected-match {
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid #dbe4f0;
+  border: 1px solid var(--app-border);
   border-radius: 12px;
-  background: #f8fbff;
+  background: color-mix(in srgb, var(--app-primary) 6%, var(--app-surface));
 
   h4 {
     margin: 0 0 0.75rem;
@@ -228,14 +228,14 @@
   gap: 0.6rem 1rem;
 
   div {
-    color: #374151;
+    color: var(--app-text-muted);
     line-height: 1.4;
   }
 }
 
 .detail-label {
   font-weight: 700;
-  color: #111827;
+  color: var(--app-text);
 }
 
 .dialog-actions {
@@ -249,99 +249,3 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .barcode-block,
-  .quantity-block {
-    border-color: #374151;
-    background: #1f2937;
-
-    .label {
-      color: #9ca3af;
-    }
-
-    .value {
-      color: #f3f4f6;
-    }
-  }
-
-  .form-section,
-  .results-section {
-    border-color: #374151;
-    background: #111827;
-    color: #e5e7eb;
-  }
-
-  .form-section h3,
-  .results-section h3 {
-    color: #f3f4f6;
-  }
-
-  .barcode-panel {
-    border-color: #374151;
-    background: #1f2937;
-
-    h4 {
-      color: #e5e7eb;
-    }
-  }
-
-  .barcode-info-card {
-    border-color: #374151;
-    background: #374151;
-
-    .info-label {
-      color: #9ca3af;
-    }
-
-    .info-value {
-      color: #e5e7eb;
-    }
-  }
-
-  .results-header p {
-    color: #9ca3af;
-  }
-
-  .empty-state {
-    border-color: #374151;
-    background: #1f2937;
-    color: #9ca3af;
-  }
-
-  .match-card {
-    &.selected {
-      border-color: #3b82f6 !important;
-      background: #1e3a8a !important;
-    }
-  }
-
-  .match-title {
-    color: #e5e7eb;
-  }
-
-  .match-id {
-    color: #9ca3af;
-  }
-
-  .match-summary,
-  .match-description {
-    color: #d1d5db;
-  }
-
-  .selected-match {
-    border-color: #374151;
-    background: #1f2937;
-
-    h4 {
-      color: #e5e7eb;
-    }
-  }
-
-  .selected-grid div {
-    color: #d1d5db;
-  }
-
-  .detail-label {
-    color: #e5e7eb;
-  }
-}

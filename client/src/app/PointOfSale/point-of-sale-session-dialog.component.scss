@@ -242,19 +242,10 @@
 }
 
 .reason-field {
-  display: grid;
-  gap: 0.25rem;
+  display: block;
   margin-top: 0.6rem;
-  color: var(--app-warning);
-  font-size: 0.82rem;
-  font-weight: 800;
-}
-
-.reason-field select {
+  width: min(100%, 18rem);
   max-width: 18rem;
-  padding: 0.45rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--app-warning) 42%, var(--app-border));
-  border-radius: 10px;
 }
 
 .item-actions {

@@ -141,7 +141,7 @@
                     <!-- Backpack and Headphones Radio Buttons -->
                     <div class="radio-group">
                       <div class="radio-section">
-                        <h4 style="font-size: 15px;">Backpack Needed?</h4>
+                        <h4 class="student-needs-heading">Backpack Needed?</h4>
                         <mat-radio-group formControlName="backpack" [ngModel]="family().students[i]?.backpack">
                           <mat-radio-button [value]="true">Yes</mat-radio-button>
                           <mat-radio-button [value]="false">No</mat-radio-button>
@@ -149,7 +149,7 @@
                       </div>
 
                       <div class="radio-section">
-                        <h4 style="font-size: 15px;">Headphones Needed?</h4>
+                        <h4 class="student-needs-heading">Headphones Needed?</h4>
                         <mat-radio-group formControlName="headphones" [ngModel]="family().students[i]?.headphones">
                           <mat-radio-button [value]="true">Yes</mat-radio-button>
                           <mat-radio-button [value]="false">No</mat-radio-button>

@@ -72,7 +72,7 @@
 }
 
 .mat-mdc-header-row {
-  background: var(--inventory-table-header-bg);
+  background: var(--app-surface-muted);
 }
 
 .mat-mdc-header-cell {
@@ -80,7 +80,7 @@
 }
 
 .mat-mdc-row:hover {
-  background: var(--inventory-table-hover-bg);
+  background: color-mix(in srgb, var(--app-surface-muted) 72%, var(--app-surface));
 }
 
 /* Paginator */
@@ -104,6 +104,7 @@ mat-paginator {
 
 .save-button {
   margin-top: 8px;
+  margin-bottom: 16px;
   display: flex;
   column-span: 2;
 }
