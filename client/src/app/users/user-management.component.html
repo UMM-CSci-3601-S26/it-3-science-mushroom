@@ -15,7 +15,7 @@
       <section class="form-panel">
         <div class="panel-title-row">
           <h3>{{ editingUser ? 'Update User Role' : 'Select a User' }}</h3>
-          <button *ngIf="editingUser" type="button" class="secondary-button" (click)="cancelEdit()">Clear</button>
+          <button *ngIf="editingUser" mat-stroked-button type="button" (click)="cancelEdit()">Clear</button>
         </div>
 
         <ng-container *ngIf="editingUser; else chooseUserHint">
@@ -45,8 +45,8 @@
             </mat-form-field>
 
             <div class="form-actions">
-              <button type="submit" class="primary-button">Save Role</button>
-              <button type="button" class="secondary-button" (click)="cancelEdit()">Cancel</button>
+              <button mat-flat-button color="primary" type="submit">Save Role</button>
+              <button mat-stroked-button type="button" (click)="cancelEdit()">Cancel</button>
             </div>
           </form>
         </ng-container>
@@ -77,10 +77,11 @@
               </div>
             </div>
             <div class="user-actions">
-              <button type="button" class="secondary-button" (click)="startEdit(user)">Change Role</button>
+              <button mat-stroked-button type="button" (click)="startEdit(user)">Change Role</button>
               <button
+                mat-flat-button
+                color="warn"
                 type="button"
-                class="danger-button"
                 (click)="deleteUser(user)"
                 [disabled]="!canDeleteUser(user)">
                 Delete User
@@ -98,13 +99,17 @@
         </div>
 
         <div class="create-role-row">
-          <input
-            type="text"
-            [(ngModel)]="newJobRoleName"
-            [ngModelOptions]="{ standalone: true }"
-            placeholder="New volunteer job role, like Delivery Helper"
-          />
-          <button type="button" class="primary-button" (click)="createJobRole()">Add Role</button>
+          <mat-form-field appearance="outline" class="role-name-field">
+            <mat-label>New volunteer job role</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="newJobRoleName"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Delivery Helper"
+            />
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="button" (click)="createJobRole()">Add Role</button>
         </div>
 
         <div *ngFor="let role of jobRoles; trackBy: trackByRoleName" class="role-card">
@@ -114,10 +119,11 @@
             <div class="user-meta">{{ role.permissions.length }} direct permission{{ role.permissions.length === 1 ? '' : 's' }}</div>
           </div>
           <div class="user-actions">
-            <button type="button" class="secondary-button" (click)="selectJobRole(role)">Edit</button>
+            <button mat-stroked-button type="button" (click)="selectJobRole(role)">Edit</button>
             <button
+              mat-flat-button
+              color="warn"
               type="button"
-              class="danger-button"
               (click)="deleteJobRole(role.name)"
               [disabled]="role.name === 'volunteer_base'">
               Delete
@@ -129,7 +135,7 @@
       <section class="form-panel" *ngIf="selectedJobRole; else selectRoleHint">
         <div class="panel-title-row">
           <h3>Edit {{ formatRoleName(selectedJobRole.name) }}</h3>
-          <button type="button" class="secondary-button" (click)="selectedJobRole = null">Close</button>
+          <button mat-stroked-button type="button" (click)="selectedJobRole = null">Close</button>
         </div>
 
         <p class="panel-copy">
@@ -159,7 +165,7 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="primary-button" (click)="saveSelectedJobRole()">Save Permissions</button>
+          <button mat-flat-button color="primary" type="button" (click)="saveSelectedJobRole()">Save Permissions</button>
         </div>
       </section>
 

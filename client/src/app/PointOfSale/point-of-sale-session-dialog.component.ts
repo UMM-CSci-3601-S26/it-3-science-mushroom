@@ -4,7 +4,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { switchMap } from 'rxjs';
 
 import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
@@ -22,7 +24,9 @@ import { ScannerComponent } from '../scanner/scanner.component';
     MatCardModule,
     MatCheckboxModule,
     MatDialogModule,
+    MatFormFieldModule,
     MatIconModule,
+    MatSelectModule,
     ScannerComponent
   ],
   templateUrl: './point-of-sale-session-dialog.component.html',

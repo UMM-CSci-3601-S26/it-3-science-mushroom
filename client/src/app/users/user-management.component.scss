@@ -72,18 +72,6 @@
   gap: 0.9rem;
 }
 
-.user-form input,
-.user-form select,
-.create-role-row input {
-  width: 100%;
-  border: 1px solid var(--app-divider-color);
-  border-radius: 10px;
-  padding: 0.7rem 0.85rem;
-  font: inherit;
-  color: var(--app-text-color);
-  background: color-mix(in srgb, var(--app-hover-color) 18%, transparent);
-}
-
 .full-width-field {
   width: 100%;
 }
@@ -113,10 +101,10 @@
 }
 
 .create-role-row {
-  align-items: stretch;
+  align-items: center;
 }
 
-.create-role-row input {
+.role-name-field {
   flex: 1 1 16rem;
   min-width: 0;
 }
@@ -213,53 +201,6 @@
   color: var(--app-text-color) !important;
 }
 
-.primary-button,
-.secondary-button,
-.danger-button {
-  align-items: center;
-  border: 0;
-  border-radius: 10px;
-  cursor: pointer;
-  display: inline-flex;
-  justify-content: center;
-  line-height: 1.2;
-  font: inherit;
-  font-weight: 600;
-  min-height: 2.5rem;
-  min-width: max-content;
-  padding: 0.65rem 0.9rem;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.primary-button {
-  background: var(--app-primary-color);
-  color: var(--app-primary-on-color);
-}
-
-.secondary-button {
-  background: color-mix(in srgb, var(--app-primary-color) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--app-primary-color) 62%, transparent);
-  color: var(--app-text-color);
-}
-
-.danger-button {
-  background: var(--app-warn-color);
-  color: var(--app-warn-on-color);
-}
-
-.primary-button:hover,
-.secondary-button:hover,
-.danger-button:hover:not(:disabled) {
-  filter: brightness(1.08);
-}
-
-.danger-button:disabled {
-  background: color-mix(in srgb, var(--app-divider-color) 65%, transparent);
-  color: color-mix(in srgb, var(--app-text-color) 55%, transparent);
-  cursor: not-allowed;
-}
-
 .user-summary {
   border: 1px solid var(--app-divider-color);
   border-radius: 12px;
@@ -289,9 +230,9 @@
     text-align: left;
   }
 
-  .primary-button,
-  .secondary-button,
-  .danger-button {
+  .form-actions button,
+  .user-actions button,
+  .create-role-row button {
     width: 100%;
   }
 }

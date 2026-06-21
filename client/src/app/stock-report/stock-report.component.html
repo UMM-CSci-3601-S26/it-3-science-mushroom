@@ -20,7 +20,7 @@
         <p class="page-description">
           Please note! The Saved Reports list may take a moment to update after generating or deleting reports. If you don't see your report appear or disappear right away, please wait a few seconds and it should update. If it doesn't, refresh your page.
         </p>
-        <hr style="margin: 1rem 0;" />
+        <hr class="section-divider" />
       </mat-card-content>
     </mat-card>
   </div>
@@ -37,7 +37,7 @@
       <div class="reports-list" data-cy="pdf-reports-list">
         @for (report of pdfReports(); track report._id) {
           <div class="reports-container" data-cy="pdf-report-item">
-            <div style="display: flex; gap: 8px; flex-direction: row; align-items: center;">
+            <div class="report-actions">
               <span>{{ report.reportName }}</span>
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-pdf-button">
                 <mat-icon>download</mat-icon>
@@ -62,7 +62,7 @@
       <div class="reports-list" data-cy="xlsx-reports-list">
         @for (report of xlsxReports(); track report._id) {
           <div class="reports-container" data-cy="xlsx-report-item">
-            <div style="display: flex; gap: 8px; flex-direction: row; align-items: center;">
+            <div class="report-actions">
               <span>{{ report.reportName }}</span>
               <button mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-xlsx-button">
                 <mat-icon>download</mat-icon>
@@ -97,7 +97,7 @@
     <p class="page-description">
       Here you can see the sections for the report. Each section contains a tree view of relevant items.
     </p>
-    <hr style="margin: 1rem 0;" />
+    <hr class="section-divider" />
   </mat-card-content>
 
   <!--Stock Report Cards-->

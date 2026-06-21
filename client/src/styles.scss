@@ -310,6 +310,10 @@ body {
 // Gap
 .gap-8 { gap: 8px; }
 
+.section-divider {
+  margin: 1rem 0;
+}
+
 // Flex/grow/shrink properties https://developer.mozilla.org/en-US/docs/Web/CSS/flex.
 .flex-1 { flex: 1 }  // Same as flex: 1 1 0 (grow, shrink, basis 0). Has similar effect to width: 100%;
 .flex-grow { flex-grow: 1; }  // Same as flex: 1 1 auto (grow, shrink, basis auto). For spacer, etc.

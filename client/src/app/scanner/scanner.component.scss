@@ -94,7 +94,7 @@
   color: var(--app-text-muted);
 }
 
-.camera-panel video {
+.scanner-video {
   width: 100%;
   max-width: 700px;
   height: 320px;
@@ -108,78 +108,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-
-  input[type="text"] {
-    width: 100%;
-    padding: 0.75rem 0.9rem;
-    border: 1px solid var(--app-border);
-    border-radius: 10px;
-    font-size: 1rem;
-    background: var(--app-surface);
-    color: var(--app-text);
-
-    &:focus {
-      outline: none;
-      border-color: var(--app-primary);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-primary) 18%, transparent);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    &::placeholder {
-      color: var(--app-text-muted);
-    }
-  }
-
-  // button {
-  //   width: fit-content;
-  //   padding: 0.65rem 1rem;
-  //   border: 1px solid var(--app-border);
-  //   border-radius: 10px;
-  //   background: var(--app-surface);
-  //   color: var(--app-text);
-  //   cursor: pointer;
-  //   font-weight: 500;
-  //   transition: 0.15s ease;
-
-  //   &:hover:not(:disabled) {
-  //     opacity: 0.8;
-  //   }
-
-  //   &:disabled {
-  //     opacity: 0.6;
-  //     cursor: not-allowed;
-  //   }
-  // }
-}
-
-.handheld-barcode-input {
-  width: 100%;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid var(--app-border);
-  border-radius: 10px;
-  font-size: 1rem;
-  background: var(--app-surface);
-  color: var(--app-text);
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-    border-color: var(--app-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-primary) 18%, transparent);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &::placeholder {
-    color: var(--app-text-muted);
-  }
 }
 
 .handheld-input-row {
@@ -188,10 +116,15 @@
   align-items: flex-start;
   flex-wrap: wrap;
 
-  input {
-    flex: 1;
-    //min-width: 280px;
-  }
+}
+
+.handheld-barcode-field {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.quantity-field {
+  width: 80px;
 }
 
 .scanned-items-panel {
@@ -239,21 +172,6 @@
     color: var(--app-text-muted);
   }
 
-  // input {
-  //   width: 90px;
-  //   padding: 0.5rem 0.65rem;
-  //   border: 1px solid var(--app-border);
-  //   border-radius: 8px;
-  //   font-size: 0.95rem;
-  //   background: var(--app-surface);
-  //   color: var(--app-text);
-
-  //   &:focus {
-  //     outline: none;
-  //     border-color: var(--app-primary);
-  //     box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-primary) 18%, transparent);
-  //   }
-  // }
 }
 
 .processing-panel {
