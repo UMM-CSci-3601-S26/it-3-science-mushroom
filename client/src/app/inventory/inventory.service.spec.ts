@@ -439,7 +439,7 @@ describe('InventoryService', () => {
 
   describe('Reset Tests', () => {
     it('resetInventory calls clearInventory', waitForAsync(() => {
-      spyOn(httpClient, 'post').and.returnValue(of(void 0));
+      spyOn(httpClient, 'patch').and.returnValue(of(void 0));
       const loadSpy = spyOn(service, 'loadInventory').and.stub();
 
       service.resetAllQuantities().subscribe((res) => {
@@ -452,7 +452,7 @@ describe('InventoryService', () => {
     }));
 
     it('resetMatchingQuantities calls once and uses correct endpoint with parameters', waitForAsync(() => {
-      const mockedMethod = spyOn(httpClient, 'post').and.returnValue(of(void 0));
+      const mockedMethod = spyOn(httpClient, 'patch').and.returnValue(of(void 0));
       const filters = { item: 'Folder', brand: 'N/A' , color: 'Blue', size: 'Large', type: 'School', material: 'Plastic' };
 
       service.resetMatchingQuantities(filters).subscribe((res) => {

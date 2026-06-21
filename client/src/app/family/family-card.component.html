@@ -19,7 +19,7 @@
           <span class="family-card-compact-chip">{{ family().timeSlot || 'to be assigned' }}</span>
         </div>
       }
-    </mat-card-header>
+
 
     <!-- Edit Family Button -->
     @if (canEditFamily()) {
@@ -31,6 +31,7 @@
     @if (!compact()) {
       <br>
     }
+    </mat-card-header>
 
     <mat-card-content>
       <div

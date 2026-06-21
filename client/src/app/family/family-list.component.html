@@ -115,7 +115,7 @@
             <mat-label>Guardian Link Status</mat-label>
             <mat-select
               [ngModel]="linkStatusFilter()"
-              (ngModelChange)="linkStatusFilter.set($event); pageNum.set(0)"
+              (ngModelChange)="linkStatusFilter.set($event)"
               data-test="guardianLinkStatusFilter">
               <mat-option value="all">All Families</mat-option>
               <mat-option value="linked">Linked Guardian Account</mat-option>
@@ -139,7 +139,7 @@
                 class="family-card"
                 [family]="family"
                 [canEditFamily]="canEditFamily"
-                [compact]="linkStatusFilter() !== 'all'"
+                [compact]="compactView()"
                 (requestDelete)="submitDeleteRequest(family)">
               </app-family-card>
               }
