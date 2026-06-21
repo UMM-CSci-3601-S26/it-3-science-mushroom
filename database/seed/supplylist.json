@@ -13,7 +13,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -46,7 +46,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -79,7 +79,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -112,7 +112,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -145,7 +145,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -178,7 +178,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -211,7 +211,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -244,7 +244,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -277,7 +277,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -310,7 +310,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -343,7 +343,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -376,7 +376,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -444,7 +444,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -477,7 +477,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -510,7 +510,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -543,7 +543,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -576,7 +576,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -609,7 +609,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -642,7 +642,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -675,7 +675,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -708,7 +708,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -741,7 +741,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -774,7 +774,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -807,7 +807,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -840,7 +840,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -873,7 +873,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -906,7 +906,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -939,7 +939,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1007,7 +1007,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1040,7 +1040,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1073,7 +1073,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1106,7 +1106,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1139,7 +1139,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1172,7 +1172,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1205,7 +1205,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1238,7 +1238,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1271,7 +1271,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1304,7 +1304,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1337,7 +1337,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1370,7 +1370,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1438,7 +1438,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1509,7 +1509,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1542,7 +1542,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1575,7 +1575,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1608,7 +1608,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1641,7 +1641,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1674,7 +1674,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1707,7 +1707,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1740,7 +1740,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1773,7 +1773,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1806,7 +1806,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1839,7 +1839,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1872,7 +1872,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1905,7 +1905,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1938,7 +1938,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -1971,7 +1971,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2004,7 +2004,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2037,7 +2037,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": [
         "Black",
         "Blue"
@@ -2108,7 +2108,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2141,7 +2141,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2176,7 +2176,7 @@
       ]
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2209,7 +2209,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2277,7 +2277,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2310,7 +2310,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2343,7 +2343,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2376,7 +2376,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2409,7 +2409,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2442,7 +2442,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2475,7 +2475,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2508,7 +2508,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2541,7 +2541,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2574,7 +2574,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2607,7 +2607,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2640,7 +2640,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2673,7 +2673,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2706,7 +2706,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2739,7 +2739,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2772,7 +2772,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2805,7 +2805,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2838,7 +2838,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2906,7 +2906,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2939,7 +2939,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -2972,7 +2972,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3005,7 +3005,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3038,7 +3038,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3071,7 +3071,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3104,7 +3104,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3137,7 +3137,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3170,7 +3170,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": [
         "Blue",
         "Black"
@@ -3241,7 +3241,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3274,7 +3274,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3307,7 +3307,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3340,7 +3340,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3373,7 +3373,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3406,7 +3406,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3439,7 +3439,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3472,7 +3472,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3505,7 +3505,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3538,7 +3538,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3571,7 +3571,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3604,7 +3604,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3638,7 +3638,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3671,7 +3671,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3704,7 +3704,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3737,7 +3737,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3770,7 +3770,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3803,7 +3803,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3836,7 +3836,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3870,7 +3870,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3903,7 +3903,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3936,7 +3936,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -3969,7 +3969,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4002,7 +4002,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4035,7 +4035,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4068,7 +4068,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4101,7 +4101,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4134,7 +4134,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4167,7 +4167,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4200,7 +4200,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4233,7 +4233,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4266,7 +4266,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4299,7 +4299,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4332,7 +4332,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4365,7 +4365,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4398,7 +4398,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4431,7 +4431,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4464,7 +4464,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4493,7 +4493,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4526,7 +4526,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4559,7 +4559,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4592,7 +4592,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4625,7 +4625,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4658,7 +4658,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4691,7 +4691,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4724,7 +4724,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4757,7 +4757,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4790,7 +4790,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4823,7 +4823,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4856,7 +4856,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4889,7 +4889,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4922,7 +4922,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4955,7 +4955,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -4972,7 +4972,7 @@
     },
     "packageSize": null,
     "quantity": 1,
-    "notes": "Families Aâ€“J"
+    "notes": "Families A-J"
   },
   {
     "academicYear": "2025-2026",
@@ -4988,7 +4988,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5021,7 +5021,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5054,7 +5054,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5087,7 +5087,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5120,7 +5120,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5153,7 +5153,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5186,7 +5186,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5219,7 +5219,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5252,7 +5252,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5285,7 +5285,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5318,7 +5318,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5351,7 +5351,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5384,7 +5384,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5417,7 +5417,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5485,7 +5485,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5518,7 +5518,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5586,7 +5586,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5619,7 +5619,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5652,7 +5652,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5685,7 +5685,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5718,7 +5718,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5751,7 +5751,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5784,7 +5784,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5817,7 +5817,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5850,7 +5850,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5883,7 +5883,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5916,7 +5916,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5949,7 +5949,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -5982,7 +5982,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6015,7 +6015,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6048,7 +6048,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6081,7 +6081,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6114,7 +6114,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6147,7 +6147,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6180,7 +6180,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6213,7 +6213,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6246,7 +6246,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6279,7 +6279,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6312,7 +6312,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6345,7 +6345,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6378,7 +6378,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6411,7 +6411,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6444,7 +6444,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6477,7 +6477,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6547,7 +6547,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6615,7 +6615,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6648,7 +6648,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6681,7 +6681,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6714,7 +6714,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6747,7 +6747,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6780,7 +6780,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6813,7 +6813,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6846,7 +6846,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6879,7 +6879,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6912,7 +6912,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -6945,7 +6945,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7015,7 +7015,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7083,7 +7083,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7116,7 +7116,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7149,7 +7149,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7182,7 +7182,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7215,7 +7215,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7248,7 +7248,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7281,7 +7281,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7314,7 +7314,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7347,7 +7347,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7380,7 +7380,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7413,7 +7413,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7447,7 +7447,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7480,7 +7480,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7513,7 +7513,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7546,7 +7546,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7579,7 +7579,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7612,7 +7612,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7645,7 +7645,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7678,7 +7678,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7711,7 +7711,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7744,7 +7744,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7777,7 +7777,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7845,7 +7845,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7878,7 +7878,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7911,7 +7911,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7944,7 +7944,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -7978,7 +7978,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8011,7 +8011,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8044,7 +8044,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8077,7 +8077,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8110,7 +8110,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8143,7 +8143,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8176,7 +8176,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8209,7 +8209,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8242,7 +8242,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8310,7 +8310,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8343,7 +8343,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8376,7 +8376,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8409,7 +8409,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8443,7 +8443,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8476,7 +8476,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8509,7 +8509,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8542,7 +8542,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8575,7 +8575,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8608,7 +8608,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8641,7 +8641,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8674,7 +8674,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8707,7 +8707,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8740,7 +8740,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8773,7 +8773,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8806,7 +8806,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8839,7 +8839,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8856,7 +8856,7 @@
     },
     "packageSize": 1,
     "quantity": 1,
-    "notes": "Required for Grades 7â€“9"
+    "notes": "Required for Grades 7-9"
   },
   {
     "academicYear": "2025-2026",
@@ -8872,7 +8872,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8905,7 +8905,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8938,7 +8938,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -8971,7 +8971,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9004,7 +9004,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9037,7 +9037,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9070,7 +9070,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9103,7 +9103,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9136,7 +9136,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9169,7 +9169,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9202,7 +9202,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9235,7 +9235,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9269,7 +9269,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9302,7 +9302,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9335,7 +9335,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9368,7 +9368,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9401,7 +9401,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9434,7 +9434,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9502,7 +9502,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9519,7 +9519,7 @@
     },
     "packageSize": 1,
     "quantity": 4,
-    "notes": "Studio Art / Intro to Art / Art Iâ€“III"
+    "notes": "Studio Art / Intro to Art / Art III"
   },
   {
     "academicYear": "2025-2026",
@@ -9535,7 +9535,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9552,7 +9552,7 @@
     },
     "packageSize": 1,
     "quantity": 2,
-    "notes": "Studio Art / Intro to Art / Art Iâ€“III"
+    "notes": "Studio Art / Intro to Art / Art III"
   },
   {
     "academicYear": "2025-2026",
@@ -9568,7 +9568,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9585,7 +9585,7 @@
     },
     "packageSize": 1,
     "quantity": 1,
-    "notes": "Studio Art / Intro to Art / Art Iâ€“III (regular Paper size)"
+    "notes": "Studio Art / Intro to Art / Art III (regular Paper size)"
   },
   {
     "academicYear": "2025-2026",
@@ -9620,7 +9620,7 @@
     },
     "packageSize": 1,
     "quantity": 1,
-    "notes": "Studio Art / Intro to Art / Art Iâ€“III"
+    "notes": "Studio Art / Intro to Art / Art III"
   },
   {
     "academicYear": "2025-2026",
@@ -9636,7 +9636,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9669,7 +9669,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9702,7 +9702,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9735,7 +9735,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9768,7 +9768,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9801,7 +9801,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9834,7 +9834,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9867,7 +9867,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9900,7 +9900,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9933,7 +9933,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9966,7 +9966,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -9999,7 +9999,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10032,7 +10032,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10065,7 +10065,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10098,7 +10098,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10131,7 +10131,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10164,7 +10164,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10197,7 +10197,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10265,7 +10265,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10298,7 +10298,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10331,7 +10331,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10364,7 +10364,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10397,7 +10397,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10431,7 +10431,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10464,7 +10464,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10497,7 +10497,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10530,7 +10530,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10563,7 +10563,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10596,7 +10596,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10630,7 +10630,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10663,7 +10663,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10696,7 +10696,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10764,7 +10764,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10797,7 +10797,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10830,7 +10830,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10863,7 +10863,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10896,7 +10896,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10929,7 +10929,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10962,7 +10962,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -10995,7 +10995,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11028,7 +11028,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11061,7 +11061,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11094,7 +11094,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11127,7 +11127,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11160,7 +11160,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11193,7 +11193,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11226,7 +11226,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11259,7 +11259,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11292,7 +11292,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11325,7 +11325,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11358,7 +11358,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11391,7 +11391,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11424,7 +11424,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11457,7 +11457,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11490,7 +11490,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11523,7 +11523,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11556,7 +11556,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11589,7 +11589,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11622,7 +11622,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11655,7 +11655,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11688,7 +11688,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11721,7 +11721,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11754,7 +11754,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11787,7 +11787,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11820,7 +11820,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11961,7 +11961,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -11994,7 +11994,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12027,7 +12027,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12060,7 +12060,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12133,7 +12133,7 @@
       ]
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12166,7 +12166,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12199,7 +12199,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12232,7 +12232,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12265,7 +12265,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12298,7 +12298,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12331,7 +12331,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12364,7 +12364,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12397,7 +12397,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12430,7 +12430,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12571,7 +12571,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12604,7 +12604,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12637,7 +12637,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12670,7 +12670,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12743,7 +12743,7 @@
       ]
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12776,7 +12776,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12809,7 +12809,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12842,7 +12842,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12875,7 +12875,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12908,7 +12908,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12941,7 +12941,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -12974,7 +12974,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13007,7 +13007,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13040,7 +13040,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13181,7 +13181,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13214,7 +13214,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13247,7 +13247,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13280,7 +13280,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13353,7 +13353,7 @@
       ]
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13386,7 +13386,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13419,7 +13419,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13452,7 +13452,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13485,7 +13485,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13518,7 +13518,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13588,7 +13588,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13621,7 +13621,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13654,7 +13654,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13687,7 +13687,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13720,7 +13720,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13753,7 +13753,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13786,7 +13786,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13819,7 +13819,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13852,7 +13852,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
@@ -13885,7 +13885,7 @@
       "anyOf": []
     },
     "color": {
-      "allOf": [],
+      "allOf": "",
       "anyOf": []
     },
     "size": {
