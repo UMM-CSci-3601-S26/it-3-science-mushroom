@@ -227,7 +227,7 @@ export class FamilyService {
       .sort(([schoolA], [schoolB]) => schoolA.localeCompare(schoolB))
       .map(([school, count]) => {
         const cleaned = school
-          .replace('School', '') // remove the word 'School'
+          .replace(/School$/i, '') // remove variations of "School" from the end of the name
           .trim();
         return `  • ${cleaned}: ${count}`;
       })
