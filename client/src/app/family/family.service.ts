@@ -8,7 +8,7 @@ import jsPDF, { jsPDF as jsPDFClass } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 // RxJS Imports
-import { Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 // Other Imports
@@ -449,10 +449,14 @@ export class FamilyService {
     doc.line(10, 30, 200, 30);
     doc.setLineWidth(thinLineWidth);
 
-    // Dashboard stats
-    this.getDashboardStats().subscribe({
-      next: (stats) => {
+    forkJoin({ // Ensure dashboard and family data is up-to-date
+      stats: this.getDashboardStats(),
+      families: this.getFamilies()
+    }).subscribe({
+      next: ({ stats, families }) => {
         try {
+          this.family.set(families);
+
           // Box vars
           const boxX = 10; // Starting x, following boxes offset from this
           const boxY = 40;
@@ -509,12 +513,12 @@ export class FamilyService {
           const maxY = doc.internal.pageSize.getHeight() - 15;
           let lastY = 15;
 
-          for (let i = 0; i < this.family().length; i++) {
+          for (let i = 0; i < families.length; i++) {
             if (i === 0) { // First family, add page after dashboard stats
               doc.addPage();
             }
 
-            const currentFamily = this.family()[i];
+            const currentFamily = families[i];
             let currentOffset = 15; // Determine offset for current family
 
             if (i > 0) {  // Not first family
