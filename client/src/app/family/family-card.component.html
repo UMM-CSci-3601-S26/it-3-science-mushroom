@@ -15,11 +15,14 @@
       <mat-card-subtitle class="family-card-email">{{ family().email }}</mat-card-subtitle>
       @if (compact()) {
         <div class="family-card-compact-meta">
-          <span class="family-card-compact-chip">{{ family().students?.length || 0 }} students</span>
-          <span class="family-card-compact-chip">{{ family().timeSlot || 'to be assigned' }}</span>
+          <span class="family-card-compact-chip app-badge app-badge-primary">
+            {{ family().students?.length || 0 }} students
+          </span>
+          <span class="family-card-compact-chip app-badge app-badge-tertiary">
+            {{ family().timeSlot || 'to be assigned' }}
+          </span>
         </div>
       }
-
 
     <!-- Edit Family Button -->
     @if (canEditFamily()) {
@@ -28,6 +31,7 @@
       </button>
     }
 
+
     @if (!compact()) {
       <br>
     }
@@ -35,7 +39,7 @@
 
     <mat-card-content>
       <div
-        class="guardian-link-status"
+        class="guardian-link-status app-badge"
         [ngClass]="{
           'guardian-link-status-linked': hasLinkedGuardianAccount,
           'guardian-link-status-manual': !hasLinkedGuardianAccount
@@ -129,7 +133,7 @@
     <!-- Request Delete Button -->
     @if (showRequestDeleteAction() && canRequestDelete) {
       <mat-card-actions class="family-card-actions">
-        <button
+        <button type="button"
           mat-stroked-button
           color="warn"
           [disabled]="hasPendingDeleteRequest"

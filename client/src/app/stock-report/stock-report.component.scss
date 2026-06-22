@@ -25,22 +25,22 @@ mat-radio-button {
 .reports-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--app-space-sm);
 }
 
 .reports-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px;
+  padding: var(--app-space-sm);
   border: 1px solid var(--app-border);
-  border-radius: 4px;
-  gap: 8px;
+  border-radius: var(--app-radius-sm);
+  gap: var(--app-space-sm);
 }
 
 .report-actions {
   align-items: center;
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  gap: var(--app-space-sm);
 }

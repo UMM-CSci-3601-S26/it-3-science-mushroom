@@ -1,7 +1,7 @@
 .family-portal-form-page {
   margin: 0 auto;
   max-width: 1100px;
-  padding: 16px;
+  padding: var(--app-space-md);
 }
 
 .family-portal-form-card {
@@ -53,9 +53,9 @@
 }
 
 .student-panel {
-  background: inherit;
-  border: 1px solid;
-  border-radius: 8px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
   padding: 14px;
 }
 
@@ -73,8 +73,8 @@
 }
 
 .radio-section {
-  background: inherit;
-  border-radius: 8px;
+  background: var(--app-surface);
+  border-radius: var(--app-radius-lg);
   padding: 10px 12px;
 }
 
@@ -85,7 +85,7 @@
 }
 
 .availability-grid mat-checkbox {
-  background: inherit;
-  border-radius: 8px;
+  background: var(--app-surface);
+  border-radius: var(--app-radius-lg);
   padding: 8px 10px;
 }

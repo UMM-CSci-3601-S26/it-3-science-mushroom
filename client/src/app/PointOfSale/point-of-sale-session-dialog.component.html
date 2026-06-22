@@ -66,7 +66,12 @@
                   </div>
                 }
               </div>
-              <span class="section-status">{{ section.saved ? 'Saved' : 'In progress' }}</span>
+              <span
+                class="section-status app-badge"
+                [class.app-badge-success]="section.saved"
+                [class.app-badge-accent]="!section.saved">
+                {{ section.saved ? 'Saved' : 'In progress' }}
+              </span>
             </div>
 
             @if (section.items.length > 0) {
@@ -115,7 +120,12 @@
                     </div>
 
                     <div class="item-actions">
-                      <span class="item-status">{{ item.available ? 'Available' : 'Needs review' }}</span>
+                      <span
+                        class="item-status app-badge"
+                        [class.app-badge-success]="item.available"
+                        [class.app-badge-warn]="!item.available">
+                        {{ item.available ? 'Available' : 'Needs review' }}
+                      </span>
                       @if (item.available) {
                         <button
                           mat-stroked-button

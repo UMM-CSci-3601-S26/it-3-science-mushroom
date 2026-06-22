@@ -5,7 +5,7 @@
 mat-sidenav-content {
   position: relative;
   z-index: 0;
-  background: var(--app-bg);
+  background: var(--app-page-bg);
   color: var(--app-text);
 }
 
@@ -22,11 +22,15 @@ mat-toolbar.mat-primary {
   top: 0;
   z-index: 1000;
   background: var(--mat-toolbar-container-background-color, inherit);
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--app-shadow-color) 35%, transparent);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .app-title {
+  min-width: 0;
+  overflow: hidden;
   padding-left: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .toolbar-spacer {
@@ -36,12 +40,16 @@ mat-toolbar.mat-primary {
 .account-button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--app-space-xs);
 }
 
 .theme-toggle-button {
   flex: 0 0 auto;
   margin-right: 4px;
+}
+
+.login-button {
+  flex: 0 0 auto;
 }
 
 .account-menu-panel {
@@ -94,12 +102,12 @@ mat-toolbar.mat-primary {
   margin: auto;
   // vh stands for viewport height, so this makes the main content area fill the height of the viewport minus the height of the toolbar (64px).
   min-height: calc(100vh - 64px);
-  padding: 24px;
+  padding: var(--app-space-lg);
   position: relative;
   z-index: 0;
-  background: var(--app-bg);
+  background: var(--app-page-bg);
   @media (max-width: 599px) {
-    padding: 16px;
+    padding: var(--app-space-md);
   }
 
   & {
@@ -118,4 +126,30 @@ mat-toolbar.mat-primary {
     radial-gradient(circle at 10% 5%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 28rem),
     radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--app-success) 13%, transparent), transparent 26rem),
     linear-gradient(180deg, var(--app-bg) 0%, var(--app-surface-muted) 52%, var(--app-bg) 100%);
+}
+
+@media (max-width: 480px) {
+  mat-toolbar.mat-primary {
+    padding: 0 var(--app-space-sm);
+  }
+
+  .app-title {
+    padding-left: var(--app-space-xs);
+    font-size: 1rem;
+  }
+
+  .account-button,
+  .login-button {
+    min-width: 40px;
+    padding: 0 var(--app-space-sm);
+  }
+
+  .account-button-label,
+  .account-button mat-icon:last-child {
+    display: none;
+  }
+
+  .theme-toggle-button {
+    margin-right: 0;
+  }
 }

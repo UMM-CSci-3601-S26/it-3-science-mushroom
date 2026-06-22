@@ -8,10 +8,12 @@
       <mat-tab>
         <ng-template mat-tab-label>
           Delete Requests
-          <span *ngIf="pendingDeleteRequests.length > 0" class="tab-count">{{ pendingDeleteRequests.length }}</span>
+          <span *ngIf="pendingDeleteRequests.length > 0" class="tab-count app-badge app-badge-warn">
+            {{ pendingDeleteRequests.length }}
+          </span>
         </ng-template>
         <div class="delete-requests-toolbar">
-          <button mat-stroked-button color="primary" (click)="loadRequests()">Refresh Requests</button>
+          <button type="button" mat-stroked-button color="primary" (click)="loadRequests()">Refresh Requests</button>
         </div>
         <p>
           Volunteers can request family removals with a reason. Review requests below,
@@ -35,7 +37,7 @@
                       <div class="request-title">Delete Request Review</div>
                       <div class="request-meta">{{ getRequesterLabel(family) }}</div>
                     </div>
-                    <span class="request-status">Pending</span>
+                    <span class="request-status app-badge app-badge-warn">Pending</span>
                   </div>
 
                   <div class="request-reason-block">
@@ -44,8 +46,8 @@
                   </div>
 
                   <div class="request-actions">
-                    <button mat-stroked-button color="primary" (click)="restoreFamily(family)">Restore Family</button>
-                    <button mat-raised-button color="warn" (click)="approveDelete(family)">Delete Family</button>
+                    <button type="button" mat-stroked-button color="primary" (click)="restoreFamily(family)">Restore Family</button>
+                    <button type="button" mat-raised-button color="warn" (click)="approveDelete(family)">Delete Family</button>
                   </div>
                 </div>
               </section>

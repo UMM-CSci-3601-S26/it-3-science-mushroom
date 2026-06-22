@@ -3,7 +3,7 @@
     <mat-card class="search-grid">
       <mat-card-header class="page-card-header">
         <mat-card-title class="supplylist-title">Supply List</mat-card-title>
-        <button
+        <button type="button"
           mat-icon-button
           matTooltip="Drive order settings"
           aria-label="Drive order settings"
@@ -85,13 +85,13 @@
             Clear
           </button>
           <!-- Expand / Collapse All -->
-          <button mat-stroked-button (click)="toggleAll()" data-cy="expand-collapse-all">
+          <button type="button" mat-stroked-button (click)="toggleAll()" data-cy="expand-collapse-all">
             <mat-icon>{{ allExpanded() ? 'unfold_less' : 'unfold_more' }}</mat-icon>
             {{ allExpanded() ? 'Collapse All' : 'Expand All' }}
           </button>
 
           <!--# of Current Entries Displayed-->
-          <button mat-stroked-button class="count-display">
+          <button type="button" mat-stroked-button class="count-display">
             Count: {{ serverFilteredSupplyList().length }}
           </button>
         </div>
@@ -119,7 +119,7 @@
 
           @if (canAddSupplyList) {
           <div class="grade-add-row">
-            <button mat-stroked-button color="primary" [routerLink]="['/supplylist/new']"
+            <button type="button" mat-stroked-button color="primary" [routerLink]="['/supplylist/new']"
               [queryParams]="{ school: schoolGroup.school, grade: gradeGroup.grade }" data-cy="add-item-button">
               <mat-icon>add</mat-icon> Add Item
             </button>
@@ -181,11 +181,11 @@
                   </mat-form-field>
                 </div>
                 <div class="item-actions">
-                  <button mat-icon-button color="primary" matTooltip="Save" (click)="saveEdit(element)"
+                  <button type="button" mat-icon-button color="primary" matTooltip="Save" (click)="saveEdit(element)"
                     data-cy="save-item">
                     <mat-icon>check</mat-icon>
                   </button>
-                  <button mat-icon-button matTooltip="Cancel" (click)="cancelEdit()" data-cy="cancel-edit">
+                  <button type="button" mat-icon-button matTooltip="Cancel" (click)="cancelEdit()" data-cy="cancel-edit">
                     <mat-icon>close</mat-icon>
                   </button>
                 </div>
@@ -195,12 +195,12 @@
                 @if (canEditSupplyList || canDeleteSupplyList) {
                 <div class="item-actions">
                   @if (canEditSupplyList) {
-                  <button mat-icon-button matTooltip="Edit" (click)="startEdit(element)" data-cy="edit-item">
+                  <button type="button" mat-icon-button matTooltip="Edit" (click)="startEdit(element)" data-cy="edit-item">
                     <mat-icon>edit</mat-icon>
                   </button>
                   }
                   @if (canDeleteSupplyList) {
-                  <button mat-icon-button color="warn" matTooltip="Delete" (click)="confirmDelete(element._id)"
+                  <button type="button" mat-icon-button color="warn" matTooltip="Delete" (click)="confirmDelete(element._id)"
                     data-cy="delete-item">
                     <mat-icon>delete</mat-icon>
                   </button>

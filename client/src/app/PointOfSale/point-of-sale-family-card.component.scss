@@ -1,6 +1,6 @@
 .family-card {
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--app-radius-lg);
   border: 1px solid var(--app-border);
   background:
     linear-gradient(90deg, var(--app-surface), color-mix(in srgb, var(--app-surface-muted) 42%, var(--app-surface)));
@@ -10,7 +10,7 @@
 
 .family-card:hover {
   border-color: color-mix(in srgb, var(--app-primary) 54%, var(--app-border));
-  box-shadow: 0 14px 30px color-mix(in srgb, var(--app-shadow-color) 38%, transparent);
+  box-shadow: var(--app-shadow-lg);
   transform: translateY(-1px);
 }
 
@@ -25,7 +25,7 @@
 
 .family-main {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--app-space-sm);
   min-width: 0;
 }
 
@@ -52,7 +52,7 @@
   align-items: center;
   min-height: 1.65rem;
   padding: 0.22rem 0.62rem;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   font-size: 0.76rem;
   font-weight: 900;
   letter-spacing: 0.01em;
@@ -83,7 +83,7 @@
 
 .family-meta span {
   padding: 0.2rem 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: var(--app-surface-muted);
   color: var(--app-text-muted);
   font-size: 0.82rem;
@@ -99,7 +99,7 @@
 .revert-session-button {
   min-width: 9.5rem;
   white-space: nowrap;
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   font-weight: 800;
   letter-spacing: 0.01em;
 }

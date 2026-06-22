@@ -17,9 +17,9 @@
 
 .scanner-container {
   margin-top: 1rem;
-  padding: 1rem;
+  padding: var(--app-space-md);
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface-muted);
 
   h2 {
@@ -52,7 +52,7 @@
   button {
     padding: 0.6rem 1rem;
     border: 1px solid var(--app-border);
-    border-radius: 10px;
+    border-radius: var(--app-radius-lg);
     background: var(--app-surface);
     color: var(--app-text);
     cursor: pointer;
@@ -82,9 +82,9 @@
 .scanned-items-panel,
 .processing-panel {
   margin-top: 1rem;
-  padding: 1rem;
+  padding: var(--app-space-md);
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface);
   color: var(--app-text);
 }
@@ -99,7 +99,7 @@
   max-width: 700px;
   height: 320px;
   border: 2px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-bg);
   object-fit: cover;
 }
@@ -136,7 +136,7 @@
 .scanned-item-row {
   display: grid;
   grid-template-columns: max(180px, 1fr) auto;
-  gap: 1rem;
+  gap: var(--app-space-md);
   align-items: center;
   padding: 0.85rem 0;
   border-top: 1px solid var(--app-border);
@@ -150,7 +150,7 @@
 .scanned-item-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--app-space-md);
 }
 
 .barcode-label {

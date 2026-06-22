@@ -1,17 +1,17 @@
 .family-portal-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--app-space-md);
   margin: 0 auto;
   max-width: 1100px;
-  padding: 16px;
+  padding: var(--app-space-md);
 }
 
 .portal-summary-band {
   align-items: center;
-  border-left: 6px solid inherit;
+  border-left: 6px solid var(--app-primary);
   display: flex;
-  gap: 16px;
+  gap: var(--app-space-md);
   justify-content: space-between;
   padding: 20px;
 
@@ -27,14 +27,14 @@
 
 .portal-info-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--app-space-md);
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .portal-info-card,
 .checklist-card,
 .portal-status-card {
-  border-radius: 8px;
+  border-radius: var(--app-radius-lg);
 }
 
 .portal-info-value {
@@ -45,12 +45,8 @@
 
 .portal-status-chip,
 .quantity-chip {
-  background: inherit;
-  border-radius: 16px;
-  color: inherit;
   display: inline-flex;
   font-size: 0.85rem;
-  padding: 4px 10px;
   text-transform: capitalize;
 }
 
@@ -65,9 +61,9 @@
 }
 
 .checklist-section {
-  border: 1px solid;
-  border-radius: 8px;
-  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  padding: var(--app-space-md);
 
   h3 {
     font-size: 1rem;
@@ -82,9 +78,9 @@
 
   li {
     align-items: center;
-    border-top: 1px solid;
+    border-top: 1px solid var(--app-border);
     display: flex;
-    gap: 8px;
+    gap: var(--app-space-sm);
     justify-content: space-between;
     padding: 8px 0;
   }

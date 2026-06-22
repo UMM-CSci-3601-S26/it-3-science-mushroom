@@ -41,14 +41,14 @@
 .family-card-compact-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--app-space-sm);
   margin-top: 8px;
 }
 
 .family-card-compact-chip,
 .guardian-link-status {
   align-items: center;
-  border-radius: 16px;
+  border-radius: var(--app-radius-lg);
   display: inline-flex;
   font-size: 0.85rem;
   gap: 6px;
@@ -58,7 +58,7 @@
 
 .family-card-compact-chip {
   border: 1px solid var(--app-divider-color);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   padding: 4px 10px;
   font-size: 0.8rem;
   color: var(--app-text-color);
@@ -68,7 +68,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   font-size: 0.875rem;
   font-weight: 600;
   margin: 0 0 12px 16px;
@@ -93,7 +93,7 @@
 
 .family-compact-item {
   border: 1px solid var(--app-divider-color);
-  border-radius: 10px;
+  border-radius: var(--app-radius-lg);
   padding: 10px 12px;
   background: color-mix(in srgb, var(--app-hover-color) 10%, transparent);
 }
