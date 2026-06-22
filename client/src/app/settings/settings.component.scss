@@ -1,7 +1,11 @@
 .settings-container {
-  padding: var(--app-space-md);
+  padding: 0;
   max-width: 1180px;
   margin: 0 auto;
+}
+
+.settings-card {
+  border-color: color-mix(in srgb, var(--app-primary) 24%, var(--app-border));
 }
 
 .vertical-settings-tabs {
@@ -47,20 +51,7 @@
 }
 
 .add-school-row {
-  display: flex;
-  gap: var(--app-space-md);
-  align-items: flex-start;
-  flex-wrap: wrap;
   margin-bottom: 8px;
-
-  mat-form-field {
-    flex: 1;
-    min-width: 180px;
-  }
-
-  button {
-    margin-top: 4px;
-  }
 }
 
 /* TABLE */
@@ -89,9 +80,7 @@ mat-paginator {
   border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
 }
 
-.flex-col {
-  display: flex;
-  flex-direction: column;
+.settings-form-stack {
   max-width: 400px;
 }
 
@@ -103,10 +92,15 @@ mat-paginator {
 }
 
 .save-button {
-  margin-top: 8px;
-  margin-bottom: 16px;
-  display: flex;
-  column-span: 2;
+  margin-bottom: var(--app-space-md);
+}
+
+.available-spots-form {
+  max-width: 720px;
+}
+
+.available-spots-form .save-button {
+  margin-bottom: 0;
 }
 
 .inventory-target-form {
@@ -183,6 +177,7 @@ mat-paginator {
 
 .drop-list {
   min-height: 60px;
+  padding-right: var(--app-space-xs);
 }
 
 // CDK drag-and-drop container active highlight
@@ -283,5 +278,18 @@ mat-paginator {
 
   :host ::ng-deep .vertical-settings-tabs .mat-mdc-tab-body-wrapper {
     padding-left: 0;
+  }
+
+  .settings-form-stack,
+  .available-spots-form {
+    max-width: none;
+  }
+
+  .drive-order-columns {
+    flex-direction: column;
+  }
+
+  .order-section {
+    width: 100%;
   }
 }
