@@ -1,9 +1,10 @@
-<div class="flex-row">
+<div class="flex-row app-page-shell">
   <div class="flex-1">
-    <mat-card class="search-grid">
-      <mat-card-header class="page-card-header">
-        <mat-card-title class="inventory-title">Inventory</mat-card-title>
+    <mat-card class="search-grid app-page-stack app-corner-anchor">
+      <mat-card-header class="page-card-header app-page-header app-page-header-with-corner">
+        <mat-card-title class="inventory-title app-page-title">Inventory</mat-card-title>
         <button type="button"
+          class="app-corner-icon-button"
           mat-icon-button
           matTooltip="Inventory settings"
           aria-label="Inventory settings"
@@ -15,17 +16,17 @@
       </mat-card-header>
 
       <mat-card-content>
-        <p class="page-description">
+        <p class="page-description app-page-subtitle">
           Welcome to the inventory page! Here, you can view all items currently in the inventory, as well as filter and sort them by various attributes. In the future, functionality for manipulating items (adding/removing/editing) and other similar features may be added!
         </p>
         <hr class="section-divider" />
 
-        <p class="filters-description">
+        <p class="filters-description app-text-muted">
           Use the fields below to filter the inventory by item, brand, color, size, type, and material. The filters will be applied as you type, and you can clear them all at once using the "Clear" button on the bottom. You can also sort the inventory by any column by clicking on the column header.
         </p>
 
         <!-- Filter Fields -->
-        <div class="filter-container">
+        <div class="filter-container app-grid-auto">
           <mat-form-field appearance="outline">
             <mat-label class="filter">Item</mat-label>
             <input
@@ -129,11 +130,10 @@
           </mat-form-field>
         </div>
         <div class="filter-extra">
-          <div class="filter-actions">
+          <div class="filter-actions app-cluster">
             <button type="button" mat-stroked-button class="count-display" disabled>
               <strong>Items: {{ displayedInventory().length }}</strong>
             </button>
-            <!-- Clear Filters Button -->
             <button
               mat-stroked-button
               type="button"
@@ -145,33 +145,30 @@
               Clear Filters
             </button>
 
-            <div class="scanner-actions">
-              @if (canAddInventoryItem) {
-                <button
-                  mat-stroked-button
-                  type="button"
-                  [disabled]="scannerProcessing"
-                  (click)="toggleScanner()"
-                  data-cy="scan-button"
-                  >
-                  {{ showScanner && scannerAction() === 'add' ? 'Close Scanner' : 'Scan Item - Add' }}
-                </button>
-              }
+            @if (canAddInventoryItem) {
+              <button
+                mat-stroked-button
+                type="button"
+                [disabled]="scannerProcessing"
+                (click)="toggleScanner()"
+                data-cy="scan-button"
+                >
+                {{ showScanner && scannerAction() === 'add' ? 'Close Scanner' : 'Scan Item - Add' }}
+              </button>
+            }
 
-              @if (canEditInventoryItem) {
-                <button
-                  mat-stroked-button
-                  type="button"
-                  (click)="openRemoveScanner()"
-                  data-cy="remove-scan-button"
-                  >
-                  {{ showScanner && scannerAction() === 'remove' ? 'Close Scanner' : 'Scan Item - Remove' }}
-                </button>
-              }
+            @if (canEditInventoryItem) {
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="openRemoveScanner()"
+                data-cy="remove-scan-button"
+                >
+                {{ showScanner && scannerAction() === 'remove' ? 'Close Scanner' : 'Scan Item - Remove' }}
+              </button>
+            }
 
-            </div>
-
-            <div class="print-barcode" data-cy="barcode-print">
+            <div class="print-barcode app-cluster" data-cy="barcode-print">
               <button
               mat-stroked-button
               type="button"
@@ -179,24 +176,11 @@
                 <mat-icon>print</mat-icon>
                   Print Barcodes
               </button>
-              <button type="button"
-                mat-icon-button
-                matTooltip="Barcode print settings"
-                aria-label="Barcode print settings"
-                routerLink="/settings"
-                [queryParams]="{ tab: 'barcode-printing' }"
-                data-cy="barcode-settings-button">
-                <mat-icon>settings</mat-icon>
-              </button>
             </div>
 
-            <mat-button-toggle-group class="view-toggle" [(ngModel)]="viewType" data-test="viewTypeToggle">
-              <mat-button-toggle value="simple" data-test="simple-view">Simple</mat-button-toggle>
-              <mat-button-toggle value="detailed" data-test="detailed-view">Detailed</mat-button-toggle>
-            </mat-button-toggle-group>
           </div>
 
-          <div class="display-toggles">
+          <div class="display-toggles app-cluster">
                 <!-- N/A Values Toggle -->
               <mat-slide-toggle
                 [ngModel]="showNAValues()"
@@ -223,9 +207,20 @@
               >
                 Show Only Out of Stock Items
               </mat-slide-toggle>
+
+              <span class="toggle-spacer" aria-hidden="true"></span>
+
+              <mat-slide-toggle
+                class="view-mode-toggle"
+                [ngModel]="viewType() === 'simple'"
+                (ngModelChange)="setViewType($event ? 'simple' : 'detailed')"
+                data-test="viewTypeToggle"
+              >
+                Simple View
+              </mat-slide-toggle>
             </div>
 
-          <div class="scanner-wrapper" *ngIf="showScanner">
+          <div class="scanner-wrapper app-panel-muted" *ngIf="showScanner">
             <p>{{ activeScannerMode === 'camera' ? 'Camera' : activeScannerMode === 'handheld' ? 'Hand Held' : '' }} Scanner is ready</p>
             <app-scanner
             [currentScannerAction]="scannerAction()"
@@ -235,7 +230,7 @@
             (activeModeChanged)="activeScannerMode = $event"
             (done)="onScannerDone()"></app-scanner>
           </div>
-          <div *ngIf="showRemovePanel() && scanCards().length > 0" class="remove-panel">
+          <div *ngIf="showRemovePanel() && scanCards().length > 0" class="remove-panel app-panel">
               <h3>Remove Inventory</h3>
               <p class="remove-summary">
                   Total items to remove: {{ scanCards().length }}
@@ -303,7 +298,8 @@
   @switch (viewType()) {
 
     @case ('detailed') {
-      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table">
+      <div class="table-scroll-shell" data-cy="inventory-detailed-scroll">
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 demo-table demo-table-detailed">
         <!-- Item Column -->
         <ng-container matColumnDef="item">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by item">Item</th>
@@ -367,6 +363,7 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumnsDetailed"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumnsDetailed;" data-cy="inventory-row"></tr>
       </table>
+      </div>
 
       <mat-paginator
         data-cy="inventory-paginator"
@@ -414,7 +411,7 @@
     }
   }
 } @else {
-  <div class="flex-1" class="table-error">
+  <div class="flex-1 table-error">
     <mat-error>
       There was a problem loading the inventory table. The server is possibly down or perhaps there are network
       issues.
