@@ -1,8 +1,8 @@
 <div class="admin-shell" *ngIf="isAdmin; else noAccess">
   <div class="admin-header">
     <div>
-      <h2>{{ showUsersSection && !showPermissionsSection ? 'Users' : showPermissionsSection && !showUsersSection ? 'Volunteer Permissions' : 'User Management' }}</h2>
-      <p>Manage staff accounts and volunteer job-role access.</p>
+      <h2>{{ showUsersSection && !showPermissionsSection ? 'Users' : showPermissionsSection && !showUsersSection ? 'Volunteer Roles' : 'User Management' }}</h2>
+      <p>Manage staff accounts and role-based access.</p>
     </div>
     <div class="refresh-status" aria-live="polite">
       <span *ngIf="isRefreshing">Refreshing...</span>
@@ -38,7 +38,7 @@
             </p>
 
             <mat-form-field *ngIf="isVolunteerForm" appearance="outline" class="full-width-field">
-              <mat-label>Volunteer job role</mat-label>
+              <mat-label>Role</mat-label>
               <mat-select formControlName="jobRole">
                 <mat-option *ngFor="let role of jobRoles" [value]="role.name">{{ formatRoleName(role.name) }}</mat-option>
               </mat-select>
@@ -53,7 +53,7 @@
 
         <ng-template #chooseUserHint>
           <div class="empty-state">
-            Choose a user from the list to adjust their system role or volunteer job role.
+            Choose a user from the list to adjust their system role or assigned role.
           </div>
         </ng-template>
       </section>
@@ -97,20 +97,7 @@
     <div *ngIf="showPermissionsSection" class="panel-grid">
       <section class="list-panel">
         <div class="panel-title-row">
-          <h3>Volunteer Job Roles</h3>
-        </div>
-
-        <div class="create-role-row">
-          <mat-form-field appearance="outline" class="role-name-field">
-            <mat-label>New volunteer job role</mat-label>
-            <input
-              matInput
-              type="text"
-              [(ngModel)]="newJobRoleName"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Delivery Helper"
-            />
-          </mat-form-field>
+          <h3>Roles</h3>
           <button mat-flat-button color="primary" type="button" (click)="createJobRole()">Add Role</button>
         </div>
 
@@ -136,9 +123,20 @@
 
       <section class="form-panel" *ngIf="selectedJobRole; else selectRoleHint">
         <div class="panel-title-row">
-          <h3>Edit {{ formatRoleName(selectedJobRole.name) }}</h3>
-          <button mat-stroked-button type="button" (click)="selectedJobRole = null">Close</button>
+          <h3>{{ isCreatingJobRole ? 'Add Role' : 'Edit ' + formatRoleName(selectedJobRole.name) }}</h3>
+          <button mat-stroked-button type="button" (click)="cancelRoleEdit()">Close</button>
         </div>
+
+        <mat-form-field *ngIf="isCreatingJobRole" appearance="outline" class="full-width-field role-editor-name">
+          <mat-label>Role name</mat-label>
+          <input
+            matInput
+            type="text"
+            [(ngModel)]="newJobRoleName"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Delivery Helper"
+          />
+        </mat-form-field>
 
         <p class="panel-copy">
           Inherits:
@@ -169,13 +167,15 @@
         </div>
 
         <div class="form-actions">
-          <button mat-flat-button color="primary" type="button" (click)="saveSelectedJobRole()">Save Permissions</button>
+          <button mat-flat-button color="primary" type="button" (click)="saveSelectedJobRole()">
+            {{ isCreatingJobRole ? 'Create Role' : 'Save Role' }}
+          </button>
         </div>
       </section>
 
       <ng-template #selectRoleHint>
         <section class="form-panel empty-state">
-          Select a job role to edit its permissions.
+          Select a role to edit it, or add a new role.
         </section>
       </ng-template>
     </div>

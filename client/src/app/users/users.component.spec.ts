@@ -57,13 +57,13 @@ describe('UsersComponent', () => {
 
   it('selects the requested management tab from the query param', () => {
     queryParamMap.next(convertToParamMap({ tab: 'permissions' }));
-    expect(component.selectedTabIndex).toBe(2);
-
-    queryParamMap.next(convertToParamMap({ tab: 'users' }));
     expect(component.selectedTabIndex).toBe(1);
 
-    queryParamMap.next(convertToParamMap({ tab: 'requests' }));
+    queryParamMap.next(convertToParamMap({ tab: 'users' }));
     expect(component.selectedTabIndex).toBe(0);
+
+    queryParamMap.next(convertToParamMap({ tab: 'requests' }));
+    expect(component.selectedTabIndex).toBe(2);
   });
 
   it('formats the requester label with requester role and display name', () => {

@@ -8,6 +8,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Family } from '../family/family';
 import { FamilyCardComponent } from '../family/family-card.component';
 import { FamilyService } from '../family/family.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { UserManagementComponent } from './user-management.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
@@ -31,6 +32,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class UsersComponent implements OnInit {
   private familyService = inject(FamilyService);
+  private dialogService = inject(DialogService);
   private snackBar = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
 
@@ -40,10 +42,14 @@ export class UsersComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
-      // Query params let other admin links jump directly to the users or
-      // permissions tab while keeping delete requests as the default review tab.
+      // Keep the public query keys stable while presenting the tabs in the
+      // everyday workflow order: users, roles, then exceptional delete requests.
       const tab = params.get('tab');
-      this.selectedTabIndex = tab === 'users' ? 1 : tab === 'permissions' ? 2 : 0;
+      this.selectedTabIndex = tab === 'requests'
+        ? 2
+        : tab === 'permissions' || tab === 'roles'
+          ? 1
+          : 0;
     });
     this.loadRequests();
   }
@@ -76,19 +82,27 @@ export class UsersComponent implements OnInit {
     const warning = hasLinkedGuardianAccount
       ? `Delete ${family.guardianName}'s family profile permanently? This will also delete their linked guardian login account.`
       : `Delete ${family.guardianName}'s family profile permanently?`;
-    const confirmed = window.confirm(warning);
-    if (!confirmed) {
-      return;
-    }
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Confirm Family Deletion',
+      message: warning,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Delete'
+    }, '520px', '240px');
 
-    this.familyService.deleteFamily(family._id).subscribe({
-      next: () => {
-        this.pendingDeleteRequests = this.pendingDeleteRequests.filter(item => item._id !== family._id);
-        this.snackBar.open('Family deleted.', 'Close', { duration: 2500 });
-      },
-      error: () => {
-        this.snackBar.open('Unable to delete family.', 'Close', { duration: 3000 });
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) {
+        return;
       }
+
+      this.familyService.deleteFamily(family._id).subscribe({
+        next: () => {
+          this.pendingDeleteRequests = this.pendingDeleteRequests.filter(item => item._id !== family._id);
+          this.snackBar.open('Family deleted.', 'Close', { duration: 2500 });
+        },
+        error: () => {
+          this.snackBar.open('Unable to delete family.', 'Close', { duration: 3000 });
+        }
+      });
     });
   }
 

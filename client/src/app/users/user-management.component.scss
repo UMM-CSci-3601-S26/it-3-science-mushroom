@@ -3,8 +3,7 @@
 .user-card,
 .role-card,
 .form-actions,
-.user-actions,
-.create-role-row {
+.user-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -100,13 +99,8 @@
   flex: 0 0 auto;
 }
 
-.create-role-row {
-  align-items: center;
-}
-
-.role-name-field {
-  flex: 1 1 16rem;
-  min-width: 0;
+.role-editor-name {
+  margin-top: var(--app-space-sm);
 }
 
 .user-name {
@@ -219,8 +213,7 @@
   .user-card,
   .role-card,
   .form-actions,
-  .user-actions,
-  .create-role-row {
+  .user-actions {
     align-items: stretch;
     flex-direction: column;
   }
@@ -231,8 +224,7 @@
   }
 
   .form-actions button,
-  .user-actions button,
-  .create-role-row button {
+  .user-actions button {
     width: 100%;
   }
 }

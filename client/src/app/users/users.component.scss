@@ -2,8 +2,12 @@
   display: block;
 }
 
-mat-card {
-  margin: 16px;
+.users-page {
+  padding-top: var(--app-space-lg);
+}
+
+.users-card {
+  border-color: color-mix(in srgb, var(--app-primary) 22%, var(--app-border));
 }
 
 .delete-requests-toolbar {
