@@ -1,10 +1,10 @@
-<div class="flex-row">
+<div class="flex-row app-page-shell">
   <div class="flex-1">
-    <mat-card class="pos-card">
-      <mat-card-header class="pos-header">
+    <mat-card class="pos-card app-page-stack app-corner-anchor">
+      <mat-card-header class="pos-header app-page-header app-page-header-with-corner">
         <div>
-          <mat-card-title class="pos-title">Point of Sale</mat-card-title>
-          <mat-card-subtitle class="pos-subtitle">
+          <mat-card-title class="pos-title app-page-title">Point of Sale</mat-card-title>
+          <mat-card-subtitle class="pos-subtitle app-page-subtitle">
             Find a family, start a help session, and work from the generated checklist.
           </mat-card-subtitle>
         </div>
@@ -13,7 +13,7 @@
         </span>
         <button type="button"
           mat-icon-button
-          class="settings-link"
+          class="settings-link app-corner-icon-button"
           matTooltip="Drive order settings"
           aria-label="Drive order settings"
           routerLink="/settings"
@@ -24,13 +24,13 @@
       </mat-card-header>
 
       <mat-card-content>
-        <div class="filter-card">
+        <div class="filter-card app-panel">
           <div>
             <p class="filter-label">Search Families</p>
-            <p class="filter-hint">Search by guardian name and narrow by session status.</p>
+            <p class="filter-hint app-text-muted">Search by guardian name and narrow by session status.</p>
           </div>
 
-          <div class="filter-controls">
+          <div class="filter-controls app-grid-auto">
             <mat-form-field appearance="outline" class="family-search-field">
               <mat-label>Family name</mat-label>
               <mat-icon matPrefix>search</mat-icon>
@@ -72,7 +72,7 @@
           </div>
         </div>
 
-        <div class="family-card-container">
+        <div class="family-card-container app-stack-sm">
           @if (loadingFamilies) {
             <div class="list-message">Loading families...</div>
           } @else if (familyLoadError) {

@@ -28,7 +28,7 @@
 .pos-header {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--app-space-md);
   padding: 1.75rem 1.75rem 1rem;
 }
@@ -49,6 +49,8 @@
 
 .family-count {
   flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: calc(var(--app-space-lg) + 8px);
   padding: 0.5rem 0.9rem;
   border: 1px solid color-mix(in srgb, var(--app-primary) 46%, var(--app-border));
   border-radius: var(--app-radius-pill);
@@ -164,6 +166,8 @@ mat-card-content {
 
   .family-count {
     align-self: flex-start;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .filter-card {

@@ -14,6 +14,7 @@ import { FamilyService } from '../family/family.service';
 import { Inventory } from '../inventory/inventory';
 import { InventoryService } from '../inventory/inventory.service';
 import { ScannerComponent } from '../scanner/scanner.component';
+import { DialogService } from '../shared/dialog/dialog.service';
 
 @Component({
   selector: 'app-point-of-sale-session-dialog',
@@ -37,6 +38,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   readonly data = inject<{ family: Family }>(MAT_DIALOG_DATA);
   private readonly familyService = inject(FamilyService);
   private readonly inventoryService = inject(InventoryService);
+  private readonly dialogService = inject(DialogService);
 
   sessionFamily: Family | undefined;
   loading = true;
@@ -157,18 +159,27 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
       this.dialogRef.close();
       return;
     }
-    if (!window.confirm('Clear this help session and discard the current checklist snapshot?')) {
-      return;
-    }
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Clear Session',
+      message: 'Clear this help session and discard the current checklist snapshot?',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Clear Session'
+    }, '520px', '230px');
 
-    this.saving = true;
-    this.errorMessage = '';
-    this.familyService.clearFamilyHelpSession(familyId).subscribe({
-      next: () => this.dialogRef.close({ cleared: true }),
-      error: (err) => {
-        this.saving = false;
-        this.errorMessage = `Failed to clear session: ${err.message}`;
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) {
+        return;
       }
+
+      this.saving = true;
+      this.errorMessage = '';
+      this.familyService.clearFamilyHelpSession(familyId).subscribe({
+        next: () => this.dialogRef.close({ cleared: true }),
+        error: (err) => {
+          this.saving = false;
+          this.errorMessage = `Failed to clear session: ${err.message}`;
+        }
+      });
     });
   }
 
@@ -183,18 +194,27 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
       this.errorMessage = validationMessage;
       return;
     }
-    if (!window.confirm('Are you sure you are done helping this family? This will remove selected item quantities from inventory.')) {
-      return;
-    }
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Complete Family Session',
+      message: 'Are you sure you are done helping this family? This will remove selected item quantities from inventory.',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Complete'
+    }, '560px', '230px');
 
-    this.saving = true;
-    this.errorMessage = '';
-    this.familyService.saveFamilyHelpSessionAll(familyId, this.prepareChecklistForSave(checklist)).subscribe({
-      next: () => this.dialogRef.close({ completed: true }),
-      error: (err) => {
-        this.saving = false;
-        this.errorMessage = `Failed to save completed session: ${err.message}`;
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) {
+        return;
       }
+
+      this.saving = true;
+      this.errorMessage = '';
+      this.familyService.saveFamilyHelpSessionAll(familyId, this.prepareChecklistForSave(checklist)).subscribe({
+        next: () => this.dialogRef.close({ completed: true }),
+        error: (err) => {
+          this.saving = false;
+          this.errorMessage = `Failed to save completed session: ${err.message}`;
+        }
+      });
     });
   }
 

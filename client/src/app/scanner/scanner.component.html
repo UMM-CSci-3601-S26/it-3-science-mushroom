@@ -1,7 +1,7 @@
-<div class="scanner-container">
+<div class="scanner-container app-panel-muted app-stack-md">
   <h2>Scan Item - {{ scannerAction() === 'add' ? 'Add' : 'Remove' }}</h2>
 
-  <div class="flex-row">
+  <div class="flex-row app-cluster">
     <button
       *ngFor="let mode of scanModes"
       mat-raised-button
@@ -26,11 +26,11 @@
     </button>
   </div>
 
-  <div *ngIf="!activeMode" class="scan-mode-placeholder">
+  <div *ngIf="!activeMode" class="scan-mode-placeholder app-panel">
     <p>Select a scan mode to begin.</p>
   </div>
 
-  <div *ngIf="activeMode === 'camera'" class="camera-panel">
+  <div *ngIf="activeMode === 'camera'" class="camera-panel app-panel app-stack-sm">
     <h3>Camera Scan</h3>
     <p>Use your device camera to scan item barcodes.</p>
 
@@ -44,7 +44,7 @@
     ></video>
   </div>
 
-  <div *ngIf="activeMode === 'handheld'" class="handheld-panel">
+  <div *ngIf="activeMode === 'handheld'" class="handheld-panel app-panel app-stack-sm">
     <!-- <h3>Hand Held Scan</h3> -->
     <p>Click the box if needed, then scan with the handheld barcode reader.</p>
 
@@ -73,7 +73,7 @@
     </div>
   </div>
 
-  <div *ngIf="getScanEntries().length > 0" class="scanned-items-panel">
+  <div *ngIf="getScanEntries().length > 0" class="scanned-items-panel app-panel app-stack-sm">
     <h2>Scanned Items</h2>
 
     <div
@@ -103,11 +103,11 @@
     </div>
   </div>
 
-  <div *ngIf="processing" class="processing-panel">
+  <div *ngIf="processing" class="processing-panel app-panel">
     <p>Processing scanned items...</p>
   </div>
 
-  <div class="scanner-actions">
+  <div class="scanner-actions app-cluster">
     <button
       mat-raised-button
       color="primary"
