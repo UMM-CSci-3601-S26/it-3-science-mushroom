@@ -19,6 +19,7 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { DialogService } from '../shared/dialog/dialog.service';
 
 // RxJS Imports
 import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
@@ -77,6 +78,7 @@ export class SupplyListComponent {
   readonly sort = viewChild<MatSort>(MatSort);
 
   private snackBar = inject(MatSnackBar);
+  private dialogService = inject(DialogService);
   private supplylistService = inject(SupplyListService);
   private authService = inject(AuthService);
 
@@ -262,16 +264,25 @@ export class SupplyListComponent {
   /** Prompts confirmation then deletes an item, removing it from the local grouped data. */
   confirmDelete(id: string | undefined) {
     if (!id) return;
-    if (!confirm('Are you sure you want to delete this item?')) return;
-    this.supplylistService.deleteSupplyList(id).subscribe({
-      next: () => {
-        // Trigger a re-fetch so groupedSupplyList (which reads serverFilteredSupplyList) updates.
-        this.refreshTrigger.update(n => n + 1);
-      },
-      error: (err) => {
-        this.errMsg.set(`Problem deleting item – Error Code: ${err.status}\nMessage: ${err.message}`);
-        this.snackBar.open(this.errMsg() ?? '', 'OK', { duration: 6000 });
-      }
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Delete Item',
+      message: 'Are you sure you want to delete this item?',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Delete'
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.supplylistService.deleteSupplyList(id).subscribe({
+        next: () => {
+          // Trigger a re-fetch so groupedSupplyList (which reads serverFilteredSupplyList) updates.
+          this.refreshTrigger.update(n => n + 1);
+        },
+        error: (err) => {
+          this.errMsg.set(`Problem deleting item – Error Code: ${err.status}\nMessage: ${err.message}`);
+          this.snackBar.open(this.errMsg() ?? '', 'OK', { duration: 6000 });
+        }
+      });
     });
   }
 
@@ -281,9 +292,16 @@ export class SupplyListComponent {
 
   // Controls whether all grade panels are expanded
   allExpanded = signal(false);
+  // Item-level filters stay collapsed by default because school and grade are
+  // the most common way staff narrow this page.
+  advancedFiltersExpanded = signal(false);
 
   toggleAll() {
     this.allExpanded.update(v => !v);
+  }
+
+  toggleAdvancedFilters() {
+    this.advancedFiltersExpanded.update(expanded => !expanded);
   }
 
   startEdit(item: SupplyList) {
@@ -325,6 +343,7 @@ export class SupplyListComponent {
     this.school.set(undefined);
     this.grade.set(undefined);
     this.quantity.set(undefined);
+    this.advancedFiltersExpanded.set(false);
   }
 }
 export { SupplyListService };
