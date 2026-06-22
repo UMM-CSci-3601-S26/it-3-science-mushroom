@@ -57,6 +57,11 @@
     color-mix(in srgb, var(--app-primary) 10%, transparent),
     transparent 18rem
   ),
+  radial-gradient(
+    circle at bottom left,
+    color-mix(in srgb, var(--app-accent) 11%, transparent),
+    transparent 22rem
+  ),
   var(--app-surface);
   --app-text: #{mat.m2-get-color-from-palette($foreground, text)};
   --app-text-muted: #{mat.m2-get-color-from-palette($foreground, secondary-text)};
@@ -387,13 +392,50 @@ body {
   border-radius: 50%;
 }
 
+// Shared interaction motion gives the rest of the app the same responsive feel
+// as Point of Sale without changing layout or application behavior.
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-icon-button,
+.mat-mdc-card,
+.app-card {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.mat-mdc-button:not(:disabled):hover,
+.mat-mdc-raised-button:not(:disabled):hover,
+.mat-mdc-outlined-button:not(:disabled):hover,
+.mat-mdc-unelevated-button:not(:disabled):hover,
+.mat-mdc-icon-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.mat-mdc-card:hover,
+.app-card:hover {
+  border-color: color-mix(in srgb, var(--app-primary) 32%, var(--app-border)) !important;
+  box-shadow: var(--app-shadow-md) !important;
+}
+
 // Reusable surfaces for pages that need a custom container without inventing
 // another card treatment.
 .app-card,
 .mat-mdc-card {
-  border: 1px solid var(--app-border) !important;
+  border: 1px solid color-mix(in srgb, var(--app-primary) 18%, var(--app-border)) !important;
   border-radius: var(--app-radius-lg) !important;
   box-shadow: var(--app-shadow-sm) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--app-primary) 4%, var(--app-surface)),
+      var(--app-surface)
+    ) !important;
 }
 
 .app-card {
@@ -409,11 +451,183 @@ body {
   color: var(--app-text);
 }
 
+// Reusable page scaffolding keeps new feature pages visually aligned without
+// each team member recreating margins, widths, and heading spacing.
+.app-page-shell {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1280px;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--app-space-lg);
+}
+
+.app-page-stack {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.app-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+}
+
+.app-page-header-with-corner {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  padding-right: calc(var(--app-space-lg) + 40px);
+}
+
+.app-page-header-with-corner .mat-mdc-card-header-text,
+.app-page-header-with-corner .mat-mdc-card-title,
+.app-page-header-with-corner .mat-mdc-card-subtitle,
+.app-page-header-with-corner .app-page-title,
+.app-page-header-with-corner .app-page-subtitle {
+  margin-left: 0;
+  margin-right: 0;
+  text-align: left;
+}
+
+.app-corner-anchor {
+  position: relative;
+}
+
+.app-corner-icon-button,
+.app-corner-icon-button.mat-mdc-icon-button {
+  position: absolute;
+  top: var(--app-space-sm);
+  right: var(--app-space-sm);
+  z-index: 2;
+  color: var(--app-text-muted);
+}
+
+.app-page-title {
+  margin: 0;
+  color: var(--app-text);
+  font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.app-page-subtitle {
+  margin: var(--app-space-xs) 0 0;
+  color: var(--app-text-muted);
+  line-height: 1.45;
+}
+
+// Surface primitives for forms, filters, and secondary cards where the full
+// app-card shadow treatment may feel too strong.
+.app-panel,
+.app-panel-muted {
+  padding: var(--app-space-md);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+}
+
+.app-panel {
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.app-panel-muted {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--app-accent) 8%, var(--app-surface-muted)),
+    var(--app-surface-muted)
+  );
+  color: var(--app-text);
+}
+
+// Common layout helpers keep row/grid alignment and action spacing predictable.
+.app-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--app-space-sm);
+}
+
+.app-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+}
+
+.app-stack-sm {
+  display: grid;
+  gap: var(--app-space-sm);
+}
+
+.app-stack-md {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.app-stack-lg {
+  display: grid;
+  gap: var(--app-space-lg);
+}
+
+.app-grid-2,
+.app-grid-3,
+.app-grid-auto {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.app-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.app-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.app-grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.app-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-xs);
+}
+
+.app-icon-label > mat-icon {
+  flex: 0 0 auto;
+}
+
+.app-kv {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--app-space-xs) var(--app-space-sm);
+}
+
+.app-kv-label {
+  color: var(--app-text-muted);
+  font-weight: 700;
+}
+
+.app-text-muted {
+  color: var(--app-text-muted);
+}
+
 .app-section-title {
   margin: 0 0 var(--app-space-md);
   color: var(--app-primary);
   font-weight: 700;
+  border-left: 4px solid color-mix(in srgb, var(--app-primary) 55%, var(--app-border));
+  padding-left: var(--app-space-sm);
   letter-spacing: 0;
+}
+
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-unelevated-button.mat-accent {
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--app-accent) 24%, transparent);
 }
 
 // Status badges use semantic tokens so their meaning remains stable when the
@@ -465,6 +679,65 @@ body {
   width: 100%;
 }
 
+// Standard form composition. Feature styles should define only exceptional
+// grid tracks or widths rather than rebuilding field and action spacing.
+.app-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-md);
+}
+
+.app-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--app-space-md);
+  align-items: start;
+}
+
+.app-field-grid > .mat-mdc-form-field,
+.app-field-action-row > .mat-mdc-form-field {
+  width: 100%;
+}
+
+.app-field-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-md);
+  align-items: flex-start;
+}
+
+.app-field-action-row > .mat-mdc-form-field {
+  flex: 1 1 220px;
+  min-width: min(100%, 180px);
+}
+
+.app-field-action-row > button,
+.app-field-action-row > .app-action-row {
+  min-height: 56px;
+}
+
+.app-field-action-row > .app-action-row > button {
+  min-height: 56px;
+}
+
+.app-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-sm);
+  align-items: center;
+}
+
+.app-action-row-end {
+  justify-content: flex-end;
+}
+
+.app-scroll-region {
+  max-height: min(28rem, 55vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 input,
 textarea,
 select,
@@ -501,6 +774,19 @@ button {
   background: var(--app-hover-color);
 }
 
+.mat-mdc-tab-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--app-primary) 20%, var(--app-border));
+}
+
+.mat-mdc-tab .mdc-tab__text-label {
+  color: var(--app-text-muted);
+  font-weight: 600;
+}
+
+.mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
+  color: var(--app-primary);
+}
+
 .app-empty-state,
 .empty-state {
   padding: var(--app-space-xl);
@@ -520,6 +806,70 @@ button {
 :focus-visible {
   outline: 3px solid var(--app-accent);
   outline-offset: 3px;
+}
+
+@media (max-width: 599px) {
+  .app-page-shell {
+    padding: var(--app-space-md);
+  }
+
+  .app-page-header-with-corner {
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding-right: calc(var(--app-space-md) + 40px);
+  }
+
+  .app-corner-icon-button {
+    top: var(--app-space-xs);
+    right: var(--app-space-xs);
+  }
+
+  .app-page-header,
+  .app-split {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-grid-2,
+  .app-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .app-field-action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-field-action-row > button,
+  .app-field-action-row > .app-action-row,
+  .app-action-row > button,
+  .app-action-row > a[mat-button],
+  .app-action-row > a[mat-raised-button],
+  .app-action-row > a[mat-stroked-button] {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button,
+  .mat-mdc-unelevated-button,
+  .mat-mdc-icon-button,
+  .mat-mdc-card,
+  .app-card,
+  .mat-mdc-row {
+    transition: none;
+  }
+
+  .mat-mdc-button:not(:disabled):hover,
+  .mat-mdc-raised-button:not(:disabled):hover,
+  .mat-mdc-outlined-button:not(:disabled):hover,
+  .mat-mdc-unelevated-button:not(:disabled):hover,
+  .mat-mdc-icon-button:not(:disabled):hover {
+    transform: none;
+  }
 }
 
 
