@@ -70,25 +70,25 @@ export class ReportGeneratorComponent {
   // Compute arrays of items based on their stock state
   stockedItems = computed(() => {
     return this.inventory()
-      ?.filter(item => item.stockState === 'Stocked')
+      ?.filter(item => this.matchesStockState(item, 'stocked'))
       .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   outOfStockItems = computed(() => {
     return this.inventory()
-      ?.filter(item => item.stockState === 'Out of Stock')
+      ?.filter(item => this.matchesStockState(item, 'outofstock'))
       .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   overstockedItems = computed(() => {
     return this.inventory()
-      ?.filter(item => item.stockState === 'Over-Stocked')
+      ?.filter(item => this.matchesStockState(item, 'overstocked'))
       .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   understockedItems = computed(() => {
     return this.inventory()
-      ?.filter(item => item.stockState === 'Under-Stocked')
+      ?.filter(item => this.matchesStockState(item, 'understocked'))
       .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
@@ -539,5 +539,12 @@ export class ReportGeneratorComponent {
         );
       }
     });
+  }
+
+  private matchesStockState(item: Inventory, expected: string): boolean {
+    return item.stockState
+      .trim()
+      .toLowerCase()
+      .replace(/[-\s]+/g, '') === expected;
   }
 }

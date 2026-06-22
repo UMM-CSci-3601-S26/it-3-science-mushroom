@@ -1,24 +1,51 @@
-.button-container-row {
-  display: flex;
-  flex-direction: row;
+.report-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--app-space-md);
-  justify-content: center;
 }
 
-.button-container-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--app-space-md);
+.report-action-column {
+  align-content: start;
+  display: grid;
+  gap: var(--app-space-sm);
+  min-width: 0;
+  padding: var(--app-space-md);
+  border: 1px solid var(--app-divider-color);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-muted);
 }
 
 .actions-container {
-  display: flex;
   align-items: center;
+  display: flex;
   gap: var(--app-space-sm);
-  text-decoration: underline;
+  min-height: 40px;
 }
 
 .action-heading {
   margin: 0;
+}
+
+.report-action-column button {
+  justify-content: flex-start;
+  min-height: 44px;
+  white-space: normal;
+}
+
+.generation-actions {
+  border-top: 4px solid var(--app-accent);
+}
+
+.download-actions {
+  border-top: 4px solid var(--app-primary);
+}
+
+.deletion-actions {
+  border-top: 4px solid var(--app-warn);
+}
+
+@media (max-width: 900px) {
+  .report-action-grid {
+    grid-template-columns: 1fr;
+  }
 }

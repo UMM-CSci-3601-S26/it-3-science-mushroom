@@ -1,165 +1,159 @@
-<div class="flex-row">
-  <div class="flex-1">
-    <!-- Search Field -->
-    <mat-card class="search-card">
-      <mat-card-header>
-        <mat-card-title class="stock-report-title">Stock Report</mat-card-title>
-      </mat-card-header>
-      <!-- Page Description -->
+<section class="stock-report-page app-page-shell app-page-stack">
+  <header class="page-header app-page-header">
+    <div>
+      <h1 class="app-page-title">Stock Reports</h1>
+      <p class="app-page-subtitle">Review current stock levels, generate new reports, and manage saved files.</p>
+    </div>
+  </header>
+
+  @if (inventoryError()) {
+    <mat-card class="stock-report-error">
       <mat-card-content>
-        <p class="page-description">
-          Welcome to the Stock Reports page! Here, you can view the current stock levels of all items in the inventory, as well as save and export reports.
-        </p>
-        <p class="page-description">
-          Below, you can choose to Generate or Generate & Download the current report by clicking the appropriate button in the "Generation Actions" section. Generating will create a PDF/XLSX of the report and upload it to the server, while Generating & Downloading will create a PDF/XLSX and save it to your computer, and not the server.
-        </p>
-        <p class="page-description">
-          Once you have generated a report, it will appear in the "Saved Reports" section, where you can then Save or Delete the report.
-          You may also download or delete all reports at once by using the appropriate button in the "Downloading Actions" or "Deletion Actions" sections.
-        </p>
-        <p class="page-description">
-          Please note! The Saved Reports list may take a moment to update after generating or deleting reports. If you don't see your report appear or disappear right away, please wait a few seconds and it should update. If it doesn't, refresh your page.
-        </p>
-        <hr class="section-divider" />
+        <mat-error>Inventory data could not be loaded. Please try again shortly.</mat-error>
       </mat-card-content>
     </mat-card>
-  </div>
-</div>
-
-<!-- Saved Reports List -->
-<mat-card class="reports-card" data-cy="reports-card">
-  <mat-card-header>
-    <mat-card-title>Saved Reports</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
-  <mat-card-subtitle>PDF Reports</mat-card-subtitle>
-    @if (pdfReports() && pdfReports().length > 0) {
-      <div class="reports-list" data-cy="pdf-reports-list">
-        @for (report of pdfReports(); track report._id) {
-          <div class="reports-container" data-cy="pdf-report-item">
-            <div class="report-actions">
-              <span>{{ report.reportName }}</span>
-              <button type="button" mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-pdf-button">
-                <mat-icon>download</mat-icon>
-              </button>
-              @if (canManageStockReports) {
-                <button type="button" mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-pdf-button">
-                  <mat-icon>delete_forever</mat-icon>
-                </button>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    } @else {
-      <p>No PDF reports are available. Try generating one!</p>
-    }
-
-  <br>
-
-  <mat-card-subtitle>XLSX Reports</mat-card-subtitle>
-    @if (xlsxReports() && xlsxReports().length > 0) {
-      <div class="reports-list" data-cy="xlsx-reports-list">
-        @for (report of xlsxReports(); track report._id) {
-          <div class="reports-container" data-cy="xlsx-report-item">
-            <div class="report-actions">
-              <span>{{ report.reportName }}</span>
-              <button type="button" mat-icon-button (click)="downloadSingleReport(report)" matTooltip="Download Report" data-cy="download-xlsx-button">
-                <mat-icon>download</mat-icon>
-              </button>
-              @if (canManageStockReports) {
-                <button type="button" mat-icon-button (click)="deleteSingleReport(report)" matTooltip="Delete Report" data-cy="delete-xlsx-button">
-                  <mat-icon>delete_forever</mat-icon>
-                </button>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    } @else {
-      <p>No XLSX reports are available. Try generating one!</p>
-    }
-
-  <!--Actions-->
-  <hr>
-  <app-report-generator #reportGenerator></app-report-generator>
-  </mat-card-content>
-</mat-card>
-
-<br>
-
-<!-- Report Sections -->
-<mat-card class="report-sections-card">
-  <mat-card-header>
-    <mat-card-title class="stock-report-title">Report Sections</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
-    <p class="page-description">
-      Here you can see the sections for the report. Each section contains a tree view of relevant items.
-    </p>
-    <hr class="section-divider" />
-  </mat-card-content>
-
-  <!--Stock Report Cards-->
-  <div class="flex-row">
-    @if (inventoryError()) {
-      <div class="flex-1 stock-report-error">
-        <mat-error>
-          There was a problem loading the Stock Report. The server encountered an error while fetching inventory data.
-        </mat-error>
-        <mat-error>
-          Please wait a bit and try again.
-        </mat-error>
-      </div>
-    } @else if (inventory() && inventory().length > 0) {
-    <div class="flex-1">
-      <!--Stocked/Out-->
-        <div class="stock-cards-container flex-row gap-8 flex-wrap">
-          <mat-card class="stock-card" data-cy="stocked-items-card">
-            <mat-card-header>
-              <mat-card-title>Stocked Items</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-stock-report-tree [stockNodes]="stockedItems()"></app-stock-report-tree>
-            </mat-card-content>
-          </mat-card>
-          <mat-card class="stock-card" data-cy="out-of-stock-items-card">
-            <mat-card-header>
-              <mat-card-title>Out of Stock Items</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-stock-report-tree [stockNodes]="outOfStockItems()"></app-stock-report-tree>
-            </mat-card-content>
-          </mat-card>
-        </div>
-
-      <!--Over/Under-->
-      <div class="stock-cards-container flex-row gap-8 flex-wrap">
-          <mat-card class="stock-card" data-cy="overstocked-items-card">
-            <mat-card-header>
-              <mat-card-title>Overstocked Items</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-stock-report-tree [stockNodes]="overStockedItems()"></app-stock-report-tree>
-            </mat-card-content>
-          </mat-card>
-          <mat-card class="stock-card" data-cy="understocked-items-card">
-            <mat-card-header>
-              <mat-card-title>Understocked Items</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-stock-report-tree [stockNodes]="underStockedItems()"></app-stock-report-tree>
-            </mat-card-content>
-          </mat-card>
-        </div>
-    </div>
   } @else {
-    <div class="flex-1 stock-report-error">
-      <mat-error>
-        There was a problem loading the Stock Report. Possibly the server is down or perhaps there are network
-        issues. Please try again later.
-      </mat-error>
+    <section class="stock-summary app-grid-auto" aria-label="Stock summary">
+      <div class="summary-item summary-stocked">
+        <span class="summary-value">{{ stockedItemCount() }}</span>
+        <span>items fully stocked</span>
+      </div>
+      <div class="summary-item summary-empty">
+        <span class="summary-value">{{ outOfStockItemCount() }}</span>
+        <span>items out of stock</span>
+      </div>
+      <div class="summary-item summary-needed">
+        <span class="summary-value">{{ unitsNeeded() }}</span>
+        <span>units needed to reach minimums</span>
+      </div>
+      <div class="summary-item summary-overflow">
+        <span class="summary-value">{{ overflowUnits() }}</span>
+        <span>units above maximums</span>
+      </div>
+    </section>
+  }
+
+  <mat-card class="reports-card app-page-stack" data-cy="reports-card">
+    <mat-card-header>
+      <mat-card-title>Report Management</mat-card-title>
+      <mat-card-subtitle>Generate on the left, download in the middle, and delete on the right.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <app-report-generator #reportGenerator></app-report-generator>
+
+      <div class="saved-reports-header app-split">
+        <h2>Saved Reports</h2>
+        <span>{{ reports()?.length ?? 0 }} files</span>
+      </div>
+
+      <div class="saved-report-columns app-grid-2">
+        <section class="saved-report-column" aria-labelledby="pdf-reports-heading">
+          <h3 id="pdf-reports-heading">PDF Reports <span>{{ pdfReports().length }}</span></h3>
+          @if (pdfReports().length > 0) {
+            <div class="reports-list app-scroll-region" data-cy="pdf-reports-list">
+              @for (report of pdfReports(); track report._id) {
+                  <div class="reports-container app-split" data-cy="pdf-report-item">
+                  <span class="report-name">{{ report.reportName }}</span>
+                    <div class="report-actions app-cluster">
+                    <button type="button" color="primary" mat-icon-button (click)="downloadSingleReport(report)"
+                      matTooltip="Download report" data-cy="download-pdf-button">
+                      <mat-icon>download</mat-icon>
+                    </button>
+                    @if (canManageStockReports) {
+                      <button type="button" color="warn" mat-icon-button (click)="deleteSingleReport(report)"
+                        matTooltip="Delete report" data-cy="delete-pdf-button">
+                        <mat-icon>delete_forever</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="empty-state">No saved PDF reports.</p>
+          }
+        </section>
+
+        <section class="saved-report-column" aria-labelledby="xlsx-reports-heading">
+          <h3 id="xlsx-reports-heading">XLSX Reports <span>{{ xlsxReports().length }}</span></h3>
+          @if (xlsxReports().length > 0) {
+            <div class="reports-list app-scroll-region" data-cy="xlsx-reports-list">
+              @for (report of xlsxReports(); track report._id) {
+                  <div class="reports-container app-split" data-cy="xlsx-report-item">
+                  <span class="report-name">{{ report.reportName }}</span>
+                    <div class="report-actions app-cluster">
+                    <button type="button" color="primary" mat-icon-button (click)="downloadSingleReport(report)"
+                      matTooltip="Download report" data-cy="download-xlsx-button">
+                      <mat-icon>download</mat-icon>
+                    </button>
+                    @if (canManageStockReports) {
+                      <button type="button" color="warn" mat-icon-button (click)="deleteSingleReport(report)"
+                        matTooltip="Delete report" data-cy="delete-xlsx-button">
+                        <mat-icon>delete_forever</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="empty-state">No saved XLSX reports.</p>
+          }
+        </section>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <section class="stock-sections app-page-stack" aria-labelledby="stock-sections-heading">
+    <div class="section-heading app-page-header">
+      <h2 id="stock-sections-heading">Current Stock Detail</h2>
+      <p class="app-text-muted">Expand an item category once to see its inventory entries and quantities.</p>
     </div>
+
+    @if (!inventoryError() && inventory() && inventory()!.length > 0) {
+      <div class="stock-cards-container">
+        <mat-card class="stock-card" data-cy="stocked-items-card">
+          <mat-card-header>
+            <mat-card-title>Fully Stocked</mat-card-title>
+            <mat-card-subtitle>{{ stockedItemCount() }} inventory entries</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <app-stock-report-tree [stockNodes]="stockedItems()"></app-stock-report-tree>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stock-card" data-cy="out-of-stock-items-card">
+          <mat-card-header>
+            <mat-card-title>Out of Stock</mat-card-title>
+            <mat-card-subtitle>{{ outOfStockItemCount() }} inventory entries</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <app-stock-report-tree [stockNodes]="outOfStockItems()"></app-stock-report-tree>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stock-card" data-cy="understocked-items-card">
+          <mat-card-header>
+            <mat-card-title>Needs Stock</mat-card-title>
+            <mat-card-subtitle>{{ underStockedItemCount() }} entries, {{ unitsNeeded() }} units needed</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <app-stock-report-tree [stockNodes]="underStockedItems()"></app-stock-report-tree>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stock-card" data-cy="overstocked-items-card">
+          <mat-card-header>
+            <mat-card-title>Overflow</mat-card-title>
+            <mat-card-subtitle>{{ overStockedItemCount() }} entries, {{ overflowUnits() }} units above maximum</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <app-stock-report-tree [stockNodes]="overStockedItems()"></app-stock-report-tree>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    } @else if (!inventoryError()) {
+      <p class="empty-state">No inventory is available for this report.</p>
     }
-  </div>
-</mat-card>
+  </section>
+</section>

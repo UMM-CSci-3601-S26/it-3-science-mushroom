@@ -1,67 +1,67 @@
-<div class="button-container-row" data-cy="stock-report-page">
+<div class="report-action-grid" data-cy="stock-report-page">
   <!--Generating Actions-->
-  <div class="button-container-column">
+  <section class="report-action-column generation-actions">
     <div class="actions-container">
       <h4 class="action-heading">Generation Actions</h4>
       <mat-icon>add_chart</mat-icon>
     </div>
     @if (canManageStockReports) {
-      <button type="button" mat-raised-button (click)="savePdfReport()" data-cy="generate-pdf">
+      <button type="button" color="accent" mat-raised-button (click)="savePdfReport()" data-cy="generate-pdf">
         Generate Report as PDF
       </button>
     }
     @if (canViewReports) {
-      <button type="button" mat-raised-button (click)="downloadNewPdfReport()" data-cy="generate-and-download-pdf">
+      <button type="button" color="accent" mat-raised-button (click)="downloadNewPdfReport()" data-cy="generate-and-download-pdf">
         Generate & Download Report as PDF
       </button>
     }
     @if (canManageStockReports) {
-      <button type="button" mat-raised-button (click)="saveXlsxReport()" data-cy="generate-xlsx">
+      <button type="button" color="accent" mat-raised-button (click)="saveXlsxReport()" data-cy="generate-xlsx">
         Generate Report as XLSX
       </button>
     }
     @if (canViewReports) {
-      <button type="button" mat-raised-button (click)="downloadNewXlsxReport()" data-cy="generate-and-download-xlsx">
+      <button type="button" color="accent" mat-raised-button (click)="downloadNewXlsxReport()" data-cy="generate-and-download-xlsx">
         Generate & Download Report as XLSX
       </button>
     }
-  </div>
+  </section>
 
   <!--Already Generated Saving Actions-->
-  <div class="button-container-column">
+  <section class="report-action-column download-actions">
     <div class="actions-container">
       <h4 class="action-heading">Downloading Actions</h4>
       <mat-icon>folder_zip</mat-icon>
     </div>
     @if (canViewReports) {
-      <button type="button" mat-raised-button (click)="downloadAllReports('All')" data-cy="download-all-reports">
+      <button type="button" color="primary" mat-raised-button (click)="downloadAllReports('All')" data-cy="download-all-reports">
         Download all Reports as ZIP
       </button>
-      <button type="button" mat-raised-button (click)="downloadAllReports('PDF')" data-cy="download-all-pdfs">
+      <button type="button" color="primary" mat-raised-button (click)="downloadAllReports('PDF')" data-cy="download-all-pdfs">
         Download all PDFs as ZIP
       </button>
-      <button type="button" mat-raised-button (click)="downloadAllReports('XLSX')" data-cy="download-all-xlsx">
+      <button type="button" color="primary" mat-raised-button (click)="downloadAllReports('XLSX')" data-cy="download-all-xlsx">
         Download all XLSXs as ZIP
       </button>
     }
-  </div>
+  </section>
 
   <!--Deleting Actions-->
-  <div class="button-container-column">
+  <section class="report-action-column deletion-actions">
     <div class="actions-container">
       <h4 class="action-heading">Deletion Actions</h4>
       <mat-icon>delete_sweep</mat-icon>
     </div>
     @if (canManageStockReports) {
-      <button type="button" mat-raised-button (click)="deleteAllReports('All')" data-cy="delete-all-reports">
+      <button type="button" color="warn" mat-raised-button (click)="deleteAllReports('All')" data-cy="delete-all-reports">
         Delete all Reports
       </button>
-      <button type="button" mat-raised-button (click)="deleteAllReports('PDF')" data-cy="delete-all-pdfs">
+      <button type="button" color="warn" mat-raised-button (click)="deleteAllReports('PDF')" data-cy="delete-all-pdfs">
         Delete all PDF Reports
       </button>
-      <button type="button" mat-raised-button (click)="deleteAllReports('XLSX')" data-cy="delete-all-xlsx">
+      <button type="button" color="warn" mat-raised-button (click)="deleteAllReports('XLSX')" data-cy="delete-all-xlsx">
         Delete all XLSX Reports
       </button>
     }
-  </div>
+  </section>
 </div>
