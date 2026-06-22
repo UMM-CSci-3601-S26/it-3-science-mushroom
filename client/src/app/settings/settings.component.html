@@ -51,7 +51,7 @@
               <mat-list-item>
                 <span matListItemTitle>{{ school.name }} ({{ school.abbreviation }})</span>
                 @if (canEditSchools) {
-                <button matListItemMeta mat-icon-button color="warn" (click)="removeSchool(i)"
+                <button type="button" matListItemMeta mat-icon-button color="warn" (click)="removeSchool(i)"
                   [attr.aria-label]="'Remove ' + school.name">
                   <mat-icon>delete</mat-icon>
                 </button>
@@ -232,10 +232,10 @@
 
             @if (canEditSupplyOrder) {
             <div class="save-button">
-              <button mat-raised-button color="primary" (click)="saveSupplyOrder()">
+              <button type="button" mat-raised-button color="primary" (click)="saveSupplyOrder()">
                 Save Drive Order
               </button>
-              <button mat-raised-button color="accent" (click)="saveAndGenerateChecklists()">
+              <button type="button" mat-raised-button color="accent" (click)="saveAndGenerateChecklists()">
                 <mat-icon>playlist_add_check</mat-icon>
                 Save &amp; Generate Checklists
               </button>
@@ -258,10 +258,10 @@
                     <span class="item-label">{{ term }}</span>
                     @if (canEditSupplyOrder) {
                     <span class="item-actions">
-                      <button mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
+                      <button type="button" mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
                         <mat-icon>arrow_forward</mat-icon>
                       </button>
-                      <button mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
+                      <button type="button" mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
                         <mat-icon>block</mat-icon>
                       </button>
                     </span>
@@ -287,10 +287,10 @@
                     <span class="item-label">{{ term }}</span>
                     @if (canEditSupplyOrder) {
                     <span class="item-actions">
-                      <button mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
+                      <button type="button" mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
                         <mat-icon>arrow_back</mat-icon>
                       </button>
-                      <button mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
+                      <button type="button" mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
                         <mat-icon>block</mat-icon>
                       </button>
                     </span>
@@ -316,10 +316,10 @@
                     <span class="item-label">{{ term }}</span>
                     @if (canEditSupplyOrder) {
                     <span class="item-actions">
-                      <button mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
+                      <button type="button" mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
                         <mat-icon>format_list_numbered</mat-icon>
                       </button>
-                      <button mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
+                      <button type="button" mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
                         <mat-icon>arrow_back</mat-icon>
                       </button>
                     </span>
@@ -473,22 +473,22 @@
             <hr>
 
               <div class="flex-row">
-                <button mat-raised-button color="warn" (click)="clearInventory()" data-cy="clear-inventory-button">
+                <button type="button" mat-raised-button color="warn" (click)="clearInventory()" data-cy="clear-inventory-button">
                   <mat-icon>delete_sweep</mat-icon>
                   Delete All Items
                 </button>
 
-                <button mat-raised-button color="warn" (click)="deleteMatchingInventory()" data-cy="delete-matching-inventory-button">
+                <button type="button" mat-raised-button color="warn" (click)="deleteMatchingInventory()" data-cy="delete-matching-inventory-button">
                   <mat-icon>delete_forever</mat-icon>
                   Delete Matching Items
                 </button>
 
-                <button mat-raised-button color="primary" (click)="resetAllQuantities()" data-cy="reset-all-quantities-button">
+                <button type="button" mat-raised-button color="primary" (click)="resetAllQuantities()" data-cy="reset-all-quantities-button">
                   <mat-icon>refresh</mat-icon>
                   Reset All Quantities
                 </button>
 
-                <button mat-raised-button color="primary" (click)="resetMatchingQuantities()" data-cy="reset-matching-quantities-button">
+                <button type="button" mat-raised-button color="primary" (click)="resetMatchingQuantities()" data-cy="reset-matching-quantities-button">
                   <mat-icon>refresh</mat-icon>
                   Reset Matching Quantities
                 </button>

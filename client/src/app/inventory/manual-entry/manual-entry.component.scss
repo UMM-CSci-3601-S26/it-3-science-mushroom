@@ -5,7 +5,7 @@
 .dialog-subheader {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--app-space-md);
   margin: 0 1rem 1rem;
 }
 
@@ -14,7 +14,7 @@
   flex: 1 1 200px;
   padding: 0.9rem 1rem;
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface-muted);
 
   .label {
@@ -44,16 +44,16 @@
 .content-grid {
   display: grid;
   grid-template-columns: minmax(300px, 1.2fr) minmax(250px, 1fr);
-  gap: 1rem;
+  gap: var(--app-space-md);
   align-items: start;
 }
 
 .form-section,
 .results-section {
   border: 1px solid var(--app-border);
-  border-radius: 14px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface);
-  padding: 1rem;
+  padding: var(--app-space-md);
 }
 
 .form-section h3,
@@ -65,9 +65,9 @@
 
 .barcode-panel {
   margin-bottom: 1rem;
-  padding: 1rem;
+  padding: var(--app-space-md);
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface-muted);
 
   h4 {
@@ -86,7 +86,7 @@
 .barcode-info-card {
   padding: 0.8rem;
   border: 1px solid var(--app-border);
-  border-radius: 10px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface);
 
   .info-label {
@@ -132,9 +132,9 @@
 }
 
 .empty-state {
-  padding: 1rem;
+  padding: var(--app-space-md);
   border: 1px dashed var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface-muted);
   text-align: center;
   color: var(--app-text-muted);
@@ -151,7 +151,7 @@
   width: 100%;
   justify-content: flex-start;
   text-align: left;
-  border-radius: 12px !important;
+  border-radius: var(--app-radius-lg) !important;
   height: auto !important;
   min-height: 0;
   white-space: normal !important;
@@ -210,9 +210,9 @@
 
 .selected-match {
   margin-top: 1rem;
-  padding: 1rem;
+  padding: var(--app-space-md);
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: color-mix(in srgb, var(--app-primary) 6%, var(--app-surface));
 
   h4 {
@@ -240,7 +240,7 @@
 
 .dialog-actions {
   padding-top: 1rem;
-  gap: 0.5rem;
+  gap: var(--app-space-sm);
 }
 
 @media (max-width: 900px) {

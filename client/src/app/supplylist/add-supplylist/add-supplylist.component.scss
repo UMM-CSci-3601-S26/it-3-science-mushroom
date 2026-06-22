@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 1.5rem;
-  padding: 1rem;
+  gap: var(--app-space-lg);
+  padding: var(--app-space-md);
 
   .form-col {
     flex: 1 1 0;
@@ -20,7 +20,7 @@
 .parse-strip {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--app-space-md);
   padding-bottom: 0;
 
   .parse-field {
@@ -51,8 +51,8 @@
 
   mat-card-actions {
     display: flex;
-    gap: 1rem;
-    padding: 1rem;
+    gap: var(--app-space-md);
+    padding: var(--app-space-md);
   }
 
   .form-grid {

@@ -27,8 +27,8 @@ mat-card {
 
 .request-review-card {
   border: 1px solid var(--app-divider-color);
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: var(--app-radius-lg);
+  padding: var(--app-space-md);
   background: color-mix(in srgb, var(--app-hover-color) 12%, transparent);
 }
 
@@ -50,7 +50,7 @@ mat-card {
 }
 
 .request-status {
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   padding: 4px 10px;
   background: color-mix(in srgb, var(--app-warn-color) 16%, transparent);
   color: var(--app-text-color);
@@ -70,7 +70,7 @@ mat-card {
 .request-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--app-space-sm);
   align-items: center;
   justify-content: flex-end;
   margin-top: 16px;
@@ -84,7 +84,7 @@ mat-card {
 .tab-count {
   align-items: center;
   background: var(--app-warn-color);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   display: inline-flex;
   font-size: 0.75rem;
   height: 20px;

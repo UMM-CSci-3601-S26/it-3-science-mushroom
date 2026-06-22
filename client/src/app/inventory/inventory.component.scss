@@ -14,7 +14,7 @@
 
 /* Card */
 .search-grid {
-  border-radius: 14px;
+  border-radius: var(--app-radius-lg);
   margin-bottom: 1rem;
 }
 
@@ -41,7 +41,7 @@
 .filter-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: var(--app-space-md);
   margin-top: 1rem;
 
   mat-form-field {
@@ -73,7 +73,7 @@
 // Toggles
 .display-toggles {
   display: flex;
-  gap: 1rem;
+  gap: var(--app-space-md);
   align-items: center;
 }
 
@@ -95,9 +95,9 @@
 /* Scanner wrapper */
 .scanner-wrapper {
   margin-top: 1rem;
-  padding: 1rem;
+  padding: var(--app-space-md);
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface-muted);
 
   p {
@@ -110,8 +110,8 @@
 /* REMOVE PANEL */
 .remove-panel {
   margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 14px;
+  padding: var(--app-space-md);
+  border-radius: var(--app-radius-lg);
   background: color-mix(in srgb, var(--app-warning) 14%, var(--app-surface));
   border: 1px solid color-mix(in srgb, var(--app-warning) 48%, var(--app-border));
 
@@ -125,10 +125,10 @@
 .remove-entry-card {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 12px;
-  padding: 1rem;
+  border-radius: var(--app-radius-lg);
+  padding: var(--app-space-md);
   margin-bottom: 0.9rem;
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--app-shadow-color) 25%, transparent);
+  box-shadow: var(--app-shadow-sm);
 
   &:last-child {
     margin-bottom: 0;
@@ -172,7 +172,7 @@
 /* TABLE */
 .demo-table {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   overflow: hidden;
   margin-top: 1rem;
 }
@@ -192,7 +192,7 @@
 /* Paginator */
 mat-paginator {
   margin-top: 0.75rem;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
 }
 
 /* MOBILE */

@@ -6,22 +6,22 @@
       <mat-icon>add_chart</mat-icon>
     </div>
     @if (canManageStockReports) {
-      <button mat-raised-button (click)="savePdfReport()" data-cy="generate-pdf">
+      <button type="button" mat-raised-button (click)="savePdfReport()" data-cy="generate-pdf">
         Generate Report as PDF
       </button>
     }
     @if (canViewReports) {
-      <button mat-raised-button (click)="downloadNewPdfReport()" data-cy="generate-and-download-pdf">
+      <button type="button" mat-raised-button (click)="downloadNewPdfReport()" data-cy="generate-and-download-pdf">
         Generate & Download Report as PDF
       </button>
     }
     @if (canManageStockReports) {
-      <button mat-raised-button (click)="saveXlsxReport()" data-cy="generate-xlsx">
+      <button type="button" mat-raised-button (click)="saveXlsxReport()" data-cy="generate-xlsx">
         Generate Report as XLSX
       </button>
     }
     @if (canViewReports) {
-      <button mat-raised-button (click)="downloadNewXlsxReport()" data-cy="generate-and-download-xlsx">
+      <button type="button" mat-raised-button (click)="downloadNewXlsxReport()" data-cy="generate-and-download-xlsx">
         Generate & Download Report as XLSX
       </button>
     }
@@ -34,13 +34,13 @@
       <mat-icon>folder_zip</mat-icon>
     </div>
     @if (canViewReports) {
-      <button mat-raised-button (click)="downloadAllReports('All')" data-cy="download-all-reports">
+      <button type="button" mat-raised-button (click)="downloadAllReports('All')" data-cy="download-all-reports">
         Download all Reports as ZIP
       </button>
-      <button mat-raised-button (click)="downloadAllReports('PDF')" data-cy="download-all-pdfs">
+      <button type="button" mat-raised-button (click)="downloadAllReports('PDF')" data-cy="download-all-pdfs">
         Download all PDFs as ZIP
       </button>
-      <button mat-raised-button (click)="downloadAllReports('XLSX')" data-cy="download-all-xlsx">
+      <button type="button" mat-raised-button (click)="downloadAllReports('XLSX')" data-cy="download-all-xlsx">
         Download all XLSXs as ZIP
       </button>
     }
@@ -53,13 +53,13 @@
       <mat-icon>delete_sweep</mat-icon>
     </div>
     @if (canManageStockReports) {
-      <button mat-raised-button (click)="deleteAllReports('All')" data-cy="delete-all-reports">
+      <button type="button" mat-raised-button (click)="deleteAllReports('All')" data-cy="delete-all-reports">
         Delete all Reports
       </button>
-      <button mat-raised-button (click)="deleteAllReports('PDF')" data-cy="delete-all-pdfs">
+      <button type="button" mat-raised-button (click)="deleteAllReports('PDF')" data-cy="delete-all-pdfs">
         Delete all PDF Reports
       </button>
-      <button mat-raised-button (click)="deleteAllReports('XLSX')" data-cy="delete-all-xlsx">
+      <button type="button" mat-raised-button (click)="deleteAllReports('XLSX')" data-cy="delete-all-xlsx">
         Delete all XLSX Reports
       </button>
     }

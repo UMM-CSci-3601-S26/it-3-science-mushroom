@@ -3,7 +3,8 @@
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 64px);
-  padding: 24px;
+  padding: var(--app-space-lg);
+  background: var(--app-page-bg);
 }
 
 .auth-card {
@@ -22,7 +23,7 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--app-space-xs);
   padding-top: 12px;
 }
 
@@ -54,6 +55,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: var(--app-space-xs);
   padding-bottom: 8px;
 }

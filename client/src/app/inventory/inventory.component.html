@@ -3,7 +3,7 @@
     <mat-card class="search-grid">
       <mat-card-header class="page-card-header">
         <mat-card-title class="inventory-title">Inventory</mat-card-title>
-        <button
+        <button type="button"
           mat-icon-button
           matTooltip="Inventory settings"
           aria-label="Inventory settings"
@@ -130,7 +130,7 @@
         </div>
         <div class="filter-extra">
           <div class="filter-actions">
-            <button mat-stroked-button class="count-display" disabled>
+            <button type="button" mat-stroked-button class="count-display" disabled>
               <strong>Items: {{ displayedInventory().length }}</strong>
             </button>
             <!-- Clear Filters Button -->
@@ -179,7 +179,7 @@
                 <mat-icon>print</mat-icon>
                   Print Barcodes
               </button>
-              <button
+              <button type="button"
                 mat-icon-button
                 matTooltip="Barcode print settings"
                 aria-label="Barcode print settings"

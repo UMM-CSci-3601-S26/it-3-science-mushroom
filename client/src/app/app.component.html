@@ -82,7 +82,7 @@
         <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
       @if (authService.loggedIn) {
-        <button
+        <button type="button"
           mat-button
           [matMenuTriggerFor]="accountMenu"
           [matBadge]="pendingDeleteRequestCount"
@@ -92,16 +92,16 @@
           class="account-button"
           aria-label="Account menu">
           <mat-icon>account_circle</mat-icon>
-          {{ authService.displayName }}
+          <span class="account-button-label">{{ authService.displayName }}</span>
           <mat-icon>expand_more</mat-icon>
         </button>
         <mat-menu #accountMenu="matMenu">
-          <button mat-menu-item [matMenuTriggerFor]="accountDetailsMenu">
+          <button type="button" mat-menu-item [matMenuTriggerFor]="accountDetailsMenu">
             <mat-icon>badge</mat-icon>
             <span>View Account</span>
           </button>
           @if (canAccessPath('/users')) {
-            <button mat-menu-item [matMenuTriggerFor]="adminMenu">
+            <button type="button" mat-menu-item [matMenuTriggerFor]="adminMenu">
               <mat-icon
                 aria-hidden="false"
                 [matBadge]="pendingDeleteRequestCount"
@@ -114,12 +114,12 @@
             </button>
           }
           @if (isAdmin) {
-            <button mat-menu-item (click)="copyVolunteerSignUpLink()">
+            <button type="button" mat-menu-item (click)="copyVolunteerSignUpLink()">
               <mat-icon>content_copy</mat-icon>
               <span>Copy Volunteer Sign Up Link</span>
             </button>
           }
-          <button mat-menu-item (click)="logout()">
+          <button type="button" mat-menu-item (click)="logout()">
             <mat-icon>logout</mat-icon>
             <span>Logout</span>
           </button>
@@ -172,9 +172,9 @@
           </a>
         </mat-menu>
       } @else {
-        <a mat-button routerLink="/login">
+        <a mat-button routerLink="/login" class="login-button">
           <mat-icon>login</mat-icon>
-          Login
+          <span class="account-button-label">Login</span>
         </a>
       }
     </mat-toolbar>

@@ -1,5 +1,5 @@
 .settings-container {
-  padding: 16px;
+  padding: var(--app-space-md);
   max-width: 1180px;
   margin: 0 auto;
 }
@@ -48,7 +48,7 @@
 
 .add-school-row {
   display: flex;
-  gap: 16px;
+  gap: var(--app-space-md);
   align-items: flex-start;
   flex-wrap: wrap;
   margin-bottom: 8px;
@@ -66,7 +66,7 @@
 /* TABLE */
 .demo-table {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   overflow: hidden;
   margin-top: 1rem;
 }
@@ -86,7 +86,7 @@
 /* Paginator */
 mat-paginator {
   margin-top: 0.75rem;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
 }
 
 .flex-col {
@@ -116,7 +116,7 @@ mat-paginator {
 .inventory-target-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--app-space-md);
   margin-bottom: 8px;
 
   mat-form-field {
@@ -128,7 +128,7 @@ mat-paginator {
 .filter-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: var(--app-space-md);
   margin-top: 1rem;
 
   mat-form-field {
@@ -140,7 +140,7 @@ mat-paginator {
 
 .drive-order-columns {
   display: flex;
-  gap: 16px;
+  gap: var(--app-space-md);
   flex-wrap: wrap;
   align-items: flex-start;
   margin-bottom: 16px;
@@ -149,8 +149,8 @@ mat-paginator {
 .order-section {
   flex: 1;
   min-width: 220px;
-  border: 1px solid;
-  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
   padding: 12px;
 }
 
@@ -195,14 +195,14 @@ mat-paginator {
   align-items: center;
   gap: 6px;
   padding: 6px 4px;
-  border-radius: 4px;
-  border: 1px solid;
+  border-radius: var(--app-radius-sm);
+  border: 1px solid var(--app-border);
   margin-bottom: 6px;
   font-size: 13px;
   cursor: default;
 
   &.cdk-drag-preview {
-    box-shadow: 0 4px 12px;
+    box-shadow: var(--app-shadow-md);
   }
 
   &.cdk-drag-placeholder {

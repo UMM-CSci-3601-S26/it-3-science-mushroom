@@ -71,9 +71,11 @@
               <div class="user-meta">@{{ user.username }}</div>
               <div class="user-meta">{{ user.email || 'No email on file' }}</div>
               <div class="user-badges">
-                <span class="badge">{{ formatSystemRole(user.systemRole) }}</span>
-                <span class="badge" *ngIf="user.jobRole">{{ formatRoleName(user.jobRole) }}</span>
-                <span class="badge" *ngIf="isOnlyAdmin(user)">Last admin</span>
+                <span class="badge app-badge app-badge-primary">{{ formatSystemRole(user.systemRole) }}</span>
+                <span class="badge app-badge app-badge-primary" *ngIf="user.jobRole">
+                  {{ formatRoleName(user.jobRole) }}
+                </span>
+                <span class="badge app-badge app-badge-warn" *ngIf="isOnlyAdmin(user)">Last admin</span>
               </div>
             </div>
             <div class="user-actions">
@@ -158,7 +160,9 @@
             <div class="permission-copy">
               <span class="permission-label">{{ permission.label }}</span>
             </div>
-            <span *ngIf="permissionSourceLabel(permission.permission)" class="permission-chip">
+            <span
+              *ngIf="permissionSourceLabel(permission.permission)"
+              class="permission-chip app-badge app-badge-tertiary">
               {{ permissionSourceLabel(permission.permission) }}
             </span>
           </mat-label>

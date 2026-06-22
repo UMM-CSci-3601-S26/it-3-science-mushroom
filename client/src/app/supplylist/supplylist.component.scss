@@ -1,7 +1,7 @@
 .list-style {
   border: 2px solid;
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--app-radius-lg);
   padding: 0.75rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -34,7 +34,7 @@ th.mat-sort-header-sorted {
 
 .clear-button {
   border: 1px solid var(--app-divider-color);
-  border-radius: 4px;
+  border-radius: var(--app-radius-sm);
   padding: 0 16px;
   min-height: 36px;
   display: flex;
@@ -43,12 +43,12 @@ th.mat-sort-header-sorted {
 .filter-extra {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--app-space-sm);
 }
 
 .count-display {
   border: 1px solid var(--app-divider-color);
-  border-radius: 4px;
+  border-radius: var(--app-radius-sm);
   padding: 0 16px;
   min-height: 36px;
   display: flex;
@@ -73,7 +73,7 @@ th.mat-sort-header-sorted {
 .tree-container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--app-space-md);
 }
 
 .school-group {
@@ -110,8 +110,8 @@ th.mat-sort-header-sorted {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 0.75rem;
   border: 1px solid var(--app-divider-color);
-  border-radius: 4px;
-  padding: 1rem;
+  border-radius: var(--app-radius-sm);
+  padding: var(--app-space-md);
 }
 
 .item-list {
@@ -120,15 +120,15 @@ th.mat-sort-header-sorted {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--app-space-xs);
 }
 
 .item-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--app-space-sm);
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--app-radius-sm);
   border: 1px solid var(--app-border);
   min-height: 40px;
 
@@ -144,7 +144,7 @@ th.mat-sort-header-sorted {
 
 .item-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--app-space-xs);
   flex-shrink: 0;
 }
 
@@ -152,7 +152,7 @@ th.mat-sort-header-sorted {
   flex: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--app-space-sm);
 
   .edit-field {
     width: 130px;

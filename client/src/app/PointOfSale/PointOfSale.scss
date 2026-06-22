@@ -19,17 +19,17 @@
 .pos-card {
   overflow: hidden;
   border: 1px solid var(--app-border);
-  border-radius: 30px;
+  border-radius: var(--app-radius-lg);
   margin-bottom: 1rem;
   background: var(--app-surface);
-  box-shadow: 0 24px 60px color-mix(in srgb, var(--app-shadow-color) 45%, transparent);
+  box-shadow: var(--app-shadow-lg);
 }
 
 .pos-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--app-space-md);
   padding: 1.75rem 1.75rem 1rem;
 }
 
@@ -51,7 +51,7 @@
   flex: 0 0 auto;
   padding: 0.5rem 0.9rem;
   border: 1px solid color-mix(in srgb, var(--app-primary) 46%, var(--app-border));
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: color-mix(in srgb, var(--app-primary) 14%, var(--app-surface));
   color: var(--app-primary);
   font-size: 0.85rem;
@@ -75,7 +75,7 @@ mat-card-content {
   align-items: center;
   gap: 1.25rem;
   border: 1px solid var(--app-border);
-  border-radius: 22px;
+  border-radius: var(--app-radius-lg);
   padding: 1.15rem 1.25rem;
   background: var(--app-surface);
   box-sizing: border-box;
@@ -110,7 +110,7 @@ mat-card-content {
 
 .clear-filters-button {
   height: 3.5rem;
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   font-weight: 800;
 }
 
@@ -129,7 +129,7 @@ mat-card-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--app-space-md);
   padding: 0.2rem 0.15rem;
   color: var(--app-text-muted);
   font-size: 0.88rem;
@@ -145,7 +145,7 @@ mat-card-content {
   min-height: 9rem;
   place-items: center;
   border: 1px dashed var(--app-border);
-  border-radius: 18px;
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface-muted);
   color: var(--app-text-muted);
   font-weight: 700;
