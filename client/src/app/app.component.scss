@@ -1,36 +1,80 @@
-.sidenav-container {
-  height: 100%;
-}
-
-mat-sidenav-content {
-  position: relative;
-  z-index: 0;
+.app-shell {
+  min-height: 100%;
   background: var(--app-page-bg);
   color: var(--app-text);
 }
 
-.sidenav {
-  width: 256px;
-}
-
-.sidenav mat-toolbar {
-  background: inherit;
-}
-
-mat-toolbar.mat-primary {
+.app-toolbar {
   position: sticky;
   top: 0;
   z-index: 1000;
+  gap: var(--app-space-sm);
   background: var(--mat-toolbar-container-background-color, inherit);
   box-shadow: var(--app-shadow-sm);
 }
 
 .app-title {
+  display: inline-flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 1px;
+  justify-content: center;
   min-width: 0;
-  overflow: hidden;
-  padding-left: 16px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-title-mark,
+.app-title-subtitle {
+  display: block;
+  line-height: 1;
+}
+
+.app-title-mark {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.app-title-subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.88;
+}
+
+.desktop-navigation {
+  align-items: center;
+  display: flex;
+  gap: var(--app-space-sm);
+  margin-left: var(--app-space-md);
+}
+
+.desktop-navigation a,
+.desktop-navigation button {
+  color: inherit;
+}
+
+.desktop-navigation > * {
+  position: relative;
+}
+
+.desktop-navigation > *:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: calc(var(--app-space-sm) * -0.5);
+  top: 50%;
+  width: 1px;
+  height: 1.15rem;
+  background: color-mix(in srgb, currentColor 28%, transparent);
+  transform: translateY(-50%);
+}
+
+.header-link-active {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.app-toolbar .mobile-nav-button {
+  display: none;
 }
 
 .toolbar-spacer {
@@ -38,16 +82,13 @@ mat-toolbar.mat-primary {
 }
 
 .account-button {
-  display: inline-flex;
   align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
   gap: var(--app-space-xs);
 }
 
-.theme-toggle-button {
-  flex: 0 0 auto;
-  margin-right: 4px;
-}
-
+.theme-toggle-button,
 .login-button {
   flex: 0 0 auto;
 }
@@ -60,10 +101,9 @@ mat-toolbar.mat-primary {
 }
 
 .account-menu-title {
-  opacity: 0.72;
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0;
+  opacity: 0.72;
   padding: 8px 16px 6px;
   text-transform: uppercase;
 }
@@ -100,27 +140,17 @@ mat-toolbar.mat-primary {
 
 .main-content {
   margin: auto;
-  // vh stands for viewport height, so this makes the main content area fill the height of the viewport minus the height of the toolbar (64px).
+  max-width: 1280px;
   min-height: calc(100vh - 64px);
   padding: var(--app-space-lg);
   position: relative;
-  z-index: 0;
   background: var(--app-page-bg);
-  @media (max-width: 599px) {
-    padding: var(--app-space-md);
-  }
-
-  & {
-    // adds padding to the main content container on larger screens (above 1280px wide)
-    max-width: 1280px;
-  }
 }
 
 .main-content:has(app-point-of-sale) {
-  // POS gets a subtle themed backdrop, while POS panels themselves stay solid
-  // surfaces for readability.
+  // POS keeps the themed backdrop, while its search and content panels remain
+  // opaque surfaces so text does not compete with the decorative color.
   max-width: none;
-  min-height: calc(100vh - 64px);
   padding: 0;
   background:
     radial-gradient(circle at 10% 5%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 28rem),
@@ -128,16 +158,40 @@ mat-toolbar.mat-primary {
     linear-gradient(180deg, var(--app-bg) 0%, var(--app-surface-muted) 52%, var(--app-bg) 100%);
 }
 
-@media (max-width: 480px) {
-  mat-toolbar.mat-primary {
+@media (max-width: 960px) {
+  .desktop-navigation {
+    display: none;
+  }
+
+  .app-toolbar .mobile-nav-button {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 599px) {
+  .app-toolbar {
+    gap: var(--app-space-xs);
     padding: 0 var(--app-space-sm);
   }
 
   .app-title {
-    padding-left: var(--app-space-xs);
-    font-size: 1rem;
+    gap: 0;
   }
 
+  .app-title-mark {
+    font-size: 1.12rem;
+  }
+
+  .app-title-subtitle {
+    font-size: 0.62rem;
+  }
+
+  .main-content {
+    padding: var(--app-space-md);
+  }
+}
+
+@media (max-width: 480px) {
   .account-button,
   .login-button {
     min-width: 40px;
@@ -147,9 +201,5 @@ mat-toolbar.mat-primary {
   .account-button-label,
   .account-button mat-icon:last-child {
     display: none;
-  }
-
-  .theme-toggle-button {
-    margin-right: 0;
   }
 }
