@@ -6,11 +6,13 @@ import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { FamilyService } from '../family/family.service';
 import { UsersComponent } from './users.component';
 import { Family } from '../family/family';
+import { DialogService } from '../shared/dialog/dialog.service';
 
 describe('UsersComponent', () => {
   let component: UsersComponent;
   let fixture: ComponentFixture<UsersComponent>;
   let familyServiceSpy: jasmine.SpyObj<FamilyService>;
+  let dialogServiceSpy: jasmine.SpyObj<DialogService>;
   let queryParamMap: BehaviorSubject<ParamMap>;
 
   beforeEach(waitForAsync(() => {
@@ -23,6 +25,10 @@ describe('UsersComponent', () => {
     familyServiceSpy.getDeleteRequests.and.returnValue(of([]));
     familyServiceSpy.deleteFamily.and.returnValue(of(void 0));
     familyServiceSpy.restoreDeleteRequest.and.returnValue(of({}));
+    dialogServiceSpy = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     queryParamMap = new BehaviorSubject(convertToParamMap({}));
 
     TestBed.configureTestingModule({
@@ -36,7 +42,8 @@ describe('UsersComponent', () => {
             queryParamMap
           }
         },
-        { provide: FamilyService, useValue: familyServiceSpy }
+        { provide: FamilyService, useValue: familyServiceSpy },
+        { provide: DialogService, useValue: dialogServiceSpy }
       ]
     }).compileComponents();
   }));
@@ -136,7 +143,9 @@ describe('UsersComponent', () => {
   });
 
   it('approveDelete does nothing when confirmation canceled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
     const family = {
       _id: 'f1',
       guardianName: 'Cancel',
@@ -153,7 +162,6 @@ describe('UsersComponent', () => {
   });
 
   it('approveDelete deletes and removes request when confirmed', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     const family = {
       _id: 'f1',
       ownerUserId: 'owner-1',
@@ -168,12 +176,17 @@ describe('UsersComponent', () => {
 
     component.approveDelete(family);
 
+    expect(dialogServiceSpy.openDialog).toHaveBeenCalledWith({
+      title: 'Confirm Family Deletion',
+      message: 'Delete Delete Me\'s family profile permanently? This will also delete their linked guardian login account.',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Delete'
+    }, '520px', '240px');
     expect(familyServiceSpy.deleteFamily).toHaveBeenCalledWith('f1');
     expect(component.pendingDeleteRequests.length).toBe(0);
   });
 
   it('approveDelete keeps request when delete API errors', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     familyServiceSpy.deleteFamily.and.returnValue(throwError(() => new Error('delete failed')));
     const family = {
       _id: 'f1',

@@ -6,6 +6,7 @@ import { of, throwError } from 'rxjs';
 import { Family, FamilyChecklist } from '../family/family';
 import { FamilyService } from '../family/family.service';
 import { InventoryService } from '../inventory/inventory.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
 
 describe('PointOfSaleSessionDialogComponent', () => {
@@ -14,6 +15,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
   let familyService: jasmine.SpyObj<FamilyService>;
   let inventoryService: jasmine.SpyObj<InventoryService>;
   let dialogRef: jasmine.SpyObj<MatDialogRef<PointOfSaleSessionDialogComponent>>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   const checklist: FamilyChecklist = {
     templateId: 'family-1-session',
@@ -86,11 +88,15 @@ describe('PointOfSaleSessionDialogComponent', () => {
     ]);
     inventoryService = jasmine.createSpyObj<InventoryService>('InventoryService', ['lookUpByBarcode']);
     dialogRef = jasmine.createSpyObj<MatDialogRef<PointOfSaleSessionDialogComponent>>('MatDialogRef', ['close']);
+    dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
 
     familyService.startFamilyHelpSession.and.returnValue(of(family));
     familyService.clearFamilyHelpSession.and.returnValue(of(family));
     familyService.updateFamilyChecklist.and.returnValue(of(family));
     familyService.saveFamilyHelpSessionAll.and.returnValue(of(family));
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     checklist.sections[0].items[0].selected = true;
     checklist.sections[0].items[0].notPickedUpReason = undefined;
     checklist.sections[0].items[0].substituteBarcode = undefined;
@@ -121,6 +127,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
       providers: [
         { provide: FamilyService, useValue: familyService },
         { provide: InventoryService, useValue: inventoryService },
+        { provide: DialogService, useValue: dialogService },
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { family } }
       ]
@@ -247,16 +254,22 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('clears a session when the user confirms the x action', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-
     component.clearSessionAndClose();
 
+    expect(dialogService.openDialog).toHaveBeenCalledWith({
+      title: 'Clear Session',
+      message: 'Clear this help session and discard the current checklist snapshot?',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Clear Session'
+    }, '520px', '230px');
     expect(familyService.clearFamilyHelpSession).toHaveBeenCalledWith('family-1');
     expect(dialogRef.close).toHaveBeenCalledWith({ cleared: true });
   });
 
   it('does not clear a session when the user cancels the x action', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
 
     component.clearSessionAndClose();
 
@@ -273,7 +286,6 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('shows a useful error when clearing a session fails', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     familyService.clearFamilyHelpSession.and.returnValue(throwError(() => new Error('clear failed')));
 
     component.clearSessionAndClose();
@@ -283,11 +295,16 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('saves a completed session when the user confirms', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
 
+    expect(dialogService.openDialog).toHaveBeenCalledWith({
+      title: 'Complete Family Session',
+      message: 'Are you sure you are done helping this family? This will remove selected item quantities from inventory.',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Complete'
+    }, '560px', '230px');
     expect(familyService.saveFamilyHelpSessionAll).toHaveBeenCalledWith('family-1', jasmine.any(Object));
     expect(dialogRef.close).toHaveBeenCalledWith({ completed: true });
   });
@@ -321,7 +338,9 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('does not save a completed session when the user cancels', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
@@ -340,7 +359,6 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('shows a useful error when saving a completed session fails', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     familyService.saveFamilyHelpSessionAll.and.returnValue(throwError(() => new Error('save failed')));
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
