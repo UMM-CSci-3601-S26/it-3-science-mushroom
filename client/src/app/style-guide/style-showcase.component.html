@@ -1,0 +1,206 @@
+<section class="style-showcase app-page-shell app-page-stack">
+  <header class="app-page-header showcase-header">
+    <div>
+      <p class="showcase-kicker">Developer Reference</p>
+      <h1 class="app-page-title">Frontend Style Template</h1>
+      <p class="app-page-subtitle">
+        Live examples of the Angular Material components, global classes, and semantic variables used by the app.
+      </p>
+    </div>
+    <span class="app-badge app-badge-primary">Theme-aware</span>
+  </header>
+
+  <nav class="showcase-nav app-cluster" aria-label="Style template sections">
+    <a href="#colors">Colors</a>
+    <a href="#spacing">Spacing</a>
+    <a href="#surfaces">Surfaces</a>
+    <a href="#controls">Controls</a>
+    <a href="#statuses">Statuses</a>
+    <a href="#template">Page Template</a>
+  </nav>
+
+  <section id="colors" class="showcase-section app-stack-md" aria-labelledby="colors-heading">
+    <div class="app-split">
+      <div>
+        <h2 id="colors-heading" class="app-section-title">Semantic Color Tokens</h2>
+        <p class="app-text-muted">Switch the app theme to see every sample update automatically.</p>
+      </div>
+      <code>var(--app-primary)</code>
+    </div>
+
+    <div class="token-grid">
+      @for (sample of colorTokens; track sample.token) {
+        <article class="token-sample">
+          <div
+            class="token-swatch"
+            [style.background]="'var(' + sample.token + ')'"
+            [attr.aria-label]="sample.label + ' color sample'">
+          </div>
+          <div class="token-copy">
+            <strong>{{ sample.label }}</strong>
+            <code>{{ sample.token }}</code>
+            <span>{{ sample.use }}</span>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section id="spacing" class="showcase-section app-stack-md" aria-labelledby="spacing-heading">
+    <div>
+      <h2 id="spacing-heading" class="app-section-title">Spacing, Radius, and Shadow</h2>
+      <p class="app-text-muted">Use the shared scale instead of introducing one-off gaps and padding.</p>
+    </div>
+
+    <div class="measurement-layout app-grid-2">
+      <div class="app-panel app-stack-sm">
+        <h3>Spacing Scale</h3>
+        @for (space of spacingTokens; track space.token) {
+          <div class="spacing-row">
+            <code>{{ space.token }}</code>
+            <div class="spacing-track">
+              <span [style.width]="'var(' + space.token + ')'"></span>
+            </div>
+            <span>{{ space.size }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="app-panel app-stack-md">
+        <h3>Shape and Elevation</h3>
+        <div class="shape-grid">
+          <div class="shape-sample radius-sm">Small</div>
+          <div class="shape-sample radius-md">Medium</div>
+          <div class="shape-sample radius-lg">Panel</div>
+          <div class="shape-sample radius-pill">Pill</div>
+        </div>
+        <div class="shadow-grid">
+          <div class="shadow-sample shadow-sm">Small shadow</div>
+          <div class="shadow-sample shadow-md">Medium shadow</div>
+          <div class="shadow-sample shadow-lg">Large shadow</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="surfaces" class="showcase-section app-stack-md" aria-labelledby="surfaces-heading">
+    <div>
+      <h2 id="surfaces-heading" class="app-section-title">Surfaces and Layout</h2>
+      <p class="app-text-muted">Choose the lowest-emphasis surface that still makes the workflow clear.</p>
+    </div>
+
+    <div class="app-grid-3">
+      <article class="app-panel app-stack-sm">
+        <strong>app-panel</strong>
+        <p>Forms, filters, and secondary tools.</p>
+      </article>
+      <article class="app-panel-muted app-stack-sm">
+        <strong>app-panel-muted</strong>
+        <p>Supporting information or a softer grouped area.</p>
+      </article>
+      <article class="app-card app-stack-sm">
+        <strong>app-card</strong>
+        <p>A genuinely framed tool or repeated item.</p>
+      </article>
+    </div>
+
+    <div class="layout-demo app-panel">
+      <div class="layout-demo-header app-split">
+        <strong>app-split</strong>
+        <span class="app-badge app-badge-accent">Actions</span>
+      </div>
+      <div class="app-grid-auto">
+        <div class="layout-cell">Responsive cell</div>
+        <div class="layout-cell">Responsive cell</div>
+        <div class="layout-cell">Responsive cell</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="controls" class="showcase-section app-stack-md" aria-labelledby="controls-heading">
+    <div>
+      <h2 id="controls-heading" class="app-section-title">Material Controls</h2>
+      <p class="app-text-muted">Use Material for behavior, accessibility, state, and theme integration.</p>
+    </div>
+
+    <div class="control-layout app-grid-2">
+      <div class="app-panel app-stack-md">
+        <h3>Buttons and Feedback</h3>
+        <div class="app-action-row">
+          <button type="button" mat-raised-button color="primary">Primary</button>
+          <button type="button" mat-raised-button color="accent">Accent</button>
+          <button type="button" mat-stroked-button>Secondary</button>
+          <button type="button" mat-raised-button class="app-success-button">Success</button>
+          <button type="button" mat-raised-button color="warn">Delete</button>
+          <button type="button" mat-icon-button matTooltip="Settings example" aria-label="Settings example">
+            <mat-icon>settings</mat-icon>
+          </button>
+        </div>
+        <div class="app-action-row">
+          <button type="button" mat-stroked-button (click)="showFeedback()">Show Snackbar</button>
+          <button type="button" mat-stroked-button (click)="showConfirmation()">Show Dialog</button>
+        </div>
+      </div>
+
+      <div class="app-panel app-form-stack">
+        <h3>Form Composition</h3>
+        <div class="app-field-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Guardian name</mat-label>
+            <input matInput value="Taylor Morgan">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>School</mat-label>
+            <mat-select [(ngModel)]="school">
+              <mat-option value="Morris Area Elementary School">Morris Area Elementary School</mat-option>
+              <mat-option value="Morris Area High School">Morris Area High School</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="app-field-action-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Search inventory</mat-label>
+            <input matInput placeholder="Item description">
+          </mat-form-field>
+          <button type="button" mat-raised-button color="primary">Search</button>
+        </div>
+        <div class="app-cluster">
+          <mat-slide-toggle [(ngModel)]="notifications">Notifications</mat-slide-toggle>
+          <mat-checkbox [(ngModel)]="includeInactive">Include inactive</mat-checkbox>
+        </div>
+        <mat-button-toggle-group [(ngModel)]="selectedView" aria-label="Display detail">
+          <mat-button-toggle value="simple">Simple</mat-button-toggle>
+          <mat-button-toggle value="detailed">Detailed</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </div>
+  </section>
+
+  <section id="statuses" class="showcase-section app-stack-md" aria-labelledby="statuses-heading">
+    <div>
+      <h2 id="statuses-heading" class="app-section-title">Status and Empty States</h2>
+      <p class="app-text-muted">Color supports the label; it never replaces the label.</p>
+    </div>
+    <div class="app-cluster">
+      <span class="app-badge app-badge-primary">Current</span>
+      <span class="app-badge app-badge-accent">Secondary</span>
+      <span class="app-badge app-badge-success">Completed</span>
+      <span class="app-badge app-badge-warn">Needs attention</span>
+      <span class="app-badge app-badge-tertiary">Third category</span>
+    </div>
+    <div class="app-empty-state">
+      <mat-icon>inbox</mat-icon>
+      <p class="app-empty-state-title">No matching records</p>
+      <p>Explain what happened and give the user a clear next action.</p>
+      <button type="button" mat-stroked-button>Clear Filters</button>
+    </div>
+  </section>
+
+  <section id="template" class="showcase-section app-stack-md" aria-labelledby="template-heading">
+    <div>
+      <h2 id="template-heading" class="app-section-title">Recommended Page Template</h2>
+      <p class="app-text-muted">Start here, then add only the feature-specific structure you need.</p>
+    </div>
+    <pre class="template-code"><code>{{ pageTemplate }}</code></pre>
+  </section>
+</section>

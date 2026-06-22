@@ -1,4 +1,5 @@
 <section class="users-page app-page-shell app-page-stack">
+  <!-- Administration is grouped by workflow; badges communicate exceptional pending work. -->
   <mat-card class="users-card app-page-stack">
     <mat-card-header>
       <mat-card-title class="app-page-title">User Management</mat-card-title>
@@ -34,6 +35,7 @@
             <p>No pending delete requests.</p>
           </ng-container>
           <ng-template #requests>
+            <!-- Pair the family summary with a separate review and action surface. -->
             <div class="request-grid">
               <section class="request-card-shell" *ngFor="let family of pendingDeleteRequests; trackBy: trackByFamilyId">
                 <app-family-card [family]="family" [compact]="true" [showRequestDeleteAction]="false"></app-family-card>

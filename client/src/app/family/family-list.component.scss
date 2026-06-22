@@ -1,3 +1,4 @@
+/* Family-specific dashboard composition; surfaces and spacing come from global app classes. */
 .family-dashboard {
   display: grid;
   gap: var(--app-space-md);

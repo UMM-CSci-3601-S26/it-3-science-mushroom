@@ -1,4 +1,8 @@
 <div class="app-shell">
+  <!--
+    Global application chrome. Keep primary destinations in the desktop nav;
+    group lower-frequency destinations in menus and mirror them in mobile nav.
+  -->
   <mat-toolbar color="primary" class="app-toolbar">
     <button
       type="button"
@@ -34,6 +38,7 @@
 
     <span class="toolbar-spacer"></span>
 
+    <!-- The theme toggle changes the root class so Material and app tokens switch together. -->
     <button
       type="button"
       mat-icon-button
@@ -67,6 +72,7 @@
     }
   </mat-toolbar>
 
+  <!-- Operational menus reduce header crowding without hiding primary workflows. -->
   <mat-menu #operationsMenu="matMenu">
     @if (canAccessPath('/supplylist')) {
       <a mat-menu-item routerLink="/supplylist">
@@ -144,6 +150,10 @@
         </a>
       }
       @if (isAdmin) {
+        <a mat-menu-item routerLink="/style-guide">
+          <mat-icon>palette</mat-icon>
+          <span>Frontend Style Template</span>
+        </a>
         <button type="button" mat-menu-item (click)="copyVolunteerSignUpLink()">
           <mat-icon>content_copy</mat-icon>
           <span>Copy Volunteer Sign Up Link</span>

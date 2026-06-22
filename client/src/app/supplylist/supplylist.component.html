@@ -1,5 +1,6 @@
 <div class="flex-row app-page-shell">
   <div class="flex-1">
+    <!-- Common filters stay visible; less-used item filters are progressively disclosed. -->
     <mat-card class="search-grid app-page-stack app-corner-anchor">
       <mat-card-header class="page-card-header app-page-header app-page-header-with-corner">
         <mat-card-title class="supplylist-title app-page-title">Supply List</mat-card-title>
@@ -27,7 +28,6 @@
           Filter by school and grade first. Open advanced filters when you need to narrow the list by item details.
         </p>
 
-        <!-- Filter Fields -->
         <div class="filter-container primary-filters app-grid-auto">
           <mat-form-field appearance="outline">
             <mat-label>School</mat-label>
@@ -52,6 +52,7 @@
           {{ advancedFiltersExpanded() ? 'Hide Advanced Filters' : 'Advanced Filters' }}
         </button>
 
+        <!-- Advanced controls use the same tokens without overwhelming the default view. -->
         @if (advancedFiltersExpanded()) {
         <div class="filter-container advanced-filters app-grid-auto">
           <mat-form-field appearance="outline">

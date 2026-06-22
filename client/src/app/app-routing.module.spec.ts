@@ -30,6 +30,7 @@ describe('AppRoutingModule', () => {
     expect(routeSummary).toContain({ path: 'supplylist', title: 'Supply List' });
     expect(routeSummary).toContain({ path: 'supplylist/new', title: 'Add Supply List Item' });
     expect(routeSummary).toContain({ path: 'point-of-sale', title: 'Point Of Sale' });
+    expect(routeSummary).toContain({ path: 'style-guide', title: 'Frontend Style Template' });
   });
 
   it('protects point of sale with the bundled point of sale permission', () => {

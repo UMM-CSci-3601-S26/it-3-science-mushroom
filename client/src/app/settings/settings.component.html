@@ -1,4 +1,5 @@
 <div class="settings-container app-page-shell app-page-stack">
+  <!-- Settings stay on one route; Material tabs separate administrative workflows. -->
   <mat-card class="settings-card app-page-stack">
     <mat-card-header>
       <mat-card-title class="settings-title app-page-title">Settings</mat-card-title>
@@ -16,6 +17,7 @@
           <div class="tab-content">
 
             <!-- Add School Form -->
+            <!-- app-field-action-row aligns Material inputs with the adjacent action button. -->
             @if (canEditSchools) {
             <form [formGroup]="addSchoolForm" (ngSubmit)="addSchool()">
               <div class="add-school-row app-field-action-row">

@@ -1,5 +1,6 @@
 <div class="flex-row app-page-shell">
   <div class="flex-1">
+    <!-- Shared page/card classes provide theming; inventory classes arrange controls and data. -->
     <mat-card class="search-grid app-page-stack app-corner-anchor">
       <mat-card-header class="page-card-header app-page-header app-page-header-with-corner">
         <mat-card-title class="inventory-title app-page-title">Inventory</mat-card-title>
@@ -25,7 +26,7 @@
           Use the fields below to filter the inventory by item, brand, color, size, type, and material. The filters will be applied as you type, and you can clear them all at once using the "Clear" button on the bottom. You can also sort the inventory by any column by clicking on the column header.
         </p>
 
-        <!-- Filter Fields -->
+        <!-- Keep data-cy attributes stable: E2E tests should not depend on visual classes. -->
         <div class="filter-container app-grid-auto">
           <mat-form-field appearance="outline">
             <mat-label class="filter">Item</mat-label>

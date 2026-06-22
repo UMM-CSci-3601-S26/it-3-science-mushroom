@@ -2,6 +2,7 @@
   display: block;
 }
 
+/* Inventory-only composition. Global tokens and app-* primitives own visual consistency. */
 /* Layout */
 .flex-row {
   display: flex;

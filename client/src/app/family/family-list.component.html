@@ -1,5 +1,6 @@
 <div class="flex-row app-page-shell">
   <div class="flex-1">
+    <!-- Dashboard uses shared page primitives; feature classes only define its data layout. -->
     @if (dashboardStats(); as stats) {
       <section class="family-dashboard dashboard-grid app-page-stack" aria-labelledby="family-dashboard-heading">
         <div class="dashboard-heading app-page-header">
@@ -56,8 +57,8 @@
       <p class="loading-test">Loading dashboard...</p>
     }
 
-    <!-- Search Fields -->
-      <mat-card class="search-card app-stack-md app-corner-anchor">
+    <!-- Search and page actions stay in one Material surface for predictable mobile stacking. -->
+    <mat-card class="search-card app-stack-md app-corner-anchor">
       <mat-card-header class="page-card-header app-page-header app-page-header-with-corner">
         <mat-card-title class="family-list-title app-page-title">Find a Family</mat-card-title>
         <button type="button"
@@ -72,7 +73,6 @@
         </button>
       </mat-card-header>
 
-      <!-- Page Description -->
       <mat-card-content>
         <p class="page-description app-page-subtitle">Search by guardian name or narrow the list by guardian account status.</p>
       </mat-card-content>

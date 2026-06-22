@@ -13,6 +13,7 @@
       </mat-card-content>
     </mat-card>
   } @else {
+    <!-- Summary colors are semantic and retain their meaning in both themes. -->
     <section class="stock-summary app-grid-auto" aria-label="Stock summary">
       <div class="summary-item summary-stocked">
         <span class="summary-value">{{ stockedItemCount() }}</span>
@@ -46,6 +47,7 @@
         <span>{{ reports()?.length ?? 0 }} files</span>
       </div>
 
+      <!-- Shared grid and scroll utilities keep file management responsive. -->
       <div class="saved-report-columns app-grid-2">
         <section class="saved-report-column" aria-labelledby="pdf-reports-heading">
           <h3 id="pdf-reports-heading">PDF Reports <span>{{ pdfReports().length }}</span></h3>
