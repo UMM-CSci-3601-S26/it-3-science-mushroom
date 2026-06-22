@@ -2,7 +2,7 @@
 
 export class FamilyListPage {
   private readonly baseUrl = '/family';
-  private readonly pageTitle = '.family-list-title';
+  private readonly pageTitle = '#family-dashboard-heading';
   private readonly familyCardSelector = '.family-cards-container app-family-card';
   private readonly familyListItemsSelector = '.family-nav-list .family-list-item';
   private readonly familyDashboard = '.dashboard-grid'
@@ -16,24 +16,9 @@ export class FamilyListPage {
   //private readonly radioButtonSelector = '[data-test=viewTypeRadio] mat-radio-button';
   //private readonly familyRoleDropdownSelector = '[data-test=familyRoleSelect]';
   private readonly dropdownOptionSelector = 'mat-option';
-  private readonly sideNavButton = '.sidenav-button';
-  private readonly sideNav = '.sidenav';
-  private readonly sideNavOption = '[routerlink] > .mdc-list-item__content';
 
   navigateTo() {
     return cy.visit(this.baseUrl);
-  }
-
-  getSidenavButton() {
-    return cy.get(this.sideNavButton)
-  }
-
-  getSidenav() {
-    return cy.get(this.sideNav);
-  }
-
-  getNavLink(navOption: 'Home' | 'Families') {
-    return cy.contains(this.sideNavOption, `${navOption}`);
   }
 
   /**

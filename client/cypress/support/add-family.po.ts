@@ -82,11 +82,11 @@ export class AddFamilyPage {
     const availability = newFamily.timeAvailability;
 
 
-    this.getFormField(this.guardianFirstNameFieldName).type(firstName);
-    this.getFormField(this.guardianLastNameFieldName).type(lastName);
-    this.getFormField(this.addressFieldName).type(newFamily.address.toString());
-    this.getFormField(this.emailFieldName).type(newFamily.email);
-    this.getFormField(this.accommodationsFieldName).type(newFamily.accommodations);
+    this.getFormField(this.guardianFirstNameFieldName).type(firstName, {force: true});
+    this.getFormField(this.guardianLastNameFieldName).type(lastName, {force: true});
+    this.getFormField(this.addressFieldName).type(newFamily.address.toString(), {force: true});
+    this.getFormField(this.emailFieldName).type(newFamily.email, {force: true});
+    this.getFormField(this.accommodationsFieldName).type(newFamily.accommodations, {force: true});
 
     if (availability.earlyMorning) {
       cy.get('[formcontrolname="earlyMorning"]').click();

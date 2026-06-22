@@ -27,32 +27,21 @@ describe('Supply List', () => {
     page.getAppTitle().should('contain', 'Supply List');
   });
 
-  it('The sidenav should open, navigate to "Supply List" and back to "Home"', () => {
-    // Before clicking on the button, the sidenav should be hidden
-    page.getSidenav()
-      .should('be.hidden');
-    page.getSidenavButton()
-      .should('be.visible');
+  it('Should navigate to Supply List via Operations menu and back to Home', () => {
+    cy.visit('/');
 
-    page.getSidenavButton().click();
-    page.getNavLink('Supply List').click();
+    // Open Operations dropdown in desktop nav and click Supply List
+    page.clickOperationsMenu();
+    cy.contains('[mat-menu-item]', 'Supply List').click();
     cy.url().should('match', /\/supplylist$/);
-    page.getSidenav()
-      .should('be.hidden');
 
-    page.getSidenavButton().click();
-    page.getNavLink('Home').click();
+    // Navigate back home using the app title link
+    cy.get('.app-title').click();
     cy.url().should('match', /^https?:\/\/[^/]+\/?$/);
-    page.getSidenav()
-      .should('be.hidden');
   });
 
   it('Should display Supply List items', () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Supply List').click();
     cy.url().should('match', /\/supplylist$/);
-    page.getSidenav()
-      .should('be.hidden');
     page.getResultsCard().should('contain', 'Hancock Elementary');
   });
 
@@ -60,9 +49,10 @@ describe('Supply List', () => {
   // for all specification fields
 
   it('Should have specification filters', () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Supply List').click();
     cy.url().should('match', /\/supplylist$/);
+
+    // Expand advanced filters to make item/brand/color/size/type/material visible
+    cy.get('.advanced-filter-toggle').click();
 
     const errors: string[] = [];
 
@@ -103,8 +93,6 @@ describe('Supply List', () => {
   });
 
   it('Should have grade filter', () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Supply List').click();
     cy.url().should('match', /\/supplylist$/);
 
     const errors: string[] = [];

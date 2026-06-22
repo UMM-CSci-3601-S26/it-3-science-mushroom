@@ -1,9 +1,6 @@
 export class SupplyListPage {
   private readonly baseUrl = '/supplylist';
   private readonly titleSelector = '.supplylist-title';
-  private readonly sideNavButton = '.sidenav-button';
-  private readonly sideNav = '.sidenav';
-  private readonly sideNavOption = '[routerlink] > .mdc-list-item__content';
   private readonly resultsCard = '[data-cy="supplylist-card"]';
 
 
@@ -15,16 +12,18 @@ export class SupplyListPage {
     return cy.get(this.titleSelector);
   }
 
-  getSidenavButton() {
-    return cy.get(this.sideNavButton);
+  /** Click the Operations dropdown in the desktop navigation bar. */
+  clickOperationsMenu() {
+    return cy.contains('.desktop-navigation button', 'Operations').click();
   }
 
-  getSidenav() {
-    return cy.get(this.sideNav);
-  }
-
-  getNavLink(navOption: 'Home' | 'Supply List' ) {
-    return cy.contains(this.sideNavOption, `${navOption}`);
+  /** Navigate to a page via the desktop navigation (direct link or Operations menu). */
+  navigateViaMenu(navOption: 'Home' | 'Supply List') {
+    if (navOption === 'Home') {
+      return cy.get('.app-title').click();
+    }
+    this.clickOperationsMenu();
+    return cy.contains('[mat-menu-item]', navOption).click();
   }
 
   getResultsCard() {

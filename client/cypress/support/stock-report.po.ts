@@ -1,9 +1,6 @@
 export class StockReportPage {
   private readonly baseUrl = '/stock-report';
   private readonly titleSelector = '.stock-report-title';
-  private readonly sideNavButton = '.sidenav-button';
-  private readonly sideNav = '.sidenav';
-  private readonly sideNavOption = '[routerlink] > .mdc-list-item__content';
 
   // Generic Selectors
   navigateTo() {
@@ -14,16 +11,18 @@ export class StockReportPage {
     return cy.get(this.titleSelector);
   }
 
-  getSidenavButton() {
-    return cy.get(this.sideNavButton);
+  /** Click the Operations dropdown in the desktop navigation bar. */
+  clickOperationsMenu() {
+    return cy.contains('.desktop-navigation button', 'Operations').click();
   }
 
-  getSidenav() {
-    return cy.get(this.sideNav);
-  }
-
-  getNavLink(navOption: 'Home' | 'Stock Report') {
-    return cy.contains(this.sideNavOption, `${navOption}`);
+  /** Navigate to a page via the desktop navigation Operations menu. */
+  navigateViaMenu(navOption: 'Home' | 'Stock Report') {
+    if (navOption === 'Home') {
+      return cy.get('.app-title').click();
+    }
+    this.clickOperationsMenu();
+    return cy.contains('[mat-menu-item]', navOption).click();
   }
 
   // Stock Report Layout
