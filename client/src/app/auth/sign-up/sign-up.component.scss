@@ -3,13 +3,15 @@
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 64px);
-  padding: var(--app-space-lg);
+  padding-top: var(--app-space-lg);
+  padding-bottom: var(--app-space-lg);
   background: var(--app-page-bg);
 }
 
 .auth-card {
   width: 100%;
   max-width: 420px;
+  border-color: color-mix(in srgb, var(--app-primary) 22%, var(--app-border));
 
   mat-card-header {
     margin-bottom: 8px;
