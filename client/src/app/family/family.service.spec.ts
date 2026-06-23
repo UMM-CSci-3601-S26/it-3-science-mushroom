@@ -728,6 +728,7 @@ describe('FamilyService', () => {
 
     it('should call getDashboardStats when generating PDF', fakeAsync(() => {
       const getDashboardStatsSpy = spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
       spyOn(familyService['snackBar'], 'open');
 
       familyService.generatePDF();
@@ -738,6 +739,7 @@ describe('FamilyService', () => {
 
     it('should show snackbar notification when PDF generation starts', fakeAsync(() => {
       spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
       const snackBarSpy = spyOn(familyService['snackBar'], 'open');
 
       familyService.generatePDF();
@@ -752,6 +754,7 @@ describe('FamilyService', () => {
 
     it('should include all families in PDF when generating', fakeAsync(() => {
       spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
       spyOn(familyService['snackBar'], 'open');
 
       familyService.generatePDF();
@@ -766,6 +769,7 @@ describe('FamilyService', () => {
 
     it('should process all dashboard statistics categories', fakeAsync(() => {
       const getDashboardStatsSpy = spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
       spyOn(familyService['snackBar'], 'open');
 
       familyService.generatePDF();
@@ -783,6 +787,7 @@ describe('FamilyService', () => {
 
     it('should load families before generating PDF', fakeAsync(() => {
       spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+      spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
       spyOn(familyService['snackBar'], 'open');
 
       expect(familyService.family().length).toBeGreaterThan(0);
@@ -801,6 +806,7 @@ describe('FamilyService', () => {
       };
 
       spyOn(familyService, 'getDashboardStats').and.returnValue(of(emptySchoolsStats));
+      spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
       const snackBarSpy = spyOn(familyService['snackBar'], 'open');
 
       familyService.generatePDF();
@@ -820,6 +826,7 @@ describe('FamilyService', () => {
       };
 
       spyOn(familyService, 'getDashboardStats').and.returnValue(of(emptyGradesStats));
+      spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
       const snackBarSpy = spyOn(familyService['snackBar'], 'open');
 
       familyService.generatePDF();
@@ -834,6 +841,7 @@ describe('FamilyService', () => {
         spyOn(familyService, 'getDashboardStats').and.returnValue(
           new Observable(observer => observer.error(error))
         );
+        spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
         spyOn(console, 'error');
         const snackBarSpy = spyOn(familyService['snackBar'], 'open');
 
@@ -850,6 +858,7 @@ describe('FamilyService', () => {
 
       it('should handle errors gracefully during PDF generation', fakeAsync(() => {
         spyOn(familyService, 'getDashboardStats').and.returnValue(of(mockDashboardStats));
+        spyOn(familyService, 'getFamilies').and.returnValue(of(testFamilies));
         spyOn(console, 'error');
         const snackBarSpy = spyOn(familyService['snackBar'], 'open');
 
