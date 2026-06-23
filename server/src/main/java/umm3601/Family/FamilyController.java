@@ -42,6 +42,7 @@ import io.javalin.http.HttpStatus;
 // Misc Imports
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Role;
 import umm3601.Auth.Route;
 import umm3601.Common.AuthContext;
 import umm3601.Inventory.Inventory;
@@ -77,6 +78,7 @@ public class FamilyController {
   private static final String API_FAMILY_HELP_SESSION_SAVE_ALL = "/api/family/{id}/help-session/save-all";
   private static final String API_FAMILY_HELP_SESSION_CLEAR = "/api/family/{id}/help-session/clear";
   private static final String API_FAMILY_HELP_SESSION_REVERT = "/api/family/{id}/help-session/revert";
+  private static final String API_FAMILY_GUARDIAN_LINK = "/api/family/{id}/guardian-link";
   private static final String STATUS_HELPED = "helped";
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
@@ -869,13 +871,65 @@ public class FamilyController {
         totalStudents = totalStudents + 1;
       }
     }
-
     // Compile results into map to return as JSOn
     Map<String, Object> result = new HashMap<>();
     result.put("studentsPerSchool", studentsPerSchool);
     result.put("studentsPerGrade", studentsPerGrade);
     result.put("totalFamilies", families.size());
     result.put("totalStudents", totalStudents);
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_GUARDIAN_LINK)
+  @RequirePermission("link-guardian")
+  public void linkGuardian(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    ObjectId familyId;
+
+    try{
+      familyId = new ObjectId();
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id was not a legal Mongo Object.");
+    }
+
+    Family family = familyCollection.find(eq("_id", familyId)).first();
+    if (family == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+    if (hasText(family.ownerUserId)) {
+      throw new BadRequestResponse("Family already has a linked guardian account");
+    }
+
+    FamilyGuardianLinkRequest request = ctx.bodyAsClass(FamilyGuardianLinkRequest.class);
+    if (request == null || !hasText(request.guardianUserId)) {
+      throw new BadRequestResponse("guardUserId is required");
+    }
+
+    ObjectId guardianUserId;
+    try {
+      guardianUserId = new ObjectId(request.guardianUserId);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested guardian user id was not a legal Mongo Object ID");
+    }
+
+    Users guardian = usersCollection.find(eq("_id", guardianUserId)).first();
+    if (guardian == null) {
+      throw new NotFoundResponse("The requested guardian user was not found");
+    }
+    if (guardian.systemRole != Role.GUARDIAN) {
+      throw new BadRequestResponse("Linked user must be a guardian account");
+    }
+
+    Family alreadylinkedFamily = familyCollection.find(eq("ownerUserId", request.guardianUserId)).first();
+    if (alreadylinkedFamily != null) {
+      throw new BadRequestResponse("Guardian account is already linked to a family");
+    }
+
+    familyCollection.updateOne(eq("_id", familyId), Updates.set("ownerUserId", request.guardianUserId));
+    Family result = familyCollection.find(eq("_id", familyId)).first();
 
     ctx.json(result);
     ctx.status(HttpStatus.OK);
