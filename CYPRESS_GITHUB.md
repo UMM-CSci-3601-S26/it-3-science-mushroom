@@ -2,7 +2,7 @@
 
 ## Why is this important?
 
-Originally cypress would run on its own with its initial setup. However, now that we have role-based permissions and additional safeguards for our software, cypress now needs valid test credentials to be able to test features, while maintaining application wide security model.
+Originally cypress could run on its own with its default configuration. However, now that we have role-based permissions and additional safeguards for our software, cypress now needs valid test credentials to access and test protected functionality while preserving application wide security model.
 
 We want to ensure that we keep the user data safe by taking steps to prevent exploits through the tools we use.
 
@@ -10,16 +10,18 @@ We want to ensure that we keep the user data safe by taking steps to prevent exp
 
 Instead of hardcoding login variables and holding that information in the database, we will be using environment variables.
 
-There are two important spots these variables need reside
+There are two important locations where these must reside:
 
 - Client Root -> `Cypress.env.json`
 - Github Actions -> `Settings > Secrets and Variables > Actions`
-
-Having these files that only persist on the local machine and Github's secrets, allows us to not post credentials on the github repository itself, further preventing misuse of the credentials.
+  
+> Local development uses `Cypress.env.json`, while CI/CD workflows use GitHub Actions secrets
+> 
+Having these files that only persist on the local machine and Github's secrets, allows us to not post credentials on the github repository itself, reducing the risk of credential exposure
 
 > It is important that `Cypress.env.json` is in `.gitignore`
 
-# How can you do this yourself?
+# Configuring GitHub Actions Secrets
 
 For Github Secrets its fairly simple process.
 
@@ -34,23 +36,23 @@ For Github Secrets its fairly simple process.
 
 When adding the secrets to Github actions, you *can* make it whatever name you would like it to be, but for the purpose of Cypress, it is important that there is a `CYPRESS_` prefix.
 
-In this case I made the secretes named
+In this case, the secrets are named as follows:
 
-- `CYPRESS_E2E_{Role}_USER` and `CYPRESS_E2E_{Role}_PASSWORD`
+- `CYPRESS_E2E_{role}_USER` and `CYPRESS_E2E_{role}_PASSWORD`
 
-> Replace {Role} with your desired role if your adding more roles
+> Replace {role} with your desired role if your adding more roles
 
 # How to expose the secret
 
-- For Cypress: `Cypress.env('E2E_{Role}_USER')` and `Cypress.env('E2E_{Role}_PASSWORD')`
-- For normal use: `process.env.CYPRESS_E2E_{Role}_USER` and
-`process.env.E2E_{Role}_USER`
+- For Cypress: `Cypress.env('E2E_{role}_USER')` and `Cypress.env('E2E_{Role}_PASSWORD')`
+- For normal use: `process.env.CYPRESS_E2E_{role}_USER` and
+`process.env.CYPRESS_E2E_{Role}_USER`
 
-> Replace {Role} with your desired role
+> Replace {role} with your desired role
 
 # How the secrets are processed
 
-The credentials are processed through the application as follows
+How the credentials flow through the application:
 
 ### 1. GitHub Repository Secret:
 ```text
@@ -95,4 +97,16 @@ const password = '<example-password>'
   )
 ```
 
-There are more examples for usage [here](client/cypress/e2e/role-login-example.cy.ts)
+> There are more examples for usage [here](client/cypress/e2e/role-login-example.cy.ts)
+
+## Local Development Example
+
+Create a `Cypress.env.json` file in the client root:
+
+```json
+{
+  "E2E_ADMIN_USER: "AdminUser@Example.com""
+  "E2E_ADMIN_PASSWORD: "<example-password>""
+}
+```
+> Do not commit this file. Ensure that its listed in `gitignore`.
