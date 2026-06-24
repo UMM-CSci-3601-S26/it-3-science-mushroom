@@ -905,7 +905,7 @@ public class FamilyController {
 
     FamilyGuardianLinkRequest request = ctx.bodyAsClass(FamilyGuardianLinkRequest.class);
     if (request == null || !hasText(request.getGuardianUserId())) {
-      throw new BadRequestResponse("guardUserId is required");
+      throw new BadRequestResponse("guardianUserId is required");
     }
 
     ObjectId guardianUserId;
@@ -929,6 +929,31 @@ public class FamilyController {
     }
 
     familyCollection.updateOne(eq("_id", familyId), Updates.set("ownerUserId", request.getGuardianUserId()));
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.DELETE, path = API_FAMILY_GUARDIAN_LINK)
+  @RequirePermission("link-guardian")
+  public void unlinkGuardian(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id was not a legal Mongo Object.");
+    }
+
+    Family family = familyCollection.find(eq("_id", familyId)).first();
+    if (family == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+
+    familyCollection.updateOne(eq("_id", familyId), unset("ownerUserId"));
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
     ctx.json(result);
