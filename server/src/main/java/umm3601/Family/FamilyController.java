@@ -889,8 +889,8 @@ public class FamilyController {
 
     ObjectId familyId;
 
-    try{
-      familyId = new ObjectId();
+    try {
+      familyId = new ObjectId(id);
     } catch (IllegalArgumentException e) {
       throw new BadRequestResponse("The requested family id was not a legal Mongo Object.");
     }
@@ -904,13 +904,13 @@ public class FamilyController {
     }
 
     FamilyGuardianLinkRequest request = ctx.bodyAsClass(FamilyGuardianLinkRequest.class);
-    if (request == null || !hasText(request.guardianUserId)) {
+    if (request == null || !hasText(request.getGuardianUserId())) {
       throw new BadRequestResponse("guardUserId is required");
     }
 
     ObjectId guardianUserId;
     try {
-      guardianUserId = new ObjectId(request.guardianUserId);
+      guardianUserId = new ObjectId(request.getGuardianUserId());
     } catch (IllegalArgumentException e) {
       throw new BadRequestResponse("The requested guardian user id was not a legal Mongo Object ID");
     }
@@ -923,12 +923,12 @@ public class FamilyController {
       throw new BadRequestResponse("Linked user must be a guardian account");
     }
 
-    Family alreadylinkedFamily = familyCollection.find(eq("ownerUserId", request.guardianUserId)).first();
-    if (alreadylinkedFamily != null) {
+    Family alreadyLinkedFamily = familyCollection.find(eq("ownerUserId", request.getGuardianUserId())).first();
+    if (alreadyLinkedFamily != null) {
       throw new BadRequestResponse("Guardian account is already linked to a family");
     }
 
-    familyCollection.updateOne(eq("_id", familyId), Updates.set("ownerUserId", request.guardianUserId));
+    familyCollection.updateOne(eq("_id", familyId), Updates.set("ownerUserId", request.getGuardianUserId()));
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
     ctx.json(result);
