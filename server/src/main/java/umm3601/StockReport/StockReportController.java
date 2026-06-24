@@ -405,7 +405,7 @@ public class StockReportController {
   public void generateStockReport(Context ctx, boolean saveToDatabase) {
     String timestamp = java.time.LocalDateTime.now()
     .format(java.time.format.DateTimeFormatter
-      .ofPattern("yyyy-MM-dd_HH:mm"));
+      .ofPattern("yyyy-MM-dd_HH-mm"));
 
     try {
       byte[] workbookBytes = createXLSXFile();
