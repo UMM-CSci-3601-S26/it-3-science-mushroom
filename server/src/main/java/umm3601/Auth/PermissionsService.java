@@ -87,6 +87,7 @@ public class PermissionsService {
       "export_families_csv",
       "manage_family_help_sessions",
       "request_family_delete",
+      "link-guardian",
       "schedule_families",
       "view_dashboard_stats",
       "view_families",
@@ -487,6 +488,7 @@ public class PermissionsService {
       case "export_families_csv" -> "Family CSV Export";
       case "manage_family_help_sessions" -> "Family Help Sessions";
       case "request_family_delete" -> "Family Delete Requests";
+      case "link-guardian" -> "Manage guardian link";
       case "schedule_families" -> "Family Scheduling";
       case "view_dashboard_stats" -> "Dashboard Statistics";
       case "view_families" -> "Family List Viewing";
