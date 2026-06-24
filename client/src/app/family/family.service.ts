@@ -8,7 +8,7 @@ import jsPDF, { jsPDF as jsPDFClass } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 // RxJS Imports
-import { Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 // Other Imports
@@ -225,7 +225,12 @@ export class FamilyService {
   private formatSchoolsList(schoolsData: Record<string, number>): string {
     return Object.entries(schoolsData)
       .sort(([schoolA], [schoolB]) => schoolA.localeCompare(schoolB))
-      .map(([school, count]) => `  • ${school}: ${count}`)
+      .map(([school, count]) => {
+        const cleaned = school
+          .replace(/School$/i, '') // remove variations of "School" from the end of the name
+          .trim();
+        return `  • ${cleaned}: ${count}`;
+      })
       .join('\n');
   }
 
@@ -339,7 +344,6 @@ export class FamilyService {
     const accomBoxX = detailsBoxWidth + 5; // Offset from details box
     const accomBoxWidth = accomBoxX + boxWidth; // Width of accommodations box, next box is offset from this
     const accomMaxWidth = boxWidth - 10; // Max width for text in box
-    const accomBoxHeight = 10; // Minimum height, will expand if text is long
 
     // Accommodations label
     this.addText(doc, "Accommodations:", accomBoxX + labelOffsetX, boxY + labelOffsetY, 12, "bold", "normal");
@@ -350,7 +354,8 @@ export class FamilyService {
     });
 
     // Accomodations box
-    const accomDynamicHeight = Math.max(accomBoxHeight, (5 + lineSpacing) + (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * (lineHeight + lineSpacing)));
+    // Dynamic height based on number of lines + some padding (defaults to same size as contact details box if no adjustments are needed)
+    const accomDynamicHeight = Math.max(boxHeight, (doc.splitTextToSize(family.accommodations || 'None', accomMaxWidth).length * (lineHeight*1.1 + lineSpacing*1.1)));
     doc.roundedRect(accomBoxX, boxY, boxWidth, accomDynamicHeight, 3, 3);
 
     // Time Slot and Availability \\
@@ -444,10 +449,14 @@ export class FamilyService {
     doc.line(10, 30, 200, 30);
     doc.setLineWidth(thinLineWidth);
 
-    // Dashboard stats
-    this.getDashboardStats().subscribe({
-      next: (stats) => {
+    forkJoin({ // Ensure dashboard and family data is up-to-date
+      stats: this.getDashboardStats(),
+      families: this.getFamilies()
+    }).subscribe({
+      next: ({ stats, families }) => {
         try {
+          this.family.set(families);
+
           // Box vars
           const boxX = 10; // Starting x, following boxes offset from this
           const boxY = 40;
@@ -484,7 +493,7 @@ export class FamilyService {
 
           // School Stats List
           this.addText(doc, "Students Per School", schoolBoxX + labelOffsetX, boxY + labelOffsetY, 14, "bold", "normal");
-          this.addText(doc, studentsPerSchool, schoolBoxX + labelOffsetX, boxY + labelOffsetY + 5, 10, "normal", "normal");
+          this.addText(doc, studentsPerSchool, schoolBoxX + labelOffsetX - 2, boxY + labelOffsetY + 5, 10, "normal", "normal");
 
           // Grade Stats box
           const gradeLines = Math.max(gradesLeft.split('\n').length, gradesRight.split('\n').length);
@@ -504,12 +513,12 @@ export class FamilyService {
           const maxY = doc.internal.pageSize.getHeight() - 15;
           let lastY = 15;
 
-          for (let i = 0; i < this.family().length; i++) {
+          for (let i = 0; i < families.length; i++) {
             if (i === 0) { // First family, add page after dashboard stats
               doc.addPage();
             }
 
-            const currentFamily = this.family()[i];
+            const currentFamily = families[i];
             let currentOffset = 15; // Determine offset for current family
 
             if (i > 0) {  // Not first family
