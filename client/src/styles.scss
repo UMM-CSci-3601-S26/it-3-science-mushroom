@@ -559,6 +559,67 @@ body {
   color: var(--app-text);
 }
 
+// Dialog and status primitives keep feature dialogs light. Component styles
+// should use these before duplicating local card, message, and action-row CSS.
+.app-dialog-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-md);
+  width: 100%;
+  max-height: 86vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: var(--app-space-lg);
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.app-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-md);
+  padding-bottom: var(--app-space-md);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-dialog-title {
+  margin: 0;
+  color: var(--app-text);
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.app-dialog-subtitle {
+  margin: var(--app-space-xs) 0 0;
+  color: var(--app-text-muted);
+  font-weight: 600;
+}
+
+.app-status-panel {
+  padding: var(--app-space-md);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-muted);
+  color: var(--app-text);
+}
+
+.app-status-panel p {
+  margin: var(--app-space-xs) 0;
+}
+
+.app-status-warn {
+  border-color: color-mix(in srgb, var(--app-warn) 42%, var(--app-border));
+  background: color-mix(in srgb, var(--app-warn) 12%, var(--app-surface));
+  color: var(--app-warn);
+}
+
+.app-status-warning {
+  border-color: color-mix(in srgb, var(--app-warning) 42%, var(--app-border));
+  background: color-mix(in srgb, var(--app-warning) 12%, var(--app-surface));
+  color: var(--app-warning);
+}
+
 // LAYOUT PRIMITIVES
 // Combine these single-purpose helpers in HTML before adding a new feature
 // class. Component SCSS should handle only layout unique to that feature.
