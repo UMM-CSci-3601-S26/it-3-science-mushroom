@@ -67,7 +67,8 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN'] }},
 
   // Internal visual reference for frontend development and review
-  {path: 'style-guide', loadComponent: () => import('./style-guide/style-showcase.component').then(m => m.StyleShowcaseComponent), title: 'Frontend Style Template'},
+  {path: 'style-guide', loadComponent: () => import('./style-guide/style-showcase.component').then(m => m.StyleShowcaseComponent), title: 'Frontend Style Template',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN'] }},
 
 ];
 

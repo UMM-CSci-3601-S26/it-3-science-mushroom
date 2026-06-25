@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 import { AppRoutingModule } from './app-routing.module';
+import { AuthGuard } from './auth/auth.guard';
+import { RoleGuard } from './auth/role.guard';
 
 describe('AppRoutingModule', () => {
   let router: Router;
@@ -38,6 +40,13 @@ describe('AppRoutingModule', () => {
 
     expect(pointOfSaleRoute?.data?.['roles']).toEqual(['ADMIN', 'VOLUNTEER']);
     expect(pointOfSaleRoute?.data?.['permissions']).toEqual(['access_point_of_sale']);
+  });
+
+  it('protects the style guide as an admin-only internal reference', () => {
+    const styleGuideRoute = router.config.find(route => route.path === 'style-guide');
+
+    expect(styleGuideRoute?.canActivate).toEqual([AuthGuard, RoleGuard]);
+    expect(styleGuideRoute?.data?.['roles']).toEqual(['ADMIN']);
   });
 
   // What is the point of this test? It is just testing that the same route is defined twice, which is not a good thing.
