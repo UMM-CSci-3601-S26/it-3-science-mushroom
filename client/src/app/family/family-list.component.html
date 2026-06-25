@@ -1,71 +1,68 @@
-<div class="flex-row">
+<div class="flex-row app-page-shell">
   <div class="flex-1">
+    <!-- Dashboard uses shared page primitives; feature classes only define its data layout. -->
     @if (dashboardStats(); as stats) {
-      <div class="dashboard-grid">
-        <!-- Total Families and Students Card -->
-        <mat-card class="stat-card">
-          <mat-card-title>Total Families</mat-card-title>
-          <div class ="stat-content">
-            <mat-card-content>
-              <div class="stat-number-family">
-              {{ stats.totalFamilies }}
-              </div>
-            </mat-card-content>
+      <section class="family-dashboard dashboard-grid app-page-stack" aria-labelledby="family-dashboard-heading">
+        <div class="dashboard-heading app-page-header">
+          <div>
+            <h1 id="family-dashboard-heading" class="app-page-title">Families</h1>
+            <p class="app-page-subtitle">Family enrollment and student distribution at a glance.</p>
           </div>
+        </div>
 
-          <mat-card-title>Total Students</mat-card-title>
-          <div class ="stat-content">
-            <mat-card-content>
-              <div class="stat-number-student">
-              {{ stats.totalStudents }}
-              </div>
-            </mat-card-content>
+        <div class="dashboard-totals">
+          <div class="dashboard-total">
+            <mat-icon>groups</mat-icon>
+            <div>
+              <div class="stat-number stat-number-family">{{ stats.totalFamilies }}</div>
+              <div class="stat-caption">Families</div>
+            </div>
           </div>
-        </mat-card>
+          <div class="dashboard-total">
+            <mat-icon>school</mat-icon>
+            <div>
+              <div class="stat-number stat-number-student">{{ stats.totalStudents }}</div>
+              <div class="stat-caption">Students</div>
+            </div>
+          </div>
+        </div>
 
-        <!-- Students Per School -->
-        <mat-card class="stat-card">
-          <mat-card-title>Students Per School</mat-card-title>
-          <mat-card-content>
-
-            <div class="stat-list-school">
+        <div class="dashboard-breakdowns">
+          <section class="breakdown-panel app-panel">
+            <h2>Students by School</h2>
+            <div class="stat-list">
             @for (school of stats.studentsPerSchool | keyvalue; track school.key) {
-              <div class="stat-row-school">
+              <div class="stat-row stat-row-school">
                 <span class="stat-label">{{ school.key }}</span>
                 <span class="stat-value">{{ school.value }}</span>
               </div>
             }
             </div>
+          </section>
 
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Students Per Grade -->
-        <mat-card class="stat-card">
-          <mat-card-title>Students Per Grade</mat-card-title>
-          <mat-card-content>
-
-            <div class="stat-list-grade">
+          <section class="breakdown-panel app-panel">
+            <h2>Students by Grade</h2>
+            <div class="stat-list">
               @for (grade of stats.studentsPerGrade | keyvalue: gradeSort; track grade.key) {
-                <div class="stat-row-grade">
-                  <span class="stat-label">Grade: {{ grade.key }}</span>
+                <div class="stat-row stat-row-grade">
+                  <span class="stat-label">{{ grade.key }}</span>
                   <span class="stat-value">{{ grade.value }}</span>
                 </div>
               }
             </div>
-
-          </mat-card-content>
-        </mat-card>
-      </div>
+          </section>
+        </div>
+      </section>
     } @else {
-      <p class="loading-test">Loading Dashboard..</p>
+      <p class="loading-test">Loading dashboard...</p>
     }
 
-    <!-- Search Fields -->
-    <mat-card class="search-card">
-      <mat-card-header class="page-card-header">
-        <mat-card-title class="family-list-title">Families</mat-card-title>
-        <button
+    <!-- Search and page actions stay in one Material surface for predictable mobile stacking. -->
+    <mat-card class="search-card app-stack-md app-corner-anchor">
+      <mat-card-header class="page-card-header app-page-header app-page-header-with-corner">
+        <mat-card-title class="family-list-title app-page-title">Find a Family</mat-card-title>
+        <button type="button"
+          class="app-corner-icon-button"
           mat-icon-button
           matTooltip="Family scheduling settings"
           aria-label="Family scheduling settings"
@@ -76,22 +73,11 @@
         </button>
       </mat-card-header>
 
-      <!-- Page Description -->
       <mat-card-content>
-        <p class="page-description">
-          Welcome to the family page! Here, you can view all families currently in the system, as well as filter them by name. Above, you can see some key statistics about the families and students in the system, including total counts and breakdowns by school and grade. Use the filter below to find specific families.
-        </p>
-        <hr style="margin: 1rem 0;" />
-
-        <p class="filters-description">
-          Use the field below to filter the families by name. The filter will be applied as you type. You can also add a new family by clicking the "+" button in the bottom right corner or view and edit an existing family by clicking on the pencil icon on the family card.
-        </p>
-        <p class="filters-description">
-          Filter by guardian account link status.
-        </p>
+        <p class="page-description app-page-subtitle">Search by guardian name or narrow the list by guardian account status.</p>
       </mat-card-content>
 
-      <div class="filter-container">
+      <div class="filter-container app-field-action-row">
           <!-- Guardian Name Filter -->
           <mat-form-field appearance="outline">
             <mat-label class="filter">Family</mat-label>
@@ -133,7 +119,7 @@
       <div class="flex-row">
         @if (families()) {
         <div class="flex-1">
-            <div class="family-cards-container flex-row gap-8 flex-wrap">
+            <div class="family-cards-container">
               @for (family of familiesPerPage(); track family._id) {
               <app-family-card
                 class="family-card"
@@ -176,33 +162,32 @@
 
 <!-- Options Menu -->
 @if (canUseFamilyOptionsMenu) {
-  <div class="fab-container">
-    <button mat-fab class="export-toggle-fab" matTooltip="Options" matTooltipPosition="left"
-      (click)="toggleOptionsMenu()" [ngClass]="{'expanded': showOptionsMenu()}" data-cy="options-menu-toggle">
-      <mat-icon class="md-24" aria-label="Options">more_vert</mat-icon>
+<div class="fab-container">
+  <button type="button" mat-fab class="export-toggle-fab" matTooltip="Options" matTooltipPosition="left"
+    (click)="toggleOptionsMenu()" [ngClass]="{'expanded': showOptionsMenu()}" data-cy="options-menu-toggle">
+    <mat-icon class="md-24" aria-label="Options">more_vert</mat-icon>
+  </button>
+  <!-- Add Family Button -->
+  @if (showOptionsMenu()) {
+    @if (canAddFamily) {
+    <button type="button" mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
+      data-cy="add-family-button">
+      <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
     </button>
-    <!-- Add Family Button -->
-    @if (showOptionsMenu()) {
-      @if (canAddFamily) {
-      <button mat-fab class="add-family-fab" matTooltip="Add Family" matTooltipPosition="left" routerLink="/family/new"
-        data-cy="add-family-button">
-        <mat-icon class="md-24" aria-label="Add Family">add</mat-icon>
-      </button>
-      }
+    }
+    <!-- Export CSV Button -->
+    @if (canExportFamilies) {
+    <button type="button" mat-fab class="export-fab" matTooltip="Export CSV" matTooltipPosition="left" (click)="downloadCSV()"
+      data-cy="export-csv-button">
+      <mat-icon class="md-24" aria-label="Export CSV">table_chart</mat-icon>
+    </button>
 
-      <!-- Export CSV Button -->
-      @if (canExportFamilies) {
-      <button mat-fab class="export-fab" matTooltip="Export CSV" matTooltipPosition="left" (click)="downloadCSV()"
-        data-cy="export-csv-button">
-        <mat-icon class="md-24" aria-label="Export CSV">table_chart</mat-icon>
-      </button>
-
-      <!-- Export PDF Button -->
-      <button mat-fab class="export-fab" matTooltip="Export PDF" matTooltipPosition="left" (click)="downloadPDF()"
-        data-cy="export-pdf-button">
-        <mat-icon class="md-24" aria-label="Export PDF">picture_as_pdf</mat-icon>
-      </button>
-      }
+    <!-- Export PDF Button -->
+    <button type="button" mat-fab class="export-fab" matTooltip="Export PDF" matTooltipPosition="left" (click)="downloadPDF()"
+      data-cy="export-pdf-button">
+      <mat-icon class="md-24" aria-label="Export PDF">picture_as_pdf</mat-icon>
+    </button>
+    }
     }
     </div>
   }

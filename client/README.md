@@ -2,6 +2,11 @@
 
 This project was generated with the [Angular CLI](https://github.com/angular/angular-cli).
 
+## Frontend styling
+
+- [Frontend Style Guide](docs/FRONTEND_STYLE_GUIDE.md) explains the rules for Angular Material, HTML structure, component SCSS, responsive behavior, and testing.
+- [Style Quick Reference](docs/STYLE_QUICK_REFERENCE.md) is the short team reference for tokens and global utility classes.
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.

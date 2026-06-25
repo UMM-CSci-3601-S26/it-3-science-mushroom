@@ -1,7 +1,12 @@
+/* Settings-specific vertical tabs; common form, table, and color rules are global. */
 .settings-container {
-  padding: 16px;
+  padding: 0;
   max-width: 1180px;
   margin: 0 auto;
+}
+
+.settings-card {
+  border-color: color-mix(in srgb, var(--app-primary) 24%, var(--app-border));
 }
 
 .vertical-settings-tabs {
@@ -47,32 +52,19 @@
 }
 
 .add-school-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  flex-wrap: wrap;
   margin-bottom: 8px;
-
-  mat-form-field {
-    flex: 1;
-    min-width: 180px;
-  }
-
-  button {
-    margin-top: 4px;
-  }
 }
 
 /* TABLE */
 .demo-table {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   overflow: hidden;
   margin-top: 1rem;
 }
 
 .mat-mdc-header-row {
-  background: var(--inventory-table-header-bg);
+  background: var(--app-surface-muted);
 }
 
 .mat-mdc-header-cell {
@@ -80,18 +72,16 @@
 }
 
 .mat-mdc-row:hover {
-  background: var(--inventory-table-hover-bg);
+  background: color-mix(in srgb, var(--app-surface-muted) 72%, var(--app-surface));
 }
 
 /* Paginator */
 mat-paginator {
   margin-top: 0.75rem;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
 }
 
-.flex-col {
-  display: flex;
-  flex-direction: column;
+.settings-form-stack {
   max-width: 400px;
 }
 
@@ -103,9 +93,15 @@ mat-paginator {
 }
 
 .save-button {
-  margin-top: 8px;
-  display: flex;
-  column-span: 2;
+  margin-bottom: var(--app-space-md);
+}
+
+.available-spots-form {
+  max-width: 720px;
+}
+
+.available-spots-form .save-button {
+  margin-bottom: 0;
 }
 
 .inventory-target-form {
@@ -115,7 +111,7 @@ mat-paginator {
 .inventory-target-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--app-space-md);
   margin-bottom: 8px;
 
   mat-form-field {
@@ -127,7 +123,7 @@ mat-paginator {
 .filter-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: var(--app-space-md);
   margin-top: 1rem;
 
   mat-form-field {
@@ -139,7 +135,7 @@ mat-paginator {
 
 .drive-order-columns {
   display: flex;
-  gap: 16px;
+  gap: var(--app-space-md);
   flex-wrap: wrap;
   align-items: flex-start;
   margin-bottom: 16px;
@@ -148,8 +144,8 @@ mat-paginator {
 .order-section {
   flex: 1;
   min-width: 220px;
-  border: 1px solid;
-  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
   padding: 12px;
 }
 
@@ -173,7 +169,7 @@ mat-paginator {
 }
 
 .unstaged-title {
-  color: #e65100;
+  color: var(--app-warning);
 }
 
 .not-given-title {
@@ -182,6 +178,7 @@ mat-paginator {
 
 .drop-list {
   min-height: 60px;
+  padding-right: var(--app-space-xs);
 }
 
 // CDK drag-and-drop container active highlight
@@ -194,14 +191,14 @@ mat-paginator {
   align-items: center;
   gap: 6px;
   padding: 6px 4px;
-  border-radius: 4px;
-  border: 1px solid;
+  border-radius: var(--app-radius-sm);
+  border: 1px solid var(--app-border);
   margin-bottom: 6px;
   font-size: 13px;
   cursor: default;
 
   &.cdk-drag-preview {
-    box-shadow: 0 4px 12px;
+    box-shadow: var(--app-shadow-md);
   }
 
   &.cdk-drag-placeholder {
@@ -282,5 +279,18 @@ mat-paginator {
 
   :host ::ng-deep .vertical-settings-tabs .mat-mdc-tab-body-wrapper {
     padding-left: 0;
+  }
+
+  .settings-form-stack,
+  .available-spots-form {
+    max-width: none;
+  }
+
+  .drive-order-columns {
+    flex-direction: column;
+  }
+
+  .order-section {
+    width: 100%;
   }
 }

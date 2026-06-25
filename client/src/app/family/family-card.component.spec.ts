@@ -194,4 +194,35 @@ describe('FamilyCardComponent', () => {
 
     expect(component.requestDelete.emit).toHaveBeenCalled();
   });
+
+  it('should copy the address and show confirmation', () => {
+    const services = component as unknown as {
+      clipboard: { copy: (value: string) => boolean };
+      snackBar: { open: (message: string, action: string, config: { duration: number }) => unknown };
+    };
+    const clipboard = services.clipboard;
+    const snackBar = services.snackBar;
+    spyOn(clipboard, 'copy').and.returnValue(true);
+    spyOn(snackBar, 'open');
+
+    component.copyContactValue(expectedFamily.address, 'Address');
+
+    expect(clipboard.copy).toHaveBeenCalledWith('123 Street');
+    expect(snackBar.open).toHaveBeenCalledWith('Address copied.', 'Close', { duration: 2000 });
+  });
+
+  it('should report when copying fails', () => {
+    const services = component as unknown as {
+      clipboard: { copy: (value: string) => boolean };
+      snackBar: { open: (message: string, action: string, config: { duration: number }) => unknown };
+    };
+    const clipboard = services.clipboard;
+    const snackBar = services.snackBar;
+    spyOn(clipboard, 'copy').and.returnValue(false);
+    spyOn(snackBar, 'open');
+
+    component.copyContactValue(expectedFamily.email, 'Email');
+
+    expect(snackBar.open).toHaveBeenCalledWith('Unable to copy email.', 'Close', { duration: 3000 });
+  });
 });

@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BarcodePrintQuantitySelection } from './barcode-print-item';
 import { Inventory } from '../inventory';
+import { DialogService } from '../../shared/dialog/dialog.service';
 
 type BarcodePrintQuantityRow = {
   item: Inventory;
@@ -31,6 +32,7 @@ export class BarcodePrintQuantityDialog {
   readonly defaultWarningLimit = 25;
 
   private dialogRef = inject(MatDialogRef<BarcodePrintQuantityDialog>);
+  private dialogService = inject(DialogService);
   data = inject<{ items: Inventory[]; warningLimit?: number }>(MAT_DIALOG_DATA);
 
   rows: BarcodePrintQuantityRow[] = this.data.items.map(item => ({
@@ -54,13 +56,20 @@ export class BarcodePrintQuantityDialog {
       const itemNames = highQuantitySelections.map(selection =>
         `${selection.item.item} (${selection.quantity})`
       ).join(', ');
-      const confirmed = window.confirm(
-        `You are printing more than ${warningLimit} labels for: ${itemNames}. Continue?`
-      );
+      const dialogRef = this.dialogService.openDialog({
+        title: 'Large Label Quantity',
+        message: `You are printing more than ${warningLimit} labels for: ${itemNames}. Continue?`,
+        buttonOne: 'Cancel',
+        buttonTwo: 'Continue'
+      }, '560px', '230px');
 
-      if (!confirmed) {
-        return;
-      }
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+        this.dialogRef.close(selections);
+      });
+      return;
     }
 
     this.dialogRef.close(selections);

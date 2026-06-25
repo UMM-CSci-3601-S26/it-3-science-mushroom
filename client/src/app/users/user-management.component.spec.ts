@@ -4,6 +4,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../auth/auth-service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { UserManagementComponent } from './user-management.component';
 import {
   AllRolePermissionsResponse,
@@ -36,6 +37,7 @@ describe('UserManagementComponent', () => {
   let fixture: ComponentFixture<UserManagementComponent>;
   let userService: jasmine.SpyObj<UserService>;
   let authService: jasmine.SpyObj<AuthService>;
+  let dialogService: jasmine.SpyObj<DialogService>;
   let snackBar: jasmine.SpyObj<MatSnackBar>;
   let componentInternals: UserManagementInternals;
 
@@ -92,6 +94,7 @@ describe('UserManagementComponent', () => {
       'deleteJobRole'
     ]);
     authService = jasmine.createSpyObj<AuthService>('AuthService', ['isAdmin']);
+    dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
     snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
 
     userService.getUsers.and.returnValue(of(users));
@@ -101,12 +104,16 @@ describe('UserManagementComponent', () => {
     userService.saveJobRole.and.returnValue(of(void 0));
     userService.deleteJobRole.and.returnValue(of(void 0));
     authService.isAdmin.and.returnValue(true);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
 
     await TestBed.configureTestingModule({
       imports: [UserManagementComponent, NoopAnimationsModule],
       providers: [
         { provide: UserService, useValue: userService },
         { provide: AuthService, useValue: authService },
+        { provide: DialogService, useValue: dialogService },
         { provide: MatSnackBar, useValue: snackBar }
       ]
     }).compileComponents();
@@ -275,13 +282,19 @@ describe('UserManagementComponent', () => {
   });
 
   it('adds point of sale as a bundled frontend permission after confirmation', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     component.selectJobRole(component.jobRoles[0]);
 
     component.togglePermission('access_point_of_sale', true);
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      'Point of Sale Access will also add these required permissions: Family List Viewing, Family Help Sessions, Inventory Viewing, Inventory Item Viewing. Enable it?'
+    expect(dialogService.openDialog).toHaveBeenCalledWith(
+      {
+        title: 'Enable Point of Sale Access',
+        message: 'Point of Sale Access will also add these required permissions: Family List Viewing, Family Help Sessions, Inventory Viewing, Inventory Item Viewing. Enable it?',
+        buttonOne: 'Cancel',
+        buttonTwo: 'Enable'
+      },
+      '560px',
+      '240px'
     );
     expect(component.selectedJobRole?.permissions).toContain('access_point_of_sale');
     expect(component.selectedJobRole?.permissions).toContain('view_families');
@@ -294,13 +307,19 @@ describe('UserManagementComponent', () => {
   });
 
   it('adds family page access as a bundled frontend permission after confirmation', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     component.selectJobRole(component.jobRoles[0]);
 
     component.togglePermission('access_families', true);
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      'Family Page Access will also add these required permissions: Family List Viewing, Family Detail Viewing, Dashboard Statistics. Enable it?'
+    expect(dialogService.openDialog).toHaveBeenCalledWith(
+      {
+        title: 'Enable Family Page Access',
+        message: 'Family Page Access will also add these required permissions: Family List Viewing, Family Detail Viewing, Dashboard Statistics. Enable it?',
+        buttonOne: 'Cancel',
+        buttonTwo: 'Enable'
+      },
+      '560px',
+      '240px'
     );
     expect(component.selectedJobRole?.permissions).toContain('access_families');
     expect(component.selectedJobRole?.permissions).toContain('view_families');
@@ -310,7 +329,9 @@ describe('UserManagementComponent', () => {
   });
 
   it('does not add point of sale bundle permissions when confirmation is cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
     component.selectJobRole(component.jobRoles[0]);
     const event = { source: { checked: true } } as never;
 
@@ -322,13 +343,19 @@ describe('UserManagementComponent', () => {
   });
 
   it('adds drive scheduling management as a bundled frontend permission after confirmation', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     component.selectJobRole(component.jobRoles[0]);
 
     component.togglePermission('manage_drive_scheduling', true);
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      'Drive Scheduling Management will also add these required permissions: Family Scheduling, Available Spot Editing. Enable it?'
+    expect(dialogService.openDialog).toHaveBeenCalledWith(
+      {
+        title: 'Enable Drive Scheduling Management',
+        message: 'Drive Scheduling Management will also add these required permissions: Family Scheduling, Available Spot Editing. Enable it?',
+        buttonOne: 'Cancel',
+        buttonTwo: 'Enable'
+      },
+      '560px',
+      '240px'
     );
     expect(component.selectedJobRole?.permissions).toContain('manage_drive_scheduling');
     expect(component.selectedJobRole?.permissions).toContain('schedule_families');
@@ -405,54 +432,80 @@ describe('UserManagementComponent', () => {
     expect(userService.saveJobRole).not.toHaveBeenCalled();
   });
 
-  it('creates a new job role and reloads the list', () => {
-    const reloadSpy = spyOn(component, 'loadAdminData');
-    component.newJobRoleName = '  Delivery Helper  ';
-
+  it('opens a new role draft without saving an empty role', () => {
     component.createJobRole();
 
-    expect(userService.saveJobRole).toHaveBeenCalledWith('delivery_helper', {
+    expect(component.isCreatingJobRole).toBeTrue();
+    expect(component.selectedJobRole).toEqual({
+      name: '',
       permissions: [],
       inherits: ['volunteer_base']
     });
+    expect(userService.saveJobRole).not.toHaveBeenCalled();
+  });
+
+  it('creates a new job role with its selected permissions and reloads the list', () => {
+    const reloadSpy = spyOn(component, 'loadAdminData');
+    component.createJobRole();
+    component.newJobRoleName = '  Delivery Helper  ';
+    component.selectedJobRole!.permissions = ['inventory.view', 'families.edit'];
+
+    component.saveSelectedJobRole();
+
+    expect(userService.saveJobRole).toHaveBeenCalledWith('delivery_helper', {
+      permissions: ['families.edit', 'inventory.view'],
+      inherits: ['volunteer_base']
+    });
     expect(component.newJobRoleName).toBe('');
+    expect(component.isCreatingJobRole).toBeFalse();
     expect(snackBar.open).toHaveBeenCalledWith('Job role created.', 'Close', { duration: 2500 });
     expect(reloadSpy).toHaveBeenCalled();
   });
 
   it('stops job role creation for blank or duplicate names', () => {
-    component.newJobRoleName = '   ';
     component.createJobRole();
+    component.newJobRoleName = '   ';
+    component.saveSelectedJobRole();
 
     component.newJobRoleName = 'Pickup Helper';
-    component.createJobRole();
+    component.saveSelectedJobRole();
 
     expect(userService.saveJobRole).not.toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith('Enter a role name.', 'Close', { duration: 2500 });
     expect(snackBar.open).toHaveBeenCalledWith('That job role already exists.', 'Close', { duration: 2500 });
   });
 
   it('shows the backend message when creating a job role fails', () => {
     userService.saveJobRole.and.returnValue(throwError(() => ({ error: { message: 'Create failed' } })));
+    component.createJobRole();
     component.newJobRoleName = 'delivery_helper';
 
-    component.createJobRole();
+    component.saveSelectedJobRole();
 
     expect(snackBar.open).toHaveBeenCalledWith('Create failed', 'Close', { duration: 3500 });
   });
 
   it('guards job role deletion for base roles and cancelled confirmation', () => {
-    const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
-
     component.deleteJobRole('volunteer_base');
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
     component.deleteJobRole('pickup_helper');
 
-    expect(confirmSpy).toHaveBeenCalledWith('Delete job role Pickup Helper?');
+    expect(dialogService.openDialog).toHaveBeenCalledWith({
+      title: 'Delete Job Role',
+      message: 'Delete job role Pickup Helper?',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Delete'
+    });
     expect(userService.deleteJobRole).not.toHaveBeenCalled();
   });
 
   it('deletes the selected job role and clears selection on success', () => {
     const reloadSpy = spyOn(component, 'loadAdminData');
-    spyOn(window, 'confirm').and.returnValue(true);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     component.selectedJobRole = {
       name: 'pickup_helper',
       permissions: [],
@@ -468,7 +521,9 @@ describe('UserManagementComponent', () => {
   });
 
   it('shows the backend message when deleting a role fails', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     userService.deleteJobRole.and.returnValue(throwError(() => ({ error: { message: 'Delete failed' } })));
 
     component.deleteJobRole('pickup_helper');
@@ -485,8 +540,9 @@ describe('UserManagementComponent', () => {
 
   it('formats role names for display and converts display names back to stored keys', () => {
     expect(component.formatRoleName('pickup_helper')).toBe('Pickup Helper');
+    expect(component.formatRoleName('volunteer_base')).toBe('Base Role');
     expect(component.formatSystemRole('VOLUNTEER')).toBe('Volunteer');
-    expect(component.formatRoleList(['volunteer_base', 'delivery_helper'])).toBe('Volunteer Base, Delivery Helper');
+    expect(component.formatRoleList(['volunteer_base', 'delivery_helper'])).toBe('Base Role, Delivery Helper');
     expect(component.formatRoleList([])).toBe('No inherited roles');
     expect(component.toRoleKey(' Delivery Helper! ')).toBe('delivery_helper');
   });

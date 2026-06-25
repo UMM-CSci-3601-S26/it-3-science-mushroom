@@ -1,7 +1,7 @@
 <!-- New Family Form -->
 <div class="flex-row">
   <div class="flex-1">
-    <form [formGroup]="addFamilyForm" (ngSubmit)="submitForm();">
+    <form class="family-form app-form-stack" [formGroup]="addFamilyForm" (ngSubmit)="submitForm();">
       <mat-card class="add-family-card">
         <!-- Form Title-->
         <mat-card-header>
@@ -9,9 +9,10 @@
         </mat-card-header>
         <!-- Guardian Information -->
         <mat-card-content>
-          <div class="flex-col">
+          <div class="app-form-stack">
+            <div class="app-field-grid">
             <!-- Guardian First Name -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Guardian First Name</mat-label>
               <input matInput formControlName="guardianFirstName"
                 required>
@@ -23,7 +24,7 @@
             </mat-form-field>
 
             <!-- Guardian Last Name -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Guardian Last Name</mat-label>
               <input matInput formControlName="guardianLastName"
                 required>
@@ -35,7 +36,7 @@
             </mat-form-field>
 
             <!-- Email -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Email</mat-label>
               <input matInput type="email"
                 formControlName="email" required>
@@ -47,7 +48,7 @@
             </mat-form-field>
 
             <!-- Address -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Address</mat-label>
               <input matInput type="text"
                 formControlName="address" required>
@@ -59,39 +60,63 @@
             </mat-form-field>
 
             <!-- Accommodations -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Any Accommodations Needed?</mat-label>
               <input matInput type="text"
                 formControlName="accommodations">
             </mat-form-field>
-
-            <!-- Time Availability -->
-            <h3>Available Times</h3>
-            <div formGroupName="timeAvailability">
-              <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox">
-                {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)
-              </mat-checkbox><br>
-              <mat-checkbox formControlName="lateMorning" data-test="lateMorningCheckbox">
-                {{ timeAvailabilityLabels.lateMorning }} (Late Morning)
-              </mat-checkbox><br>
-              <mat-checkbox formControlName="earlyAfternoon" data-test="earlyAfternoonCheckbox">
-                {{ timeAvailabilityLabels.earlyAfternoon }} (Early Afternoon)
-              </mat-checkbox><br>
-              <mat-checkbox formControlName="lateAfternoon" data-test="lateAfternoonCheckbox">
-                {{ timeAvailabilityLabels.lateAfternoon }} (Late Afternoon)
-              </mat-checkbox>
             </div>
 
-            <h3>Students</h3>
+            <!-- Time Availability -->
+            <section class="family-form-section">
+              <h3>Available Times</h3>
+              <div class="availability-grid" formGroupName="timeAvailability">
+                <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox">
+                  {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)
+                </mat-checkbox>
+                <mat-checkbox formControlName="lateMorning" data-test="lateMorningCheckbox">
+                  {{ timeAvailabilityLabels.lateMorning }} (Late Morning)
+                </mat-checkbox>
+                <mat-checkbox formControlName="earlyAfternoon" data-test="earlyAfternoonCheckbox">
+                  {{ timeAvailabilityLabels.earlyAfternoon }} (Early Afternoon)
+                </mat-checkbox>
+                <mat-checkbox formControlName="lateAfternoon" data-test="lateAfternoonCheckbox">
+                  {{ timeAvailabilityLabels.lateAfternoon }} (Late Afternoon)
+                </mat-checkbox>
+              </div>
+            </section>
+
+            <div class="section-heading">
+              <div>
+                <h3>Students</h3>
+                <p>Add school and supply information for each student in the family.</p>
+              </div>
+              <button mat-flat-button type="button" color="primary" (click)="addStudent()">
+                <mat-icon>person_add</mat-icon>
+                Add Student
+              </button>
+            </div>
 
             <!-- Student Fields -->
-            <div formArrayName="students">
+            <div class="student-list" formArrayName="students">
               @for (student of students.controls; track $index; let i = $index) {
-                <div [formGroupName]="i">
-                  <div class="student-fields">
+                <section class="student-form-section" [formGroupName]="i">
+                  <div class="student-form-header">
+                    <h4>Student {{ i + 1 }}</h4>
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      color="warn"
+                      class="remove-button"
+                      (click)="removeStudent(i)">
+                      <mat-icon>person_remove</mat-icon>
+                      Remove Student
+                    </button>
+                  </div>
+                  <div class="student-fields app-field-grid">
 
                     <!-- Student Name -->
-                    <mat-form-field>
+                    <mat-form-field appearance="outline">
                       <mat-label>Name</mat-label>
                       <input matInput formControlName="name" required>
                       @if (studentControlHasError(i, 'name')) {
@@ -102,7 +127,7 @@
                     </mat-form-field>
 
                     <!-- Student Grade -->
-                    <mat-form-field>
+                    <mat-form-field appearance="outline">
                       <mat-label>Grade</mat-label>
                       <mat-select formControlName="grade" required>
                         <mat-option *ngFor="let g of grades" [value]="g">{{ g }}</mat-option>
@@ -115,7 +140,7 @@
                     </mat-form-field>
 
                     <!-- Student School -->
-                    <mat-form-field class="student-school">
+                    <mat-form-field appearance="outline" class="student-school">
                       <mat-label>School</mat-label>
                       <mat-select formControlName="school" required>
                         <mat-option *ngFor="let s of schools" [value]="s.abbreviation">
@@ -130,7 +155,7 @@
                     </mat-form-field>
 
                     <!-- Teacher Last Name -->
-                    <mat-form-field>
+                    <mat-form-field appearance="outline">
                       <mat-label>Teacher Last Name</mat-label>
                       <input matInput formControlName="teacher">
                       @if (studentControlHasError(i, 'teacher')) {
@@ -140,20 +165,10 @@
                       }
                     </mat-form-field>
 
-                    <!-- Remove Student Button -->
-                    <button
-                    mat-flat-button
-                    type="button"
-                    color="accent"
-                    class="remove-button"
-                    (click)="removeStudent(i)">
-                      Remove Student
-                    </button>
-
                     <!-- Backpack and Headphones Radio Buttons -->
                     <div class="radio-group">
                       <div class="radio-section">
-                        <h4 style="font-size: 15px;">Backpack Needed?</h4>
+                        <h4 class="student-needs-heading">Backpack Needed?</h4>
                         <mat-radio-group formControlName="backpack">
                           <mat-radio-button [value]="true">Yes</mat-radio-button>
                           <mat-radio-button [value]="false">No</mat-radio-button>
@@ -161,7 +176,7 @@
                       </div>
 
                       <div class="radio-section">
-                        <h4 style="font-size: 15px;">Headphones Needed?</h4>
+                        <h4 class="student-needs-heading">Headphones Needed?</h4>
                         <mat-radio-group formControlName="headphones">
                           <mat-radio-button [value]="true">Yes</mat-radio-button>
                           <mat-radio-button [value]="false">No</mat-radio-button>
@@ -169,20 +184,13 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </section>
               }
             </div>
-    <!-- Add Student Button -->
-    <button
-      mat-flat-button
-      type="button"
-      color="primary"
-      class="add-button"
-      (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>
-        <mat-card-actions align="end">
+        <mat-card-actions class="app-action-row app-action-row-end" align="end">
           <!-- Back Button -->
           <button
             mat-button
@@ -191,19 +199,18 @@
             data-test="BackFamilyButton"
             routerLink="/family"
             >
-            BACK
+            Back
           </button>
           <!-- Submit Button -->
           <button
             mat-button
-            type="button"
             class="family-button"
             color="primary"
             [disabled]="!addFamilyForm.valid"
             type="submit"
             data-test="confirmAddFamilyButton"
             >
-            ADD FAMILY
+            Add Family
           </button>
         </mat-card-actions>
       </mat-card>

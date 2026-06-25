@@ -1,13 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
 import { BarcodePrintQuantityDialog } from './barcode-print-quantity-dialog';
 import { Inventory } from '../inventory';
+import { DialogService } from '../../shared/dialog/dialog.service';
 
 describe('BarcodePrintQuantityDialog', () => {
   let fixture: ComponentFixture<BarcodePrintQuantityDialog>;
   let component: BarcodePrintQuantityDialog;
   let dialogRefSpy: jasmine.SpyObj<MatDialogRef<BarcodePrintQuantityDialog>>;
+  let dialogServiceSpy: jasmine.SpyObj<DialogService>;
 
   const itemA: Inventory = {
     internalID: 'item-a',
@@ -45,12 +48,17 @@ describe('BarcodePrintQuantityDialog', () => {
 
   beforeEach(async () => {
     dialogRefSpy = jasmine.createSpyObj<MatDialogRef<BarcodePrintQuantityDialog>>('MatDialogRef', ['close']);
+    dialogServiceSpy = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
 
     await TestBed.configureTestingModule({
       imports: [BarcodePrintQuantityDialog, NoopAnimationsModule],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: { items: [itemA, itemB] } },
         { provide: MatDialogRef, useValue: dialogRefSpy },
+        { provide: DialogService, useValue: dialogServiceSpy },
       ],
     }).compileComponents();
 
@@ -102,13 +110,19 @@ describe('BarcodePrintQuantityDialog', () => {
   });
 
   it('asks for confirmation before printing more than the warning limit', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     component.rows[0].quantity = 26;
 
     component.print();
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      'You are printing more than 25 labels for: Markers (26). Continue?'
+    expect(dialogServiceSpy.openDialog).toHaveBeenCalledWith(
+      {
+        title: 'Large Label Quantity',
+        message: 'You are printing more than 25 labels for: Markers (26). Continue?',
+        buttonOne: 'Cancel',
+        buttonTwo: 'Continue'
+      },
+      '560px',
+      '230px'
     );
     expect(dialogRefSpy.close).toHaveBeenCalledWith([
       { item: itemA, quantity: 26 },
@@ -117,7 +131,9 @@ describe('BarcodePrintQuantityDialog', () => {
   });
 
   it('does not close when printing over the warning limit is canceled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
     component.rows[0].quantity = 26;
 
     component.print();
@@ -126,13 +142,12 @@ describe('BarcodePrintQuantityDialog', () => {
   });
 
   it('lets the warning limit be changed before printing', () => {
-    spyOn(window, 'confirm');
     component.data.warningLimit = 30;
     component.rows[0].quantity = 26;
 
     component.print();
 
-    expect(window.confirm).not.toHaveBeenCalled();
+    expect(dialogServiceSpy.openDialog).not.toHaveBeenCalled();
     expect(dialogRefSpy.close).toHaveBeenCalledWith([
       { item: itemA, quantity: 26 },
       { item: itemB, quantity: 1 },
@@ -140,26 +155,44 @@ describe('BarcodePrintQuantityDialog', () => {
   });
 
   it('falls back to the default warning limit when the saved setting is invalid', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     component.data.warningLimit = 0;
     component.rows[0].quantity = 26;
 
     component.print();
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      'You are printing more than 25 labels for: Markers (26). Continue?'
+    expect(dialogServiceSpy.openDialog).toHaveBeenCalledWith(
+      {
+        title: 'Large Label Quantity',
+        message: 'You are printing more than 25 labels for: Markers (26). Continue?',
+        buttonOne: 'Cancel',
+        buttonTwo: 'Continue'
+      },
+      '560px',
+      '230px'
     );
   });
 
   it('falls back to the default warning limit when the saved setting is missing', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+    dialogServiceSpy.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
     component.data.warningLimit = undefined;
     component.rows[0].quantity = 26;
 
     component.print();
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      'You are printing more than 25 labels for: Markers (26). Continue?'
+    expect(dialogServiceSpy.openDialog).toHaveBeenCalledWith(
+      {
+        title: 'Large Label Quantity',
+        message: 'You are printing more than 25 labels for: Markers (26). Continue?',
+        buttonOne: 'Cancel',
+        buttonTwo: 'Continue'
+      },
+      '560px',
+      '230px'
     );
   });
 

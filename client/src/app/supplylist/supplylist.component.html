@@ -1,9 +1,11 @@
-<div class="flex-row">
+<div class="flex-row app-page-shell">
   <div class="flex-1">
-    <mat-card class="search-grid">
-      <mat-card-header class="page-card-header">
-        <mat-card-title class="supplylist-title">Supply List</mat-card-title>
-        <button
+    <!-- Common filters stay visible; less-used item filters are progressively disclosed. -->
+    <mat-card class="search-grid app-page-stack app-corner-anchor">
+      <mat-card-header class="page-card-header app-page-header app-page-header-with-corner">
+        <mat-card-title class="supplylist-title app-page-title">Supply List</mat-card-title>
+        <button type="button"
+          class="app-corner-icon-button"
           mat-icon-button
           matTooltip="Drive order settings"
           aria-label="Drive order settings"
@@ -15,21 +17,18 @@
       </mat-card-header>
 
       <mat-card-content>
-        <p class="page-description">
+        <p class="page-description app-page-subtitle">
           Welcome to the Supply List page! Here, you can view the items a student in each grade at each school needs, as
           well as filter them by various attributes. In the future, functionality for generating supply sheets and other
           similar features may be added!
         </p>
-        <hr style="margin: 1rem 0;" />
+        <hr class="section-divider" />
 
-        <p class="filters-description">
-          Use the fields below to filter the inventory by school, grade, item, brand, color, size, type, and material.
-          The filters will be applied as you type, and you can clear them all at once using the "Clear" button on the
-          bottom.
+        <p class="filters-description app-text-muted">
+          Filter by school and grade first. Open advanced filters when you need to narrow the list by item details.
         </p>
 
-        <!-- Filter Fields -->
-        <div class="filter-container">
+        <div class="filter-container primary-filters app-grid-auto">
           <mat-form-field appearance="outline">
             <mat-label>School</mat-label>
             <input matInput [ngModel]="school() ?? ''" (ngModelChange)="school.set($event?.trim() || undefined)"
@@ -41,7 +40,21 @@
             <input matInput [ngModel]="grade() ?? ''" (ngModelChange)="grade.set($event?.trim() || undefined)"
               placeholder="contains..." data-cy="filter-grade" />
           </mat-form-field>
+        </div>
 
+        <button
+          type="button"
+          mat-stroked-button
+          class="advanced-filter-toggle"
+          (click)="toggleAdvancedFilters()"
+          [attr.aria-expanded]="advancedFiltersExpanded()">
+          <mat-icon>{{ advancedFiltersExpanded() ? 'expand_less' : 'tune' }}</mat-icon>
+          {{ advancedFiltersExpanded() ? 'Hide Advanced Filters' : 'Advanced Filters' }}
+        </button>
+
+        <!-- Advanced controls use the same tokens without overwhelming the default view. -->
+        @if (advancedFiltersExpanded()) {
+        <div class="filter-container advanced-filters app-grid-auto">
           <mat-form-field appearance="outline">
             <mat-label class="filter">Item</mat-label>
             <input matInput [ngModel]="item() ?? ''" (ngModelChange)="item.set($event?.trim() || undefined)"
@@ -78,20 +91,21 @@
               placeholder="contains..." data-cy="filter-material" />
           </mat-form-field>
         </div>
+        }
 
-        <div class="filter-extra">
+        <div class="filter-extra app-cluster">
           <!-- Clear Filters Button -->
           <button mat-stroked-button type="button" (click)="resetFilters()" data-cy="filter-clear" class="clear-button">
             Clear
           </button>
           <!-- Expand / Collapse All -->
-          <button mat-stroked-button (click)="toggleAll()" data-cy="expand-collapse-all">
+          <button type="button" mat-stroked-button (click)="toggleAll()" data-cy="expand-collapse-all">
             <mat-icon>{{ allExpanded() ? 'unfold_less' : 'unfold_more' }}</mat-icon>
             {{ allExpanded() ? 'Collapse All' : 'Expand All' }}
           </button>
 
           <!--# of Current Entries Displayed-->
-          <button mat-stroked-button class="count-display">
+          <button type="button" mat-stroked-button class="count-display">
             Count: {{ serverFilteredSupplyList().length }}
           </button>
         </div>
@@ -103,8 +117,8 @@
 <br>
 
 <!--Supply List Display-->
-<div>
-  <mat-card class="search-grid" data-cy="supplylist-card">
+<div class="app-page-shell">
+  <mat-card class="search-grid app-page-stack" data-cy="supplylist-card">
     <div class="tree-container" role="Display Items">
       @for (schoolGroup of groupedSupplyList(); track schoolGroup.school) {
       <section class="school-group">
@@ -119,7 +133,7 @@
 
           @if (canAddSupplyList) {
           <div class="grade-add-row">
-            <button mat-stroked-button color="primary" [routerLink]="['/supplylist/new']"
+            <button type="button" mat-stroked-button color="primary" [routerLink]="['/supplylist/new']"
               [queryParams]="{ school: schoolGroup.school, grade: gradeGroup.grade }" data-cy="add-item-button">
               <mat-icon>add</mat-icon> Add Item
             </button>
@@ -181,11 +195,11 @@
                   </mat-form-field>
                 </div>
                 <div class="item-actions">
-                  <button mat-icon-button color="primary" matTooltip="Save" (click)="saveEdit(element)"
+                  <button type="button" mat-icon-button color="primary" matTooltip="Save" (click)="saveEdit(element)"
                     data-cy="save-item">
                     <mat-icon>check</mat-icon>
                   </button>
-                  <button mat-icon-button matTooltip="Cancel" (click)="cancelEdit()" data-cy="cancel-edit">
+                  <button type="button" mat-icon-button matTooltip="Cancel" (click)="cancelEdit()" data-cy="cancel-edit">
                     <mat-icon>close</mat-icon>
                   </button>
                 </div>
@@ -195,12 +209,12 @@
                 @if (canEditSupplyList || canDeleteSupplyList) {
                 <div class="item-actions">
                   @if (canEditSupplyList) {
-                  <button mat-icon-button matTooltip="Edit" (click)="startEdit(element)" data-cy="edit-item">
+                  <button type="button" mat-icon-button matTooltip="Edit" (click)="startEdit(element)" data-cy="edit-item">
                     <mat-icon>edit</mat-icon>
                   </button>
                   }
                   @if (canDeleteSupplyList) {
-                  <button mat-icon-button color="warn" matTooltip="Delete" (click)="confirmDelete(element._id)"
+                  <button type="button" mat-icon-button color="warn" matTooltip="Delete" (click)="confirmDelete(element._id)"
                     data-cy="delete-item">
                     <mat-icon>delete</mat-icon>
                   </button>

@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Subject, forkJoin, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../auth/auth-service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { JobRoleConfig, PermissionCatalogEntry, User, UserService, UserUpsertRequest } from './user.service';
 
 type SystemRole = 'ADMIN' | 'VOLUNTEER' | 'GUARDIAN';
@@ -98,8 +101,10 @@ const PERMISSION_LABEL_FALLBACKS = new Map<string, string>([
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
+    MatInputModule,
     MatSnackBarModule,
     MatSelectModule,
     MatTabsModule,
@@ -118,11 +123,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   editingUser: User | null = null;
   selectedJobRole: JobRoleView | null = null;
   newJobRoleName = '';
+  isCreatingJobRole = false;
   isLoading = true;
   isRefreshing = false;
   lastRefreshedAt: Date | null = null;
 
   private userService = inject(UserService);
+  private dialogService = inject(DialogService);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
   private authService = inject(AuthService);
@@ -269,21 +276,30 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       this.snackBar.open('At least one admin account must remain in the system.', 'Close', { duration: 3500 });
       return;
     }
-    if (!confirm(`Delete user ${user.username}?`)) {
-      return;
-    }
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Delete User',
+      message: `Delete user ${user.username}?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Delete'
+    });
 
-    this.userService.deleteUser(user._id).subscribe({
-      next: () => {
-        this.snackBar.open('User deleted.', 'Close', { duration: 2500 });
-        if (this.editingUser?._id === user._id) {
-          this.cancelEdit();
-        }
-        this.loadAdminData();
-      },
-      error: error => {
-        this.snackBar.open(error.error?.message || 'Unable to delete user.', 'Close', { duration: 3500 });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) {
+        return;
       }
+
+      this.userService.deleteUser(user._id).subscribe({
+        next: () => {
+          this.snackBar.open('User deleted.', 'Close', { duration: 2500 });
+          if (this.editingUser?._id === user._id) {
+            this.cancelEdit();
+          }
+          this.loadAdminData();
+        },
+        error: error => {
+          this.snackBar.open(error.error?.message || 'Unable to delete user.', 'Close', { duration: 3500 });
+        }
+      });
     });
   }
 
@@ -291,6 +307,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   // is correctly structured for the server.
   selectJobRole(role: JobRoleView) {
     // Work on a copy so unsaved checkbox changes do not mutate the list view.
+    this.isCreatingJobRole = false;
+    this.newJobRoleName = '';
     this.selectedJobRole = {
       name: role.name,
       permissions: [...role.permissions],
@@ -303,7 +321,20 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const inherits = this.selectedJobRole.name === 'volunteer_base'
+    const roleName = this.isCreatingJobRole
+      ? this.toRoleKey(this.newJobRoleName)
+      : this.selectedJobRole.name;
+
+    if (!roleName) {
+      this.snackBar.open('Enter a role name.', 'Close', { duration: 2500 });
+      return;
+    }
+    if (this.isCreatingJobRole && this.jobRoles.some(role => role.name === roleName)) {
+      this.snackBar.open('That job role already exists.', 'Close', { duration: 2500 });
+      return;
+    }
+
+    const inherits = roleName === 'volunteer_base'
       ? []
       : (this.selectedJobRole.inherits.length ? this.selectedJobRole.inherits : ['volunteer_base']);
 
@@ -314,10 +345,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       inherits
     };
 
-    this.userService.saveJobRole(this.selectedJobRole.name, config).subscribe({
+    this.userService.saveJobRole(roleName, config).subscribe({
       next: () => {
-        this.snackBar.open('Job role saved.', 'Close', { duration: 2500 });
-        this.selectedJobRole = null;
+        this.snackBar.open(this.isCreatingJobRole ? 'Job role created.' : 'Job role saved.', 'Close', { duration: 2500 });
+        this.cancelRoleEdit();
         this.loadAdminData();
       },
       error: error => {
@@ -327,27 +358,21 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   createJobRole() {
-    const name = this.toRoleKey(this.newJobRoleName);
-    if (!name) {
-      return;
-    }
-    if (this.jobRoles.some(role => role.name === name)) {
-      this.snackBar.open('That job role already exists.', 'Close', { duration: 2500 });
-      return;
-    }
+    // Creation uses the same editor as updates so the role name and its
+    // permissions are committed together instead of saving an empty role first.
+    this.isCreatingJobRole = true;
+    this.newJobRoleName = '';
+    this.selectedJobRole = {
+      name: '',
+      permissions: [],
+      inherits: ['volunteer_base']
+    };
+  }
 
-    // New job roles inherit volunteer_base by default so they keep the baseline
-    // access needed by ordinary volunteer workflows.
-    this.userService.saveJobRole(name, { permissions: [], inherits: ['volunteer_base'] }).subscribe({
-      next: () => {
-        this.newJobRoleName = '';
-        this.snackBar.open('Job role created.', 'Close', { duration: 2500 });
-        this.loadAdminData();
-      },
-      error: error => {
-        this.snackBar.open(error.error?.message || 'Unable to create job role.', 'Close', { duration: 3500 });
-      }
-    });
+  cancelRoleEdit() {
+    this.selectedJobRole = null;
+    this.newJobRoleName = '';
+    this.isCreatingJobRole = false;
   }
 
   deleteJobRole(name: string) {
@@ -355,21 +380,30 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       // volunteer_base is the fallback role for volunteers and must always exist.
       return;
     }
-    if (!confirm(`Delete job role ${this.formatRoleName(name)}?`)) {
-      return;
-    }
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Delete Job Role',
+      message: `Delete job role ${this.formatRoleName(name)}?`,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Delete'
+    });
 
-    this.userService.deleteJobRole(name).subscribe({
-      next: () => {
-        this.snackBar.open('Job role deleted.', 'Close', { duration: 2500 });
-        if (this.selectedJobRole?.name === name) {
-          this.selectedJobRole = null;
-        }
-        this.loadAdminData();
-      },
-      error: error => {
-        this.snackBar.open(error.error?.message || 'Unable to delete job role.', 'Close', { duration: 3500 });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) {
+        return;
       }
+
+      this.userService.deleteJobRole(name).subscribe({
+        next: () => {
+          this.snackBar.open('Job role deleted.', 'Close', { duration: 2500 });
+          if (this.selectedJobRole?.name === name) {
+            this.cancelRoleEdit();
+          }
+          this.loadAdminData();
+        },
+        error: error => {
+          this.snackBar.open(error.error?.message || 'Unable to delete job role.', 'Close', { duration: 3500 });
+        }
+      });
     });
   }
 
@@ -384,10 +418,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       if (this.isBundlePermission(permission)) {
         // Bundle permissions add several implementation permissions together so
         // admins do not have to know every low-level route permission.
-        const enabledBundle = this.enablePermissionBundle(permission);
-        if (!enabledBundle && event) {
-          event.source.checked = false;
-        }
+        this.enablePermissionBundle(permission, event);
         return;
       }
       if (!this.selectedJobRole.permissions.includes(permission)) {
@@ -426,7 +457,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   // true if the bundle was successfully enabled, or false if the permission is not a recognized bundle.
   permissionSourceLabel(permission: string): string {
     if (this.isInheritedPermission(permission)) {
-      return 'Included by volunteer base';
+      return 'Included by base role';
     }
     return this.bundleSourceLabel(permission);
   }
@@ -476,6 +507,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   formatRoleName(role: string | null | undefined): string {
     if (!role) {
       return '';
+    }
+    if (role === 'volunteer_base') {
+      return 'Base Role';
     }
 
     return role
@@ -580,14 +614,20 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       });
   }
 
-  private enablePermissionBundle(permission: string): boolean {
+  private enablePermissionBundle(permission: string, event?: MatCheckboxChange): void {
     if (!this.selectedJobRole) {
-      return false;
+      if (event) {
+        event.source.checked = false;
+      }
+      return;
     }
 
     const bundle = PERMISSION_BUNDLES.find(candidate => candidate.permission === permission);
     if (!bundle) {
-      return false;
+      if (event) {
+        event.source.checked = false;
+      }
+      return;
     }
 
     const missingPermissions = bundle.permissions
@@ -599,15 +639,29 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       ? `${bundle.label} is a bundle permission. ${bundle.description} Enable it?`
       : `${bundle.label} will also add these required permissions: ${missingPermissionLabels.join(', ')}. Enable it?`;
 
-    if (!confirm(message)) {
-      return false;
-    }
+    const dialogRef = this.dialogService.openDialog({
+      title: `Enable ${bundle.label}`,
+      message,
+      buttonOne: 'Cancel',
+      buttonTwo: 'Enable'
+    }, '560px', '240px');
 
-    this.addPermission(bundle.permission);
-    for (const bundledPermission of bundle.permissions) {
-      this.addPermission(bundledPermission);
-    }
-    return true;
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) {
+        if (event) {
+          event.source.checked = false;
+        }
+        return;
+      }
+
+      this.addPermission(bundle.permission);
+      for (const bundledPermission of bundle.permissions) {
+        this.addPermission(bundledPermission);
+      }
+      if (event) {
+        event.source.checked = true;
+      }
+    });
   }
 
   private addPermission(permission: string) {
