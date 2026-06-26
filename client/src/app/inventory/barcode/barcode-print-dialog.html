@@ -1,4 +1,15 @@
-<h2 mat-dialog-title> Print Barcodes</h2>
+<h2 mat-dialog-title class="barcode-dialog-title-row">
+  <span>Print Barcodes</span>
+  <button
+    type="button"
+    mat-icon-button
+    matTooltip="Barcode print settings"
+    aria-label="Barcode print settings"
+    (click)="openBarcodeSettings()"
+    data-cy="barcode-settings-button">
+    <mat-icon>settings</mat-icon>
+  </button>
+</h2>
 
 <div class="barcode-dialog-panel">
   <mat-dialog-content class="barcode-print-content">

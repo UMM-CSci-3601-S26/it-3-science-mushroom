@@ -49,17 +49,17 @@ describe('Family list', () => {
 
     it('Should have the dashboard display the correct number of students per grade', () => {
       const expectedValuesGrade = [
-        { label: 'Grade: PreK', value: '1'},
-        { label: 'Grade: Kindergarten', value: '1'},
-        { label: 'Grade: 3', value: '1'},
-        { label: 'Grade: 5', value: '1'},
-        { label: 'Grade: 6', value: '2'},
-        { label: 'Grade: 7', value: '1'},
-        { label: 'Grade: 8', value: '2'},
-        { label: 'Grade: 9', value: '3'},
-        { label: 'Grade: 10', value: '3'},
-        { label: 'Grade: 11', value: '4'},
-        { label: 'Grade: 12', value: '2'}
+        { label: 'PreK', value: '1'},
+        { label: 'Kindergarten', value: '1'},
+        { label: '3', value: '1'},
+        { label: '5', value: '1'},
+        { label: '6', value: '2'},
+        { label: '7', value: '1'},
+        { label: '8', value: '2'},
+        { label: '9', value: '3'},
+        { label: '10', value: '3'},
+        { label: '11', value: '4'},
+        { label: '12', value: '2'}
       ];
 
       page.getStudentsPerGrade().each((e, i) => {
@@ -94,16 +94,12 @@ describe('Family list', () => {
 
   describe('Filter', () => {
     it('Should have specification filters', () => {
-      page.getSidenavButton().click();
-      page.getNavLink('Families').click();
       cy.url().should('match', /\/family$/);
 
       page.getFilterFamily().should('exist');
     });
 
     it("Should be able to take an input and display the correct filtered results", () => {
-      page.getSidenavButton().click();
-      page.getNavLink('Families').click();
       cy.url().should('match', /\/family$/);
 
       page.getFilterFamily().type("John Doe");
@@ -173,12 +169,10 @@ describe('Family list', () => {
 
       page.getStudentCards().should('have.length', expectedValuesStudent.length)
         .each((e, i) => {
-          cy.wrap(e).find('[matlistitemtitle]').should('have.text', expectedValuesStudent[i].name.replace('Name: ', ''));
-          cy.wrap(e).find('[matlistitemline]').eq(0).should(
-            'have.text',
-            `${expectedValuesStudent[i].school.replace('School: ', '')} - ${expectedValuesStudent[i].grade.replace('Grade: ', 'Grade ')}`
-          );
-          cy.wrap(e).find('[matlistitemline]').eq(1).should('have.text', expectedValuesStudent[i].teacher);
+          cy.wrap(e).find('.student-card-header strong').should('have.text', expectedValuesStudent[i].name.replace('Name: ', ''));
+          cy.wrap(e).find('.student-details dd').eq(0).should('have.text', expectedValuesStudent[i].school.replace('School: ', ''));
+          cy.wrap(e).find('.student-details dd').eq(1).should('have.text', expectedValuesStudent[i].grade.replace('Grade: ', ''));
+          cy.wrap(e).find('.student-details dd').eq(2).should('have.text', expectedValuesStudent[i].teacher.replace('Teacher: ', ''));
         });
     });
   });

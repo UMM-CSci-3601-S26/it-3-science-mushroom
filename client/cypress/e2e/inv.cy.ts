@@ -29,32 +29,20 @@ describe('Inventory', () => {
   });
 
   it('Should display inventory items', () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);
-    page.getSidenav()
-      .should('be.hidden');
     nextTick(1000)
     cy.contains('td', 'Test Item').should('exist'); // First item in the table
     // Note: Once 'test item' gets removed, this needs to be updated (possibly update to not check the first?)
   });
 
   it('Should have pagination controls in detailed view', () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);
-    page.getSidenav()
-      .should('be.hidden');
     cy.get('.mat-mdc-paginator').should('exist');
   });
 
   it('Should have pagination controls in simple view', () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);
-    page.getSidenav()
-      .should('be.hidden');
-    cy.get('[data-test="simple-view"]').click();
+    cy.get('[data-test="viewTypeToggle"]').click();
     cy.get('.mat-mdc-paginator').should('exist');
   });
 
@@ -77,7 +65,7 @@ describe('Inventory', () => {
   });
 
   it('Should display all inventory column headers in simple view', () => {
-    cy.get('[data-test="simple-view"]').click();
+    cy.get('[data-test="viewTypeToggle"]').click();
     cy.get('.demo-table thead th').then(($headers) => {
       const headerTexts = [...$headers].map((header) => (header.textContent || '').replace(/\s+/g, ' ').trim());
       expect(headerTexts).to.deep.equal([
@@ -89,8 +77,8 @@ describe('Inventory', () => {
   });
 
   it('Should display all inventory column headers in detailed view when switched to', () => {
-    cy.get('[data-test="simple-view"]').click();
-    cy.get('[data-test="detailed-view"]').click();
+    cy.get('[data-test="viewTypeToggle"]').click();
+    cy.get('[data-test="viewTypeToggle"]').click();
     cy.get('.demo-table thead th').then(($headers) => {
       const headerTexts = [...$headers].map((header) => (header.textContent || '').replace(/\s+/g, ' ').trim());
       expect(headerTexts).to.deep.equal([
@@ -119,8 +107,6 @@ describe('Inventory', () => {
   // for all specification fields
 
   it('Should have specification filters', () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);
 
     const errors: string[] = [];
@@ -163,8 +149,6 @@ describe('Inventory', () => {
   });
 
   it("Should be able to take an input and display the correct filtered results", () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);
 
     // Intercept the filtered API calls
@@ -188,8 +172,6 @@ describe('Inventory', () => {
   });
 
   it("Should be able to clear the filters via the button", () => {
-    page.getSidenavButton().click();
-    page.getNavLink('Inventory').click();
     cy.url().should('match', /\/inventory$/);
 
     // Intercept the filtered API calls

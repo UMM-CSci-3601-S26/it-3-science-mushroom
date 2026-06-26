@@ -1,14 +1,14 @@
 :host {
   display: block;
-  --app-primary-color: var(--mat-sys-primary, #1565c0);
-  --app-warn-color: var(--mat-sys-error, #d32f2f);
-  --app-text-color: var(--mat-sys-on-surface, rgba(255, 255, 255, 0.87));
-  --app-hover-color: var(--mat-sys-surface-container-high, #4a4a4a);
-  --app-divider-color: var(--mat-sys-outline-variant, rgba(255, 255, 255, 0.22));
 }
 
-mat-card {
-  margin: 16px;
+/* Delete-request composition; card, badge, and color semantics are global. */
+.users-page {
+  padding-top: var(--app-space-lg);
+}
+
+.users-card {
+  border-color: color-mix(in srgb, var(--app-primary) 22%, var(--app-border));
 }
 
 .delete-requests-toolbar {
@@ -32,8 +32,8 @@ mat-card {
 
 .request-review-card {
   border: 1px solid var(--app-divider-color);
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: var(--app-radius-lg);
+  padding: var(--app-space-md);
   background: color-mix(in srgb, var(--app-hover-color) 12%, transparent);
 }
 
@@ -55,7 +55,7 @@ mat-card {
 }
 
 .request-status {
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   padding: 4px 10px;
   background: color-mix(in srgb, var(--app-warn-color) 16%, transparent);
   color: var(--app-text-color);
@@ -75,7 +75,7 @@ mat-card {
 .request-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--app-space-sm);
   align-items: center;
   justify-content: flex-end;
   margin-top: 16px;
@@ -89,7 +89,7 @@ mat-card {
 .tab-count {
   align-items: center;
   background: var(--app-warn-color);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   display: inline-flex;
   font-size: 0.75rem;
   height: 20px;

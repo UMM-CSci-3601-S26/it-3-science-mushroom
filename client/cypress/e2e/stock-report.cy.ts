@@ -35,11 +35,10 @@ describe('Stock Report', () => {
       page.getAppTitle().should('contain', 'Stock Report');
     });
 
-    it('Should navigate to Stock Report page', () => {
-      page.getSidenavButton().click();
-      page.getNavLink('Stock Report').click();
+    it('Should navigate to Stock Report page via Operations menu', () => {
+      cy.visit('/');
+      page.navigateViaMenu('Stock Report');
       cy.url().should('match', /\/stock-report$/);
-      page.getSidenav().should('be.hidden');
     });
 
     it('Should display stock state sections', () => {

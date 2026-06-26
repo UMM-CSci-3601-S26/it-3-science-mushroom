@@ -1,5 +1,5 @@
 // Angular Imports
-import { Component, effect, inject, signal, viewChild, computed } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal, viewChild, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -98,6 +98,9 @@ export class InventoryComponent {
   private dialogService = inject(DialogService);
   private barcodePrintWindow = inject(BarcodePrintWindowService);
   private settingsService = inject(SettingsService);
+  private destroyRef = inject(DestroyRef);
+  private viewPreferenceChanged = false;
+  private mobileViewQuery?: MediaQueryList;
 
   get canAddInventoryItem(): boolean {
     return this.authService.hasPermission('add_inventory_item');
@@ -124,6 +127,15 @@ export class InventoryComponent {
         this.inventoryIndex.registerItem(item);
       }
     });
+
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      this.mobileViewQuery = window.matchMedia('(max-width: 599px)');
+      this.applyResponsiveView(this.mobileViewQuery.matches);
+      this.mobileViewQuery.addEventListener('change', this.onMobileViewChange);
+      this.destroyRef.onDestroy(() => {
+        this.mobileViewQuery?.removeEventListener('change', this.onMobileViewChange);
+      });
+    }
   }
 
   item = signal<string | undefined>(undefined);
@@ -138,6 +150,21 @@ export class InventoryComponent {
   showZeroQuantityItems = signal(false);
   showOnlyZeroQuantityItems = signal(false);
   viewType = signal<'detailed' | 'simple'>('detailed');
+
+  setViewType(viewType: 'detailed' | 'simple'): void {
+    this.viewPreferenceChanged = true;
+    this.viewType.set(viewType);
+  }
+
+  private readonly onMobileViewChange = (event: MediaQueryListEvent): void => {
+    this.applyResponsiveView(event.matches);
+  };
+
+  private applyResponsiveView(isMobile: boolean): void {
+    if (!this.viewPreferenceChanged) {
+      this.viewType.set(isMobile ? 'simple' : 'detailed');
+    }
+  }
 
   errMsg = signal<string | undefined>(undefined);
 

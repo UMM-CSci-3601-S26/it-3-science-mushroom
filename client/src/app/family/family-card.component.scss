@@ -1,153 +1,244 @@
-// This sets the font size to be the same for both the Angular Material
-// list item title and list item line.
-.mat-mdc-list-item {
-  &-title,
-  &-line {
-    font-size: 1rem;
-  }
-}
-
-// Capitalize the family role when displaying it in the family card.
-.family-card-role {
-  text-transform: capitalize;
-}
-
-.family-card-email {
-  display: block; /* Make it a block-level element */
-  color: inherit; /* Inherit the text color from the parent element */
-  text-decoration: none; /* Remove default underline */
-  padding: 0; /* Reset padding */
-  margin: 0; /* Reset margin */
-  cursor: pointer; /* Change cursor to pointer on hover */
-}
-
 .family-card {
-  border-left: 6px solid transparent;
+  height: 100%;
+  min-width: 0;
   position: relative;
+  border-left: 5px solid transparent;
 }
 
 .family-card-linked {
-  border-left-color: #4394c4;
+  border-left-color: var(--app-primary);
 }
 
 .family-card-manual {
-  border-left-color: #e8d43f;
+  border-left-color: var(--app-warning);
 }
 
-.family-card-compact {
-  min-width: 320px;
+.family-card-header {
+  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--app-space-sm);
+  direction: ltr;
+  text-align: left;
 }
 
-.family-card-compact-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+.family-heading {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  min-width: 0;
+  text-align: left;
+  width: 100%;
 }
 
-.family-card-compact-chip,
+.family-card-guardianName {
+  margin: 0;
+  text-align: left;
+}
+
+.family-card-guardianName,
+.family-card-email,
+.family-card-address,
+.family-card-timeAvailability {
+  overflow-wrap: anywhere;
+}
+
+.edit-family-button {
+  flex: 0 0 auto;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+
 .guardian-link-status {
   align-items: center;
-  border-radius: 16px;
   display: inline-flex;
-  font-size: 0.85rem;
-  gap: 6px;
-  line-height: 1.2;
-  padding: 4px 10px;
-}
-
-.family-card-compact-chip {
+  gap: var(--app-space-xs);
+  max-width: 100%;
+  margin-bottom: var(--app-space-md);
+  padding: 5px 10px;
   border: 1px solid var(--app-divider-color);
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  color: var(--app-text-color);
-}
-
-.guardian-link-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 999px;
-  font-size: 0.875rem;
+  border-radius: var(--app-radius-pill);
+  font-size: 0.82rem;
   font-weight: 600;
-  margin: 0 0 12px 16px;
-  padding: 6px 12px;
-  border: 1px solid var(--app-divider-color);
-  color: var(--app-text-color);
+}
+
+.guardian-link-status mat-icon {
+  flex: 0 0 auto;
+  height: 18px;
+  width: 18px;
+  font-size: 18px;
 }
 
 .guardian-link-status-linked {
-  color: #4394c4;
+  color: var(--app-primary);
 }
 
 .guardian-link-status-manual {
-  color: #e8d43f;
+  color: var(--app-warning);
 }
 
-.family-compact-grid {
+.student-section h3 {
+  font-size: 0.95rem;
+  margin: 0 0 var(--app-space-sm);
+}
+
+.student-card-grid {
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--app-space-sm);
 }
 
-.family-compact-item {
+.student-card {
+  min-width: 0;
+  padding: var(--app-space-sm);
   border: 1px solid var(--app-divider-color);
-  border-radius: 10px;
-  padding: 10px 12px;
-  background: color-mix(in srgb, var(--app-hover-color) 10%, transparent);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-muted);
 }
 
-.family-compact-item-full {
-  grid-column: 1 / -1;
+.student-card-header {
+  align-items: center;
+  display: flex;
+  gap: var(--app-space-xs);
+  min-width: 0;
 }
 
-.family-compact-label {
+.student-card-header strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.student-details {
+  display: grid;
+  gap: var(--app-space-xs);
+  margin: var(--app-space-sm) 0;
+}
+
+.student-details > div {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: var(--app-space-sm);
+}
+
+.student-details dt,
+.family-info-label {
+  color: var(--app-text-muted);
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  margin-bottom: 4px;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--app-text-color) 68%, transparent);
 }
 
-.family-compact-value {
+.student-details dd {
+  margin: 0;
   overflow-wrap: anywhere;
+}
+
+.student-needs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-xs);
+}
+
+.student-needs span {
+  padding: 4px 8px;
+  border-radius: var(--app-radius-pill);
+  font-size: 0.78rem;
+}
+
+.student-needs-none,
+.empty-students {
+  color: var(--app-text-muted);
+}
+
+.family-info-grid,
+.family-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--app-space-sm);
+  margin-top: var(--app-space-md);
+}
+
+.family-info-item {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--app-space-sm);
+  min-width: 0;
+  padding: var(--app-space-sm);
+  border: 1px solid var(--app-divider-color);
+  border-radius: var(--app-radius-lg);
+  color: inherit;
+  text-decoration: none;
+  text-align: left;
+  background: var(--app-surface);
+}
+
+.family-info-item > mat-icon {
+  flex: 0 0 auto;
+}
+
+.family-info-item > div {
+  min-width: 0;
+}
+
+.copy-info-button {
+  appearance: none;
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+  cursor: pointer;
+  font: inherit;
+  width: 100%;
+}
+
+.copy-info-button:hover,
+.copy-info-button:focus-visible {
+  background: color-mix(in srgb, var(--app-text) 9%, var(--app-surface));
+}
+
+.copy-icon {
+  align-self: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+  opacity: 0.68;
+}
+
+.family-info-label {
+  margin-bottom: 3px;
+}
+
+.compact-student-summary {
+  margin-bottom: var(--app-space-sm);
+  padding: 0 var(--app-space-xs);
 }
 
 .family-card-actions {
   justify-content: flex-end;
 }
 
-// Rules for how the cards should be displayed and the space in-between
-.student-card-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+.family-card-compact {
+  min-width: 0;
 }
 
-.student-cards {
-  display: flex;
-  padding: 10px;
-}
+@media (max-width: 599px) {
+  .student-card-grid,
+  .family-info-grid,
+  .family-compact-grid {
+    grid-template-columns: 1fr;
+  }
 
-.family-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .family-card-header {
+    padding-right: var(--app-space-xs);
+  }
 
-.edit-family-button {
-  margin-left: auto;
-  background-color: #2196F3;
-  color: white;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .guardian-link-status {
+    white-space: normal;
+  }
 
-.edit-family-fab {
-  margin-left: auto;
+  .family-card-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .family-card-actions button {
+    width: 100%;
+  }
 }

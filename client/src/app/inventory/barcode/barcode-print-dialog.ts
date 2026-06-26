@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-barcode-print-dialog',
@@ -21,12 +23,14 @@ import { MatInputModule } from '@angular/material/input';
     CommonModule,
     FormsModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatIconModule
   ]
 })
 
 export class BarcodePrintDialog {
   private dialogRef = inject(MatDialogRef<BarcodePrintDialog>)
+  private router = inject(Router);
   data = inject<{ items: Inventory[] }>(MAT_DIALOG_DATA);
   selectedItems: Inventory[] = [];
   descriptionFilter = '';
@@ -92,5 +96,12 @@ export class BarcodePrintDialog {
 
   clearSelectedItems(): void {
     this.selectedItems = [];
+  }
+
+  openBarcodeSettings(): void {
+    this.dialogRef.close();
+    this.router.navigate(['/settings'], {
+      queryParams: { tab: 'barcode-printing' }
+    });
   }
 }

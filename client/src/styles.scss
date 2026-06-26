@@ -1,4 +1,10 @@
-// Custom Theming for Angular Material
+// Ready 4 Learning global styling entry point.
+// Team guidance: docs/FRONTEND_STYLE_GUIDE.md
+// Quick reference: docs/STYLE_QUICK_REFERENCE.md
+//
+// Keep this file limited to Angular Material theming, app-wide design tokens,
+// reusable primitives, and intentional Material overrides. Feature-specific
+// layout belongs in that feature's component SCSS.
 @use '@angular/material' as mat;
 // For more information: https://material.angular.io/guide/theming
 // Plus imports for other components in your app.
@@ -18,22 +24,10 @@
 
   // Extract the palettes you need from the theme definition.
   $primary: map.get($color-config, primary);
-  $accent: map.get($color-config, accent);
-  $warn: map.get($color-config, warn);
-
-  $background: map.get($color-config, background);
   $foreground: map.get($color-config, foreground);
-
-  $is-dark: map.get($color-config, is-dark);
 
   // Define any styles affected by the theme.
 
-  @if $is-dark {
-    .mat-toolbar.mat-primary {
-      background: mat.m2-get-color-from-palette($background, app-bar);
-      color: mat.m2-get-color-from-palette($foreground, text);
-    }
-  }
   .drawer-list-item-active {
     background-color: color.change(mat.m2-get-color-from-palette($primary), $alpha: 0.15) !important;
     color: mat.m2-get-color-from-palette($primary) !important;
@@ -50,94 +44,239 @@
   }
 }
 
-// Define the palettes for your theme using the Material Design palettes available in palette.scss
-// (imported above). For each palette, you can optionally specify a default, lighter, and darker
-// hue. Available color palettes: https://material.io/design/color/
-// Custom palette maps
+// DESIGN TOKENS
+// App-level CSS variables bridge Angular Material palettes to custom component
+// styles. Components should consume these semantic tokens instead of palette
+// hex values so light mode, dark mode, and future palette changes stay aligned.
+@mixin app-color-tokens($theme) {
+  $color-config: mat.m2-get-color-config($theme);
+  $primary: map.get($color-config, primary);
+  $accent: map.get($color-config, accent);
+  $warn: map.get($color-config, warn);
+  $background: map.get($color-config, background);
+  $foreground: map.get($color-config, foreground);
+  $is-dark: map.get($color-config, is-dark);
 
-// #7a0019
-$custom-maroon: (
-  50: #F5E6EA,
-  50-contrast: #000000,
-  100: #E8C1C9,
-  100-contrast: #000000,
-  200: #CA878E,
-  200-contrast: #000000,
-  300: #B35B65,
-  300-contrast: #ffffff,
-  400: #B73846,
-  400-contrast: #ffffff,
-  500: #B51F2F,
-  500-contrast: #ffffff,
-  600: #A7172D,
-  600-contrast: #ffffff,
-  700: #970E28,
-  700-contrast: #ffffff,
-  800: #8A0721,
-  800-contrast: #ffffff,
-  900: #7A0018,
-  900-contrast: #ffffff,
-  A100: #B51F2F,
-  A100-contrast: #ffffff,
-  A200: #7A0018,
-  A200-contrast: #ffffff,
-  A400: #B51F2F,
-  A400-contrast: #ffffff,
-  A700: #7A0018,
-  A700-contrast: #ffffff
+  --app-bg: #{mat.m2-get-color-from-palette($background, background)};
+  --app-surface: #{mat.m2-get-color-from-palette($background, card)};
+  --app-surface-muted: #{mat.m2-get-color-from-palette($background, hover)};
+  --app-page-bg: radial-gradient(
+    circle at top right,
+    color-mix(in srgb, var(--app-primary) 10%, transparent),
+    transparent 18rem
+  ),
+  radial-gradient(
+    circle at bottom left,
+    color-mix(in srgb, var(--app-accent) 11%, transparent),
+    transparent 22rem
+  ),
+  var(--app-surface);
+  --app-text: #{mat.m2-get-color-from-palette($foreground, text)};
+  --app-text-muted: #{mat.m2-get-color-from-palette($foreground, secondary-text)};
+  --app-contrast: #{if($is-dark, #ffffff, #000000)};
+  --app-border: #{mat.m2-get-color-from-palette($foreground, divider)};
+
+  --app-primary: #{mat.m2-get-color-from-palette($primary)};
+  --app-on-primary: #{mat.m2-get-color-from-palette($primary, default-contrast)};
+  --app-accent: #{mat.m2-get-color-from-palette($accent)};
+  --app-on-accent: #{mat.m2-get-color-from-palette($accent, default-contrast)};
+  --app-warn: #{mat.m2-get-color-from-palette($warn)};
+  --app-on-warn: #{mat.m2-get-color-from-palette($warn, default-contrast)};
+
+  // Material M2 does not expose success/tertiary palette slots, so these
+  // custom tokens let app-specific UI use the same Ready 4 Learning colors.
+  --app-tertiary: #{if($is-dark, #ffd166, #f2b84b)};
+  --app-on-tertiary: #1f2c37;
+
+  --app-success: #{if($is-dark, #7bc399, #2f7d4a)};
+  --app-on-success: #{if($is-dark, #000000, #ffffff)};
+  --app-warning: var(--app-warn);
+  --app-on-warning: var(--app-on-warn);
+  --app-shadow-color: #{if($is-dark, rgba(0, 0, 0, 0.36), rgba(25, 61, 87, 0.16))};
+
+  // Shared dimensions keep custom components aligned with Material controls.
+  // Card radii stay restrained so dense operational screens remain easy to scan.
+  --app-radius-sm: 4px;
+  --app-radius-md: 6px;
+  --app-radius-lg: 8px;
+  --app-radius-xl: 8px;
+  --app-radius-pill: 999px;
+
+  --app-space-xs: 4px;
+  --app-space-sm: 8px;
+  --app-space-md: 16px;
+  --app-space-lg: 24px;
+  --app-space-xl: 32px;
+
+  --app-shadow-sm: 0 2px 8px var(--app-shadow-color);
+  --app-shadow-md: 0 8px 22px var(--app-shadow-color);
+  --app-shadow-lg: 0 14px 34px var(--app-shadow-color);
+
+  --app-primary-color: var(--app-primary);
+  --app-primary-on-color: var(--app-on-primary);
+  --app-warn-color: var(--app-warn);
+  --app-warn-on-color: var(--app-on-warn);
+  --app-warn-muted-color: var(--app-warning);
+  --app-text-color: var(--app-text);
+  --app-hover-color: var(--app-surface-muted);
+  --app-divider-color: var(--app-border);
+}
+
+// ANGULAR MATERIAL PALETTES
+// Angular Material M2 expects complete tonal maps even when the design starts
+// with one brand color. The 500 entries are the main Ready 4 Learning colors;
+// surrounding hues provide predictable hover, focus, and state colors.
+$r4l-blue-palette: (
+  50: #e8f1f8,
+  100: #d1e3f1,
+  200: #a3c7e3,
+  300: #75abd5,
+  400: #478fc7,
+  500: #2f6f9f,
+  600: #2a648f,
+  700: #25597f,
+  800: #204e6f,
+  900: #193d57,
+  A100: #cfeaff,
+  A200: #8ecfff,
+  A400: #3fa7e8,
+  A700: #236f9e,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #ffffff,
+  ),
 );
 
-// #ffcc33
-$custom-gold: (
-  50: #FFF8E2,
-  50-contrast: #000000,
-  100: #FFEDB5,
-  100-contrast: #000000,
-  200: #FFE186,
-  200-contrast: #000000,
-  300: #FFD755,
-  300-contrast: #000000,
-  400: #FFCC33,
-  400-contrast: #000000,
-  500: #FFC31F,
-  500-contrast: #000000,
-  600: #FFB519,
-  600-contrast: #000000,
-  700: #FEA317,
-  700-contrast: #000000,
-  800: #FE9215,
-  800-contrast: #000000,
-  900: #FE7310,
-  900-contrast: #000000,
-  A100: #FFC31F,
-  A100-contrast: #000000,
-  A200: #FE7310,
-  A200-contrast: #000000,
-  A400: #FFC31F,
-  A400-contrast: #000000,
-  A700: #FE7310,
-  A700-contrast: #000000
+$r4l-gold-palette: (
+  50: #fff8e6,
+  100: #fff0cc,
+  200: #ffe199,
+  300: #ffd166,
+  400: #ffc94f,
+  500: #f2b84b,
+  600: #d9a542,
+  700: #bf913a,
+  800: #a67e33,
+  900: #7a5d25,
+  A100: #fff1c2,
+  A200: #ffdc7a,
+  A400: #f2b84b,
+  A700: #b98223,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #000000,
+    600: #000000,
+    700: #000000,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #ffffff,
+  ),
 );
 
-// Custom Palettes (Commented out as they are incomplete)
-//$light-primary: mat.m2-define-palette($custom-maroon, 500);
-//$light-accent: mat.m2-define-palette($custom-gold, 500);
+$r4l-success-palette: (
+  50: #e9f5ee,
+  100: #d3ebdd,
+  200: #a7d7bb,
+  300: #7bc399,
+  400: #4faf77,
+  500: #2f7d4a,
+  600: #2a7143,
+  700: #25643b,
+  800: #205834,
+  900: #183f25,
+  A100: #c7f0d8,
+  A200: #8fdcaf,
+  A400: #4caf73,
+  A700: #25643b,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #ffffff,
+  ),
+);
 
-$light-primary: mat.m2-define-palette(mat.$m2-blue-palette, 900); // 500 is the base hue of a Material color
+$r4l-warn-palette: (
+  50: #faeaea,
+  100: #f5d5d5,
+  200: #ebabab,
+  300: #e18181,
+  400: #d65757,
+  500: #b84242,
+  600: #a63b3b,
+  700: #933535,
+  800: #812e2e,
+  900: #632323,
+  A100: #ffd0d0,
+  A200: #f28c8c,
+  A400: #d65757,
+  A700: #933535,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #ffffff,
+  ),
+);
 
-// The 200 here makes the indigo color lighter
-// Material Design dark themes should use a desaturated versions of primary and accent colors
-// See: https://material.io/design/color/dark-theme.html
-$dark-primary: mat.m2-define-palette(mat.$m2-blue-palette, 800);
+// THEME DEFINITIONS
+// Light and dark themes use the same brand family so the app feels consistent
+// while still choosing lighter hues for dark mode readability.
+$light-primary: mat.m2-define-palette($r4l-blue-palette, 500, 100, 700);
+$light-accent: mat.m2-define-palette($r4l-gold-palette, 500, 200, 700);
+$light-warn: mat.m2-define-palette($r4l-warn-palette, 500, 300, 700);
 
-$light-accent: mat.m2-define-palette(mat.$m2-light-blue-palette, 700);
-$dark-accent: mat.m2-define-palette(mat.$m2-light-blue-palette, 600);
+$dark-primary: mat.m2-define-palette($r4l-blue-palette, 300, 100, 700);
+$dark-accent: mat.m2-define-palette($r4l-gold-palette, 300, 100, 700);
+$dark-warn: mat.m2-define-palette($r4l-warn-palette, 300, 100, 700);
 
-// The warn palette is optional (defaults to red).
-$light-warn: mat.m2-define-palette(mat.$m2-red-palette); // Without a hue given, it defaults to 500
-$dark-warn: mat.m2-define-palette(mat.$m2-red-palette, 300);
+// Angular Material M2 only has primary/accent/warn theme slots. Success is
+// defined as a custom palette for app-specific classes and CSS variables.
+$light-success: mat.m2-define-palette($r4l-success-palette, 500, 300, 700);
+$dark-success: mat.m2-define-palette($r4l-success-palette, 300, 100, 700);
 
-$typography-config: mat.m2-define-typography-config();
+$typography-config: mat.m2-define-typography-config(
+  $font-family: '"Atkinson Hyperlegible", Arial, sans-serif'
+);
 
 // Create the theme object for a light theme
 // We include typography and density information here because it is the default theme
@@ -161,7 +300,8 @@ $dark-theme: mat.m2-define-dark-theme((
   ),
 ));
 
-// Sets up the theming for built in material components with the light theme
+// THEME APPLICATION
+// Sets up the theming for built in material components with the light theme.
 @include mat.all-component-themes($light-theme);
 
 // Sets up theming for our custom components with the light theme
@@ -175,26 +315,677 @@ html, body {
   height: 100%;
 }
 
+:root {
+  // Light is the default theme so the app has stable colors before Angular boots.
+  @include app-color-tokens($light-theme);
+  color-scheme: light;
+}
+
 body {
   margin: 0;
+  background: var(--app-page-bg);
+  background-color: var(--app-bg);
+  color: var(--app-text);
 }
 
 // This media query detects if the user has dark-mode turned on on their OS or browser
 // If you don't want to apply dark theme automatically,
 // you can also make this a normal class and add it to body or html dynamically.
 @media (prefers-color-scheme: dark) {
+  // Respect the OS/browser dark preference unless the user has chosen light mode
+  // with the in-app testing toggle.
+  :root:not(.app-theme-light) {
+    @include app-color-tokens($dark-theme);
+    color-scheme: dark;
+  }
+
   // Sets up the theming for built in material components with the dark theme
-  @include mat.all-component-colors($dark-theme);
+  :root:not(.app-theme-light) {
+    @include mat.all-component-colors($dark-theme);
+  }
+
   // Sets up theming for our custom components with the dark theme
+  :root:not(.app-theme-light) {
+    @include app-theming($dark-theme);
+  }
+}
+
+// Manual testing overrides. These class scopes intentionally wrap Angular
+// Material's color mixins so Material components and custom app tokens switch together.
+:root.app-theme-light {
+  @include app-color-tokens($light-theme);
+  color-scheme: light;
+  @include mat.all-component-colors($light-theme);
+  @include app-theming($light-theme);
+}
+
+:root.app-theme-dark {
+  @include app-color-tokens($dark-theme);
+  color-scheme: dark;
+  @include mat.all-component-colors($dark-theme);
   @include app-theming($dark-theme);
 }
 
-// Use uppercase text on buttons
+// APP BACKGROUNDS
+// Material containers must opt into the app background because some Material
+// components otherwise retain their own default light surface.
+.mat-app-background,
+.mat-drawer-container,
+.mat-drawer-content,
+.mat-sidenav-content {
+  background: var(--app-page-bg);
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}
+
+// MATERIAL COMPONENT NORMALIZATION
+// Shared button-toggle theme tokens keep segmented controls consistent across
+// current and future mat-button-toggle groups.
+.mat-button-toggle-group,
+.mat-button-toggle-standalone {
+  --mat-button-toggle-background-color: var(--app-surface);
+  --mat-button-toggle-button-toggle-text-color: var(--app-text);
+  --mat-button-toggle-disabled-state-text-color: var(--app-text-muted);
+  --mat-button-toggle-divider-color: var(--app-border);
+  --mat-button-toggle-selected-state-background-color: var(--app-primary);
+  --mat-button-toggle-selected-state-text-color: var(--app-on-primary);
+}
+
+// Friendly sentence-case buttons are easier to scan than administrative
+// all-caps labels. Icon buttons retain their native circular shape.
 .mat-mdc-button,
 .mat-mdc-raised-button,
 .mat-mdc-outlined-button,
 .mat-mdc-unelevated-button {
+  border-radius: var(--app-radius-pill) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  text-transform: none !important;
+}
+
+.mat-mdc-icon-button {
+  border-radius: 50%;
+}
+
+// Shared interaction motion gives the rest of the app the same responsive feel
+// as Point of Sale without changing layout or application behavior.
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-icon-button,
+.mat-mdc-card,
+.app-card {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.mat-mdc-button:not(:disabled):hover,
+.mat-mdc-raised-button:not(:disabled):hover,
+.mat-mdc-outlined-button:not(:disabled):hover,
+.mat-mdc-unelevated-button:not(:disabled):hover,
+.mat-mdc-icon-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.mat-mdc-card:hover,
+.app-card:hover {
+  border-color: color-mix(in srgb, var(--app-primary) 32%, var(--app-border)) !important;
+  box-shadow: var(--app-shadow-md) !important;
+}
+
+// SURFACES
+// Reusable surfaces for pages that need a custom container without inventing
+// another card treatment.
+.app-card,
+.mat-mdc-card {
+  border: 1px solid color-mix(in srgb, var(--app-primary) 18%, var(--app-border)) !important;
+  border-radius: var(--app-radius-lg) !important;
+  box-shadow: var(--app-shadow-sm) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--app-primary) 4%, var(--app-surface)),
+      var(--app-surface)
+    ) !important;
+}
+
+.app-card {
+  padding: var(--app-space-lg);
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.app-card-muted {
+  padding: var(--app-space-md);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-muted);
+  color: var(--app-text);
+}
+
+// PAGE SCAFFOLDING
+// Reusable page scaffolding keeps new feature pages visually aligned without
+// each team member recreating margins, widths, and heading spacing.
+.app-page-shell {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1280px;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--app-space-lg);
+}
+
+.app-page-stack {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.app-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+}
+
+.app-page-header-with-corner {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  padding-right: calc(var(--app-space-lg) + 40px);
+}
+
+.app-page-header-with-corner .mat-mdc-card-header-text,
+.app-page-header-with-corner .mat-mdc-card-title,
+.app-page-header-with-corner .mat-mdc-card-subtitle,
+.app-page-header-with-corner .app-page-title,
+.app-page-header-with-corner .app-page-subtitle {
+  margin-left: 0;
+  margin-right: 0;
+  text-align: left;
+}
+
+.app-corner-anchor {
+  position: relative;
+}
+
+.app-corner-icon-button,
+.app-corner-icon-button.mat-mdc-icon-button {
+  position: absolute;
+  top: var(--app-space-sm);
+  right: var(--app-space-sm);
+  z-index: 2;
+  color: var(--app-text-muted);
+}
+
+.app-page-title {
+  margin: 0;
+  color: var(--app-text);
+  font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.app-page-subtitle {
+  margin: var(--app-space-xs) 0 0;
+  color: var(--app-text-muted);
+  line-height: 1.45;
+}
+
+// Surface primitives for forms, filters, and secondary cards where the full
+// app-card shadow treatment may feel too strong.
+.app-panel,
+.app-panel-muted {
+  padding: var(--app-space-md);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+}
+
+.app-panel {
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.app-panel-muted {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--app-accent) 8%, var(--app-surface-muted)),
+    var(--app-surface-muted)
+  );
+  color: var(--app-text);
+}
+
+// Dialog and status primitives keep feature dialogs light. Component styles
+// should use these before duplicating local card, message, and action-row CSS.
+.app-dialog-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-md);
+  width: 100%;
+  max-height: 86vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: var(--app-space-lg);
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.app-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-md);
+  padding-bottom: var(--app-space-md);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-dialog-title {
+  margin: 0;
+  color: var(--app-text);
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.app-dialog-subtitle {
+  margin: var(--app-space-xs) 0 0;
+  color: var(--app-text-muted);
+  font-weight: 600;
+}
+
+.app-status-panel {
+  padding: var(--app-space-md);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-muted);
+  color: var(--app-text);
+}
+
+.app-status-panel p {
+  margin: var(--app-space-xs) 0;
+}
+
+.app-status-warn {
+  border-color: color-mix(in srgb, var(--app-warn) 42%, var(--app-border));
+  background: color-mix(in srgb, var(--app-warn) 12%, var(--app-surface));
+  color: var(--app-warn);
+}
+
+.app-status-warning {
+  border-color: color-mix(in srgb, var(--app-warning) 42%, var(--app-border));
+  background: color-mix(in srgb, var(--app-warning) 12%, var(--app-surface));
+  color: var(--app-warning);
+}
+
+// LAYOUT PRIMITIVES
+// Combine these single-purpose helpers in HTML before adding a new feature
+// class. Component SCSS should handle only layout unique to that feature.
+.app-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--app-space-sm);
+}
+
+.app-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+}
+
+.app-stack-sm {
+  display: grid;
+  gap: var(--app-space-sm);
+}
+
+.app-stack-md {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.app-stack-lg {
+  display: grid;
+  gap: var(--app-space-lg);
+}
+
+.app-grid-2,
+.app-grid-3,
+.app-grid-auto {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.app-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.app-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.app-grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.app-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-xs);
+}
+
+.app-icon-label > mat-icon {
+  flex: 0 0 auto;
+}
+
+.app-kv {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--app-space-xs) var(--app-space-sm);
+}
+
+.app-kv-label {
+  color: var(--app-text-muted);
+  font-weight: 700;
+}
+
+.app-text-muted {
+  color: var(--app-text-muted);
+}
+
+.app-section-title {
+  margin: 0 0 var(--app-space-md);
+  color: var(--app-primary);
+  font-weight: 700;
+  border-left: 4px solid color-mix(in srgb, var(--app-primary) 55%, var(--app-border));
+  padding-left: var(--app-space-sm);
+  letter-spacing: 0;
+}
+
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-unelevated-button.mat-accent {
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--app-accent) 24%, transparent);
+}
+
+// SEMANTIC STATUS
+// Status badges use semantic tokens so their meaning remains stable when the
+// light or dark brand palette changes.
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--app-space-xs) 10px;
+  border-radius: var(--app-radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.app-badge-primary {
+  background: color-mix(in srgb, var(--app-primary) 16%, var(--app-surface));
+  color: var(--app-primary);
+}
+
+.app-badge-success {
+  background: color-mix(in srgb, var(--app-success) 16%, var(--app-surface));
+  color: var(--app-success);
+}
+
+.app-badge-warn {
+  background: color-mix(in srgb, var(--app-warn) 16%, var(--app-surface));
+  color: var(--app-warn);
+}
+
+.app-badge-accent {
+  background: color-mix(in srgb, var(--app-accent) 22%, var(--app-surface));
+  color: color-mix(in srgb, var(--app-accent) 78%, var(--app-text));
+}
+
+.app-badge-tertiary {
+  background: color-mix(in srgb, var(--app-tertiary) 22%, var(--app-surface));
+  color: color-mix(in srgb, var(--app-tertiary) 78%, var(--app-text));
+}
+
+// FORMS AND ACTIONS
+// Material form fields keep their native sizing while sharing a softer outline.
+.mat-mdc-text-field-wrapper,
+.mat-mdc-form-field-focus-overlay {
+  border-radius: var(--app-radius-lg) !important;
+}
+
+.app-form-field-full,
+.full-width {
+  width: 100%;
+}
+
+// Standard form composition. Feature styles should define only exceptional
+// grid tracks or widths rather than rebuilding field and action spacing.
+.app-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-md);
+}
+
+.app-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--app-space-md);
+  align-items: start;
+}
+
+.app-field-grid > .mat-mdc-form-field,
+.app-field-action-row > .mat-mdc-form-field {
+  width: 100%;
+}
+
+.app-field-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-md);
+  align-items: flex-start;
+}
+
+.app-field-action-row > .mat-mdc-form-field {
+  flex: 1 1 220px;
+  min-width: min(100%, 180px);
+}
+
+.app-field-action-row > button,
+.app-field-action-row > .app-action-row {
+  min-height: 56px;
+}
+
+.app-field-action-row > .app-action-row > button {
+  min-height: 56px;
+}
+
+.app-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-sm);
+  align-items: center;
+}
+
+.app-action-row-end {
+  justify-content: flex-end;
+}
+
+.app-scroll-region {
+  max-height: min(28rem, 55vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
+// DATA DISPLAY
+// Shared table treatment applies to inventory, family, settings, and supply
+// tables without changing their sorting, paging, or responsive behavior.
+.mat-mdc-table {
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+}
+
+.mat-mdc-header-row {
+  background: var(--app-surface-muted);
+}
+
+.mat-mdc-header-cell {
+  color: var(--app-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.mat-mdc-row {
+  transition: background-color 120ms ease;
+}
+
+.mat-mdc-row:hover {
+  background: var(--app-hover-color);
+}
+
+.mat-mdc-tab-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--app-primary) 20%, var(--app-border));
+}
+
+.mat-mdc-tab .mdc-tab__text-label {
+  color: var(--app-text-muted);
+  font-weight: 600;
+}
+
+.mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
+  color: var(--app-primary);
+}
+
+.app-empty-state,
+.empty-state {
+  padding: var(--app-space-xl);
+  border: 2px dashed var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+  color: var(--app-text-muted);
+  text-align: center;
+}
+
+.app-empty-state-title {
+  margin: 0 0 var(--app-space-sm);
+  color: var(--app-primary);
+  font-weight: 700;
+}
+
+:focus-visible {
+  outline: 3px solid var(--app-accent);
+  outline-offset: 3px;
+}
+
+// RESPONSIVE DEFAULTS
+// Feature files may add breakpoints for genuinely unique layouts. Shared page,
+// grid, and action primitives should collapse here so new pages work on mobile
+// without repeating the same rules.
+@media (max-width: 599px) {
+  .app-page-shell {
+    padding: var(--app-space-md);
+  }
+
+  .app-page-header-with-corner {
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding-right: calc(var(--app-space-md) + 40px);
+  }
+
+  .app-corner-icon-button {
+    top: var(--app-space-xs);
+    right: var(--app-space-xs);
+  }
+
+  .app-page-header,
+  .app-split {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-grid-2,
+  .app-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .app-field-action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-field-action-row > button,
+  .app-field-action-row > .app-action-row,
+  .app-action-row > button,
+  .app-action-row > a[mat-button],
+  .app-action-row > a[mat-raised-button],
+  .app-action-row > a[mat-stroked-button] {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button,
+  .mat-mdc-unelevated-button,
+  .mat-mdc-icon-button,
+  .mat-mdc-card,
+  .app-card,
+  .mat-mdc-row {
+    transition: none;
+  }
+
+  .mat-mdc-button:not(:disabled):hover,
+  .mat-mdc-raised-button:not(:disabled):hover,
+  .mat-mdc-outlined-button:not(:disabled):hover,
+  .mat-mdc-unelevated-button:not(:disabled):hover,
+  .mat-mdc-icon-button:not(:disabled):hover {
+    transform: none;
+  }
+}
+
+
+// CUSTOM SUCCESS STATE
+// Angular Material M2 does not support color="success". These classes are the
+// approved bridge for positive actions and completed states.
+// Use these for completed states, positive badges, and success actions.
+.app-success-text {
+  color: var(--app-success) !important;
+}
+
+.app-success-bg {
+  background-color: var(--app-success) !important;
+  color: var(--app-on-success) !important;
+}
+
+.app-success-border {
+  border-color: var(--app-success) !important;
+}
+
+.mat-mdc-raised-button.app-success-button,
+.mat-mdc-unelevated-button.app-success-button {
+  background-color: var(--app-success) !important;
+  color: var(--app-on-success) !important;
+}
+
+.mat-mdc-outlined-button.app-success-button,
+.mat-mdc-button.app-success-button {
+  color: var(--app-success) !important;
 }
 
 /////////// Remove flex-layout and replace with CSS ////////////////////
@@ -226,6 +1017,15 @@ body {
 // Gap
 .gap-8 { gap: 8px; }
 
+.section-divider {
+  margin: 1rem 0;
+}
+
 // Flex/grow/shrink properties https://developer.mozilla.org/en-US/docs/Web/CSS/flex.
 .flex-1 { flex: 1 }  // Same as flex: 1 1 0 (grow, shrink, basis 0). Has similar effect to width: 100%;
 .flex-grow { flex-grow: 1; }  // Same as flex: 1 1 auto (grow, shrink, basis auto). For spacer, etc.
+
+html,
+body {
+  font-family: "Atkinson Hyperlegible", Arial, sans-serif;
+}

@@ -73,6 +73,7 @@ describe('Add Supply List Item', () => {
     cy.intercept('GET', '/api/supplylist*').as('getFilteredSupplyList');
     cy.get('[data-cy="filter-school"]').type('Hancock');
     cy.get('[data-cy="filter-grade"]').type(TARGET_GROUP.grade);
+    cy.get('.advanced-filter-toggle').click();
     cy.get('[data-cy="filter-item"]').type(NEW_ITEM.item);
     cy.wait('@getFilteredSupplyList');
 

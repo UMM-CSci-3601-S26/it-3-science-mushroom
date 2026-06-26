@@ -1,30 +1,82 @@
-.sidenav-container {
-  height: 100%;
+/* Application shell and sticky navigation shared by every page. */
+.app-shell {
+  min-height: 100%;
+  background: var(--app-page-bg);
+  color: var(--app-text);
 }
 
-mat-sidenav-content {
-  position: relative;
-  z-index: 0;
-}
-
-.sidenav {
-  width: 256px;
-}
-
-.sidenav mat-toolbar {
-  background: inherit;
-}
-
-mat-toolbar.mat-primary {
+.app-toolbar {
   position: sticky;
   top: 0;
   z-index: 1000;
+  gap: var(--app-space-sm);
   background: var(--mat-toolbar-container-background-color, inherit);
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--app-divider-color) 35%, transparent);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .app-title {
-  padding-left: 16px;
+  display: inline-flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 1px;
+  justify-content: center;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-title-mark,
+.app-title-subtitle {
+  display: block;
+  line-height: 1;
+}
+
+.app-title-mark {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.app-title-subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.88;
+}
+
+.desktop-navigation {
+  align-items: center;
+  display: flex;
+  gap: var(--app-space-sm);
+  margin-left: var(--app-space-md);
+}
+
+.desktop-navigation a,
+.desktop-navigation button {
+  color: inherit;
+}
+
+.desktop-navigation > * {
+  position: relative;
+}
+
+.desktop-navigation > *:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: calc(var(--app-space-sm) * -0.5);
+  top: 50%;
+  width: 1px;
+  height: 1.15rem;
+  background: color-mix(in srgb, currentColor 28%, transparent);
+  transform: translateY(-50%);
+}
+
+.header-link-active {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+/* Mobile navigation replaces, rather than duplicates, the desktop link row. */
+.app-toolbar .mobile-nav-button {
+  display: none;
 }
 
 .toolbar-spacer {
@@ -32,23 +84,28 @@ mat-toolbar.mat-primary {
 }
 
 .account-button {
-  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: var(--app-space-xs);
+}
+
+.theme-toggle-button,
+.login-button {
+  flex: 0 0 auto;
 }
 
 .account-menu-panel {
   background: var(--mat-menu-container-color, transparent);
-  color: var(--mat-menu-item-label-text-color, rgba(0, 0, 0, 0.87));
+  color: var(--mat-menu-item-label-text-color, var(--app-contrast));
   min-width: 280px;
   padding: 8px 0;
 }
 
 .account-menu-title {
-  opacity: 0.72;
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0;
+  opacity: 0.72;
   padding: 8px 16px 6px;
   text-transform: uppercase;
 }
@@ -83,33 +140,68 @@ mat-toolbar.mat-primary {
   overflow-wrap: anywhere;
 }
 
-@media (prefers-color-scheme: dark) {
-  .account-menu-panel {
-    color: var(--mat-menu-item-label-text-color, rgba(255, 255, 255, 0.87));
-  }
-}
-
 .main-content {
   margin: auto;
-  padding: 24px;
+  max-width: 1280px;
+  min-height: calc(100vh - 64px);
+  padding: var(--app-space-lg);
   position: relative;
-  z-index: 0;
-  @media (max-width: 599px) {
-    padding: 16px;
-  }
-
-  & {
-    // adds padding to the main content container on larger screens (above 1280px wide)
-    max-width: 1280px;
-  }
+  background: var(--app-page-bg);
 }
 
 .main-content:has(app-point-of-sale) {
+  // POS keeps the themed backdrop, while its search and content panels remain
+  // opaque surfaces so text does not compete with the decorative color.
   max-width: none;
-  min-height: calc(100vh - 64px);
   padding: 0;
   background:
-    radial-gradient(circle at 10% 5%, rgba(59, 130, 246, 0.16), transparent 28rem),
-    radial-gradient(circle at 92% 8%, rgba(20, 184, 166, 0.13), transparent 26rem),
-    linear-gradient(180deg, #f8fafc 0%, #eef6fb 52%, #f8fafc 100%);
+    radial-gradient(circle at 10% 5%, color-mix(in srgb, var(--app-primary) 16%, transparent), transparent 28rem),
+    radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--app-success) 13%, transparent), transparent 26rem),
+    linear-gradient(180deg, var(--app-bg) 0%, var(--app-surface-muted) 52%, var(--app-bg) 100%);
+}
+
+@media (max-width: 960px) {
+  .desktop-navigation {
+    display: none;
+  }
+
+  .app-toolbar .mobile-nav-button {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 599px) {
+  .app-toolbar {
+    gap: var(--app-space-xs);
+    padding: 0 var(--app-space-sm);
+  }
+
+  .app-title {
+    gap: 0;
+  }
+
+  .app-title-mark {
+    font-size: 1.12rem;
+  }
+
+  .app-title-subtitle {
+    font-size: 0.62rem;
+  }
+
+  .main-content {
+    padding: var(--app-space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .account-button,
+  .login-button {
+    min-width: 40px;
+    padding: 0 var(--app-space-sm);
+  }
+
+  .account-button-label,
+  .account-button mat-icon:last-child {
+    display: none;
+  }
 }

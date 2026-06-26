@@ -1,21 +1,9 @@
-
-:host {
-  --app-primary-color: var(--mat-sys-primary, #1565c0);
-  --app-primary-on-color: var(--mat-sys-on-primary, #ffffff);
-  --app-warn-color: var(--mat-sys-error, #d32f2f);
-  --app-warn-on-color: var(--mat-sys-on-error, #ffffff);
-  --app-text-color: var(--mat-sys-on-surface, rgba(255, 255, 255, 0.87));
-  --app-hover-color: var(--mat-sys-surface-container-high, #4a4a4a);
-  --app-divider-color: var(--mat-sys-outline-variant, rgba(255, 255, 255, 0.22));
-}
-
 .admin-header,
 .panel-title-row,
 .user-card,
 .role-card,
 .form-actions,
-.user-actions,
-.create-role-row {
+.user-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -46,7 +34,7 @@
 .panel-grid {
   display: grid;
   grid-template-columns: minmax(300px, 380px) 1fr;
-  gap: 1rem;
+  gap: var(--app-space-md);
   margin-top: 1rem;
 }
 
@@ -56,7 +44,7 @@
 .loading-state {
   background: color-mix(in srgb, var(--app-hover-color) 32%, transparent);
   border: 1px solid var(--app-divider-color);
-  border-radius: 14px;
+  border-radius: var(--app-radius-lg);
   padding: 1.25rem;
 }
 
@@ -83,18 +71,6 @@
   gap: 0.9rem;
 }
 
-.user-form input,
-.user-form select,
-.create-role-row input {
-  width: 100%;
-  border: 1px solid var(--app-divider-color);
-  border-radius: 10px;
-  padding: 0.7rem 0.85rem;
-  font: inherit;
-  color: var(--app-text-color);
-  background: color-mix(in srgb, var(--app-hover-color) 18%, transparent);
-}
-
 .full-width-field {
   width: 100%;
 }
@@ -102,7 +78,7 @@
 .user-card,
 .role-card {
   border: 1px solid var(--app-divider-color);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   padding: 0.85rem 1rem;
   margin-top: 0.75rem;
   background: color-mix(in srgb, var(--app-hover-color) 14%, transparent);
@@ -123,13 +99,8 @@
   flex: 0 0 auto;
 }
 
-.create-role-row {
-  align-items: stretch;
-}
-
-.create-role-row input {
-  flex: 1 1 16rem;
-  min-width: 0;
+.role-editor-name {
+  margin-top: var(--app-space-sm);
 }
 
 .user-name {
@@ -151,7 +122,7 @@
 
 .badge {
   background: color-mix(in srgb, var(--app-primary-color) 18%, transparent);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   color: var(--app-text-color);
   font-size: 0.85rem;
   padding: 0.2rem 0.55rem;
@@ -169,7 +140,7 @@
   gap: 0.65rem;
   margin-top: 0.45rem;
   border: 1px solid var(--app-divider-color);
-  border-radius: 10px;
+  border-radius: var(--app-radius-lg);
   padding: 0.7rem 0.8rem;
   background: color-mix(in srgb, var(--app-hover-color) 10%, transparent);
 }
@@ -194,7 +165,7 @@
 }
 
 .permission-chip {
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: color-mix(in srgb, var(--app-divider-color) 55%, transparent);
   color: color-mix(in srgb, var(--app-text-color) 72%, transparent);
   font-size: 0.78rem;
@@ -217,63 +188,16 @@
 }
 
 :host ::ng-deep .mat-mdc-select-panel {
-  background: color-mix(in srgb, var(--app-hover-color) 82%, #111) !important;
+  background: color-mix(in srgb, var(--app-hover-color) 82%, var(--app-bg)) !important;
 }
 
 :host ::ng-deep .mat-mdc-option .mdc-list-item__primary-text {
   color: var(--app-text-color) !important;
 }
 
-.primary-button,
-.secondary-button,
-.danger-button {
-  align-items: center;
-  border: 0;
-  border-radius: 10px;
-  cursor: pointer;
-  display: inline-flex;
-  justify-content: center;
-  line-height: 1.2;
-  font: inherit;
-  font-weight: 600;
-  min-height: 2.5rem;
-  min-width: max-content;
-  padding: 0.65rem 0.9rem;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.primary-button {
-  background: var(--app-primary-color);
-  color: var(--app-primary-on-color);
-}
-
-.secondary-button {
-  background: color-mix(in srgb, var(--app-primary-color) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--app-primary-color) 62%, transparent);
-  color: var(--app-text-color);
-}
-
-.danger-button {
-  background: var(--app-warn-color);
-  color: var(--app-warn-on-color);
-}
-
-.primary-button:hover,
-.secondary-button:hover,
-.danger-button:hover:not(:disabled) {
-  filter: brightness(1.08);
-}
-
-.danger-button:disabled {
-  background: color-mix(in srgb, var(--app-divider-color) 65%, transparent);
-  color: color-mix(in srgb, var(--app-text-color) 55%, transparent);
-  cursor: not-allowed;
-}
-
 .user-summary {
   border: 1px solid var(--app-divider-color);
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
   padding: 0.9rem 1rem;
   margin-bottom: 1rem;
   background: color-mix(in srgb, var(--app-hover-color) 12%, transparent);
@@ -289,8 +213,7 @@
   .user-card,
   .role-card,
   .form-actions,
-  .user-actions,
-  .create-role-row {
+  .user-actions {
     align-items: stretch;
     flex-direction: column;
   }
@@ -300,9 +223,8 @@
     text-align: left;
   }
 
-  .primary-button,
-  .secondary-button,
-  .danger-button {
+  .form-actions button,
+  .user-actions button {
     width: 100%;
   }
 }

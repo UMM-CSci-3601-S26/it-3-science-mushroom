@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 1.5rem;
-  padding: 1rem;
+  gap: var(--app-space-lg);
+  padding: 0;
 
   .form-col {
     flex: 1 1 0;
@@ -19,12 +19,21 @@
 
 .parse-strip {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: var(--app-space-sm);
+  align-items: flex-start;
   padding-bottom: 0;
 
   .parse-field {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+  }
+
+  button {
+    flex: 0 0 auto;
+    min-height: 56px;
+    white-space: nowrap;
   }
 }
 
@@ -51,8 +60,8 @@
 
   mat-card-actions {
     display: flex;
-    gap: 1rem;
-    padding: 1rem;
+    gap: var(--app-space-md);
+    padding: var(--app-space-md);
   }
 
   .form-grid {
@@ -67,5 +76,48 @@
     .span-2 {
       grid-column: 1 / -1;
     }
+  }
+}
+
+@media (max-width: 720px) {
+  .page-layout {
+    display: block;
+    padding: 0;
+  }
+
+  .page-layout .preview-col {
+    margin-top: var(--app-space-md);
+    position: static;
+  }
+
+  .parse-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .parse-strip button {
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .add-supplylist-card {
+    margin: 0;
+  }
+
+  .add-supplylist-card .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-supplylist-card .form-grid .span-2 {
+    grid-column: auto;
+  }
+
+  .add-supplylist-card mat-card-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .add-supplylist-card mat-card-actions button {
+    width: 100%;
   }
 }

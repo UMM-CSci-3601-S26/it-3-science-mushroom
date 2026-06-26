@@ -1,33 +1,5 @@
 :host {
   display: block;
-
-  --scanner-muted-text: #4b5563;
-  --scanner-body-text: #111827;
-  --scanner-container-bg: #fafbfc;
-  --scanner-container-border: #d8dce3;
-  --scanner-panel-bg: #ffffff;
-  --scanner-panel-border: #d7dbe2;
-  --scanner-button-bg: #ffffff;
-  --scanner-button-border: #c9ced6;
-  --scanner-button-text: #000000;
-  --scanner-input-bg: #ffffff;
-  --scanner-input-border: #cfd5dd;
-}
-
-@media (prefers-color-scheme: dark) {
-  :host {
-    --scanner-muted-text: #d1d5db;
-    --scanner-body-text: #f3f4f6;
-    --scanner-container-bg: #111827;
-    --scanner-container-border: #374151;
-    --scanner-panel-bg: #1f2937;
-    --scanner-panel-border: #374151;
-    --scanner-button-bg: #374151;
-    --scanner-button-border: #4b5563;
-    --scanner-button-text: #f3f4f6;
-    --scanner-input-bg: #1f2937;
-    --scanner-input-border: #4b5563;
-  }
 }
 
 .flex-row {
@@ -45,28 +17,28 @@
 
 .scanner-container {
   margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--scanner-container-border);
-  border-radius: 12px;
-  background: var(--scanner-container-bg);
+  padding: var(--app-space-md);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-muted);
 
   h2 {
     margin: 0 0 1rem;
     font-size: 1.4rem;
     font-weight: 600;
-    color: var(--scanner-body-text);
+    color: var(--app-text);
   }
 
   h3 {
     margin: 0 0 0.5rem;
     font-size: 1.05rem;
     font-weight: 600;
-    color: var(--scanner-body-text);
+    color: var(--app-text);
   }
 
   p {
     margin: 0 0 0.75rem;
-    color: var(--scanner-muted-text);
+    color: var(--app-text-muted);
     line-height: 1.4;
   }
 }
@@ -79,10 +51,10 @@
 
   button {
     padding: 0.6rem 1rem;
-    border: 1px solid var(--scanner-button-border);
-    border-radius: 10px;
-    background: var(--scanner-button-bg);
-    color: var(--scanner-button-text);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-lg);
+    background: var(--app-surface);
+    color: var(--app-text);
     cursor: pointer;
     font-weight: 500;
     transition: 0.15s ease;
@@ -97,9 +69,9 @@
     }
 
     &.active {
-      border-color: #2563eb;
-      background: #eff6ff;
-      color: #1d4ed8;
+      border-color: var(--app-primary);
+      background: color-mix(in srgb, var(--app-primary) 14%, var(--app-surface));
+      color: var(--app-primary);
     }
   }
 }
@@ -110,25 +82,25 @@
 .scanned-items-panel,
 .processing-panel {
   margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--scanner-panel-border);
-  border-radius: 12px;
-  background: var(--scanner-panel-bg);
-  color: var(--scanner-body-text);
+  padding: var(--app-space-md);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+  color: var(--app-text);
 }
 
 .scan-mode-placeholder {
   text-align: center;
-  color: var(--scanner-muted-text);
+  color: var(--app-text-muted);
 }
 
-.camera-panel video {
+.scanner-video {
   width: 100%;
   max-width: 700px;
   height: 320px;
-  border: 2px solid #d1d5db;
-  border-radius: 12px;
-  background: #111827;
+  border: 2px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-bg);
   object-fit: cover;
 }
 
@@ -136,78 +108,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-
-  input[type="text"] {
-    width: 100%;
-    padding: 0.75rem 0.9rem;
-    border: 1px solid var(--scanner-input-border);
-    border-radius: 10px;
-    font-size: 1rem;
-    background: var(--scanner-input-bg);
-    color: var(--scanner-body-text);
-
-    &:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    &::placeholder {
-      color: var(--scanner-muted-text);
-    }
-  }
-
-  // button {
-  //   width: fit-content;
-  //   padding: 0.65rem 1rem;
-  //   border: 1px solid var(--scanner-button-border);
-  //   border-radius: 10px;
-  //   background: var(--scanner-button-bg);
-  //   color: var(--scanner-button-text);
-  //   cursor: pointer;
-  //   font-weight: 500;
-  //   transition: 0.15s ease;
-
-  //   &:hover:not(:disabled) {
-  //     opacity: 0.8;
-  //   }
-
-  //   &:disabled {
-  //     opacity: 0.6;
-  //     cursor: not-allowed;
-  //   }
-  // }
-}
-
-.handheld-barcode-input {
-  width: 100%;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid var(--scanner-input-border);
-  border-radius: 10px;
-  font-size: 1rem;
-  background: var(--scanner-input-bg);
-  color: var(--scanner-body-text);
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &::placeholder {
-    color: var(--scanner-muted-text);
-  }
 }
 
 .handheld-input-row {
@@ -216,10 +116,15 @@
   align-items: flex-start;
   flex-wrap: wrap;
 
-  input {
-    flex: 1;
-    //min-width: 280px;
-  }
+}
+
+.handheld-barcode-field {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.quantity-field {
+  width: 80px;
 }
 
 .scanned-items-panel {
@@ -231,10 +136,10 @@
 .scanned-item-row {
   display: grid;
   grid-template-columns: max(180px, 1fr) auto;
-  gap: 1rem;
+  gap: var(--app-space-md);
   align-items: center;
   padding: 0.85rem 0;
-  border-top: 1px solid #edf0f3;
+  border-top: 1px solid var(--app-border);
 
   &:first-of-type {
     border-top: none;
@@ -245,14 +150,14 @@
 .scanned-item-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--app-space-md);
 }
 
 .barcode-label {
   font-family: monospace;
   font-size: 0.98rem;
   font-weight: 600;
-  color: var(--scanner-body-text);
+  color: var(--app-text);
   word-break: break-all;
 }
 
@@ -264,33 +169,18 @@
   label {
     font-size: 0.92rem;
     font-weight: 500;
-    color: var(--scanner-muted-text);
+    color: var(--app-text-muted);
   }
 
-  // input {
-  //   width: 90px;
-  //   padding: 0.5rem 0.65rem;
-  //   border: 1px solid var(--scanner-input-border);
-  //   border-radius: 8px;
-  //   font-size: 0.95rem;
-  //   background: var(--scanner-input-bg);
-  //   color: var(--scanner-body-text);
-
-  //   &:focus {
-  //     outline: none;
-  //     border-color: #2563eb;
-  //     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-  //   }
-  // }
 }
 
 .processing-panel {
-  background: var(--scanner-panel-bg);
-  border-color: var(--scanner-panel-border);
+  background: var(--app-surface);
+  border-color: var(--app-border);
 
   p {
     margin: 0;
-    color: var(--scanner-body-text);
+    color: var(--app-text);
     font-weight: 500;
   }
 }
