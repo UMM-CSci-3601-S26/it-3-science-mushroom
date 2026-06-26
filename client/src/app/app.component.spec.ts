@@ -46,7 +46,12 @@ describe('AppComponent', () => {
   beforeEach(waitForAsync(() => {
     // Clear any persisted theme mode and classes before each test to ensure a consistent starting state.
     localStorage.removeItem('r4l-theme-mode');
-    document.documentElement.classList.remove('app-theme-dark', 'app-theme-light');
+    document.documentElement.classList.remove(
+      'app-theme-dark',
+      'app-theme-light',
+      'app-theme-r4l-poster',
+      'app-theme-r4l-poster-dark'
+    );
 
     authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', [
       'logout',
@@ -97,7 +102,12 @@ describe('AppComponent', () => {
 
     // Clear any persisted theme mode and classes after each test to prevent side effects on other tests.
     localStorage.removeItem('r4l-theme-mode');
-    document.documentElement.classList.remove('app-theme-dark', 'app-theme-light');
+    document.documentElement.classList.remove(
+      'app-theme-dark',
+      'app-theme-light',
+      'app-theme-r4l-poster',
+      'app-theme-r4l-poster-dark'
+    );
   });
 
   it('should create the app', () => {
@@ -127,9 +137,11 @@ describe('AppComponent', () => {
 
     fixture.detectChanges();
 
-    expect(app.isDarkMode).toBeTrue();
+    expect(app.currentTheme).toBe('dark');
     expect(document.documentElement.classList).toContain('app-theme-dark');
     expect(document.documentElement.classList).not.toContain('app-theme-light');
+    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
+    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster-dark');
   });
 
   it('should toggle the forced app theme class', () => {
@@ -140,9 +152,11 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     app.toggleTheme();
 
-    expect(app.isDarkMode).toBeTrue();
+    expect(app.currentTheme).toBe('dark');
     expect(document.documentElement.classList).toContain('app-theme-dark');
     expect(document.documentElement.classList).not.toContain('app-theme-light');
+    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
+    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster-dark');
     expect(localStorage.getItem('r4l-theme-mode')).toBe('dark');
   });
 
