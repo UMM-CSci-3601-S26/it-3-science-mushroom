@@ -43,10 +43,10 @@
       type="button"
       mat-icon-button
       class="theme-toggle-button"
-      [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
-      [title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+      [attr.aria-label]="themeToggleLabel"
+      [title]="themeToggleLabel"
       (click)="toggleTheme()">
-      <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      <mat-icon>{{ themeIcon }}</mat-icon>
     </button>
 
     @if (authService.loggedIn) {

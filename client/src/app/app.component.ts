@@ -15,6 +15,8 @@ import { Family } from './family/family';
 import { DeleteRequestNotificationService } from './family/family-management/delete-family/delete-request-notification.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+type AppTheme = 'light' | 'dark' | 'r4l-poster' | 'r4l-poster-dark';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -52,7 +54,7 @@ export class AppComponent implements OnInit {
   // State variable to track whether the dark mode theme is currently active.
   // It is initialized to false (light mode) and is updated based on user
   // interactions and system preferences.
-  isDarkMode = false;
+  currentTheme: AppTheme = 'light';
   private document = inject(DOCUMENT);
   private readonly themeStorageKey = 'r4l-theme-mode';
 
@@ -78,7 +80,42 @@ export class AppComponent implements OnInit {
   // Toggle only the root theme class; Angular Material's theme CSS and the
   // app-level CSS variables in styles.scss handle the actual colors.
   toggleTheme() {
-    this.applyTheme(this.isDarkMode ? 'light' : 'dark');
+    const nextTheme: Record<AppTheme, AppTheme> = {
+      light: 'dark',
+      dark: 'r4l-poster',
+      'r4l-poster': 'r4l-poster-dark',
+      'r4l-poster-dark': 'light'
+    };
+
+    this.applyTheme(nextTheme[this.currentTheme]);
+  }
+
+  // Get the icon respective to the current theme
+
+  get themeIcon() {
+    switch (this.currentTheme) {
+    case 'light':
+      return 'dark_mode';
+    case 'dark':
+      return 'palette';
+    case 'r4l-poster':
+      return 'dark_mode';
+    default:
+      return 'light_mode';
+    }
+  }
+
+  get themeToggleLabel() {
+    switch (this.currentTheme) {
+    case 'light':
+      return 'Switch to dark mode';
+    case 'dark':
+      return 'Switch to R4L poster theme';
+    case 'r4l-poster':
+      return 'Switch to dark R4L poster theme';
+    default:
+      return 'Switch to light mode';
+    }
   }
 
   // Method to log out the user, clear pending delete request count, and navigate to the login page
@@ -147,7 +184,11 @@ export class AppComponent implements OnInit {
   // as soon as the app loads.
   private initializeTheme() {
     const savedTheme = localStorage.getItem(this.themeStorageKey);
-    const theme = savedTheme === 'dark' || savedTheme === 'light'
+
+    const theme: AppTheme = savedTheme === 'dark'
+      || savedTheme === 'light'
+      || savedTheme === 'r4l-poster'
+      || savedTheme === 'r4l-poster-dark'
       ? savedTheme
       : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
@@ -156,12 +197,16 @@ export class AppComponent implements OnInit {
 
   // The root classes are used by styles.scss to scope both Material color
   // mixins and app CSS variables.
-  private applyTheme(theme: 'light' | 'dark') {
+  private applyTheme(theme: AppTheme) {
     const root = this.document.documentElement;
+
     root.classList.toggle('app-theme-dark', theme === 'dark');
     root.classList.toggle('app-theme-light', theme === 'light');
+    root.classList.toggle('app-theme-r4l-poster', theme === 'r4l-poster');
+    root.classList.toggle('app-theme-r4l-poster-dark', theme === 'r4l-poster-dark');
+
     localStorage.setItem(this.themeStorageKey, theme);
-    this.isDarkMode = theme === 'dark';
+    this.currentTheme = theme;
   }
 
   // Method to enforce route access based on the user's authentication status, roles, and permissions.
