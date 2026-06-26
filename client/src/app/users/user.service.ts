@@ -58,6 +58,10 @@ export class UserService {
     });
   }
 
+  getGuardianUsers(): Observable<User[]> {
+    return this.httpClient.get<User[]>(`${this.usersUrl}/guardian-accounts`);
+  }
+
   addUser(user: UserUpsertRequest): Observable<User> {
     return this.httpClient.post<User>(this.usersUrl, user);
   }
