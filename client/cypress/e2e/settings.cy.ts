@@ -65,7 +65,8 @@ describe('Settings', () => {
         .should('be.visible')
         .and('contain.text', 'Families scheduled');
 
-      cy.get('.mat-mdc-card-title').should('have.text', 'Families');
+      cy.url().should('match', /\/family$/);
+      cy.contains('h1', 'Families').should('be.visible');
 
     });
 

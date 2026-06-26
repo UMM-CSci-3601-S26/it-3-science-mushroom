@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>
   {{dialogData?.title}}
   <!--
-  <button mat-icon-button mat-dialog-close class="close-button">
+  <button type="button" mat-icon-button mat-dialog-close class="close-button">
     <mat-icon>close</mat-icon>
   </button>-->
 </h2>
@@ -11,10 +11,10 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-raised-button mat-dialog-close>
+  <button type="button" mat-raised-button mat-dialog-close>
     {{dialogData?.buttonOne}}
   </button>
-  <button mat-raised-button color="warn" (click)="confirmDialog()" [hidden]="!dialogData?.buttonTwo">
+  <button type="button" mat-raised-button color="warn" (click)="confirmDialog()" [hidden]="!dialogData?.buttonTwo">
     {{dialogData?.buttonTwo}}
   </button>
 </mat-dialog-actions>

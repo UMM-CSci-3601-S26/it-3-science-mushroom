@@ -1,21 +1,21 @@
-<div class="session-shell">
-  <div class="session-header">
+<div class="session-shell app-dialog-shell">
+  <div class="session-header app-dialog-header">
     <div>
-      <h2 class="session-title">Help Family Session</h2>
-      <p class="session-subtitle">{{ sessionFamily?.guardianName ?? data.family.guardianName }}</p>
+      <h2 class="session-title app-dialog-title">Help Family Session</h2>
+      <p class="session-subtitle app-dialog-subtitle">{{ sessionFamily?.guardianName ?? data.family.guardianName }}</p>
     </div>
   </div>
 
   @if (loading) {
-    <mat-card class="session-summary">
+    <mat-card class="session-summary app-panel">
       <p>Starting help session and loading checklist...</p>
     </mat-card>
   } @else if (errorMessage && !sessionFamily) {
-    <mat-card class="session-error">
+    <mat-card class="session-error app-status-panel app-status-warn">
       <p>{{ errorMessage }}</p>
     </mat-card>
   } @else if (sessionFamily) {
-    <mat-card class="session-summary">
+    <mat-card class="session-summary app-panel">
       <div>
         <span>Time Slot</span>
         <strong>{{ sessionFamily.timeSlot }}</strong>
@@ -31,13 +31,13 @@
     </mat-card>
 
     @if (errorMessage) {
-      <mat-card class="session-error">
+      <mat-card class="session-error app-status-panel app-status-warn">
         <p>{{ errorMessage }}</p>
       </mat-card>
     }
 
     @if (sessionHasNoChecklistItems(sessionFamily)) {
-      <mat-card class="session-empty-checklist">
+      <mat-card class="session-empty-checklist app-status-panel app-status-warning">
         <div>
           <p><strong>No checklist items were found yet.</strong></p>
           <p>
@@ -51,28 +51,33 @@
       </mat-card>
     }
 
-    <div class="session-scroll">
+    <div class="session-scroll app-scroll-region">
       <div class="session-students">
         @for (section of sessionFamily.checklist?.sections ?? []; track section.id; let sectionIndex = $index) {
-          <mat-card class="student-session-card">
+          <mat-card class="student-session-card app-panel">
             <div class="student-card-header">
               <div>
                 <h3>{{ section.printableTitle || section.title }}</h3>
                 @if (studentForSection(sectionIndex); as student) {
                   <div class="student-details">
-                    <span>School: {{ student.school || 'Unknown' }}</span>
-                    <span>Grade: {{ student.grade || 'Unknown' }}</span>
-                    <span>Teacher: {{ student.teacher || 'N/A' }}</span>
+                    <span class="app-badge app-badge-primary">School: {{ student.school || 'Unknown' }}</span>
+                    <span class="app-badge app-badge-primary">Grade: {{ student.grade || 'Unknown' }}</span>
+                    <span class="app-badge app-badge-primary">Teacher: {{ student.teacher || 'N/A' }}</span>
                   </div>
                 }
               </div>
-              <span class="section-status">{{ section.saved ? 'Saved' : 'In progress' }}</span>
+              <span
+                class="section-status app-badge"
+                [class.app-badge-success]="section.saved"
+                [class.app-badge-accent]="!section.saved">
+                {{ section.saved ? 'Saved' : 'In progress' }}
+              </span>
             </div>
 
             @if (section.items.length > 0) {
               <div class="checklist-items">
                 @for (item of section.items; track item.id) {
-                  <div class="checklist-item" [class.not-in-inventory]="!item.available">
+                  <div class="checklist-item app-panel-muted" [class.not-in-inventory]="!item.available">
                     <mat-checkbox
                       [checked]="item.selected"
                       [disabled]="!item.available"
@@ -91,31 +96,36 @@
                         }
                       </p>
                       @if (shouldShowMatchedInventory(item)) {
-                        <p class="inventory-match">
+                        <p class="inventory-match app-badge app-badge-primary">
                           Will remove: {{ matchedInventoryDisplay(item) }}
                         </p>
                       }
                       @if (hasSubstitute(item)) {
-                        <p class="substitute-match">
+                        <p class="substitute-match app-badge app-badge-warn">
                           Replacing with: {{ substituteDisplay(item) }}
                         </p>
                       }
                       @if (needsReason(item)) {
-                        <label class="reason-field">
-                          <span>Why not given?</span>
-                          <select
+                        <mat-form-field appearance="outline" class="reason-field">
+                          <mat-label>Why not given?</mat-label>
+                          <mat-select
                             [value]="item.notPickedUpReason || ''"
-                            (change)="setNotPickedUpReason(item, $any($event.target).value)">
-                            <option value="">Choose a reason</option>
-                            <option value="available_didnt_need">Family did not need this item</option>
-                            <option value="item_not_avaliable">Item not avaliable</option>
-                          </select>
-                        </label>
+                            (selectionChange)="setNotPickedUpReason(item, $event.value)">
+                            <mat-option value="">Choose a reason</mat-option>
+                            <mat-option value="available_didnt_need">Family did not need this item</mat-option>
+                            <mat-option value="item_not_avaliable">Item not available</mat-option>
+                          </mat-select>
+                        </mat-form-field>
                       }
                     </div>
 
                     <div class="item-actions">
-                      <span class="item-status">{{ item.available ? 'Available' : 'Needs review' }}</span>
+                      <span
+                        class="item-status app-badge"
+                        [class.app-badge-success]="item.available"
+                        [class.app-badge-warn]="!item.available">
+                        {{ item.available ? 'Available' : 'Needs review' }}
+                      </span>
                       @if (item.available) {
                         <button
                           mat-stroked-button
@@ -137,7 +147,7 @@
                     </div>
 
                     @if (activeSubstitutionItemId === item.id) {
-                      <div class="substitution-panel">
+                      <div class="substitution-panel app-status-panel app-status-warning">
                         <div>
                           <strong>Scan substitute item</strong>
                           <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
@@ -162,7 +172,7 @@
             }
           </mat-card>
         } @empty {
-          <mat-card class="student-session-card">
+          <mat-card class="student-session-card app-panel">
             <p class="placeholder-text">No checklist sections were returned for this family.</p>
           </mat-card>
         }
@@ -170,7 +180,7 @@
     </div>
   }
 
-  <div class="session-actions">
+  <div class="session-actions app-action-row app-action-row-end">
     <button
       mat-stroked-button
       type="button"

@@ -1,4 +1,4 @@
-<div class="page-layout">
+<div class="page-layout app-page-shell">
   <div class="form-col">
     <form [formGroup]="addSupplyListForm" (ngSubmit)="submitForm()">
       <mat-card class="add-supplylist-card" data-cy="add-supply-card">
@@ -8,7 +8,7 @@
         </mat-card-header>
 
         <!-- ── Natural-language parse strip ───────────────────────────── -->
-        <mat-card-content class="parse-strip">
+        <mat-card-content class="parse-strip app-field-action-row">
           <mat-form-field class="parse-field">
             <mat-label>Describe the item (optional)</mat-label>
             <input matInput type="text" [(ngModel)]="descriptionInput" [ngModelOptions]="{standalone: true}"

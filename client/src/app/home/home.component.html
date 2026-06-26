@@ -1,19 +1,114 @@
-<div class="flex-row">
-  <div class="flex-1">
-    <a mat-raised-button color="accent" routerLink="/guardian-sign-up">
-      <mat-icon>family_restroom</mat-icon>
-      Guardian Sign Up
-    </a>
-    <mat-card class="home-card">
-      <mat-card-header>
-        <mat-card-title>
-          Home
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        Welcome to the home page! In the future, information about the site, how it works, and how to use it will be
-        placed here. For now, feel free to access the additional pages via the side navigation on the left!
-      </mat-card-content>
-    </mat-card>
-  </div>
+<div class="home-page app-page-shell app-stack-lg">
+  <section class="home-hero app-card" data-cy="home-hero">
+    <div class="hero-content app-stack-md">
+      <p class="hero-kicker">Ready 4 Learning</p>
+      <h1 class="hero-title app-page-title">Helping every student walk into school prepared, confident, and supported.</h1>
+      <p class="hero-copy app-page-subtitle">
+        Our mission is to bring school supplies directly to children and families in need.
+        This mock home page previews how impact, storytelling, and community action can live together in one place.
+      </p>
+      <div class="hero-actions app-cluster">
+        <a mat-raised-button color="accent" routerLink="/guardian-sign-up">
+          <mat-icon>family_restroom</mat-icon>
+          Guardian Sign Up
+        </a>
+        <button mat-stroked-button type="button" disabled aria-disabled="true">
+          <mat-icon>volunteer_activism</mat-icon>
+          Donate Supplies (Mock)
+        </button>
+      </div>
+    </div>
+
+    <aside class="hero-panel app-panel-muted app-stack-sm">
+      <h2 class="app-section-title">Current Season Goals</h2>
+      <p>Building stronger school-year launches for families across our partner districts.</p>
+      <ul>
+        <li>Support 1,500 families before fall kickoff</li>
+        <li>Deliver 6,000 student-ready supply kits</li>
+        <li>Expand volunteer support to 30 partner schools</li>
+      </ul>
+    </aside>
+  </section>
+
+  <section class="app-stack-md" aria-labelledby="impact-heading">
+    <div class="section-heading app-split">
+      <h2 id="impact-heading" class="section-title app-section-title">Impact at a Glance</h2>
+      <span class="app-badge app-badge-primary">Mock Data Preview</span>
+    </div>
+
+    <div class="impact-grid">
+      @for (stat of impactStats; track stat.label) {
+        <article class="impact-card impact-card-{{ stat.tone }}">
+          <mat-icon>{{ stat.icon }}</mat-icon>
+          <p class="impact-value">{{ stat.value }}</p>
+          <p class="impact-label">{{ stat.label }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="story-layout app-grid-2" aria-labelledby="how-it-works-heading">
+    <article class="story-card app-card-muted app-stack-md">
+      <h2 id="how-it-works-heading" class="section-title app-section-title">How R4L Works</h2>
+      <div class="milestone-list app-stack-sm">
+        @for (step of milestones; track step.title) {
+          <div class="milestone-item">
+            <mat-icon>{{ step.icon }}</mat-icon>
+            <div>
+              <h3>{{ step.title }}</h3>
+              <p>{{ step.detail }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="story-card app-card-muted app-stack-md" aria-labelledby="spotlight-heading">
+      <h2 id="spotlight-heading" class="section-title app-section-title">Supply Drive Spotlight</h2>
+      <p class="story-intro">Mock progress on this month&apos;s most requested items.</p>
+      <div class="progress-list app-stack-sm">
+        @for (need of spotlightNeeds; track need.label) {
+          <div class="progress-row">
+            <div class="progress-label-row">
+              <span>{{ need.label }}</span>
+              <span>{{ need.progress }}%</span>
+            </div>
+            <div class="progress-track" role="presentation">
+              <div class="progress-fill" [style.width.%]="need.progress"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="donation-mock app-card" aria-labelledby="donation-heading">
+    <div class="section-heading app-split">
+      <h2 id="donation-heading" class="section-title app-section-title">Mock Supply Donation</h2>
+      <span class="app-badge app-badge-accent">Coming Soon</span>
+    </div>
+
+    <p>
+      This section is intentionally non-functional for now. It shows how future donation options could look,
+      while keeping the app theme and accessibility patterns.
+    </p>
+
+    <div class="donation-options app-cluster">
+      @for (idea of donationIdeas; track idea) {
+        <button mat-stroked-button type="button" disabled aria-disabled="true">{{ idea }}</button>
+      }
+    </div>
+
+    <div class="donation-actions app-cluster">
+      <button mat-raised-button color="primary" type="button" disabled aria-disabled="true">
+        <mat-icon>inventory_2</mat-icon>
+        Start Donation (Mock)
+      </button>
+      <button mat-button type="button" disabled aria-disabled="true">Learn About Drive Logistics</button>
+    </div>
+  </section>
+
+  <footer class="home-footer app-text-muted">
+    Ready 4 Learning mock experience · {{ currentYear }}
+  </footer>
 </div>

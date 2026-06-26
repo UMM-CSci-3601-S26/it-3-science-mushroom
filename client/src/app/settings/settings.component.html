@@ -1,7 +1,8 @@
-<div class="settings-container">
-  <mat-card>
+<div class="settings-container app-page-shell app-page-stack">
+  <!-- Settings stay on one route; Material tabs separate administrative workflows. -->
+  <mat-card class="settings-card app-page-stack">
     <mat-card-header>
-      <mat-card-title class="settings-title">Settings</mat-card-title>
+      <mat-card-title class="settings-title app-page-title">Settings</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
@@ -16,10 +17,11 @@
           <div class="tab-content">
 
             <!-- Add School Form -->
+            <!-- app-field-action-row aligns Material inputs with the adjacent action button. -->
             @if (canEditSchools) {
             <form [formGroup]="addSchoolForm" (ngSubmit)="addSchool()">
-              <div class="add-school-row">
-                <mat-form-field>
+              <div class="add-school-row app-field-action-row">
+                <mat-form-field appearance="outline">
                   <mat-label>School Name</mat-label>
                   <input matInput formControlName="name" required>
                   <mat-error *ngIf="addSchoolForm.get('name')?.hasError('required')">Name is required</mat-error>
@@ -27,7 +29,7 @@
                     characters</mat-error>
                 </mat-form-field>
 
-                <mat-form-field>
+                <mat-form-field appearance="outline">
                   <mat-label>School Abbreviation</mat-label>
                   <input matInput formControlName="abbreviation" required>
                   <mat-error *ngIf="addSchoolForm.get('abbreviation')?.hasError('required')">Abbreviation is
@@ -51,7 +53,7 @@
               <mat-list-item>
                 <span matListItemTitle>{{ school.name }} ({{ school.abbreviation }})</span>
                 @if (canEditSchools) {
-                <button matListItemMeta mat-icon-button color="warn" (click)="removeSchool(i)"
+                <button type="button" matListItemMeta mat-icon-button color="warn" (click)="removeSchool(i)"
                   [attr.aria-label]="'Remove ' + school.name">
                   <mat-icon>delete</mat-icon>
                 </button>
@@ -76,28 +78,28 @@
             </p>
 
             <form [formGroup]="timeAvailabilityForm" (ngSubmit)="saveTimeAvailability()">
-              <div class="flex-col">
+              <div class="settings-form-stack app-form-stack">
 
-                <mat-form-field>
+                <mat-form-field appearance="outline">
                   <mat-label>Early Morning</mat-label>
                   <input matInput formControlName="earlyMorning" placeholder="e.g. 8:00–9:00 AM">
                   <mat-error *ngIf="timeAvailabilityForm.get('earlyMorning')?.hasError('required')">Required</mat-error>
                 </mat-form-field>
 
-                <mat-form-field>
+                <mat-form-field appearance="outline">
                   <mat-label>Late Morning</mat-label>
                   <input matInput formControlName="lateMorning" placeholder="e.g. 9:00–10:00 AM">
                   <mat-error *ngIf="timeAvailabilityForm.get('lateMorning')?.hasError('required')">Required</mat-error>
                 </mat-form-field>
 
-                <mat-form-field>
+                <mat-form-field appearance="outline">
                   <mat-label>Early Afternoon</mat-label>
                   <input matInput formControlName="earlyAfternoon" placeholder="e.g. 12:00–1:00 PM">
                   <mat-error
                     *ngIf="timeAvailabilityForm.get('earlyAfternoon')?.hasError('required')">Required</mat-error>
                 </mat-form-field>
 
-                <mat-form-field>
+                <mat-form-field appearance="outline">
                   <mat-label>Late Afternoon</mat-label>
                   <input matInput formControlName="lateAfternoon" placeholder="e.g. 1:00–2:00 PM">
                   <mat-error
@@ -105,7 +107,7 @@
                 </mat-form-field>
 
                 @if (canEditTimeAvailability) {
-                <div class="save-button">
+                <div class="save-button app-action-row">
                   <button mat-raised-button color="primary" type="submit" [disabled]="!timeAvailabilityForm.valid">
                     Save Time Availability
                   </button>
@@ -125,21 +127,22 @@
             </p>
 
             <form [formGroup]="driveDayForm" (ngSubmit)="saveDriveDay()">
-              <div class="flex-col">
-                <mat-form-field>
+              <div class="settings-form-stack app-form-stack">
+                <mat-form-field appearance="outline">
                   <mat-label>Drive Day Date</mat-label>
                   <input matInput type="date" formControlName="date">
                   <mat-error *ngIf="driveDayForm.get('date')?.hasError('required')">Required</mat-error>
                 </mat-form-field>
 
-                <mat-form-field>
-                  <mat-label>Message (optional)</mat-label>
+                <mat-form-field appearance="outline">
+                  <mat-label>Family Portal Announcement (optional)</mat-label>
                   <textarea matInput rows="3" formControlName="location"
-                    placeholder="e.g. Please arrive 10 minutes early."></textarea>
+                    placeholder="Share arrival, location, or event-day instructions."></textarea>
+                  <mat-hint>This message appears with the drive-day date in the family portal.</mat-hint>
                 </mat-form-field>
 
                 @if (canEditDriveDay) {
-                <div class="save-button">
+                <div class="save-button app-action-row">
                   <button mat-raised-button color="primary" type="submit" [disabled]="!driveDayForm.valid">
                     Save Drive Day
                   </button>
@@ -158,17 +161,20 @@
               This will be the maximum number of people allowed at the event for each time slot.
             </p>
 
-            <div class="flex-col">
+            <div>
 
-              <form [formGroup]="availableSpotsForm" (ngSubmit)="saveAvailableSpots()">
-                <mat-form-field>
+              <form
+                class="available-spots-form app-field-action-row"
+                [formGroup]="availableSpotsForm"
+                (ngSubmit)="saveAvailableSpots()">
+                <mat-form-field appearance="outline">
                   <mat-label>Available Spots</mat-label>
                   <input matInput formControlName="availableSpots" placeholder="e.g. 5">
                   <mat-error *ngIf="availableSpotsForm.get('availableSpots')?.hasError('required')">Required</mat-error>
                 </mat-form-field>
 
                 @if (canEditAvailableSlots) {
-                <div class="save-button">
+                <div class="save-button app-action-row">
                   <button mat-raised-button color="primary" type="submit" [disabled]="!availableSpotsForm.valid"
                     data-test="saveButton">
                     Save Available Spots
@@ -183,7 +189,7 @@
                 }
               </form>
             </div>
-                    
+
           </div>
         </mat-tab>
 
@@ -191,25 +197,26 @@
         <mat-tab label="Barcode Printing">
           <div class="tab-content">
             <p class="tab-description">
-              Control barcode print safeguards.
+              Set when the app should ask for confirmation before printing a large batch of barcode labels.
             </p>
 
             <form [formGroup]="barcodePrintForm" (ngSubmit)="saveBarcodePrintSettings()">
-              <div class="flex-col">
-                <mat-form-field>
-                  <mat-label>Ask Before Printing More Than</mat-label>
+              <div class="settings-form-stack app-form-stack">
+                <mat-form-field appearance="outline">
+                  <mat-label>Large Print Confirmation Threshold</mat-label>
                   <input
                     matInput
                     type="number"
                     min="1"
                     formControlName="barcodePrintWarningLimit"
-                    placeholder="e.g. 25"
+                    placeholder="25"
                   >
+                  <mat-hint>A confirmation appears when one print job contains more labels than this number.</mat-hint>
                   <mat-error *ngIf="barcodePrintForm.get('barcodePrintWarningLimit')?.hasError('required')">Required</mat-error>
                   <mat-error *ngIf="barcodePrintForm.get('barcodePrintWarningLimit')?.hasError('min')">Must be at least 1</mat-error>
                 </mat-form-field>
                 @if (canEditBarcode) {
-                <div class="save-button">
+                <div class="save-button app-action-row">
                   <button mat-raised-button color="primary" type="submit" [disabled]="!barcodePrintForm.valid">
                     Save Barcode Print Settings
                   </button>
@@ -231,11 +238,11 @@
             </p>
 
             @if (canEditSupplyOrder) {
-            <div class="save-button" style="margin-bottom: 16px;">
-              <button mat-raised-button color="primary" (click)="saveSupplyOrder()">
+            <div class="save-button app-action-row">
+              <button type="button" mat-raised-button color="primary" (click)="saveSupplyOrder()">
                 Save Drive Order
               </button>
-              <button mat-raised-button color="accent" (click)="saveAndGenerateChecklists()">
+              <button type="button" mat-raised-button color="accent" (click)="saveAndGenerateChecklists()">
                 <mat-icon>playlist_add_check</mat-icon>
                 Save &amp; Generate Checklists
               </button>
@@ -251,17 +258,17 @@
                   <span class="section-count">({{ stagedTerms.length }})</span>
                 </h3>
                 <div cdkDropList [cdkDropListData]="stagedTerms" (cdkDropListDropped)="dropStaged($event)"
-                  class="drop-list">
+                  class="drop-list app-scroll-region">
                   @for (term of stagedTerms; track term) {
                   <div cdkDrag class="supply-order-item">
                     <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
                     <span class="item-label">{{ term }}</span>
                     @if (canEditSupplyOrder) {
                     <span class="item-actions">
-                      <button mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
+                      <button type="button" mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
                         <mat-icon>arrow_forward</mat-icon>
                       </button>
-                      <button mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
+                      <button type="button" mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
                         <mat-icon>block</mat-icon>
                       </button>
                     </span>
@@ -280,17 +287,17 @@
                   <mat-icon>radio_button_unchecked</mat-icon> Unstaged
                   <span class="section-count">({{ unstagedTerms.length }})</span>
                 </h3>
-                <div class="drop-list">
+                <div class="drop-list app-scroll-region">
                   @for (term of unstagedTerms; track term) {
                   <div class="supply-order-item">
                     <mat-icon class="status-icon">inventory_2</mat-icon>
                     <span class="item-label">{{ term }}</span>
                     @if (canEditSupplyOrder) {
                     <span class="item-actions">
-                      <button mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
+                      <button type="button" mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
                         <mat-icon>arrow_back</mat-icon>
                       </button>
-                      <button mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
+                      <button type="button" mat-icon-button color="warn" (click)="moveToNotGiven(term)" title="Mark as Not Given">
                         <mat-icon>block</mat-icon>
                       </button>
                     </span>
@@ -309,17 +316,17 @@
                   <mat-icon>block</mat-icon> Not Given
                   <span class="section-count">({{ notGivenTerms.length }})</span>
                 </h3>
-                <div class="drop-list">
+                <div class="drop-list app-scroll-region">
                   @for (term of notGivenTerms; track term) {
                   <div class="supply-order-item not-given-item">
                     <mat-icon class="status-icon not-given-icon">do_not_disturb</mat-icon>
                     <span class="item-label">{{ term }}</span>
                     @if (canEditSupplyOrder) {
                     <span class="item-actions">
-                      <button mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
+                      <button type="button" mat-icon-button (click)="moveToStaged(term)" title="Add to Staged">
                         <mat-icon>format_list_numbered</mat-icon>
                       </button>
-                      <button mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
+                      <button type="button" mat-icon-button (click)="moveToUnstaged(term)" title="Move to Unstaged">
                         <mat-icon>arrow_back</mat-icon>
                       </button>
                     </span>
@@ -473,22 +480,22 @@
             <hr>
 
               <div class="flex-row">
-                <button mat-raised-button color="warn" (click)="clearInventory()" data-cy="clear-inventory-button">
+                <button type="button" mat-raised-button color="warn" (click)="clearInventory()" data-cy="clear-inventory-button">
                   <mat-icon>delete_sweep</mat-icon>
                   Delete All Items
                 </button>
 
-                <button mat-raised-button color="warn" (click)="deleteMatchingInventory()" data-cy="delete-matching-inventory-button">
+                <button type="button" mat-raised-button color="warn" (click)="deleteMatchingInventory()" data-cy="delete-matching-inventory-button">
                   <mat-icon>delete_forever</mat-icon>
                   Delete Matching Items
                 </button>
 
-                <button mat-raised-button color="primary" (click)="resetAllQuantities()" data-cy="reset-all-quantities-button">
+                <button type="button" mat-raised-button color="primary" (click)="resetAllQuantities()" data-cy="reset-all-quantities-button">
                   <mat-icon>refresh</mat-icon>
                   Reset All Quantities
                 </button>
 
-                <button mat-raised-button color="primary" (click)="resetMatchingQuantities()" data-cy="reset-matching-quantities-button">
+                <button type="button" mat-raised-button color="primary" (click)="resetMatchingQuantities()" data-cy="reset-matching-quantities-button">
                   <mat-icon>refresh</mat-icon>
                   Reset Matching Quantities
                 </button>

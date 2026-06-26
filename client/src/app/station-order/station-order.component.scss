@@ -2,46 +2,46 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(250px, 1fr));
   min-width: 300px;
-  border: solid 1px gray;
+  border: solid 1px var(--app-border);
   min-height: 60px;
-  border-radius: 8px;
+  border-radius: var(--app-radius-lg);
   margin-right: 3rem;
   margin-bottom: 2rem;
   margin-left: 3rem;
-  position: center;
 }
 
 .item-list-station-order {
   display: grid;
   min-width: 300px;
-  border: solid 6px;
+  border: 2px solid var(--app-primary);
   min-height: 60px;
-  border-radius: 8px;
+  border-radius: var(--app-radius-lg);
   margin-right: 3rem;
   margin-bottom: 2rem;
   margin-left: 3rem;
-  position: center;
 }
 
 .drag-box { //box item itself
   padding: 20px 10px;
   display: block;
   font-size: 18px;
-  border: solid 1px gray;
+  border: solid 1px var(--app-border);
   text-align: left;
   position: relative;
 }
 
 .cdk-drag-preview {
-  border: solid 1px gray;
+  border: solid 1px var(--app-border);
   box-sizing: border-box;
-  border-radius: 4px;
-  background: darkgray;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-md);
+  color: var(--app-text);
 }
 
 .drag-box-placeholder {
-  background: lightgray;
-  border: dashed 1px gray;
+  background: var(--app-surface-muted);
+  border: dashed 1px var(--app-border);
   min-height: 60px;
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
@@ -65,7 +65,6 @@
   display: flex;
   flex-direction: column;
   margin-top: 1rem;
-  position: center;
 }
 
 h2 {
@@ -82,4 +81,17 @@ h2 {
 
 .station-order-card {
   margin-bottom: 0.1rem;
+}
+
+@media (max-width: 800px) {
+  .list-container {
+    flex-direction: column;
+  }
+
+  .item-list-bank,
+  .item-list-station-order {
+    grid-template-columns: 1fr;
+    margin-right: var(--app-space-md);
+    margin-left: var(--app-space-md);
+  }
 }

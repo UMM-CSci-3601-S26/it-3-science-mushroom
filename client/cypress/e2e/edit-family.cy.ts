@@ -26,64 +26,64 @@ describe('Edit family page', () => {
     cy.get('[data-test=guardianFirstNameError]').should('not.exist');
 
     // Deleting and then clicking the guardian name field without entering anything should cause an error message
-    page.getFormField('guardianFirstName').click().clear().blur();
+    page.getFormField('guardianFirstName').click({force: true}).clear().blur();
     cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
 
     // Some more tests for various invalid guardian name inputs
-    page.getFormField('guardianFirstName').type('J').blur();
+    page.getFormField('guardianFirstName').type('J', {force: true}).blur();
     cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
     page
       .getFormField('guardianFirstName')
       .clear()
-      .type('This is a very long name that goes beyond the 50 character limit')
+      .type('This is a very long name that goes beyond the 50 character limit', {force: true})
       .blur();
     cy.get('[data-test=guardianFirstNameError]').should('exist').and('be.visible');
 
     // Entering a valid guardian name should remove the error.
-    page.getFormField('guardianFirstName').clear().type('John').blur();
+    page.getFormField('guardianFirstName').clear().type('John', {force: true}).blur();
     cy.get('[data-test=guardianFirstNameError]').should('not.exist');
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=guardianLastNameError]').should('not.exist');
 
     // Deleting and then clicking the guardian name field without entering anything should cause an error message
-    page.getFormField('guardianLastName').click().clear().blur();
+    page.getFormField('guardianLastName').click({force: true}).clear().blur();
     cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
 
     // Some more tests for various invalid guardian name inputs
-    page.getFormField('guardianLastName').type('J').blur();
+    page.getFormField('guardianLastName').type('J', {force: true}).blur();
     cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
     page
       .getFormField('guardianLastName')
       .clear()
-      .type('This is a very long name that goes beyond the 50 character limit')
+      .type('This is a very long name that goes beyond the 50 character limit', {force: true})
       .blur();
     cy.get('[data-test=guardianLastNameError]').should('exist').and('be.visible');
 
     // Entering a valid guardian name should remove the error.
-    page.getFormField('guardianLastName').clear().type('Smith').blur();
+    page.getFormField('guardianLastName').clear().type('Smith', {force: true}).blur();
     cy.get('[data-test=guardianLastNameError]').should('not.exist');
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=addressError]').should('not.exist');
     // Deleting and then clicking the address field without entering anything should cause an error message
-    page.getFormField('address').click().clear().blur();
+    page.getFormField('address').click({force: true}).clear().blur();
     // Entering a valid address should remove the error.
-    page.getFormField('address').clear().type('123 Street').blur();
+    page.getFormField('address').clear().type('123 Street', {force: true}).blur();
     cy.get('[data-test=addressError]').should('not.exist');
 
     // Before doing anything there shouldn't be an error
     cy.get('[data-test=emailError]').should('not.exist');
     // Deleting and then clicking the email field without entering anything should cause an error message
-    page.getFormField('email').click().clear().blur();
+    page.getFormField('email').click({force: true}).clear().blur();
     // Some more tests for various invalid email inputs
     cy.get('[data-test=emailError]').should('exist').and('be.visible');
-    page.getFormField('email').type('asd').blur();
+    page.getFormField('email').type('asd', {force: true}).blur();
     cy.get('[data-test=emailError]').should('exist').and('be.visible');
-    page.getFormField('email').clear().type('@example.com').blur();
+    page.getFormField('email').clear().type('@example.com', {force: true}).blur();
     cy.get('[data-test=emailError]').should('exist').and('be.visible');
     // Entering a valid email should remove the error.
-    page.getFormField('email').clear().type('family@example.com').blur();
+    page.getFormField('email').clear().type('family@example.com', {force: true}).blur();
     cy.get('[data-test=emailError]').should('not.exist');
   });
 
