@@ -196,7 +196,7 @@ export class FamilyService {
 
   unlinkGuardianAccount(familyId: string): Observable<Family> {
     return this.httpClient.delete<Family>(`${this.familyUrl}/${familyId}/guardian-link`)
-      .pipe(tap(() => this.loadFamilies));
+      .pipe(tap(() => this.loadFamilies()));
   }
 
   /**
