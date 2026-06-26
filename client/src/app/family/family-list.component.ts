@@ -28,6 +28,7 @@ import { Family, SelectOption } from './family';
 import { FamilyCardComponent } from './family-card.component';
 import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
+import { GuardianLinkDialogComponent } from './family-management/link-family/guardian-link-dialog.component';
 
 // Auth Imports
 import { AuthService } from '../auth/auth-service';
@@ -73,7 +74,8 @@ import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } f
     MatDialogModule,
     MatSnackBarModule,
     MatPaginatorModule,
-    MatPaginator
+    MatPaginator,
+    GuardianLinkDialogComponent
   ],
 })
 
@@ -275,6 +277,13 @@ export class FamilyListComponent {
       return
     }
     this.showOptionsMenu.update(value => !value);
+  }
+
+  openGuardianLinkDialog() {
+    this.dialog.open(GuardianLinkDialogComponent, {
+      width: '520px',
+      autoFocus: false
+    });
   }
 
   downloadCSV() {

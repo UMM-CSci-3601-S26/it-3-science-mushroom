@@ -1,0 +1,52 @@
+<h2 mat-dialog-title>Link Guardian</h2>
+
+<mat-dialog-content>
+  <div>
+    <mat-form-field appearance="outline">
+      <mat-label>Family Account</mat-label>
+      <input
+        matInput
+        [(ngModel)]="familySearch"
+        [matAutocomplete]="familyAuto"
+        placeholder="Family..."
+        data-cy="family-search">
+    </mat-form-field>
+
+    <mat-autocomplete #familyAuto="matAutocomplete">
+      @for (family of filteredFamilies(); track family._id) {
+        <mat-option [value]="family.guardianName">
+          {{ family.guardianName }}
+        </mat-option>
+      }
+    </mat-autocomplete>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Guardian Account</mat-label>
+      <input
+      matInput
+      [(ngModel)]="guardianSearch"
+      [matAutocomplete]="guardianAuto"
+      placeholder="Guardian...">
+    </mat-form-field>
+
+    <mat-autocomplete #guardianAuto="matAutocomplete">
+      @for (guardian of filteredGuardian(); track guardian._id) {
+        <mat-option [value]="guardian.username">
+          <div>
+            <Strong>{{ guardian.fullName }}</Strong>
+            <span>{{ guardian.username }}</span>
+            @if (guardian.email) {
+              <small>{{ guardian.email }}</small>
+            }
+          </div>
+        </mat-option>
+      }
+    </mat-autocomplete>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button mat-button type="button" mat-dialog-close>Cancel</button>
+  <button mat-button type="button"> Unlink Guardian Account </button>
+  <button mat-button type="button"> Link Guardian Account </button>
+</mat-dialog-actions>
