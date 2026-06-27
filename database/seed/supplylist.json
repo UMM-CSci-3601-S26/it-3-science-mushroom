@@ -17838,7 +17838,7 @@
     "grade": "4",
     "teacher": "",
     "item": [
-      "Hihglighter"
+      "Highlighter"
     ],
     "brand": {
       "allOf": "",
@@ -17995,5 +17995,2513 @@
     "packageSize": 1,
     "quantity": 48,
     "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Pencil"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "#2",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 24,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Pencil box"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "Regular",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Snack"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "Snack box of crackers"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Binder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "1 in",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "3 Ring",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Kleenex"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 200,
+    "quantity": 3,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Disinfectant Wipe"
+    ],
+    "brand": {
+      "allOf": "Clorox",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Index Cards"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "3x5",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 100,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Colored Pencil"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Highlighter"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Tennis Shoes"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "1 pair for PE"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Dry Erase Marker"
+    ],
+    "brand": {
+      "allOf": "Expo",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Black",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 8,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Scissors"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Glue Stick"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 4,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Computer Mouse"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "Optional"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Blue",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "3 Prong",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Red",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "3 Prong",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Green",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "3 Prong",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Purple",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "3 Prong",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Yellow",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "3 Prong",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Spiral",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "One subject notebook preferred"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Permanent Marker"
+    ],
+    "brand": {
+      "allOf": "Sharpie",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Black",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 2,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Glue Bottle"
+    ],
+    "brand": {
+      "allOf": "Elmers",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "5",
+    "teacher": "",
+    "item": [
+      "Marker"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "1 package of markers"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Pencil"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 36,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Eraser"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Snack"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "Snack box of crackers"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Sticky Note"
+    ],
+    "brand": {
+      "allOf": "Post-It",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "Standard",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Pen"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 2,
+    "notes": "Blue and/or black"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Binder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "1 in",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "3 Ring",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "Must have front cover pocket"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Tissue"
+    ],
+    "brand": {
+      "allOf": "Kleenex",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 200,
+    "quantity": 3,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Disinfectant Wipe"
+    ],
+    "brand": {
+      "allOf": "Clorox",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 2,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Page Protector"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 50,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Index Cards"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "3x5",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 100,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Colored Pencil"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Highlighter"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 2,
+    "notes": "Any color"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Tennis Shoes"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "1 pair for PE"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Dry Erase Marker"
+    ],
+    "brand": {
+      "allOf": "Expo",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Black",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 2,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Scissors"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Glue Stick"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Computer Mouse"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": "Optional, but recommended"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Blue",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Red",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Green",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Purple",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Yellow",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Blue",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Spiral",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Red",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Spiral",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Green",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Spiral",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Purple",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Spiral",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area Elementary School",
+    "grade": "6",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Yellow",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Spiral",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Blue",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Red",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Green",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Green",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Purple",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Folder"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Yellow",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Pencil"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Yellow",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "#2",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 6,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Red",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Blue",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Spiral",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Green",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Purple",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "Yellow",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "College Ruled",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Sketchbook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Highlighter"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 2,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Pen"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 12,
+    "notes": "Blue and/or black"
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Tissue"
+    ],
+    "brand": {
+      "allOf": "Kleenex",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Calculator"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Paper"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Loose Leaf",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Notebook"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "Composition",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Colored Pencil"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Marker"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Crayon"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Scissors"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "7 in",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 1,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Glue Stick"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 6,
+    "notes": ""
+  },
+  {
+    "academicYear": "2025-2026",
+    "district": "Morris Area Schools",
+    "school": "Morris Area High School",
+    "grade": "High School",
+    "teacher": "",
+    "item": [
+      "Bag"
+    ],
+    "brand": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "color": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "size": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "type": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "material": {
+      "allOf": "",
+      "anyOf": []
+    },
+    "packageSize": 1,
+    "quantity": 2,
+    "notes": "Grocery or brown paper"
   }
 ]
