@@ -24,12 +24,12 @@
         <span>items out of stock</span>
       </div>
       <div class="summary-item summary-needed">
-        <span class="summary-value">{{ unitsNeeded() }}</span>
-        <span>units needed to reach minimums</span>
+        <span class="summary-value">{{ understockedItemCount() }}</span>
+        <span>items understocked</span>
       </div>
       <div class="summary-item summary-overflow">
-        <span class="summary-value">{{ overflowUnits() }}</span>
-        <span>units above maximums</span>
+        <span class="summary-value">{{ overstockedItemCount() }}</span>
+        <span>items overstocked</span>
       </div>
     </section>
   }
@@ -136,21 +136,21 @@
 
         <mat-card class="stock-card" data-cy="understocked-items-card">
           <mat-card-header>
-            <mat-card-title>Needs Stock</mat-card-title>
-            <mat-card-subtitle>{{ underStockedItemCount() }} entries, {{ unitsNeeded() }} units needed</mat-card-subtitle>
+            <mat-card-title>Understocked</mat-card-title>
+            <mat-card-subtitle>{{ understockedItemCount() }} entries</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <app-stock-report-tree [stockNodes]="underStockedItems()"></app-stock-report-tree>
+            <app-stock-report-tree [stockNodes]="understockedItems()"></app-stock-report-tree>
           </mat-card-content>
         </mat-card>
 
         <mat-card class="stock-card" data-cy="overstocked-items-card">
           <mat-card-header>
-            <mat-card-title>Overflow</mat-card-title>
-            <mat-card-subtitle>{{ overStockedItemCount() }} entries, {{ overflowUnits() }} units above maximum</mat-card-subtitle>
+            <mat-card-title>Overstocked</mat-card-title>
+            <mat-card-subtitle>{{ overstockedItemCount() }} entries</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <app-stock-report-tree [stockNodes]="overStockedItems()"></app-stock-report-tree>
+            <app-stock-report-tree [stockNodes]="overstockedItems()"></app-stock-report-tree>
           </mat-card-content>
         </mat-card>
       </div>

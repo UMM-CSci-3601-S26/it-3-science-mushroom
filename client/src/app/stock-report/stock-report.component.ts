@@ -191,7 +191,10 @@ export class StockReportComponent {
     return Array.from(groupedByItem.entries()).map(([itemName, itemGroup]) => ({
       item: itemName,
       children: itemGroup.map(inventoryItem => ({
-        description: `${inventoryItem.description} - ${inventoryItem.quantity} on hand (min ${inventoryItem.minQuantity}, max ${inventoryItem.maxQuantity})`
+        description: `${inventoryItem.description} - ${inventoryItem.quantity} on hand (min ${inventoryItem.minQuantity}, max ${inventoryItem.maxQuantity})`,
+        children: [
+          { description: this.calculateUnitDifference(inventoryItem) }
+        ]
       })).sort((a, b) => a.description!.localeCompare(b.description!)) // Sort descriptions alphabetically
     })).sort((a, b) => a.item!.localeCompare(b.item!)); // Sort items alphabetically by item name
   }
@@ -210,35 +213,54 @@ export class StockReportComponent {
     return this.groupInventoryByItem(filtered);
   });
 
-  underStockedItems = computed(() => {
+  understockedItems = computed(() => {
     const filtered = this.inventory()
       ?.filter(item => this.isStockState(item, 'understocked')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
-  overStockedItems = computed(() => {
+  overstockedItems = computed(() => {
     const filtered = this.inventory()
       ?.filter(item => this.isStockState(item, 'overstocked')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
+  // How many items are stocked properly
   stockedItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'stocked')).length ?? 0
   );
 
+  // How many items are out of stock
   outOfStockItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'out of stock')).length ?? 0
   );
 
-  underStockedItemCount = computed(() =>
+  // How many items are understocked
+  understockedItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'understocked')).length ?? 0
   );
 
-  overStockedItemCount = computed(() =>
+  // How many items are overstocked
+  overstockedItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'overstocked')).length ?? 0
   );
 
-  unitsNeeded = computed(() =>
+  /**
+   * Calculates how many units are needed to reach minimum/max quantity
+   * @param item item to calculate unit difference for
+   * @returns difference in unit counts
+   */
+  private calculateUnitDifference(item: Inventory) {
+    if (item.quantity > item.maxQuantity) { // Item overstocked
+      return `Overstocked by ${item.quantity - item.maxQuantity} unit(s)`;
+    } else if (item.quantity < item.minQuantity) { // Item under/out of stock
+      return `Need ${item.minQuantity - item.quantity} more unit(s)`;
+    }
+    return `Properly stocked!`; // Item stocked
+  }
+
+  // How many units of each item are needed to reach minimum quantity
+  understockedAmount = computed(() =>
     this.inventory()?.reduce((total, item) => {
       if (!this.isStockState(item, 'understocked') && !this.isStockState(item, 'out of stock')) {
         return total;
@@ -247,7 +269,8 @@ export class StockReportComponent {
     }, 0) ?? 0
   );
 
-  overflowUnits = computed(() =>
+  // How many units each item is above the max quantity
+  overstockedAmount = computed(() =>
     this.inventory()?.reduce((total, item) => {
       if (!this.isStockState(item, 'overstocked')) {
         return total;
