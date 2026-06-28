@@ -149,6 +149,12 @@
           <span>Settings</span>
         </a>
       }
+      @if (canAccessPath('/family-portal')) {
+        <a mat-menu-item routerLink="/family-portal">
+          <mat-icon>family_restroom</mat-icon>
+          <span>Family Portal</span>
+        </a>
+      }
       @if (isAdmin) {
         <a mat-menu-item routerLink="/style-guide">
           <mat-icon>palette</mat-icon>
