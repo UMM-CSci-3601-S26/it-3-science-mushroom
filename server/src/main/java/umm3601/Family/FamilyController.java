@@ -803,7 +803,7 @@ public class FamilyController {
     }
 
     for (Family.ChecklistSection section : checklist.sections) {
-      if (section.saved) {
+      if (section.saved || section.items == null) {
         continue;
       }
 
@@ -1061,9 +1061,6 @@ public class FamilyController {
     Inventory match = findBestInventoryMatch(supplyList, checklistItem.requestedQuantity);
     checklistItem.available = match != null;
     checklistItem.selected = checklistItem.available;
-    if (checklistItem.selected) {
-      reserveInventory(match, checklistItem.requestedQuantity);
-    }
     checklistItem.matchedInventoryId = match != null ? match.internalID : null;
     checklistItem.matchedInventoryItem = match != null ? match.item : null;
     checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
@@ -1120,6 +1117,33 @@ public class FamilyController {
     Updates.set("reservedQuantity", newReservedQuantity));
 
     inventory.reservedQuantity = newReservedQuantity;
+  }
+
+  private void reserveInventoryForFamily(Family family) {
+    if (family == null || family.students == null) {
+      return;
+    }
+
+    for (Family.StudentInfo student : family.students) {
+      List<SupplyList> supplyLists = getSupplyListsForStudent(student);
+
+      for (SupplyList supplyList : supplyLists) {
+        int requestedQuantity = supplyList.quantity == null
+        || supplyList.quantity <= 0
+        ? 1
+        : supplyList.quantity;
+
+        Inventory match = findBestInventoryMatch(supplyList, requestedQuantity);
+
+        if (match != null) {
+          reserveInventory(match, requestedQuantity);
+        }
+      }
+    }
+  }
+
+  private void rebuildInventoryReservation() {
+
   }
 
   private Inventory findBestInventoryMatch(SupplyList supplyList, int requestedQuantity) {
@@ -1496,7 +1520,6 @@ public class FamilyController {
     }
 
     int quantityToRestore = amount <= 0 ? 1 : amount;
-    reserveInventory(inventory, quantityToRestore);
     inventoryCollection.updateOne(eq("_id",
      new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
   }
