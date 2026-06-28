@@ -63,6 +63,7 @@ public class InventoryController {
   static final String MATERIAL_KEY = "material";
   static final String TYPE_KEY = "type";
   static final String SORT_ORDER_KEY = "sortorder";
+  static final String RESERVED_QUANTITY_KEY = "reservedQuantity";
 
   private static final int EXACT_MATCH_SCORE = 3;
   private static final int STARTS_WITH_SCORE = 2;
@@ -210,6 +211,8 @@ public class InventoryController {
     if (newInv.quantity <= 0) {
       newInv.quantity = 1;
     }
+
+    newInv.reservedQuantity = 0;
 
     boolean idExists = inventoryCollection.find(eq("internalID", newInv.internalID)).first() != null;
     boolean barcodeExists = inventoryCollection.find(eq("internalBarcode", newInv.internalBarcode)).first() != null;
