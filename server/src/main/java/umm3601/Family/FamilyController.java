@@ -1063,6 +1063,44 @@ public class FamilyController {
     return Math.max(0, inventory.quantity - inventory.reservedQuantity);
   }
 
+  private void reserveInventory(Inventory inventory, int amount) {
+    if (inventory == null) {
+      return;
+    }
+
+    if (amount <= 0) {
+      amount = 1;
+    }
+
+    if (unreservedQuantity(inventory) < amount) {
+      throw new BadRequestResponse("Not enough stock to reserve");
+    }
+
+    inventoryCollection.updateOne(eq("_id", new ObjectId(inventory._id)),
+    Updates.set("reservedQuantity", inventory.reservedQuantity + amount));
+    // increase reserved quantity
+    inventory.reservedQuantity += amount;
+  }
+
+  private void releaseInventory(String internalId, int amount) {
+    if (!hasText(internalId)) {
+      return;
+    }
+
+    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    if (inventory == null) {
+      throw new NotFoundResponse("No item found for internalID: " + internalId);
+    }
+
+    int quantityToRelease = amount <= 0 ? 1 : amount;
+    int newReservedQuantity = Math.max(0, inventory.reservedQuantity - quantityToRelease);
+
+    inventoryCollection.updateOne(eq("_id", new ObjectId(inventory._id)),
+    Updates.set("reservedQuantity", newReservedQuantity));
+
+    inventory.reservedQuantity = newReservedQuantity;
+  }
+
   private Inventory findBestInventoryMatch(SupplyList supplyList, int requestedQuantity) {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
     return inventories.stream()
