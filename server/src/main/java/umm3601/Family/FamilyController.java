@@ -1040,7 +1040,7 @@ public class FamilyController {
     checklistItem.supplyListId = supplyList._id;
     checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
 
-    Inventory match = findBestInventoryMatch(supplyList);
+    Inventory match = findBestInventoryMatch(supplyList, checklistItem.requestedQuantity);
     checklistItem.available = match != null && match.quantity > 0;
     checklistItem.selected = checklistItem.available;
     checklistItem.matchedInventoryId = match != null ? match.internalID : null;
@@ -1057,11 +1057,17 @@ public class FamilyController {
     return inventory.toString();
   }
 
-  private Inventory findBestInventoryMatch(SupplyList supplyList) {
-    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
+  private int unreservedQuantity(Inventory inventory) {
+    // Derive unreserved quantity from quantity and reserved quantity
+    // while maintaining non-negative quantity
+    return Math.max(0, inventory.quantity - inventory.reservedQuantity);
+  }
 
+  private Inventory findBestInventoryMatch(SupplyList supplyList, int requestedQuantity) {
+    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
     return inventories.stream()
-      .filter(inventory -> inventory.quantity > 0)
+      // Check if the amount of unreserved quantity is sufficient for the request amount
+      .filter(inventory -> unreservedQuantity(inventory) >= requestedQuantity)
       .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
       .max(Comparator
         .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
