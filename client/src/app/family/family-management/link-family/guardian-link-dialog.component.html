@@ -35,7 +35,8 @@
         [ngModel]="guardianSearch"
         (ngModelChange)="onGuardianSearchChange($event)"
         [matAutocomplete]="guardianAuto"
-        placeholder="Guardian...">
+        placeholder="Guardian..."
+        data-cy="guardian-search">
     </mat-form-field>
 
     <mat-autocomplete #guardianAuto="matAutocomplete" (optionSelected)="selectGuardian($event.option.value)">
@@ -60,7 +61,8 @@
         mat-stroked-button
         type="button"
         [disabled]="!canUnlinkGuardianAccount()"
-        (click)="unlinkGuardianAccount()">
+        (click)="unlinkGuardianAccount()"
+        data-cy="guardian-unlink-button">
         Unlink
       </button>
       <button
@@ -68,7 +70,8 @@
         color="primary"
         type="button"
         [disabled]="!canLinkGuardianAccount()"
-        (click)="linkGuardianAccount()">
+        (click)="linkGuardianAccount()"
+        data-cy="guardian-link-button">
         Link
       </button>
     </div>
