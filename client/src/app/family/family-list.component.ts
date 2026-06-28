@@ -75,7 +75,6 @@ import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } f
     MatSnackBarModule,
     MatPaginatorModule,
     MatPaginator,
-    GuardianLinkDialogComponent
   ],
 })
 

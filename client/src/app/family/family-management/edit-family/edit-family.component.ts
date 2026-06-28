@@ -60,7 +60,6 @@ import { MatDialog, MatDialogActions } from "@angular/material/dialog";
     CommonModule,
     MatCheckboxModule,
     MatDialogActions,
-    GuardianLinkDialogComponent
   ],
   templateUrl: './edit-family.component.html',
   styleUrl: './edit-family.component.scss',
