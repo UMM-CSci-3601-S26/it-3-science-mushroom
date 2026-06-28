@@ -29,6 +29,11 @@
   padding: 0;
 }
 
+.guardian-link-primary-actions {
+  display: flex;
+  gap: var(--app-space-sm);
+}
+
 .guardian-link-actions button {
   min-width: auto;
   padding: 0 14px;

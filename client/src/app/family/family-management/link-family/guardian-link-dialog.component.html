@@ -13,13 +13,14 @@
       <mat-label>Family Account</mat-label>
       <input
         matInput
-        [(ngModel)]="familySearch"
+        [ngModel]="familySearch"
+        (ngModelChange)="onFamilySearchChange($event)"
         [matAutocomplete]="familyAuto"
         placeholder="Family..."
         data-cy="family-search">
     </mat-form-field>
 
-    <mat-autocomplete #familyAuto="matAutocomplete">
+    <mat-autocomplete #familyAuto="matAutocomplete" (optionSelected)="selectFamily($event.option.value)">
       @for (family of filteredFamilies(); track family._id) {
         <mat-option [value]="family.guardianName">
           {{ family.guardianName }}
@@ -31,12 +32,13 @@
       <mat-label>Guardian Account</mat-label>
       <input
         matInput
-        [(ngModel)]="guardianSearch"
+        [ngModel]="guardianSearch"
+        (ngModelChange)="onGuardianSearchChange($event)"
         [matAutocomplete]="guardianAuto"
         placeholder="Guardian...">
     </mat-form-field>
 
-    <mat-autocomplete #guardianAuto="matAutocomplete">
+    <mat-autocomplete #guardianAuto="matAutocomplete" (optionSelected)="selectGuardian($event.option.value)">
       @for (guardian of filteredGuardian(); track guardian._id) {
         <mat-option [value]="guardian.username">
           <div class="guardian-option">
@@ -53,9 +55,22 @@
 
   <mat-dialog-actions align="end" class="guardian-link-actions">
     <button mat-button type="button" mat-dialog-close>Cancel</button>
-    <div class="guaridan-link-primary-actions">
-      <button mat-stroked-button type="button">Unlink </button>
-      <button mat-flat-button color="primary" type="button">Link </button>
+    <div class="guardian-link-primary-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="!canUnlinkGuardianAccount()"
+        (click)="unlinkGuardianAccount()">
+        Unlink
+      </button>
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        [disabled]="!canLinkGuardianAccount()"
+        (click)="linkGuardianAccount()">
+        Link
+      </button>
     </div>
   </mat-dialog-actions>
 </div>
