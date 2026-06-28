@@ -797,11 +797,29 @@ public class FamilyController {
     ctx.status(HttpStatus.OK);
   }
 
+  private void releaseChecklistReservations(Family.FamilyChecklist checklist) {
+    if (checklist == null || checklist.sections == null) {
+      return;
+    }
+
+    for (Family.ChecklistSection section : checklist.sections) {
+      if (section.saved) {
+        continue;
+      }
+
+      for (Family.ChecklistItem item : section.items) {
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
+      }
+    }
+  }
+
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_CLEAR)
   @RequirePermission("manage_family_help_sessions")
   public void clearFamilyHelpSession(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
+
+    releaseChecklistReservations(family.checklist);
 
     family.checklist = null;
     family.status = STATUS_NOT_HELPED;
