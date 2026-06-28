@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 import { FamilyChecklist } from '../../checklist/checklist';
 import { FamilyPortalService, FamilyPortalSummary } from './family-portal.service';
@@ -22,7 +22,6 @@ import { FamilyPortalService, FamilyPortalSummary } from './family-portal.servic
 })
 export class FamilyPortalHomeComponent implements OnInit {
   private familyPortalService = inject(FamilyPortalService);
-  private router = inject(Router);
 
   summary: FamilyPortalSummary | null = null;
   checklist: FamilyChecklist | null = null;
@@ -50,9 +49,7 @@ export class FamilyPortalHomeComponent implements OnInit {
       next: summary => {
         this.summary = summary;
         if (!summary.profileComplete) {
-          // First-time guardians should complete the profile before seeing
-          // checklist or drive-day details that depend on that family record.
-          this.router.navigate(['/family-portal/form']);
+          this.isLoading = false;
           return;
         }
 

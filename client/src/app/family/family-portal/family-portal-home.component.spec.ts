@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { FamilyPortalHomeComponent } from './family-portal-home.component';
@@ -10,7 +10,6 @@ describe('FamilyPortalHomeComponent', () => {
   let component: FamilyPortalHomeComponent;
   let fixture: ComponentFixture<FamilyPortalHomeComponent>;
   let familyPortalServiceMock: jasmine.SpyObj<Pick<FamilyPortalService, 'getSummary' | 'getChecklist'>>;
-  let router: Router;
 
   beforeEach(waitForAsync(() => {
     familyPortalServiceMock = jasmine.createSpyObj('FamilyPortalService', ['getSummary', 'getChecklist']);
@@ -47,7 +46,6 @@ describe('FamilyPortalHomeComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(FamilyPortalHomeComponent);
     component = fixture.componentInstance;
-    router = TestBed.inject(Router);
     fixture.detectChanges();
   });
 
@@ -58,8 +56,7 @@ describe('FamilyPortalHomeComponent', () => {
     expect(component.isLoading).toBeFalse();
   });
 
-  it('should redirect to the family form when the profile is incomplete', () => {
-    const navigateSpy = spyOn(router, 'navigate');
+  it('should show the portal without loading a checklist when the profile is incomplete', () => {
     familyPortalServiceMock.getChecklist.calls.reset();
     familyPortalServiceMock.getSummary.and.returnValue(of({
       profileComplete: false,
@@ -70,7 +67,8 @@ describe('FamilyPortalHomeComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/family-portal/form']);
+    expect(component.summary?.profileComplete).toBeFalse();
+    expect(component.isLoading).toBeFalse();
     expect(familyPortalServiceMock.getChecklist).not.toHaveBeenCalled();
   });
 

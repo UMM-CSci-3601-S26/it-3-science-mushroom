@@ -54,6 +54,10 @@
   border-left: 6px solid var(--app-warn);
 }
 
+.portal-empty-profile-card {
+  border-left: 6px solid var(--app-accent);
+}
+
 .checklist-section-grid {
   display: grid;
   gap: 12px;
