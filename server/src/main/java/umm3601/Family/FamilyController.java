@@ -1041,8 +1041,11 @@ public class FamilyController {
     checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
 
     Inventory match = findBestInventoryMatch(supplyList, checklistItem.requestedQuantity);
-    checklistItem.available = match != null && match.quantity > 0;
+    checklistItem.available = match != null;
     checklistItem.selected = checklistItem.available;
+    if (checklistItem.selected) {
+      reserveInventory(match, checklistItem.requestedQuantity);
+    }
     checklistItem.matchedInventoryId = match != null ? match.internalID : null;
     checklistItem.matchedInventoryItem = match != null ? match.item : null;
     checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
@@ -1348,16 +1351,25 @@ public class FamilyController {
 
       if (item.selected) {
         consumeInventory(item.matchedInventoryId, item.requestedQuantity);
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
       } else if (hasText(item.substituteBarcode)) {
         Inventory substituteInventory = findInventoryByBarcode(item.substituteBarcode);
         if (substituteInventory == null) {
           throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
         }
+
+        if (unreservedQuantity(substituteInventory) < item.requestedQuantity) {
+          throw new BadRequestResponse("Not enough unreserved stock available for substitute item.");
+        }
+
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
         consumeInventory(substituteInventory.internalID, item.requestedQuantity);
         item.substituteInventoryId = substituteInventory.internalID;
         item.substituteItem = substituteInventory.item;
         item.substituteDescription = substituteInventory.description;
         item.notPickedUpReason = REASON_SUBSTITUTED;
+      } else {
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
       }
     }
   }
@@ -1466,6 +1478,7 @@ public class FamilyController {
     }
 
     int quantityToRestore = amount <= 0 ? 1 : amount;
+    reserveInventory(inventory, quantityToRestore);
     inventoryCollection.updateOne(eq("_id",
      new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
   }
