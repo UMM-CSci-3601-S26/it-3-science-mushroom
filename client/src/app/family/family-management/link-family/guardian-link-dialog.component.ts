@@ -4,6 +4,7 @@ import { MatDialogContent, MatDialogActions, MatDialogClose } from "@angular/mat
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { MatInput } from "@angular/material/input";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
+import { MatButtonModule } from "@angular/material/button";
 import { FamilyService } from "../../family.service";
 import { Family } from "../../family";
 import { User, UserService } from "src/app/users/user.service";
@@ -19,7 +20,8 @@ import { User, UserService } from "src/app/users/user.service";
     MatLabel,
     MatFormField,
     FormsModule,
-    MatAutocompleteModule]
+    MatAutocompleteModule,
+    MatButtonModule]
 })
 
 export class GuardianLinkDialogComponent implements OnInit {

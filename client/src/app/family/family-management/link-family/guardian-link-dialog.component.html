@@ -1,7 +1,14 @@
-<h2 mat-dialog-title>Link Guardian</h2>
+<div class="guardian-link-dialog app-dialog-shell">
+  <div class="app-dialog-header">
+    <div>
+      <h2 class="app-dialog-title">Link Guardian</h2>
+      <p class="app-dialog-subtitle">
+        Choose a family and the guardian account to connect.
+      </p>
+    </div>
+  </div>
 
-<mat-dialog-content>
-  <div>
+  <mat-dialog-content class="guardian-link-content app-stack-md">
     <mat-form-field appearance="outline">
       <mat-label>Family Account</mat-label>
       <input
@@ -23,17 +30,17 @@
     <mat-form-field appearance="outline">
       <mat-label>Guardian Account</mat-label>
       <input
-      matInput
-      [(ngModel)]="guardianSearch"
-      [matAutocomplete]="guardianAuto"
-      placeholder="Guardian...">
+        matInput
+        [(ngModel)]="guardianSearch"
+        [matAutocomplete]="guardianAuto"
+        placeholder="Guardian...">
     </mat-form-field>
 
     <mat-autocomplete #guardianAuto="matAutocomplete">
       @for (guardian of filteredGuardian(); track guardian._id) {
         <mat-option [value]="guardian.username">
-          <div>
-            <Strong>{{ guardian.fullName }}</Strong>
+          <div class="guardian-option">
+            <strong>{{ guardian.fullName }}</strong>
             <span>{{ guardian.username }}</span>
             @if (guardian.email) {
               <small>{{ guardian.email }}</small>
@@ -42,11 +49,13 @@
         </mat-option>
       }
     </mat-autocomplete>
-  </div>
-</mat-dialog-content>
+  </mat-dialog-content>
 
-<mat-dialog-actions>
-  <button mat-button type="button" mat-dialog-close>Cancel</button>
-  <button mat-button type="button"> Unlink Guardian Account </button>
-  <button mat-button type="button"> Link Guardian Account </button>
-</mat-dialog-actions>
+  <mat-dialog-actions align="end" class="guardian-link-actions">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <div class="guaridan-link-primary-actions">
+      <button mat-stroked-button type="button">Unlink </button>
+      <button mat-flat-button color="primary" type="button">Link </button>
+    </div>
+  </mat-dialog-actions>
+</div>
