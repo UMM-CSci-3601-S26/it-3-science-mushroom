@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { MatDialogContent, MatDialogActions, MatDialogClose, MatDialogRef } from "@angular/material/dialog";
+import { MAT_DIALOG_DATA, MatDialogContent, MatDialogActions, MatDialogClose, MatDialogRef } from "@angular/material/dialog";
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { MatInput } from "@angular/material/input";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
@@ -32,6 +32,7 @@ export class GuardianLinkDialogComponent implements OnInit {
   private userService = inject(UserService);
   private snackBar = inject(MatSnackBar);
   private dialogRef = inject(MatDialogRef<GuardianLinkDialogComponent>);
+  private dialogData = inject<{ family?: Family } | null>(MAT_DIALOG_DATA, { optional: true });
   families: Family[] = [];
   guardianUsers: User[] = [];
   isSaving = false;
@@ -39,6 +40,7 @@ export class GuardianLinkDialogComponent implements OnInit {
   ngOnInit() {
     this.familyService.getFamilies().subscribe(families => {
       this.families = families;
+      this.prefillFamilySearch();
     });
 
     this.userService.getGuardianUsers().subscribe(users => {
@@ -50,6 +52,19 @@ export class GuardianLinkDialogComponent implements OnInit {
   guardianSearch = '';
   selectedFamilyValue?: Family;
   selectedGuardianValue?: User;
+
+  private prefillFamilySearch() {
+    const family = this.dialogData?.family;
+
+    if (!family?.guardianName) {
+      return;
+    }
+
+    this.familySearch = family.guardianName;
+    this.selectedFamilyValue = this.families.find(loadedFamily =>
+      loadedFamily._id === family._id
+    ) ?? family;
+  }
 
   selectedFamily(): Family | undefined {
     if (this.selectedFamilyValue) {

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
@@ -70,7 +70,8 @@ describe('GuardianLinkDialogComponent', () => {
         { provide: FamilyService, useValue: familyService },
         { provide: UserService, useValue: userService },
         { provide: MatSnackBar, useValue: snackBar },
-        { provide: MatDialogRef, useValue: dialogRef }
+        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: null }
       ]
     }).compileComponents();
   }));
@@ -86,6 +87,27 @@ describe('GuardianLinkDialogComponent', () => {
   it('loads families and guardian users when opened', () => {
     expect(component.families).toEqual([unlinkedFamily, linkedFamily]);
     expect(component.guardianUsers).toEqual([guardianUser, guardianWithoutEmail]);
+  });
+
+  it('prefills the family account when opened with family dialog data', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [GuardianLinkDialogComponent, NoopAnimationsModule],
+      providers: [
+        { provide: FamilyService, useValue: familyService },
+        { provide: UserService, useValue: userService },
+        { provide: MatSnackBar, useValue: snackBar },
+        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: { family: linkedFamily } }
+      ]
+    });
+
+    const dataFixture = TestBed.createComponent(GuardianLinkDialogComponent);
+    const dataComponent = dataFixture.componentInstance;
+    dataFixture.detectChanges();
+
+    expect(dataComponent.familySearch).toBe(linkedFamily.guardianName);
+    expect(dataComponent.selectedFamilyValue).toEqual(linkedFamily);
   });
 
   it('finds selected family and guardian from typed exact matches', () => {

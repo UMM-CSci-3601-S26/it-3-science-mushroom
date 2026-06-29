@@ -3,7 +3,7 @@
 }
 
 .guardian-link-content {
-  padding: 0;
+  padding: var(--app-space-xs) 0 0;
 }
 
 .guardian-link-content mat-form-field {

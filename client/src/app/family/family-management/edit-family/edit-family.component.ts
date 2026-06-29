@@ -339,7 +339,7 @@ export class EditFamilyComponent implements OnInit {
     this.dialog.open(GuardianLinkDialogComponent, {
       width: '520px',
       autoFocus: false,
-      data: { family: this.family }
+      data: { family: this.family() }
     })
   }
 
