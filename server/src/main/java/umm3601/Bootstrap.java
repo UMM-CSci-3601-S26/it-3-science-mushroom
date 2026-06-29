@@ -13,10 +13,14 @@ import umm3601.Auth.AuthController;
 import umm3601.Auth.PermissionsService;
 import umm3601.Auth.RouteRegistrar;
 import umm3601.Common.ApiExceptionHandler;
+import umm3601.Family.FamilyChecklistService;
 import umm3601.Family.FamilyController;
 import umm3601.Family.FamilyPortalController;
+import umm3601.Family.InventoryMatcher;
+import umm3601.Family.InventoryReservationService;
 import umm3601.Inventory.BarcodeController;
 import umm3601.Inventory.InventoryController;
+import umm3601.Inventory.InventoryIdService;
 import umm3601.Middleware.AuthMiddleware;
 import umm3601.Settings.SettingsController;
 import umm3601.StockReport.StockReportController;
@@ -91,11 +95,19 @@ public class Bootstrap {
         usersService,
         new UsersPolicy(),
         new UsersValidator(permissionsService));
-    FamilyController familyController = new FamilyController(db);
+    InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
+    InventoryReservationService inventoryReservationService = new InventoryReservationService(db, inventoryMatcher);
+    InventoryIdService inventoryIdService = new InventoryIdService(db);
+    FamilyChecklistService familyChecklistService = new FamilyChecklistService(db, inventoryMatcher);
+    FamilyController familyController = new FamilyController(
+        db,
+        inventoryReservationService,
+        inventoryMatcher,
+        familyChecklistService);
     SettingsController settingsController = new SettingsController(db);
 
     return new Object[] {
-        new InventoryController(db),
+        new InventoryController(db, inventoryReservationService, inventoryIdService),
         new BarcodeController(db),
         familyController,
         new FamilyPortalController(familyController, settingsController, usersService),

@@ -24,7 +24,6 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -39,6 +38,7 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
+import umm3601.Family.InventoryReservationService;
 
 
 // Controller
@@ -71,8 +71,24 @@ public class InventoryController {
   private static final int NO_MATCH_SCORE = 0;
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
+  private final InventoryReservationService inventoryReservationService;
+  private final InventoryIdService inventoryIdService;
 
   public InventoryController(MongoDatabase database) {
+    this(database, new InventoryReservationService(database), new InventoryIdService(database));
+  }
+
+  public InventoryController(MongoDatabase database, InventoryReservationService inventoryReservationService) {
+    this(database, inventoryReservationService, new InventoryIdService(database));
+  }
+
+  public InventoryController(
+      MongoDatabase database,
+      InventoryReservationService inventoryReservationService,
+      InventoryIdService inventoryIdService
+  ) {
+    this.inventoryReservationService = inventoryReservationService;
+    this.inventoryIdService = inventoryIdService;
     inventoryCollection = JacksonMongoCollection.builder().build(
       database,
       "inventory",
@@ -81,76 +97,11 @@ public class InventoryController {
     );
   }
 
-  private int extractNumber(String value) {
-    if (value == null) {
-      return 0;
-    }
-
-    String digits = value.replaceAll("\\D", "");
-    if (digits.isBlank()) {
-      return 0;
-    }
-
-    try {
-      return Integer.parseInt(digits);
-    } catch (NumberFormatException e) {
-      // If the numeric value is too large or otherwise unparsable, fall back to 0.
-      return 0;
-    }
-  }
-
-  private String formatInternalID(int n) {
-    return String.format("ID-%05d", n);
-  }
-  private String formatInternalBarcode(int n) {
-    return String.format("ITEM-%05d", n);
-  }
-
-  /**
-   * Scans inventory to find the next available ID number for both internalID and internalBarcode
-   * @return The number to use
-   */
-  private int getNextSequence() {
-    Inventory maxIdItem = inventoryCollection
-    .find(Filters.and(
-      Filters.exists("internalID", true), Filters.ne("internalID", null)))
-      .sort(Sorts.descending("internalID")).first();
-
-    Inventory maxBarcodeItem = inventoryCollection
-    .find(Filters.and(
-      Filters.exists("internalBarcode", true), Filters.ne("internalBarcode", null)))
-      .sort(Sorts.descending("internalBarcode")).first();
-
-    int idNum = extractNumber(maxIdItem != null ? maxIdItem.internalID : null);
-    int barcodeNum = extractNumber(maxBarcodeItem != null ? maxBarcodeItem.internalBarcode : null);
-    return Math.max(idNum, barcodeNum) + 1;
-  }
-
-  /**
-   * Generates the next available internal ID in the format "ID-XXXXX"
-   * @return The generated ID
-   */
-  private String generateNextID() {
-    Inventory last = inventoryCollection.find(new Document("internalID", new Document("$exists", true)))
-    .sort(Sorts.descending("internalID"))
-    .first();
-    String prefix = "ID-";
-    int next = 1;
-    if (last != null && last.internalID != null && last.internalID.startsWith(prefix)) {
-      try {
-        next = Integer.parseInt(last.internalID.substring(prefix.length())) + 1;
-      } catch (NumberFormatException e) {
-        // return 1 if not right format
-      }
-    }
-    return String.format("ID-%05d", next);
-  }
-
   // Endpoint to generate the next internal ID
   @Route(method = HttpMethod.GET, path = "/api/inventory/nextid")
   @RequirePermission("add_inventory_item")
   public void generateNextID(Context ctx) {
-    ctx.json(generateNextID());
+    ctx.json(inventoryIdService.generateNextID());
     ctx.status(HttpStatus.OK);
   }
 
@@ -188,15 +139,16 @@ public class InventoryController {
       );
 
       exists.quantity = newQuantity;
+      inventoryReservationService.rebuildInventoryReservation();
       ctx.json(exists);
       ctx.status(HttpStatus.CREATED);
       return;
     }
 
-    int next = getNextSequence();
+    int next = inventoryIdService.getNextSequence();
 
-    newInv.internalID = formatInternalID(next);
-    newInv.internalBarcode = formatInternalBarcode(next);
+    newInv.internalID = inventoryIdService.formatInternalID(next);
+    newInv.internalBarcode = inventoryIdService.formatInternalBarcode(next);
     if (newInv.externalBarcode == null) {
       newInv.externalBarcode = new ArrayList<>();
     }
@@ -225,6 +177,7 @@ public class InventoryController {
 
     newInv.refreshDescription();
     inventoryCollection.insertOne(newInv);
+    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(newInv);
     ctx.status(HttpStatus.CREATED);
   }
@@ -264,6 +217,7 @@ public class InventoryController {
     );
 
     exists.quantity = newQuantity;
+    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(exists);
     ctx.status(HttpStatus.OK);
   }
@@ -288,6 +242,7 @@ public class InventoryController {
       throw new NotFoundResponse("The requested inventory item was not found");
     }
 
+    inventoryReservationService.rebuildInventoryReservation();
     ctx.status(HttpStatus.OK);
   }
 
@@ -306,6 +261,7 @@ public class InventoryController {
       ? "No inventory items matched the provided filters."
       : "Deleted " + matchedCount + " matching inventory item(s).";
 
+    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(Map.of("matchedCount", matchedCount, "message", message));
     ctx.status(HttpStatus.OK);
   }
@@ -317,6 +273,7 @@ public class InventoryController {
   @RequirePermission("clear_inventory")
   public void clearInventory(Context ctx) {
     inventoryCollection.deleteMany(new Document());
+    inventoryReservationService.rebuildInventoryReservation();
     ctx.status(HttpStatus.OK);
   }
 
@@ -342,6 +299,7 @@ public class InventoryController {
       ? "No inventory items matched the provided filters."
       : "Reset quantities for " + matchedCount + " matching inventory item(s).";
 
+    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(Map.of("matchedCount", matchedCount, "message", message));
     ctx.status(HttpStatus.OK);
   }
