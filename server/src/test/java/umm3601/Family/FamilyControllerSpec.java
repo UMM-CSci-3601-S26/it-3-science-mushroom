@@ -65,6 +65,8 @@ import umm3601.Users.UsersService;
 @SuppressWarnings({ "MagicNumber", "checkstyle:MethodLength", "checkstyle:ParameterNumber" })
 class FamilyControllerSpec {
   private FamilyController familyController;
+  private InventoryMatcher inventoryMatcher;
+  private FamilyChecklistService familyChecklistService;
 
   private ObjectId testFamilyId;
 
@@ -163,7 +165,9 @@ class FamilyControllerSpec {
 
     settingsDocuments.insertOne(new Document().append("availableSpots", 5));
 
-    familyController = new FamilyController(db);
+    inventoryMatcher = new InventoryMatcher(db);
+    familyChecklistService = new FamilyChecklistService(db, inventoryMatcher);
+    familyController = new FamilyController(db, inventoryMatcher);
   }
 
   private Document familyDoc(String guardianName, String email, String address, String accommodations,
@@ -1796,16 +1800,15 @@ class FamilyControllerSpec {
   }
 
   private boolean invokeInventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) throws Exception {
-    return invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, supplyList);
+    return inventoryMatcher.inventoryMatchesSupplyList(inventory, supplyList);
   }
 
   private int invokeInventorySpecificityScore(Inventory inventory) throws Exception {
-    return invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, inventory);
+    return inventoryMatcher.inventorySpecificityScore(inventory);
   }
 
   private Inventory invokeFindInventoryByBarcode(String barcode) throws Exception {
-    return invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, barcode);
+    return inventoryMatcher.findInventoryByBarcode(barcode);
   }
 
   private void invokeConsumeInventory(String internalId, int amount) throws Exception {
@@ -1821,35 +1824,33 @@ class FamilyControllerSpec {
   }
 
   private boolean invokeMatchesAttribute(SupplyList.AttributeOptions options, String inventoryValue) throws Exception {
-    return invokePrivate("matchesAttribute",
+    return invokePrivateOn(inventoryMatcher, InventoryMatcher.class, "matchesAttribute",
       new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
   }
 
   private boolean invokeMatchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue)
       throws Exception {
-    return invokePrivate("matchesColorAttribute",
+    return invokePrivateOn(inventoryMatcher, InventoryMatcher.class, "matchesColorAttribute",
       new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
   }
 
   private int invokeAttributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
       throws Exception {
-    return invokePrivate("attributeSimilarityScore",
-      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
+    return inventoryMatcher.attributeSimilarityScore(options, inventoryValue);
   }
 
   private int invokeColorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue)
       throws Exception {
-    return invokePrivate("colorSimilarityScore",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+    return inventoryMatcher.colorSimilarityScore(options, inventoryValue);
   }
 
   private int invokeItemSimilarityScore(Inventory inventory, SupplyList supplyList) throws Exception {
-    return invokePrivate("itemSimilarityScore", new Class<?>[] {Inventory.class, SupplyList.class},
-      inventory, supplyList);
+    return inventoryMatcher.itemSimilarityScore(inventory, supplyList);
   }
 
   private String invokeBestInventoryDescription(Inventory inventory) throws Exception {
-    return invokePrivate("bestInventoryDescription", new Class<?>[] {Inventory.class}, inventory);
+    return invokePrivateOn(familyChecklistService, FamilyChecklistService.class, "bestInventoryDescription",
+      new Class<?>[] {Inventory.class}, inventory);
   }
 
   private void invokeValidateChecklistItemForSave(Family.ChecklistItem item) throws Exception {
@@ -1879,16 +1880,18 @@ class FamilyControllerSpec {
   }
 
   private String invokeNormalizeToken(String value) throws Exception {
-    return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
+    return invokePrivateOn(inventoryMatcher, InventoryMatcher.class, "normalizeToken",
+      new Class<?>[] {String.class}, (Object) value);
   }
 
   private List<SupplyList> invokeGetSupplyListsForStudent(Family.StudentInfo student) throws Exception {
-    return invokePrivate("getSupplyListsForStudent", new Class<?>[] {Family.StudentInfo.class}, student);
+    return invokePrivateOn(familyChecklistService, FamilyChecklistService.class, "getSupplyListsForStudent",
+      new Class<?>[] {Family.StudentInfo.class}, student);
   }
 
   private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
       throws Exception {
-    return invokePrivate("buildChecklistItemSnapshot",
+    return invokePrivateOn(familyChecklistService, FamilyChecklistService.class, "buildChecklistItemSnapshot",
       new Class<?>[] {SupplyList.class, String.class}, supplyList, itemId);
   }
 
@@ -1898,11 +1901,17 @@ class FamilyControllerSpec {
 
   @SuppressWarnings("unchecked")
   private <T> T invokePrivate(String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
-    Method method = FamilyController.class.getDeclaredMethod(methodName, parameterTypes);
+    return invokePrivateOn(familyController, FamilyController.class, methodName, parameterTypes, args);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T invokePrivateOn(Object target, Class<?> owner, String methodName,
+      Class<?>[] parameterTypes, Object... args) throws Exception {
+    Method method = owner.getDeclaredMethod(methodName, parameterTypes);
     method.setAccessible(true);
 
     try {
-      return (T) method.invoke(familyController, args);
+      return (T) method.invoke(target, args);
     } catch (InvocationTargetException exception) {
       if (exception.getCause() instanceof Exception) {
         throw (Exception) exception.getCause();
@@ -1928,19 +1937,14 @@ class FamilyControllerSpec {
 
     assertEquals("John Christensen", families.get(0).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(0).timeSlot);
-
     assertEquals("John Johnson", families.get(1).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(1).timeSlot);
-
     assertEquals("Melina Brim", families.get(2).guardianName);
     assertEquals(currentSettings.earlyAfternoon, families.get(2).timeSlot);
-
     assertEquals("Bob Jones", families.get(3).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(3).timeSlot);
-
     assertEquals("Bob Dylan", families.get(4).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
-
     assertEquals("Jane Doe", families.get(5).guardianName);
     assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
   }
