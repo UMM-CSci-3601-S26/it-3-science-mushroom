@@ -370,7 +370,8 @@ class InventoryMatcherSpec {
     return inventoryDoc(item, item, quantity, reservedQuantity, internalId);
   }
 
-  private Document inventoryDoc(String item, String description, int quantity, int reservedQuantity, String internalId) {
+  private Document inventoryDoc(String item, String description, int quantity,
+    int reservedQuantity, String internalId) {
     return new Document()
       .append("item", item)
       .append("description", description)
