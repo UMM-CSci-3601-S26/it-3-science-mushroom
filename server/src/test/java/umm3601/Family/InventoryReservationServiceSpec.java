@@ -108,6 +108,16 @@ class InventoryReservationServiceSpec {
     assertEquals(0, inventory.getInteger("reservedQuantity"));
   }
 
+  @Test
+  void rebuildInventoryReservationDoesNotLeaveReservedQuantityGreaterThanQuantity() {
+    db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 1, 5, "PENCIL-1"));
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    Document inventory = findInventoryByInternalId("PENCIL-1");
+    assertEquals(0, inventory.getInteger("reservedQuantity"));
+  }
+
   private Document inventoryDoc(String item, int quantity, String internalId) {
     return inventoryDoc(item, quantity, 0, internalId);
   }

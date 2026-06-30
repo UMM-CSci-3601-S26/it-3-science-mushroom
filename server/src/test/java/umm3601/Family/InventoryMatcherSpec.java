@@ -127,6 +127,40 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestInventoryMatchPrefersSimpleInventoryForBroadRequest() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", "Pencil", 4, 0, "PLAIN-PENCIL"),
+      new Document()
+        .append("item", "Pencil")
+        .append("description", "Yellow pencil")
+        .append("quantity", 30)
+        .append("reservedQuantity", 0)
+        .append("color", "Yellow")
+        .append("internalID", "YELLOW-PENCIL")
+        .append("internalBarcode", "YELLOW-PENCIL"),
+      new Document()
+        .append("item", "Pencil")
+        .append("description", "Number 2 black Ticonderoga unsharpened pencil")
+        .append("quantity", 100)
+        .append("reservedQuantity", 0)
+        .append("brand", "Ticonderoga")
+        .append("color", "Black")
+        .append("type", "Number 2")
+        .append("material", "Wood")
+        .append("internalID", "SPECIFIC-PENCIL")
+        .append("internalBarcode", "SPECIFIC-PENCIL")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Pencil");
+
+    Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
+
+    assertNotNull(match);
+    assertEquals("PLAIN-PENCIL", match.internalID);
+  }
+
+  @Test
   void inventoryMatchCoversNegativeBranches() {
     SupplyList emptyItems = new SupplyList();
     emptyItems.item = null;
@@ -333,9 +367,13 @@ class InventoryMatcherSpec {
   }
 
   private Document inventoryDoc(String item, int quantity, int reservedQuantity, String internalId) {
+    return inventoryDoc(item, item, quantity, reservedQuantity, internalId);
+  }
+
+  private Document inventoryDoc(String item, String description, int quantity, int reservedQuantity, String internalId) {
     return new Document()
       .append("item", item)
-      .append("description", item)
+      .append("description", description)
       .append("quantity", quantity)
       .append("reservedQuantity", reservedQuantity)
       .append("internalID", internalId)
