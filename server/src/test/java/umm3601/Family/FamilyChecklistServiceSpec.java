@@ -195,6 +195,25 @@ class FamilyChecklistServiceSpec {
   }
 
   @Test
+  void buildChecklistItemSnapshotSuggestsSubstituteWhenStrictMatchIsUnavailable() throws Exception {
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Notebook");
+    supplyList.quantity = 1;
+    supplyList.type = new SupplyList.AttributeOptions();
+    supplyList.type.allOf = "Composition";
+
+    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
+
+    assertFalse(item.available);
+    assertFalse(item.selected);
+    assertNull(item.matchedInventoryId);
+    assertEquals("ID-10001", item.substituteInventoryId);
+    assertEquals("ITEM-10001", item.substituteBarcode);
+    assertEquals("Notebook", item.substituteItem);
+    assertEquals("Wide Ruled Notebook", item.substituteDescription);
+  }
+
+  @Test
   void buildChecklistItemSnapshotPrefersSimpleMatchForBroadRequest() throws Exception {
     db.getCollection("inventory").drop();
     db.getCollection("inventory").insertMany(List.of(

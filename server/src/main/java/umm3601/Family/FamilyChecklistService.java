@@ -97,6 +97,14 @@ public class FamilyChecklistService {
     checklistItem.matchedInventoryItem = match != null ? match.item : null;
     checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
 
+    if (match == null) {
+      Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(supplyList, checklistItem.requestedQuantity);
+      checklistItem.substituteInventoryId = substitution != null ? substitution.internalID : null;
+      checklistItem.substituteBarcode = substitution != null ? substitution.internalBarcode : null;
+      checklistItem.substituteItem = substitution != null ? substitution.item : null;
+      checklistItem.substituteDescription = substitution != null ? bestInventoryDescription(substitution) : null;
+    }
+
     return checklistItem;
   }
 
