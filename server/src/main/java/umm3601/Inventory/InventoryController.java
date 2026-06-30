@@ -403,8 +403,11 @@ public class InventoryController {
 
     inv.description = generated;
 
-    if (inv._id != null && generated.equals(current)) {
-      inventoryCollection.updateOne(eq("_id", inv._id), Updates.set(DESCRIPTION_KEY, generated));
+    if (inv._id != null && !generated.equals(current)) {
+      inventoryCollection.updateOne(
+        eq("_id", new ObjectId(inv._id)),
+        Updates.set(DESCRIPTION_KEY, generated)
+      );
     }
   }
 
