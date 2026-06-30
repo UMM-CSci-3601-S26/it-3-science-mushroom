@@ -111,6 +111,22 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestInventoryMatchUsesOnlyUnreservedStock() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", 5, 5, "RESERVED-PENCIL"),
+      inventoryDoc("Pencil", 1, 0, "AVAILABLE-PENCIL")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Pencil");
+
+    Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
+
+    assertNotNull(match);
+    assertEquals("AVAILABLE-PENCIL", match.internalID);
+  }
+
+  @Test
   void inventoryMatchCoversNegativeBranches() {
     SupplyList emptyItems = new SupplyList();
     emptyItems.item = null;
@@ -314,6 +330,16 @@ class InventoryMatcherSpec {
 
   private String invokeNormalizeToken(String value) throws Exception {
     return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
+  }
+
+  private Document inventoryDoc(String item, int quantity, int reservedQuantity, String internalId) {
+    return new Document()
+      .append("item", item)
+      .append("description", item)
+      .append("quantity", quantity)
+      .append("reservedQuantity", reservedQuantity)
+      .append("internalID", internalId)
+      .append("internalBarcode", internalId);
   }
 
   @SuppressWarnings("unchecked")
