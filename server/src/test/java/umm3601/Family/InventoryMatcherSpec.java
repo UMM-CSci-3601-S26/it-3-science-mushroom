@@ -182,6 +182,45 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestSubstitutionMatchSuggestsSimilarItemWhenStrictMatchIsUnavailable() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Eraser", "Pencil Topper Eraser", 37, 0, "PENCIL-TOPPER-ERASER")
+        .append("type", "Pencil Topper")
+        .append("size", "Pencil Topper")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Eraser");
+    supplyList.size = new SupplyList.AttributeOptions();
+    supplyList.size.allOf = "Large";
+
+    Inventory strictMatch = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
+    Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(supplyList, 1);
+
+    assertNull(strictMatch);
+    assertNotNull(substitution);
+    assertEquals("PENCIL-TOPPER-ERASER", substitution.internalID);
+  }
+
+  @Test
+  void findBestSubstitutionMatchUsesOnlyUnreservedStock() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Notebook", "Reserved Notebook", 5, 5, "RESERVED-NOTEBOOK"),
+      inventoryDoc("Notebook", "Available Notebook", 1, 0, "AVAILABLE-NOTEBOOK")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Notebook");
+    supplyList.type = new SupplyList.AttributeOptions();
+    supplyList.type.allOf = "Composition";
+
+    Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(supplyList, 1);
+
+    assertNotNull(substitution);
+    assertEquals("AVAILABLE-NOTEBOOK", substitution.internalID);
+  }
+
+  @Test
   void inventoryMatchCoversNegativeBranches() {
     SupplyList emptyItems = new SupplyList();
     emptyItems.item = null;
