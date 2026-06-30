@@ -197,10 +197,8 @@ class FamilyChecklistServiceSpec {
   @Test
   void buildChecklistItemSnapshotSuggestsSubstituteWhenStrictMatchIsUnavailable() throws Exception {
     SupplyList supplyList = new SupplyList();
-    supplyList.item = List.of("Notebook");
+    supplyList.item = List.of("Composition Notebook");
     supplyList.quantity = 1;
-    supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Composition";
 
     Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
 

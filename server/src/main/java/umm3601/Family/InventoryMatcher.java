@@ -169,7 +169,7 @@ public class InventoryMatcher {
   }
 
   private boolean requiredDescriptorsMatch(Inventory inventory, SupplyList supplyList) {
-    if (itemSimilarityScore(inventory, supplyList) == 0) {
+    if (!requiredItemMatches(inventory, supplyList)) {
       return false;
     }
     if (!requiredAttributeMatches(supplyList.brand, inventory.brand)) {
@@ -191,6 +191,27 @@ public class InventoryMatcher {
       return Objects.equals(supplyList.packageSize, inventory.packageSize);
     }
     return true;
+  }
+
+  private boolean requiredItemMatches(Inventory inventory, SupplyList supplyList) {
+    if (supplyList.item == null || supplyList.item.isEmpty()) {
+      return false;
+    }
+
+    List<String> searchableTokens = searchableInventoryIdentityTokens(inventory);
+    for (String requestedItem : supplyList.item) {
+      if (nameEquivalent(requestedItem, inventory.item)) {
+        return true;
+      }
+
+      List<String> requestedTokens = tokenParts(requestedItem);
+      if (!requestedTokens.isEmpty()
+          && requestedTokens.stream().allMatch(searchableTokens::contains)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private boolean requiredAttributeMatches(
@@ -307,6 +328,21 @@ public class InventoryMatcher {
     tokens.add(normalizeToken(inventory.item));
     tokens.addAll(tokenParts(inventory.item));
     tokens.addAll(tokenParts(inventory.description));
+    return tokens.stream()
+      .filter(token -> !token.isBlank())
+      .distinct()
+      .toList();
+  }
+
+  private List<String> searchableInventoryIdentityTokens(Inventory inventory) {
+    List<String> tokens = new ArrayList<>();
+    tokens.add(normalizeToken(inventory.item));
+    tokens.addAll(tokenParts(inventory.item));
+    tokens.addAll(tokenParts(inventory.brand));
+    tokens.addAll(tokenParts(inventory.color));
+    tokens.addAll(tokenParts(inventory.size));
+    tokens.addAll(tokenParts(inventory.type));
+    tokens.addAll(tokenParts(inventory.material));
     return tokens.stream()
       .filter(token -> !token.isBlank())
       .distinct()

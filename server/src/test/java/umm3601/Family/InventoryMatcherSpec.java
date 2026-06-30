@@ -221,6 +221,24 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestInventoryMatchRequiresAllRequestedItemTokens() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Notebook", "College Ruled Composition Notebook", 4, 0, "WIDE-RULED-NOTEBOOK")
+        .append("size", "College Ruled")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Composition Notebook");
+
+    Inventory strictMatch = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
+    Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(supplyList, 1);
+
+    assertNull(strictMatch);
+    assertNotNull(substitution);
+    assertEquals("WIDE-RULED-NOTEBOOK", substitution.internalID);
+  }
+
+  @Test
   void inventoryMatchCoversNegativeBranches() {
     SupplyList emptyItems = new SupplyList();
     emptyItems.item = null;
