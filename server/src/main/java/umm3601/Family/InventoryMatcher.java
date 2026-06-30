@@ -161,19 +161,19 @@ public class InventoryMatcher {
     if (itemSimilarityScore(inventory, supplyList) == 0) {
       return false;
     }
-    if (!requiredAttributeMatches(supplyList.brand, inventory.brand, inventory)) {
+    if (!requiredAttributeMatches(supplyList.brand, inventory.brand)) {
       return false;
     }
-    if (!requiredColorMatches(supplyList.color, inventory.color, inventory)) {
+    if (!requiredColorMatches(supplyList.color, inventory.color)) {
       return false;
     }
-    if (!requiredAttributeMatches(supplyList.size, inventory.size, inventory)) {
+    if (!requiredAttributeMatches(supplyList.size, inventory.size)) {
       return false;
     }
-    if (!requiredAttributeMatches(supplyList.type, inventory.type, inventory)) {
+    if (!requiredAttributeMatches(supplyList.type, inventory.type)) {
       return false;
     }
-    if (!requiredAttributeMatches(supplyList.material, inventory.material, inventory)) {
+    if (!requiredAttributeMatches(supplyList.material, inventory.material)) {
       return false;
     }
     if (supplyList.packageSize != null && supplyList.packageSize > 0) {
@@ -184,46 +184,41 @@ public class InventoryMatcher {
 
   private boolean requiredAttributeMatches(
       SupplyList.AttributeOptions options,
-      String inventoryValue,
-      Inventory inventory
+      String inventoryValue
   ) {
     if (options == null) {
       return true;
     }
     if (hasText(options.allOf)) {
-      return descriptorMatches(options.allOf, inventoryValue, inventory);
+      return descriptorMatches(options.allOf, inventoryValue);
     }
     if (options.anyOf != null && !options.anyOf.isEmpty()) {
       return options.anyOf.stream()
-        .anyMatch(option -> descriptorMatches(option, inventoryValue, inventory));
+        .anyMatch(option -> descriptorMatches(option, inventoryValue));
     }
     return true;
   }
 
   private boolean requiredColorMatches(
       SupplyList.ColorAttributeOptions options,
-      String inventoryValue,
-      Inventory inventory
+      String inventoryValue
   ) {
     if (options == null) {
       return true;
     }
     if (options.allOf != null && !options.allOf.isEmpty()) {
       return options.allOf.stream()
-        .anyMatch(option -> descriptorMatches(option, inventoryValue, inventory));
+        .anyMatch(option -> descriptorMatches(option, inventoryValue));
     }
     if (options.anyOf != null && !options.anyOf.isEmpty()) {
       return options.anyOf.stream()
-        .anyMatch(option -> descriptorMatches(option, inventoryValue, inventory));
+        .anyMatch(option -> descriptorMatches(option, inventoryValue));
     }
     return true;
   }
 
-  private boolean descriptorMatches(String requestedValue, String inventoryValue, Inventory inventory) {
-    if (nameEquivalent(requestedValue, inventoryValue)) {
-      return true;
-    }
-    return searchableInventoryItemTokens(inventory).contains(normalizeToken(requestedValue));
+  private boolean descriptorMatches(String requestedValue, String inventoryValue) {
+    return nameEquivalent(requestedValue, inventoryValue);
   }
 
   public boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {

@@ -164,22 +164,11 @@ class InventoryMatcherSpec {
   void findBestInventoryMatchPrefersMatchingSizeDescriptor() {
     db.getCollection("inventory").drop();
     db.getCollection("inventory").insertMany(List.of(
-      new Document()
-        .append("item", "Eraser")
-        .append("description", "Pencil Topper Eraser")
-        .append("quantity", 37)
-        .append("reservedQuantity", 0)
+      inventoryDoc("Eraser", "Pencil Topper Eraser", 37, 0, "PENCIL-TOPPER-ERASER")
         .append("type", "Pencil Topper")
-        .append("internalID", "PENCIL-TOPPER-ERASER")
-        .append("internalBarcode", "PENCIL-TOPPER-ERASER"),
-      new Document()
-        .append("item", "Eraser")
-        .append("description", "Large Eraser")
-        .append("quantity", 1)
-        .append("reservedQuantity", 0)
-        .append("size", "Large")
-        .append("internalID", "LARGE-ERASER")
-        .append("internalBarcode", "LARGE-ERASER")));
+        .append("size", "Pencil Topper"),
+      inventoryDoc("Eraser", "Large Eraser", 1, 0, "LARGE-ERASER")
+        .append("size", "Large")));
 
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Eraser");
