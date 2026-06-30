@@ -38,6 +38,7 @@ public class InventoryMatcher {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
     return inventories.stream()
       .filter(inventory -> unreservedQuantity(inventory) >= requestedQuantity)
+      .filter(inventory -> requiredDescriptorsMatch(inventory, supplyList))
       .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
       .max(Comparator
         .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
@@ -154,6 +155,75 @@ public class InventoryMatcher {
       return 0;
     }
     return Objects.equals(supplyList.packageSize, inventory.packageSize) ? PACKAGE_SIZE_MATCH_SCORE : 0;
+  }
+
+  private boolean requiredDescriptorsMatch(Inventory inventory, SupplyList supplyList) {
+    if (itemSimilarityScore(inventory, supplyList) == 0) {
+      return false;
+    }
+    if (!requiredAttributeMatches(supplyList.brand, inventory.brand, inventory)) {
+      return false;
+    }
+    if (!requiredColorMatches(supplyList.color, inventory.color, inventory)) {
+      return false;
+    }
+    if (!requiredAttributeMatches(supplyList.size, inventory.size, inventory)) {
+      return false;
+    }
+    if (!requiredAttributeMatches(supplyList.type, inventory.type, inventory)) {
+      return false;
+    }
+    if (!requiredAttributeMatches(supplyList.material, inventory.material, inventory)) {
+      return false;
+    }
+    if (supplyList.packageSize != null && supplyList.packageSize > 0) {
+      return Objects.equals(supplyList.packageSize, inventory.packageSize);
+    }
+    return true;
+  }
+
+  private boolean requiredAttributeMatches(
+      SupplyList.AttributeOptions options,
+      String inventoryValue,
+      Inventory inventory
+  ) {
+    if (options == null) {
+      return true;
+    }
+    if (hasText(options.allOf)) {
+      return descriptorMatches(options.allOf, inventoryValue, inventory);
+    }
+    if (options.anyOf != null && !options.anyOf.isEmpty()) {
+      return options.anyOf.stream()
+        .anyMatch(option -> descriptorMatches(option, inventoryValue, inventory));
+    }
+    return true;
+  }
+
+  private boolean requiredColorMatches(
+      SupplyList.ColorAttributeOptions options,
+      String inventoryValue,
+      Inventory inventory
+  ) {
+    if (options == null) {
+      return true;
+    }
+    if (options.allOf != null && !options.allOf.isEmpty()) {
+      return options.allOf.stream()
+        .anyMatch(option -> descriptorMatches(option, inventoryValue, inventory));
+    }
+    if (options.anyOf != null && !options.anyOf.isEmpty()) {
+      return options.anyOf.stream()
+        .anyMatch(option -> descriptorMatches(option, inventoryValue, inventory));
+    }
+    return true;
+  }
+
+  private boolean descriptorMatches(String requestedValue, String inventoryValue, Inventory inventory) {
+    if (nameEquivalent(requestedValue, inventoryValue)) {
+      return true;
+    }
+    return searchableInventoryItemTokens(inventory).contains(normalizeToken(requestedValue));
   }
 
   public boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {
