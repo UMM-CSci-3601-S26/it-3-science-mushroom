@@ -1720,47 +1720,42 @@ class FamilyControllerSpec {
   }
 
   @Test
-  void privateBuildChecklistItemSnapshotUsesHighestQuantitySimilarInventoryItem() throws Exception {
+  void privateBuildChecklistItemSnapshotPrefersSimpleMatchForBroadRequest() throws Exception {
     db.getCollection("inventory").drop();
     db.getCollection("inventory").insertMany(List.of(
       new Document()
-        .append("item", "Yellow Pencil")
-        .append("description", "Yellow #2 pencil")
+        .append("item", "Pencil")
+        .append("description", "Pencil")
         .append("quantity", 4)
-        .append("size", "Wide")
-        .append("type", "Mechanical")
-        .append("material", "Wood")
-        .append("internalID", "LOW-QTY-PENCIL")
-        .append("internalBarcode", "LOW-QTY-PENCIL"),
+        .append("internalID", "PLAIN-PENCIL")
+        .append("internalBarcode", "PLAIN-PENCIL"),
       new Document()
-        .append("item", "Plastic Pencil")
-        .append("description", "Plastic writing pencil")
+        .append("item", "Pencil")
+        .append("description", "Yellow pencil")
         .append("quantity", 30)
-        .append("size", "Narrow")
-        .append("type", "Wooden")
-        .append("material", "Plastic")
-        .append("internalID", "HIGH-QTY-PENCIL")
-        .append("internalBarcode", "HIGH-QTY-PENCIL"),
+        .append("color", "Yellow")
+        .append("internalID", "YELLOW-PENCIL")
+        .append("internalBarcode", "YELLOW-PENCIL"),
       new Document()
-        .append("item", "Pen")
-        .append("description", "Blue ink pen")
+        .append("item", "Pencil")
+        .append("description", "Number 2 black Ticonderoga unsharpened pencil")
         .append("quantity", 100)
-        .append("internalID", "NOT-A-PENCIL")
-        .append("internalBarcode", "NOT-A-PENCIL")));
+        .append("brand", "Ticonderoga")
+        .append("color", "Black")
+        .append("type", "Number 2")
+        .append("material", "Wood")
+        .append("internalID", "SPECIFIC-PENCIL")
+        .append("internalBarcode", "SPECIFIC-PENCIL")));
 
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Pencil");
-    supplyList.size = new SupplyList.AttributeOptions();
-    supplyList.size.allOf = "Wide";
-    supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Mechanical";
     supplyList.quantity = 1;
 
     Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
 
     assertTrue(item.available);
     assertTrue(item.selected);
-    assertEquals("HIGH-QTY-PENCIL", item.matchedInventoryId);
+    assertEquals("PLAIN-PENCIL", item.matchedInventoryId);
   }
 
   @Test

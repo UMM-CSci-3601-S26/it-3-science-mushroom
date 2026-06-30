@@ -40,8 +40,7 @@ public class InventoryMatcher {
       .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
       .max(Comparator
         .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
-        .thenComparingInt(inventory -> inventory.quantity)
-        .thenComparingInt(this::inventorySpecificityScore))
+        .thenComparingInt(inventory -> -inventorySpecificityScore(inventory)))
       .orElse(null);
   }
 
