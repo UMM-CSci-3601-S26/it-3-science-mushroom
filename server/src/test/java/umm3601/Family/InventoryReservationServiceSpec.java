@@ -86,6 +86,28 @@ class InventoryReservationServiceSpec {
     assertEquals(1, inventory.getInteger("reservedQuantity"));
   }
 
+  @Test
+  void rebuildInventoryReservationReservesUnsavedChecklistItems() {
+    db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 2, "PENCIL-1"));
+    db.getCollection("family").insertOne(familyWithChecklistDoc(false));
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    Document inventory = findInventoryByInternalId("PENCIL-1");
+    assertEquals(2, inventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void rebuildInventoryReservationSkipsSavedChecklistSections() {
+    db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 2, "PENCIL-1"));
+    db.getCollection("family").insertOne(familyWithChecklistDoc(true));
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    Document inventory = findInventoryByInternalId("PENCIL-1");
+    assertEquals(0, inventory.getInteger("reservedQuantity"));
+  }
+
   private Document inventoryDoc(String item, int quantity, String internalId) {
     return inventoryDoc(item, quantity, 0, internalId);
   }
@@ -119,6 +141,21 @@ class InventoryReservationServiceSpec {
         .append("school", "Morris")
         .append("grade", "6")
         .append("teacher", "N/A")));
+  }
+
+  private Document familyWithChecklistDoc(boolean sectionSaved) {
+    return new Document()
+      .append("status", "being_helped")
+      .append("helped", false)
+      .append("checklist", new Document()
+        .append("snapshot", true)
+        .append("sections", List.of(new Document()
+          .append("id", "student-1")
+          .append("saved", sectionSaved)
+          .append("items", List.of(new Document()
+            .append("id", "student-1-item-1")
+            .append("matchedInventoryId", "PENCIL-1")
+            .append("requestedQuantity", 2))))));
   }
 
   private Document findInventoryByInternalId(String internalId) {
