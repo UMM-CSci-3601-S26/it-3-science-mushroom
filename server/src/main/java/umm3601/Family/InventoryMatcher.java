@@ -21,6 +21,7 @@ public class InventoryMatcher {
   private static final int REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH = 4;
   private static final int REQUIRED_ATTRIBUTE_MATCH_SCORE = 5;
   private static final int OPTIONAL_ATTRIBUTE_MATCH_SCORE = 3;
+  private static final int PACKAGE_SIZE_MATCH_SCORE = 5;
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
 
@@ -81,7 +82,10 @@ public class InventoryMatcher {
     int score = itemScore;
     score += attributeSimilarityScore(supplyList.brand, inventory.brand);
     score += colorSimilarityScore(supplyList.color, inventory.color);
+    score += attributeSimilarityScore(supplyList.size, inventory.size);
+    score += attributeSimilarityScore(supplyList.type, inventory.type);
     score += attributeSimilarityScore(supplyList.material, inventory.material);
+    score += packageSizeSimilarityScore(supplyList, inventory);
     return score;
   }
 
@@ -143,6 +147,13 @@ public class InventoryMatcher {
       return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
     }
     return 0;
+  }
+
+  public int packageSizeSimilarityScore(SupplyList supplyList, Inventory inventory) {
+    if (supplyList.packageSize == null || supplyList.packageSize <= 0) {
+      return 0;
+    }
+    return Objects.equals(supplyList.packageSize, inventory.packageSize) ? PACKAGE_SIZE_MATCH_SCORE : 0;
   }
 
   public boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {

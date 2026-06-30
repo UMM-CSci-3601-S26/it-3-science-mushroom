@@ -161,6 +161,38 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestInventoryMatchPrefersMatchingSizeDescriptor() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      new Document()
+        .append("item", "Eraser")
+        .append("description", "Pencil Topper Eraser")
+        .append("quantity", 37)
+        .append("reservedQuantity", 0)
+        .append("type", "Pencil Topper")
+        .append("internalID", "PENCIL-TOPPER-ERASER")
+        .append("internalBarcode", "PENCIL-TOPPER-ERASER"),
+      new Document()
+        .append("item", "Eraser")
+        .append("description", "Large Eraser")
+        .append("quantity", 1)
+        .append("reservedQuantity", 0)
+        .append("size", "Large")
+        .append("internalID", "LARGE-ERASER")
+        .append("internalBarcode", "LARGE-ERASER")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Eraser");
+    supplyList.size = new SupplyList.AttributeOptions();
+    supplyList.size.allOf = "Large";
+
+    Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
+
+    assertNotNull(match);
+    assertEquals("LARGE-ERASER", match.internalID);
+  }
+
+  @Test
   void inventoryMatchCoversNegativeBranches() {
     SupplyList emptyItems = new SupplyList();
     emptyItems.item = null;
