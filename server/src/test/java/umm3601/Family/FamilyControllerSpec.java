@@ -474,6 +474,194 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void updateFamilyAddsChecklistSectionForNewStudent() {
+    Document existingChecklist = new Document()
+      .append("templateId", "family-checklist-v1")
+      .append("printableTitle", "Bob Jones Checklist")
+      .append("snapshot", false)
+      .append("sections", List.of(new Document()
+        .append("id", "student-1")
+        .append("title", "Sara")
+        .append("printableTitle", "Sara")
+        .append("saved", false)
+        .append("items", List.of(new Document()
+          .append("id", "student-1-item-1")
+          .append("label", "Existing Backpack")
+          .append("requestedQuantity", 1)))));
+    db.getCollection("family").updateOne(eq("_id", testFamilyId),
+      new Document("$set", new Document("checklist", existingChecklist)));
+
+    Family updatedFamily = new Family();
+    updatedFamily._id = testFamilyId.toString();
+    updatedFamily.guardianName = "Bob Jones";
+    updatedFamily.email = "bob@email.com";
+    updatedFamily.address = "789 7th Ave";
+    updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.timeAvailability = new AvailabilityOptions();
+    updatedFamily.timeAvailability.earlyMorning = false;
+    updatedFamily.timeAvailability.lateMorning = true;
+    updatedFamily.timeAvailability.earlyAfternoon = false;
+    updatedFamily.timeAvailability.lateAfternoon = false;
+
+    StudentInfo existingStudent = new StudentInfo();
+    existingStudent.name = "Sara";
+    existingStudent.grade = "5";
+    existingStudent.school = "Roosevelt";
+    existingStudent.schoolAbbreviation = "R";
+    existingStudent.teacher = "N/A";
+    existingStudent.backpack = true;
+    existingStudent.headphones = false;
+
+    StudentInfo newStudent = new StudentInfo();
+    newStudent.name = "Alex";
+    newStudent.grade = "5";
+    newStudent.school = "Roosevelt";
+    newStudent.schoolAbbreviation = "R";
+    newStudent.teacher = "N/A";
+    newStudent.backpack = true;
+    newStudent.headphones = false;
+
+    updatedFamily.students = List.of(existingStudent, newStudent);
+    String json = javalinJackson.toJsonString(updatedFamily, Family.class);
+
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+      .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.updateFamily(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family result = familyCaptor.getValue();
+    assertNotNull(result.checklist);
+    assertEquals(2, result.checklist.sections.size());
+    assertEquals("Sara", result.checklist.sections.get(0).title);
+    assertEquals("Existing Backpack", result.checklist.sections.get(0).items.get(0).label);
+    assertEquals("Alex", result.checklist.sections.get(1).title);
+    assertEquals(2, result.checklist.sections.get(1).items.size());
+  }
+
+  @Test
+  void updateFamilyPopulatesEmptyChecklistSectionForExistingStudent() {
+    Document existingChecklist = new Document()
+      .append("templateId", "family-checklist-v1")
+      .append("printableTitle", "Bob Jones Checklist")
+      .append("snapshot", false)
+      .append("sections", List.of(new Document()
+        .append("id", "student-1")
+        .append("title", "Sara")
+        .append("printableTitle", "Sara")
+        .append("saved", false)
+        .append("items", List.of())));
+    db.getCollection("family").updateOne(eq("_id", testFamilyId),
+      new Document("$set", new Document("checklist", existingChecklist)));
+
+    Family updatedFamily = new Family();
+    updatedFamily._id = testFamilyId.toString();
+    updatedFamily.guardianName = "Bob Jones";
+    updatedFamily.email = "bob@email.com";
+    updatedFamily.address = "789 7th Ave";
+    updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.timeAvailability = new AvailabilityOptions();
+    updatedFamily.timeAvailability.earlyMorning = false;
+    updatedFamily.timeAvailability.lateMorning = true;
+    updatedFamily.timeAvailability.earlyAfternoon = false;
+    updatedFamily.timeAvailability.lateAfternoon = false;
+
+    StudentInfo existingStudent = new StudentInfo();
+    existingStudent.name = "Sara";
+    existingStudent.grade = "5";
+    existingStudent.school = "Roosevelt";
+    existingStudent.schoolAbbreviation = "R";
+    existingStudent.teacher = "N/A";
+    existingStudent.backpack = true;
+    existingStudent.headphones = false;
+
+    updatedFamily.students = List.of(existingStudent);
+    String json = javalinJackson.toJsonString(updatedFamily, Family.class);
+
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+      .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.updateFamily(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family result = familyCaptor.getValue();
+    assertNotNull(result.checklist);
+    assertEquals(1, result.checklist.sections.size());
+    assertEquals("Sara", result.checklist.sections.get(0).title);
+    assertEquals(2, result.checklist.sections.get(0).items.size());
+  }
+
+  @Test
+  void updateFamilyRemovesChecklistSectionForRemovedStudent() {
+    Document existingChecklist = new Document()
+      .append("templateId", "family-checklist-v1")
+      .append("printableTitle", "Bob Jones Checklist")
+      .append("snapshot", false)
+      .append("sections", List.of(
+        new Document()
+          .append("id", "student-1")
+          .append("title", "Sara")
+          .append("printableTitle", "Sara")
+          .append("saved", false)
+          .append("items", List.of(new Document()
+            .append("id", "student-1-item-1")
+            .append("label", "Existing Backpack")
+            .append("requestedQuantity", 1))),
+        new Document()
+          .append("id", "student-2")
+          .append("title", "Alex")
+          .append("printableTitle", "Alex")
+          .append("saved", false)
+          .append("items", List.of(new Document()
+            .append("id", "student-2-item-1")
+            .append("label", "Existing Notebook")
+            .append("requestedQuantity", 1)))));
+    db.getCollection("family").updateOne(eq("_id", testFamilyId),
+      new Document("$set", new Document("checklist", existingChecklist)));
+
+    Family updatedFamily = new Family();
+    updatedFamily._id = testFamilyId.toString();
+    updatedFamily.guardianName = "Bob Jones";
+    updatedFamily.email = "bob@email.com";
+    updatedFamily.address = "789 7th Ave";
+    updatedFamily.timeSlot = "2:00-3:00";
+    updatedFamily.timeAvailability = new AvailabilityOptions();
+    updatedFamily.timeAvailability.earlyMorning = false;
+    updatedFamily.timeAvailability.lateMorning = true;
+    updatedFamily.timeAvailability.earlyAfternoon = false;
+    updatedFamily.timeAvailability.lateAfternoon = false;
+
+    StudentInfo remainingStudent = new StudentInfo();
+    remainingStudent.name = "Sara";
+    remainingStudent.grade = "5";
+    remainingStudent.school = "Roosevelt";
+    remainingStudent.schoolAbbreviation = "R";
+    remainingStudent.teacher = "N/A";
+    remainingStudent.backpack = true;
+    remainingStudent.headphones = false;
+
+    updatedFamily.students = List.of(remainingStudent);
+    String json = javalinJackson.toJsonString(updatedFamily, Family.class);
+
+    when(ctx.body()).thenReturn(json);
+    when(ctx.bodyValidator(Family.class))
+      .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.updateFamily(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family result = familyCaptor.getValue();
+    assertNotNull(result.checklist);
+    assertEquals(1, result.checklist.sections.size());
+    assertEquals("Sara", result.checklist.sections.get(0).title);
+  }
+
+  @Test
   void updateFamilyWithBadId() {
     when(ctx.pathParam("id")).thenReturn("bad");
     Throwable exception = assertThrows(BadRequestResponse.class, () -> familyController.updateFamily(ctx));
