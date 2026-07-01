@@ -84,16 +84,22 @@
               @for (section of checklistSections; track section.id || section.title) {
                 <section class="checklist-section">
                   <h3>{{ section.printableTitle || section.title }}</h3>
-                  <ul>
-                    @for (item of section.items ?? []; track item.id || item.label) {
-                      <li>
-                        <span>{{ item.label || item.itemDescription || 'Checklist item' }}</span>
-                        @if (item.requestedQuantity) {
-                          <span class="quantity-chip app-badge app-badge-primary">x{{ item.requestedQuantity }}</span>
-                        }
-                      </li>
-                    }
-                  </ul>
+                  @if ((section.items ?? []).length === 0) {
+                    <p class="empty-section-note">
+                      No checklist items were found for the current school, grade, and teacher.
+                    </p>
+                  } @else {
+                    <ul>
+                      @for (item of section.items ?? []; track item.id || item.label) {
+                        <li>
+                          <span>{{ item.label || item.itemDescription || 'Checklist item' }}</span>
+                          @if (item.requestedQuantity) {
+                            <span class="quantity-chip app-badge app-badge-primary">x{{ item.requestedQuantity }}</span>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  }
                 </section>
               }
             </div>

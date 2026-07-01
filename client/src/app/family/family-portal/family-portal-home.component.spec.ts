@@ -159,6 +159,28 @@ describe('FamilyPortalHomeComponent', () => {
     expect(sectionTitles).toContain('Jordan Student');
   });
 
+  it('should explain when a student has no matching checklist items', () => {
+    familyPortalServiceMock.getChecklist.and.returnValue(of({
+      templateId: 'template-1',
+      printableTitle: 'Back to School Supplies',
+      sections: [{
+        id: 'student-1',
+        title: 'Sam Student',
+        printableTitle: 'Sam Student',
+        items: []
+      }]
+    }));
+
+    fixture = TestBed.createComponent(FamilyPortalHomeComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const emptyNote = compiled.querySelector('.empty-section-note')?.textContent;
+
+    expect(emptyNote).toContain('No checklist items were found for the current school, grade, and teacher.');
+  });
+
   it('should show the portal without loading a checklist when the profile is incomplete', () => {
     familyPortalServiceMock.getChecklist.calls.reset();
     familyPortalServiceMock.getSummary.and.returnValue(of({
