@@ -15,7 +15,28 @@ describe('FamilyPortalHomeComponent', () => {
     familyPortalServiceMock = jasmine.createSpyObj('FamilyPortalService', ['getSummary', 'getChecklist']);
     familyPortalServiceMock.getSummary.and.returnValue(of({
       profileComplete: true,
-      family: null,
+      family: {
+        guardianName: 'Alex Guardian',
+        email: 'alex@example.com',
+        address: '123 Portal Lane',
+        accommodations: '',
+        timeSlot: '9:00-10:00 AM',
+        students: [{
+          name: 'Sam Student',
+          grade: '3',
+          school: 'Morris Elementary',
+          schoolAbbreviation: 'MES',
+          teacher: 'Ms. Green',
+          backpack: true,
+          headphones: false
+        }],
+        timeAvailability: {
+          earlyMorning: true,
+          lateMorning: false,
+          earlyAfternoon: false,
+          lateAfternoon: false
+        }
+      },
       driveDay: { date: '2026-08-15', message: 'See you soon.' },
       timeSlot: '9:00-10:00 AM',
       timeSlotStatus: 'assigned'
@@ -54,6 +75,14 @@ describe('FamilyPortalHomeComponent', () => {
     expect(component.summary?.profileComplete).toBeTrue();
     expect(component.checklistSections.length).toBe(1);
     expect(component.isLoading).toBeFalse();
+  });
+
+  it('should welcome the guardian and title the checklist with the child name', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.textContent).toContain('Welcome, Alex Guardian');
+    expect(compiled.textContent).toContain('Sam Student\'s Checklist');
+    expect(compiled.textContent).not.toContain('Back to School Supplies');
   });
 
   it('should show the portal without loading a checklist when the profile is incomplete', () => {

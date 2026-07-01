@@ -40,8 +40,36 @@ export class FamilyPortalHomeComponent implements OnInit {
     return this.checklist?.sections ?? [];
   }
 
+  get welcomeName(): string {
+    return this.summary?.family?.guardianName?.trim() || 'guardian';
+  }
+
+  get checklistTitle(): string {
+    const studentNames = (this.summary?.family?.students ?? [])
+      .map(student => student.name?.trim())
+      .filter((name): name is string => !!name);
+
+    if (studentNames.length === 1) {
+      return `${studentNames[0]}'s Checklist`;
+    }
+
+    if (studentNames.length > 1) {
+      return `${this.formatStudentNames(studentNames)} Checklist`;
+    }
+
+    return this.checklist?.printableTitle || 'Family Checklist';
+  }
+
   ngOnInit(): void {
     this.loadPortalData();
+  }
+
+  private formatStudentNames(studentNames: string[]): string {
+    if (studentNames.length === 2) {
+      return `${studentNames[0]} and ${studentNames[1]}'s`;
+    }
+
+    return `${studentNames.slice(0, -1).join(', ')}, and ${studentNames[studentNames.length - 1]}'s`;
   }
 
   private loadPortalData() {

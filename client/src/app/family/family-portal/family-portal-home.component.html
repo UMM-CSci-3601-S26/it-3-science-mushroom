@@ -16,7 +16,8 @@
   } @else {
     <section class="portal-summary-band">
       <div>
-        <h1>Family Portal</h1>
+        <p class="portal-eyebrow">Family Portal</p>
+        <h1>Welcome, {{ welcomeName }}</h1>
         <p>{{ summary?.driveDay?.message || 'Your pickup details and checklist will stay updated here.' }}</p>
       </div>
       @if (summary?.profileComplete) {
@@ -72,7 +73,7 @@
 
       <mat-card class="checklist-card">
         <mat-card-header>
-          <mat-card-title>{{ checklist?.printableTitle || 'Family Checklist' }}</mat-card-title>
+          <mat-card-title>{{ checklistTitle }}</mat-card-title>
           <mat-card-subtitle>Supplies currently planned for your family</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>

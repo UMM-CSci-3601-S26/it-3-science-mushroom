@@ -25,6 +25,14 @@
   }
 }
 
+.portal-summary-band .portal-eyebrow {
+  color: var(--app-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
 .portal-info-grid {
   display: grid;
   gap: var(--app-space-md);
