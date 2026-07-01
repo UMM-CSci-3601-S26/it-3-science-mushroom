@@ -70,6 +70,6 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "wait-on": "^9.0.4"
+    "wait-on": "^9.0.10"
   }
 }
