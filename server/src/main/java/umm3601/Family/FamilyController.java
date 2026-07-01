@@ -1079,11 +1079,13 @@ public class FamilyController {
   public Family.FamilyChecklist generateCurrentFamilyChecklist(Family family) {
     Family.FamilyChecklist checklist = new Family.FamilyChecklist();
     checklist.templateId = "family-checklist-v1";
-    checklist.printableTitle = family.guardianName + " Checklist";
+    checklist.printableTitle = family == null || !hasText(family.guardianName)
+      ? "Family Checklist"
+      : family.guardianName + " Checklist";
     checklist.snapshot = false;
     checklist.sections = new ArrayList<>();
 
-    if (family.students == null) {
+    if (family == null || family.students == null) {
       return checklist;
     }
 
@@ -1091,15 +1093,37 @@ public class FamilyController {
     for (Family.StudentInfo student : family.students) {
       Family.ChecklistSection section = new Family.ChecklistSection();
       section.id = "student-" + studentIndex;
-      section.title = hasText(student.name) ? student.name : "Student " + studentIndex;
+      section.title = student != null && hasText(student.name) ? student.name : "Student " + studentIndex;
       section.printableTitle = section.title;
       section.saved = false;
-      section.items = buildChecklistItemsForStudent(student, section.id);
+      section.items = buildCurrentChecklistItemsForStudent(student, section.id);
       checklist.sections.add(section);
       studentIndex++;
     }
 
     return normalizeChecklist(checklist, family.guardianName, family.students);
+  }
+
+  private List<Family.ChecklistItem> buildCurrentChecklistItemsForStudent(
+    Family.StudentInfo student,
+    String sectionId
+  ) {
+    List<Family.ChecklistItem> checklistItems = new ArrayList<>();
+    List<SupplyList> supplyLists = getSupplyListsForStudent(student);
+
+    int itemIndex = 1;
+    for (SupplyList supplyList : supplyLists) {
+      Family.ChecklistItem item = new Family.ChecklistItem();
+      item.id = sectionId + "-item-" + itemIndex;
+      item.label = supplyList.toString();
+      item.itemDescription = supplyList.toString();
+      item.supplyListId = supplyList._id;
+      item.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
+      checklistItems.add(item);
+      itemIndex++;
+    }
+
+    return checklistItems;
   }
 
   private List<Family.ChecklistItem> buildChecklistItemsForStudent(Family.StudentInfo student, String sectionId) {
@@ -1117,6 +1141,10 @@ public class FamilyController {
   }
 
   private List<SupplyList> getSupplyListsForStudent(Family.StudentInfo student) {
+    if (student == null) {
+      return List.of();
+    }
+
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
     ArrayList<SupplyList> matching = new ArrayList<>();
 

@@ -693,6 +693,26 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void generateCurrentFamilyChecklistHandlesMissingFamilyAndStudentData() {
+    Family.FamilyChecklist missingFamilyChecklist = familyController.generateCurrentFamilyChecklist(null);
+
+    assertFalse(missingFamilyChecklist.snapshot);
+    assertEquals("Family Checklist", missingFamilyChecklist.printableTitle);
+    assertEquals(0, missingFamilyChecklist.sections.size());
+
+    Family family = new Family();
+    family.guardianName = "Bob Jones";
+    family.students = Collections.singletonList((StudentInfo) null);
+
+    Family.FamilyChecklist checklist = familyController.generateCurrentFamilyChecklist(family);
+
+    assertFalse(checklist.snapshot);
+    assertEquals(1, checklist.sections.size());
+    assertEquals("Student 1", checklist.sections.get(0).title);
+    assertEquals(0, checklist.sections.get(0).items.size());
+  }
+
+  @Test
   void updateFamilyWithBadId() {
     when(ctx.pathParam("id")).thenReturn("bad");
     Throwable exception = assertThrows(BadRequestResponse.class, () -> familyController.updateFamily(ctx));
