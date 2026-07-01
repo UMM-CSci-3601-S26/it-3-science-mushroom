@@ -45,31 +45,14 @@ export class FamilyPortalHomeComponent implements OnInit {
   }
 
   get checklistTitle(): string {
-    const studentNames = (this.summary?.family?.students ?? [])
-      .map(student => student.name?.trim())
-      .filter((name): name is string => !!name);
+    const studentCount = this.summary?.family?.students?.length ?? 0;
+    const checklistCount = Math.max(studentCount, this.checklistSections.length);
 
-    if (studentNames.length === 1) {
-      return `${studentNames[0]}'s Checklist`;
-    }
-
-    if (studentNames.length > 1) {
-      return `${this.formatStudentNames(studentNames)} Checklist`;
-    }
-
-    return this.checklist?.printableTitle || 'Family Checklist';
+    return checklistCount > 1 ? 'Supply Checklists' : 'Supply Checklist';
   }
 
   ngOnInit(): void {
     this.loadPortalData();
-  }
-
-  private formatStudentNames(studentNames: string[]): string {
-    if (studentNames.length === 2) {
-      return `${studentNames[0]} and ${studentNames[1]}'s`;
-    }
-
-    return `${studentNames.slice(0, -1).join(', ')}, and ${studentNames[studentNames.length - 1]}'s`;
   }
 
   private loadPortalData() {

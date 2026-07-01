@@ -46,7 +46,8 @@ describe('FamilyPortalHomeComponent', () => {
       printableTitle: 'Back to School Supplies',
       sections: [{
         id: 'section-1',
-        title: 'Basics',
+        title: 'Sam Student',
+        printableTitle: 'Sam Student',
         items: [{
           id: 'item-1',
           label: 'Pencils',
@@ -77,12 +78,85 @@ describe('FamilyPortalHomeComponent', () => {
     expect(component.isLoading).toBeFalse();
   });
 
-  it('should welcome the guardian and title the checklist with the child name', () => {
+  it('should welcome the guardian and show the child name only as the checklist section title', () => {
     const compiled = fixture.nativeElement as HTMLElement;
+    const checklistCardTitle = compiled.querySelector('.checklist-card mat-card-title')?.textContent;
+    const checklistSectionTitle = compiled.querySelector('.checklist-section h3')?.textContent;
 
     expect(compiled.textContent).toContain('Welcome, Alex Guardian');
-    expect(compiled.textContent).toContain('Sam Student\'s Checklist');
+    expect(checklistCardTitle).toContain('Supply Checklist');
+    expect(checklistSectionTitle).toContain('Sam Student');
+    expect(checklistCardTitle).not.toContain('Sam Student');
     expect(compiled.textContent).not.toContain('Back to School Supplies');
+  });
+
+  it('should use a plural checklist title when the family has multiple children', () => {
+    familyPortalServiceMock.getSummary.and.returnValue(of({
+      profileComplete: true,
+      family: {
+        guardianName: 'Alex Guardian',
+        email: 'alex@example.com',
+        address: '123 Portal Lane',
+        accommodations: '',
+        timeSlot: '9:00-10:00 AM',
+        students: [{
+          name: 'Sam Student',
+          grade: '3',
+          school: 'Morris Elementary',
+          schoolAbbreviation: 'MES',
+          teacher: 'Ms. Green',
+          backpack: true,
+          headphones: false
+        }, {
+          name: 'Jordan Student',
+          grade: '5',
+          school: 'Morris Elementary',
+          schoolAbbreviation: 'MES',
+          teacher: 'Mr. Blue',
+          backpack: false,
+          headphones: true
+        }],
+        timeAvailability: {
+          earlyMorning: true,
+          lateMorning: false,
+          earlyAfternoon: false,
+          lateAfternoon: false
+        }
+      },
+      driveDay: { date: '2026-08-15', message: 'See you soon.' },
+      timeSlot: '9:00-10:00 AM',
+      timeSlotStatus: 'assigned'
+    }));
+    familyPortalServiceMock.getChecklist.and.returnValue(of({
+      templateId: 'template-1',
+      printableTitle: 'Back to School Supplies',
+      sections: [{
+        id: 'student-1',
+        title: 'Sam Student',
+        printableTitle: 'Sam Student',
+        items: []
+      }, {
+        id: 'student-2',
+        title: 'Jordan Student',
+        printableTitle: 'Jordan Student',
+        items: []
+      }]
+    }));
+
+    fixture = TestBed.createComponent(FamilyPortalHomeComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const checklistCardTitle = compiled.querySelector('.checklist-card mat-card-title')?.textContent;
+    const sectionTitles = Array.from(compiled.querySelectorAll('.checklist-section h3'))
+      .map(section => section.textContent);
+
+    expect(checklistCardTitle).toContain('Supply Checklists');
+    expect(checklistCardTitle).not.toContain('Sam Student');
+    expect(checklistCardTitle).not.toContain('Jordan Student');
+    expect(sectionTitles).toContain('Sam Student');
+    expect(sectionTitles).toContain('Jordan Student');
   });
 
   it('should show the portal without loading a checklist when the profile is incomplete', () => {
