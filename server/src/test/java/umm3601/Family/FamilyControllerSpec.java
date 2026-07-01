@@ -474,7 +474,7 @@ class FamilyControllerSpec {
   }
 
   @Test
-  void updateFamilyAddsChecklistSectionForNewStudent() {
+  void updateFamilyPreservesExistingChecklistWhenStudentIsAdded() {
     Document existingChecklist = new Document()
       .append("templateId", "family-checklist-v1")
       .append("printableTitle", "Bob Jones Checklist")
@@ -534,15 +534,13 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     Family result = familyCaptor.getValue();
     assertNotNull(result.checklist);
-    assertEquals(2, result.checklist.sections.size());
+    assertEquals(1, result.checklist.sections.size());
     assertEquals("Sara", result.checklist.sections.get(0).title);
     assertEquals("Existing Backpack", result.checklist.sections.get(0).items.get(0).label);
-    assertEquals("Alex", result.checklist.sections.get(1).title);
-    assertEquals(2, result.checklist.sections.get(1).items.size());
   }
 
   @Test
-  void updateFamilyPopulatesEmptyChecklistSectionForExistingStudent() {
+  void updateFamilyPreservesEmptyChecklistSectionForExistingStudent() {
     Document existingChecklist = new Document()
       .append("templateId", "family-checklist-v1")
       .append("printableTitle", "Bob Jones Checklist")
@@ -592,11 +590,11 @@ class FamilyControllerSpec {
     assertNotNull(result.checklist);
     assertEquals(1, result.checklist.sections.size());
     assertEquals("Sara", result.checklist.sections.get(0).title);
-    assertEquals(2, result.checklist.sections.get(0).items.size());
+    assertEquals(0, result.checklist.sections.get(0).items.size());
   }
 
   @Test
-  void updateFamilyRemovesChecklistSectionForRemovedStudent() {
+  void updateFamilyPreservesExistingChecklistWhenStudentIsRemoved() {
     Document existingChecklist = new Document()
       .append("templateId", "family-checklist-v1")
       .append("printableTitle", "Bob Jones Checklist")
@@ -657,8 +655,41 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     Family result = familyCaptor.getValue();
     assertNotNull(result.checklist);
-    assertEquals(1, result.checklist.sections.size());
+    assertEquals(2, result.checklist.sections.size());
     assertEquals("Sara", result.checklist.sections.get(0).title);
+    assertEquals("Alex", result.checklist.sections.get(1).title);
+  }
+
+  @Test
+  void generateCurrentFamilyChecklistBuildsStudentSectionsWithoutSnapshot() {
+    Family family = new Family();
+    family.guardianName = "Bob Jones";
+
+    StudentInfo firstStudent = new StudentInfo();
+    firstStudent.name = "Sara";
+    firstStudent.grade = "5";
+    firstStudent.school = "Roosevelt";
+    firstStudent.schoolAbbreviation = "R";
+    firstStudent.teacher = "N/A";
+
+    StudentInfo secondStudent = new StudentInfo();
+    secondStudent.name = "Alex";
+    secondStudent.grade = "5";
+    secondStudent.school = "Roosevelt";
+    secondStudent.schoolAbbreviation = "R";
+    secondStudent.teacher = "N/A";
+
+    family.students = List.of(firstStudent, secondStudent);
+
+    Family.FamilyChecklist checklist = familyController.generateCurrentFamilyChecklist(family);
+
+    assertFalse(checklist.snapshot);
+    assertEquals("family-checklist-v1", checklist.templateId);
+    assertEquals(2, checklist.sections.size());
+    assertEquals("Sara", checklist.sections.get(0).title);
+    assertEquals(2, checklist.sections.get(0).items.size());
+    assertEquals("Alex", checklist.sections.get(1).title);
+    assertEquals(2, checklist.sections.get(1).items.size());
   }
 
   @Test

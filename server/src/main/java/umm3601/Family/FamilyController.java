@@ -1076,6 +1076,32 @@ public class FamilyController {
     return normalizeChecklist(checklist, family.guardianName, family.students);
   }
 
+  public Family.FamilyChecklist generateCurrentFamilyChecklist(Family family) {
+    Family.FamilyChecklist checklist = new Family.FamilyChecklist();
+    checklist.templateId = "family-checklist-v1";
+    checklist.printableTitle = family.guardianName + " Checklist";
+    checklist.snapshot = false;
+    checklist.sections = new ArrayList<>();
+
+    if (family.students == null) {
+      return checklist;
+    }
+
+    int studentIndex = 1;
+    for (Family.StudentInfo student : family.students) {
+      Family.ChecklistSection section = new Family.ChecklistSection();
+      section.id = "student-" + studentIndex;
+      section.title = hasText(student.name) ? student.name : "Student " + studentIndex;
+      section.printableTitle = section.title;
+      section.saved = false;
+      section.items = buildChecklistItemsForStudent(student, section.id);
+      checklist.sections.add(section);
+      studentIndex++;
+    }
+
+    return normalizeChecklist(checklist, family.guardianName, family.students);
+  }
+
   private List<Family.ChecklistItem> buildChecklistItemsForStudent(Family.StudentInfo student, String sectionId) {
     List<Family.ChecklistItem> checklistItems = new ArrayList<>();
     List<SupplyList> supplyLists = getSupplyListsForStudent(student);
@@ -1660,8 +1686,6 @@ public class FamilyController {
       normalizedChecklist.sections = new ArrayList<>();
     }
 
-    syncChecklistSectionsWithStudents(normalizedChecklist, students);
-
     int sectionIndex = 1;
     for (Family.ChecklistSection section : normalizedChecklist.sections) {
       if (section.items == null) {
@@ -1692,66 +1716,6 @@ public class FamilyController {
     }
 
     return normalizedChecklist;
-  }
-
-  private void syncChecklistSectionsWithStudents(
-    Family.FamilyChecklist checklist,
-    List<Family.StudentInfo> students
-  ) {
-    if (students == null) {
-      return;
-    }
-
-    Map<String, Family.StudentInfo> studentsByName = new HashMap<>();
-    int studentPosition = 1;
-    for (Family.StudentInfo student : students) {
-      String studentName = student != null && hasText(student.name)
-        ? student.name
-        : "Student " + studentPosition;
-      studentsByName.put(studentName.trim().toLowerCase(Locale.US), student);
-      studentPosition++;
-    }
-
-    checklist.sections.removeIf(section -> {
-      String sectionName = hasText(section.title) ? section.title : section.printableTitle;
-      return !hasText(sectionName) || !studentsByName.containsKey(sectionName.trim().toLowerCase(Locale.US));
-    });
-
-    int studentIndex = checklist.sections.size() + 1;
-    Map<String, Family.ChecklistSection> sectionsByStudentName = new HashMap<>();
-    for (Family.ChecklistSection section : checklist.sections) {
-      if (hasText(section.title)) {
-        sectionsByStudentName.put(section.title.trim().toLowerCase(Locale.US), section);
-      }
-      if (hasText(section.printableTitle)) {
-        sectionsByStudentName.put(section.printableTitle.trim().toLowerCase(Locale.US), section);
-      }
-    }
-
-    for (Family.StudentInfo student : students) {
-      String studentName = student != null && hasText(student.name)
-        ? student.name
-        : "Student " + studentIndex;
-      String normalizedStudentName = studentName.trim().toLowerCase(Locale.US);
-      Family.ChecklistSection existingSection = sectionsByStudentName.get(normalizedStudentName);
-
-      if (existingSection == null) {
-        Family.ChecklistSection section = new Family.ChecklistSection();
-        section.id = "student-" + studentIndex;
-        section.title = studentName;
-        section.printableTitle = studentName;
-        section.items = student == null ? new ArrayList<>() : buildChecklistItemsForStudent(student, section.id);
-        checklist.sections.add(section);
-        sectionsByStudentName.put(normalizedStudentName, section);
-        studentIndex++;
-      } else if (existingSection.items == null || existingSection.items.isEmpty()) {
-        if (!hasText(existingSection.id)) {
-          existingSection.id = "student-" + studentIndex;
-          studentIndex++;
-        }
-        existingSection.items = student == null ? new ArrayList<>() : buildChecklistItemsForStudent(student, existingSection.id);
-      }
-    }
   }
 
   private String normalizeStatusValue(String status) {
