@@ -111,6 +111,7 @@ public class FamilyController {
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
   private final JacksonMongoCollection<Users> usersCollection;
+  private final FamilyChecklistGenerator checklistGenerator;
 
 
   // Database Constructor
@@ -140,6 +141,7 @@ public class FamilyController {
         "users",
         Users.class,
         UuidRepresentation.STANDARD);
+    checklistGenerator = new FamilyChecklistGenerator(supplyListCollection);
   }
 
   // GET all families
@@ -1077,58 +1079,17 @@ public class FamilyController {
   }
 
   public Family.FamilyChecklist generateCurrentFamilyChecklist(Family family) {
-    Family.FamilyChecklist checklist = new Family.FamilyChecklist();
-    checklist.templateId = "family-checklist-v1";
-    checklist.printableTitle = family == null || !hasText(family.guardianName)
-      ? "Family Checklist"
-      : family.guardianName + " Checklist";
-    checklist.snapshot = false;
-    checklist.sections = new ArrayList<>();
-
-    if (family == null || family.students == null) {
-      return checklist;
-    }
-
-    int studentIndex = 1;
-    for (Family.StudentInfo student : family.students) {
-      Family.ChecklistSection section = new Family.ChecklistSection();
-      section.id = "student-" + studentIndex;
-      section.title = student != null && hasText(student.name) ? student.name : "Student " + studentIndex;
-      section.printableTitle = section.title;
-      section.saved = false;
-      section.items = buildCurrentChecklistItemsForStudent(student, section.id);
-      checklist.sections.add(section);
-      studentIndex++;
-    }
-
-    return normalizeChecklist(checklist, family.guardianName, family.students);
-  }
-
-  private List<Family.ChecklistItem> buildCurrentChecklistItemsForStudent(
-    Family.StudentInfo student,
-    String sectionId
-  ) {
-    List<Family.ChecklistItem> checklistItems = new ArrayList<>();
-    List<SupplyList> supplyLists = getSupplyListsForStudent(student);
-
-    int itemIndex = 1;
-    for (SupplyList supplyList : supplyLists) {
-      Family.ChecklistItem item = new Family.ChecklistItem();
-      item.id = sectionId + "-item-" + itemIndex;
-      item.label = supplyList.toString();
-      item.itemDescription = supplyList.toString();
-      item.supplyListId = supplyList._id;
-      item.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
-      checklistItems.add(item);
-      itemIndex++;
-    }
-
-    return checklistItems;
+    Family.FamilyChecklist checklist = checklistGenerator.generateCurrentFamilyChecklist(family);
+    return normalizeChecklist(
+      checklist,
+      family == null ? null : family.guardianName,
+      family == null ? null : family.students
+    );
   }
 
   private List<Family.ChecklistItem> buildChecklistItemsForStudent(Family.StudentInfo student, String sectionId) {
     List<Family.ChecklistItem> checklistItems = new ArrayList<>();
-    List<SupplyList> supplyLists = getSupplyListsForStudent(student);
+    List<SupplyList> supplyLists = checklistGenerator.getSupplyListsForStudent(student);
 
     int itemIndex = 1;
     for (SupplyList supplyList : supplyLists) {
@@ -1138,31 +1099,6 @@ public class FamilyController {
     }
 
     return checklistItems;
-  }
-
-  private List<SupplyList> getSupplyListsForStudent(Family.StudentInfo student) {
-    if (student == null) {
-      return List.of();
-    }
-
-    ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-    ArrayList<SupplyList> matching = new ArrayList<>();
-
-    for (SupplyList supplyList : allSupplyLists) {
-      if (!nameEquivalent(supplyList.school, student.school)) {
-        continue;
-      }
-      if (!gradeEquivalent(supplyList.grade, student.grade)) {
-        continue;
-      }
-      if (hasValue(supplyList.teacher) && !nameEquivalent(supplyList.teacher, student.teacher)) {
-        continue;
-      }
-      matching.add(supplyList);
-    }
-
-    matching.sort(Comparator.comparing(supplyList -> supplyList.toString().toLowerCase(Locale.US)));
-    return matching;
   }
 
   private Family.ChecklistItem buildChecklistItemSnapshot(SupplyList supplyList, String itemId) {
@@ -1569,18 +1505,6 @@ public class FamilyController {
       || strictRightToken.equals(acronymToken(left));
   }
 
-  private boolean gradeEquivalent(String left, String right) {
-    String leftGrade = normalizeGradeToken(left);
-    String rightGrade = normalizeGradeToken(right);
-    return leftGrade.equals(rightGrade)
-      || "highschool".equals(leftGrade) && isHighSchoolGrade(rightGrade)
-      || "highschool".equals(rightGrade) && isHighSchoolGrade(leftGrade)
-      || "middleschool".equals(leftGrade) && isMiddleSchoolGrade(rightGrade)
-      || "middleschool".equals(rightGrade) && isMiddleSchoolGrade(leftGrade)
-      || "elementary".equals(leftGrade) && isElementaryGrade(rightGrade)
-      || "elementary".equals(rightGrade) && isElementaryGrade(leftGrade);
-  }
-
   private String normalizeToken(String value) {
     String normalized = normalizeTokenWithoutPluralFold(value);
     if (normalized.endsWith("s") && normalized.length() > 1) {
@@ -1609,31 +1533,6 @@ public class FamilyController {
       }
     }
     return tokens;
-  }
-
-  private String normalizeGradeToken(String value) {
-    String normalized = normalizeToken(value);
-    if ("kindergarten".equals(normalized)) {
-      return "k";
-    }
-    if ("prekindergarten".equals(normalized) || "prekindergarden".equals(normalized)) {
-      return "prek";
-    }
-    String withoutGradeWord = normalized.replace("grade", "");
-    return withoutGradeWord.replaceAll("(\\d+)(st|nd|rd|th)$", "$1");
-  }
-
-  private boolean isHighSchoolGrade(String grade) {
-    return "9".equals(grade) || "10".equals(grade) || "11".equals(grade) || "12".equals(grade);
-  }
-
-  private boolean isMiddleSchoolGrade(String grade) {
-    return "6".equals(grade) || "7".equals(grade) || "8".equals(grade);
-  }
-
-  private boolean isElementaryGrade(String grade) {
-    return "prek".equals(grade) || "k".equals(grade)
-      || "1".equals(grade) || "2".equals(grade) || "3".equals(grade) || "4".equals(grade) || "5".equals(grade);
   }
 
   private String acronymToken(String value) {

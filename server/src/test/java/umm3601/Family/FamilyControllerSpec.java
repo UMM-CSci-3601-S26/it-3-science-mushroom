@@ -26,6 +26,7 @@ import java.util.Map;
 
 // Org Imports
 import org.bson.Document;
+import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,6 +37,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mongojack.JacksonMongoCollection;
 // Com Imports
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
@@ -2122,7 +2124,13 @@ class FamilyControllerSpec {
   }
 
   private List<SupplyList> invokeGetSupplyListsForStudent(Family.StudentInfo student) throws Exception {
-    return invokePrivate("getSupplyListsForStudent", new Class<?>[] {Family.StudentInfo.class}, student);
+    FamilyChecklistGenerator generator = new FamilyChecklistGenerator(
+      JacksonMongoCollection.builder().build(
+        db,
+        "supplylist",
+        SupplyList.class,
+        UuidRepresentation.STANDARD));
+    return generator.getSupplyListsForStudent(student);
   }
 
   private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
