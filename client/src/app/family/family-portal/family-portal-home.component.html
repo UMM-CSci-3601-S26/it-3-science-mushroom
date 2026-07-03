@@ -81,16 +81,29 @@
             <p>No checklist has been generated for your family yet.</p>
           } @else {
             <div class="checklist-section-grid">
-              @for (section of checklistSections; track section.id || section.title) {
+              @for (view of checklistSectionViews; track view.section.id || view.section.title) {
                 <section class="checklist-section">
-                  <h3>{{ section.printableTitle || section.title }}</h3>
-                  @if ((section.items ?? []).length === 0) {
+                  <h3>{{ view.section.printableTitle || view.section.title }}</h3>
+                  @if (view.student) {
+                    <div class="student-meta">
+                      <span class="student-meta-school app-badge app-badge-primary">
+                        School: {{ view.student.school }}
+                      </span>
+                      <span class="student-meta-grade app-badge app-badge-accent">
+                        Grade: {{ view.student.grade }}
+                      </span>
+                      <span class="student-meta-teacher app-badge app-badge-accent">
+                        Teacher: {{ view.student.teacher || 'Not listed' }}
+                      </span>
+                    </div>
+                  }
+                  @if ((view.section.items ?? []).length === 0) {
                     <p class="empty-section-note">
                       No checklist items were found for the current school, grade, and teacher.
                     </p>
                   } @else {
                     <ul>
-                      @for (item of section.items ?? []; track item.id || item.label) {
+                      @for (item of view.section.items ?? []; track item.id || item.label) {
                         <li>
                           <span>{{ item.label || item.itemDescription || 'Checklist item' }}</span>
                           @if (item.requestedQuantity) {

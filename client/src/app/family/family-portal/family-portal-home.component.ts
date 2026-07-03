@@ -51,6 +51,24 @@ export class FamilyPortalHomeComponent implements OnInit {
     return checklistCount > 1 ? 'Supply Checklists' : 'Supply Checklist';
   }
 
+  get studentsInfo() {
+    return (this.summary?.family?.students ?? []).map(student => ({
+      name: student.name,
+      school: student.school,
+      grade: student.grade,
+      teacher: student.teacher,
+    }));
+  }
+
+  get checklistSectionViews() {
+    const students = this.summary?.family?.students ?? [];
+
+    return this.checklistSections.map((section, index) => ({
+      section,
+      student: students[index] ?? null,
+    }));
+  }
+
   ngOnInit(): void {
     this.loadPortalData();
   }
