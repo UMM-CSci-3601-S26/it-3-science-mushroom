@@ -45,7 +45,8 @@ describe('AppComponent', () => {
 
   beforeEach(waitForAsync(() => {
     // Clear any persisted theme mode and classes before each test to ensure a consistent starting state.
-    localStorage.removeItem('r4l-theme-mode');
+    localStorage.removeItem('r4l-color-mode');
+    localStorage.removeItem('r4l-poster-style');
     document.documentElement.classList.remove(
       'app-theme-dark',
       'app-theme-light',
@@ -101,7 +102,8 @@ describe('AppComponent', () => {
     httpTestingController.verify();
 
     // Clear any persisted theme mode and classes after each test to prevent side effects on other tests.
-    localStorage.removeItem('r4l-theme-mode');
+    localStorage.removeItem('r4l-color-mode');
+    localStorage.removeItem('r4l-poster-style');
     document.documentElement.classList.remove(
       'app-theme-dark',
       'app-theme-light',
@@ -131,33 +133,68 @@ describe('AppComponent', () => {
   });
 
   it('should apply the saved app theme class on init', () => {
-    localStorage.setItem('r4l-theme-mode', 'dark');
+    localStorage.setItem('r4l-color-mode', 'dark');
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
 
     fixture.detectChanges();
 
-    expect(app.currentTheme).toBe('dark');
+    expect(app.currentMode).toBe('dark');
+    expect(app.posterStyleEnabled).toBeFalse();
     expect(document.documentElement.classList).toContain('app-theme-dark');
     expect(document.documentElement.classList).not.toContain('app-theme-light');
     expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
     expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster-dark');
   });
 
-  it('should toggle the forced app theme class', () => {
-    localStorage.setItem('r4l-theme-mode', 'light');
+  it('should apply the saved poster style independently from color mode', () => {
+    localStorage.setItem('r4l-color-mode', 'dark');
+    localStorage.setItem('r4l-poster-style', 'true');
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
 
     fixture.detectChanges();
-    app.toggleTheme();
 
-    expect(app.currentTheme).toBe('dark');
-    expect(document.documentElement.classList).toContain('app-theme-dark');
-    expect(document.documentElement.classList).not.toContain('app-theme-light');
+    expect(app.currentMode).toBe('dark');
+    expect(app.posterStyleEnabled).toBeTrue();
+    expect(document.documentElement.classList).toContain('app-theme-r4l-poster-dark');
     expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
-    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster-dark');
-    expect(localStorage.getItem('r4l-theme-mode')).toBe('dark');
+    expect(document.documentElement.classList).not.toContain('app-theme-dark');
+    expect(document.documentElement.classList).not.toContain('app-theme-light');
+  });
+
+  it('should update dark mode without changing poster style preference', () => {
+    localStorage.setItem('r4l-color-mode', 'light');
+    localStorage.setItem('r4l-poster-style', 'true');
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    fixture.detectChanges();
+    app.setDarkMode(true);
+
+    expect(app.currentMode).toBe('dark');
+    expect(app.posterStyleEnabled).toBeTrue();
+    expect(document.documentElement.classList).toContain('app-theme-r4l-poster-dark');
+    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
+    expect(localStorage.getItem('r4l-color-mode')).toBe('dark');
+    expect(localStorage.getItem('r4l-poster-style')).toBe('true');
+  });
+
+  it('should update poster style without changing color mode preference', () => {
+    localStorage.setItem('r4l-color-mode', 'dark');
+    localStorage.setItem('r4l-poster-style', 'false');
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    fixture.detectChanges();
+    app.setPosterStyle(true);
+
+    expect(app.currentMode).toBe('dark');
+    expect(app.posterStyleEnabled).toBeTrue();
+    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
+    expect(document.documentElement.classList).toContain('app-theme-r4l-poster-dark');
+    expect(localStorage.getItem('r4l-color-mode')).toBe('dark');
+    expect(localStorage.getItem('r4l-poster-style')).toBe('true');
   });
 
   it('should load pending delete request count for admins', () => {

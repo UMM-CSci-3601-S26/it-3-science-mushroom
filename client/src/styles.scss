@@ -483,6 +483,11 @@ body {
   color-scheme: light;
   @include mat.all-component-colors($light-theme);
   @include app-theming($light-theme);
+
+  --app-page-bg:
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--app-accent) 13%, transparent), transparent 19rem),
+    radial-gradient(circle at 100% 12%, color-mix(in srgb, var(--app-success) 10%, transparent), transparent 20rem),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, var(--app-primary) 5%, var(--app-bg)) 100%);
 }
 
 :root.app-theme-dark {
@@ -490,6 +495,11 @@ body {
   color-scheme: dark;
   @include mat.all-component-colors($dark-theme);
   @include app-theming($dark-theme);
+
+  --app-page-bg:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--app-accent) 13%, transparent), transparent 20rem),
+    radial-gradient(circle at 100% 14%, color-mix(in srgb, var(--app-success) 12%, transparent), transparent 22rem),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, var(--app-primary) 7%, var(--app-bg)) 100%);
 }
 
 :root.app-theme-r4l-poster {
@@ -502,6 +512,15 @@ body {
   --app-on-success: #000000;
   --app-tertiary: #642e8c;
   --app-on-tertiary: #ffffff;
+  --app-page-bg:
+    radial-gradient(circle at 9% 1rem, color-mix(in srgb, #fbeb04 22%, transparent), transparent 18rem),
+    radial-gradient(circle at 96% 5rem, color-mix(in srgb, #1ea16d 16%, transparent), transparent 19rem),
+    linear-gradient(145deg, color-mix(in srgb, #e43894 9%, var(--app-bg)), transparent 42%),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, #642e8c 7%, var(--app-bg)));
+  --decor-bolt: #fbeb04;
+  --decor-squiggle: #e43894;
+  --decor-dot: #1ea16d;
+  --decor-outline: #642e8c;
 }
 
 :root.app-theme-r4l-poster-dark {
@@ -514,6 +533,15 @@ body {
   --app-on-success: #000000;
   --app-tertiary: #642e8c;
   --app-on-tertiary: #ffffff;
+  --app-page-bg:
+    radial-gradient(circle at 9% 1rem, color-mix(in srgb, #fbeb04 12%, transparent), transparent 18rem),
+    radial-gradient(circle at 96% 5rem, color-mix(in srgb, #1ea16d 14%, transparent), transparent 19rem),
+    linear-gradient(145deg, color-mix(in srgb, #e43894 11%, var(--app-bg)), transparent 42%),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, #642e8c 14%, var(--app-bg)));
+  --decor-bolt: #fbeb04;
+  --decor-squiggle: #ff72b5;
+  --decor-dot: #1ea16d;
+  --decor-outline: #c88cff;
 }
 
 // APP BACKGROUNDS
@@ -555,6 +583,24 @@ body {
 
 .mat-mdc-icon-button {
   border-radius: 50%;
+}
+
+:root.app-theme-r4l-poster .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-icon {
+  filter:
+    drop-shadow(1px 0 0 color-mix(in srgb, var(--decor-outline, var(--app-primary)) 34%, transparent))
+    drop-shadow(0 1px 0 color-mix(in srgb, var(--decor-bolt, var(--app-accent)) 26%, transparent));
+}
+
+:root.app-theme-r4l-poster .mat-mdc-icon-button .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-mdc-icon-button .mat-icon,
+:root.app-theme-r4l-poster .mat-mdc-button .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-mdc-button .mat-icon,
+:root.app-theme-r4l-poster .mat-mdc-menu-item .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-mdc-menu-item .mat-icon {
+  text-shadow:
+    1px 1px 0 color-mix(in srgb, var(--decor-bolt, var(--app-accent)) 36%, transparent),
+    -1px 0 0 color-mix(in srgb, var(--decor-outline, var(--app-primary)) 28%, transparent);
 }
 
 // Shared interaction motion gives the rest of the app the same responsive feel

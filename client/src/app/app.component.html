@@ -14,6 +14,11 @@
     </button>
 
     <a routerLink="/" class="app-title" aria-label="Ready 4 Learning home">
+      <img
+        class="app-title-logo"
+        src="assets/r4l-poster/r4l-logo.png"
+        alt=""
+        aria-hidden="true">
       <span class="app-title-mark">R4L</span>
       <span class="app-title-subtitle">Ready 4 Learning</span>
     </a>
@@ -38,15 +43,14 @@
 
     <span class="toolbar-spacer"></span>
 
-    <!-- The theme toggle changes the root class so Material and app tokens switch together. -->
     <button
       type="button"
       mat-icon-button
       class="theme-toggle-button"
-      [attr.aria-label]="themeToggleLabel"
-      [title]="themeToggleLabel"
-      (click)="toggleTheme()">
-      <mat-icon>{{ themeIcon }}</mat-icon>
+      [attr.aria-label]="darkModeToggleLabel"
+      [title]="darkModeToggleLabel"
+      (click)="toggleDarkMode()">
+      <mat-icon>{{ darkModeToggleIcon }}</mat-icon>
     </button>
 
     @if (authService.loggedIn) {
@@ -130,6 +134,16 @@
         <mat-icon>badge</mat-icon>
         <span>View Account</span>
       </button>
+      <div class="appearance-menu-panel" role="group" aria-label="Appearance settings"
+           (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+        <div class="appearance-menu-title">Appearance</div>
+        <mat-slide-toggle
+          [checked]="posterStyleEnabled"
+          (change)="setPosterStyle($event.checked)">
+          Poster style
+        </mat-slide-toggle>
+      </div>
+      <mat-divider></mat-divider>
       @if (canAccessPath('/users')) {
         <a mat-menu-item routerLink="/users" [queryParams]="{ tab: 'users' }">
           <mat-icon
