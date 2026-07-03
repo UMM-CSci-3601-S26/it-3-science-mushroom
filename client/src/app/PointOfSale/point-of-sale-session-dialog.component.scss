@@ -171,6 +171,46 @@
   margin: 0.25rem 0 0.75rem;
 }
 
+.substitution-tabs {
+  width: 100%;
+}
+
+.substitution-options {
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.75rem;
+}
+
+.substitution-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+  padding: 0.65rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface);
+}
+
+.substitution-option div {
+  min-width: 0;
+}
+
+.substitution-option strong,
+.substitution-option p {
+  overflow-wrap: anywhere;
+}
+
+.substitution-option span {
+  color: var(--app-text-muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.scanner-tab {
+  padding-top: 0.75rem;
+}
+
 .substitute-error {
   color: var(--app-warn);
   font-weight: 800;

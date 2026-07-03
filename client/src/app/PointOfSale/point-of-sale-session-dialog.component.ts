@@ -7,6 +7,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 import { switchMap } from 'rxjs';
 
 import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
@@ -15,6 +16,13 @@ import { Inventory } from '../inventory/inventory';
 import { InventoryService } from '../inventory/inventory.service';
 import { ScannerComponent } from '../scanner/scanner.component';
 import { DialogService } from '../shared/dialog/dialog.service';
+
+type SubstitutionSuggestion = {
+  substituteItem?: string;
+  substituteBarcode?: string;
+  substituteDescription?: string;
+  substituteInventoryId?: string;
+};
 
 @Component({
   selector: 'app-point-of-sale-session-dialog',
@@ -28,6 +36,7 @@ import { DialogService } from '../shared/dialog/dialog.service';
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
+    MatTabsModule,
     ScannerComponent
   ],
   templateUrl: './point-of-sale-session-dialog.component.html',
@@ -46,6 +55,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   substituteErrorMessage = '';
   activeSubstitutionItemId = '';
   saving = false;
+  private readonly originalSubstitutionSuggestions = new Map<string, SubstitutionSuggestion>();
 
   ngOnInit(): void {
     this.startSession();
@@ -86,6 +96,14 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     return !!(item.substituteBarcode || item.substituteInventoryId || item.substituteItem || item.substituteDescription);
   }
 
+  hasSubstitutionSuggestion(item: ChecklistItem): boolean {
+    return this.originalSubstitutionSuggestions.has(item.id);
+  }
+
+  canSubstitute(item: ChecklistItem): boolean {
+    return this.hasSubstitute(item) || this.hasSubstitutionSuggestion(item);
+  }
+
   needsReason(item: ChecklistItem): boolean {
     return item.available && !item.selected && !this.hasSubstitute(item);
   }
@@ -105,6 +123,13 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   toggleSubstitutionScanner(item: ChecklistItem): void {
+    this.toggleSubstitutionPanel(item);
+  }
+
+  toggleSubstitutionPanel(item: ChecklistItem): void {
+    if (!this.canSubstitute(item)) {
+      return;
+    }
     this.activeSubstitutionItemId = this.activeSubstitutionItemId === item.id ? '' : item.id;
     this.substituteErrorMessage = '';
   }
@@ -132,6 +157,33 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     if (item.notPickedUpReason === 'substituted') {
       item.notPickedUpReason = undefined;
     }
+  }
+
+  substitutionOptionsFor(item: ChecklistItem): Inventory[] {
+    const requestedQuantity = Math.max(1, item.requestedQuantity ?? 1);
+    return this.inventoryService.inventory()
+      .filter(inventory => this.unreservedQuantity(inventory) >= requestedQuantity)
+      .filter(inventory => this.substitutionOptionScore(item, inventory) > 0)
+      .sort((left, right) => this.substitutionOptionScore(item, right) - this.substitutionOptionScore(item, left));
+  }
+
+  unreservedQuantity(inventory: Inventory): number {
+    return Math.max(0, inventory.quantity - (inventory.reservedQuantity ?? 0));
+  }
+
+  inventoryDescription(inventory: Inventory): string {
+    return inventory.description || inventory.item || inventory.internalBarcode || 'Unknown inventory item';
+  }
+
+  applySubstituteOption(item: ChecklistItem, inventory: Inventory): void {
+    const barcode = this.substitutionBarcodeForInventory(inventory);
+    if (!barcode) {
+      this.substituteErrorMessage = 'The selected inventory item does not have a barcode.';
+      return;
+    }
+
+    this.substituteErrorMessage = '';
+    this.applySubstituteInventory(item, barcode, inventory);
   }
 
   closeAndSaveDraft(): void {
@@ -240,6 +292,60 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     this.activeSubstitutionItemId = '';
   }
 
+  private captureSubstitutionSuggestions(checklist: FamilyChecklist | null | undefined): void {
+    this.originalSubstitutionSuggestions.clear();
+    for (const section of checklist?.sections ?? []) {
+      for (const item of section.items) {
+        if (this.hasSubstitute(item)) {
+          this.originalSubstitutionSuggestions.set(item.id, {
+            substituteBarcode: item.substituteBarcode,
+            substituteDescription: item.substituteDescription,
+            substituteInventoryId: item.substituteInventoryId,
+            substituteItem: item.substituteItem
+          });
+        }
+      }
+    }
+  }
+
+  private substitutionOptionScore(item: ChecklistItem, inventory: Inventory): number {
+    const originalSuggestion = this.originalSubstitutionSuggestions.get(item.id);
+    if (inventory.internalID && inventory.internalID === originalSuggestion?.substituteInventoryId) {
+      return 1000;
+    }
+
+    const inventoryBarcodes = [
+      inventory.internalBarcode,
+      ...(inventory.externalBarcode ?? [])
+    ].filter((barcode): barcode is string => !!barcode);
+    if (originalSuggestion?.substituteBarcode
+        && inventoryBarcodes.some(barcode => this.normalizeDisplayText(barcode) === this.normalizeDisplayText(originalSuggestion.substituteBarcode ?? ''))) {
+      return 1000;
+    }
+
+    const itemTokens = this.searchableTokens(
+      item.label,
+      item.itemDescription,
+      originalSuggestion?.substituteItem,
+      originalSuggestion?.substituteDescription
+    );
+    const inventoryTokens = this.searchableTokens(
+      inventory.item,
+      inventory.description,
+      inventory.brand,
+      inventory.color,
+      inventory.size,
+      inventory.type,
+      inventory.material
+    );
+
+    return itemTokens.filter(token => inventoryTokens.includes(token)).length;
+  }
+
+  private substitutionBarcodeForInventory(inventory: Inventory): string {
+    return inventory.internalBarcode || inventory.externalBarcode?.[0] || '';
+  }
+
   private validateReadyToFinalize(checklist: FamilyChecklist): string {
     for (const section of checklist.sections) {
       for (const item of section.items) {
@@ -254,6 +360,14 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
 
   private normalizeDisplayText(value: string): string {
     return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+  }
+
+  private searchableTokens(...values: Array<string | undefined>): string[] {
+    return values
+      .flatMap(value => (value ?? '').toLowerCase().split(/[^a-z0-9]+/g))
+      .map(value => value.endsWith('s') && value.length > 1 ? value.slice(0, -1) : value)
+      .filter(value => value.length > 0)
+      .filter((value, index, valuesArray) => valuesArray.indexOf(value) === index);
   }
 
   private startSession(regenerateSnapshot = false): void {
@@ -276,6 +390,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     sessionRequest.subscribe({
       next: (family) => {
         this.sessionFamily = family;
+        this.captureSubstitutionSuggestions(family.checklist);
         this.loading = false;
       },
       error: (err) => {

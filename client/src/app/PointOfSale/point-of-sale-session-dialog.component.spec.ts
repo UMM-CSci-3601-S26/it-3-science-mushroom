@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
 
 import { Family, FamilyChecklist } from '../family/family';
 import { FamilyService } from '../family/family.service';
+import { Inventory } from '../inventory/inventory';
 import { InventoryService } from '../inventory/inventory.service';
 import { DialogService } from '../shared/dialog/dialog.service';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
@@ -50,7 +52,11 @@ describe('PointOfSaleSessionDialogComponent', () => {
             label: 'Markers',
             selected: false,
             available: false,
-            requestedQuantity: 1
+            requestedQuantity: 1,
+            substituteBarcode: 'ITEM-00002',
+            substituteInventoryId: 'INV-2',
+            substituteItem: 'Marker',
+            substituteDescription: 'Black Marker'
           }
         ]
       }
@@ -87,6 +93,63 @@ describe('PointOfSaleSessionDialogComponent', () => {
       'saveFamilyHelpSessionAll'
     ]);
     inventoryService = jasmine.createSpyObj<InventoryService>('InventoryService', ['lookUpByBarcode']);
+    const inventoryItems: Inventory[] = [
+      {
+        internalID: 'INV-2',
+        internalBarcode: 'ITEM-00002',
+        item: 'Marker',
+        brand: 'Expo',
+        size: '',
+        color: 'Black',
+        type: '',
+        material: '',
+        description: 'Black Marker',
+        quantity: 4,
+        reservedQuantity: 1,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-2']
+      },
+      {
+        internalID: 'INV-3',
+        internalBarcode: 'ITEM-00003',
+        item: 'Marker',
+        brand: 'Crayola',
+        size: '',
+        color: 'Blue',
+        type: '',
+        material: '',
+        description: 'Blue Marker',
+        quantity: 3,
+        reservedQuantity: 3,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-3']
+      },
+      {
+        internalID: 'INV-4',
+        internalBarcode: 'ITEM-00004',
+        item: 'Notebook',
+        brand: '',
+        size: '',
+        color: '',
+        type: '',
+        material: '',
+        description: 'Wide Ruled Notebook',
+        quantity: 5,
+        reservedQuantity: 0,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-4']
+      }
+    ];
+    Object.defineProperty(inventoryService, 'inventory', { value: signal(inventoryItems) });
     dialogRef = jasmine.createSpyObj<MatDialogRef<PointOfSaleSessionDialogComponent>>('MatDialogRef', ['close']);
     dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
 
@@ -104,6 +167,16 @@ describe('PointOfSaleSessionDialogComponent', () => {
     checklist.sections[0].items[0].substituteItem = undefined;
     checklist.sections[0].items[0].substituteDescription = undefined;
     checklist.sections[0].items[1].notPickedUpReason = undefined;
+    checklist.sections[0].items[1].substituteBarcode = undefined;
+    checklist.sections[0].items[1].substituteInventoryId = undefined;
+    checklist.sections[0].items[1].substituteItem = undefined;
+    checklist.sections[0].items[1].substituteDescription = undefined;
+    checklist.sections[0].items[2].selected = false;
+    checklist.sections[0].items[2].notPickedUpReason = undefined;
+    checklist.sections[0].items[2].substituteBarcode = 'ITEM-00002';
+    checklist.sections[0].items[2].substituteInventoryId = 'INV-2';
+    checklist.sections[0].items[2].substituteItem = 'Marker';
+    checklist.sections[0].items[2].substituteDescription = 'Black Marker';
     inventoryService.lookUpByBarcode.and.returnValue(of({
       internalID: 'INV-2',
       internalBarcode: 'ITEM-00002',
@@ -115,6 +188,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
       material: '',
       description: 'Black Marker',
       quantity: 4,
+      reservedQuantity: 1,
       maxQuantity: 10,
       minQuantity: 0,
       stockState: 'Stocked',
@@ -383,7 +457,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('handles substitution scanner toggles, blank scans, and lookup failures', () => {
-    const item = checklist.sections[0].items[0];
+    const item = checklist.sections[0].items[2];
     inventoryService.lookUpByBarcode.and.returnValue(throwError(() => new Error('missing')));
 
     component.toggleSubstitutionScanner(item);
@@ -396,6 +470,49 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
     component.applySubstituteBarcode(item, 'UPC-MISSING');
     expect(component.substituteErrorMessage).toContain('UPC-MISSING');
+  });
+
+  it('keeps suggested items eligible for substitution after clearing the current substitute', () => {
+    const item = checklist.sections[0].items[2];
+
+    expect(component.canSubstitute(item)).toBeTrue();
+
+    component.clearSubstitution(item);
+
+    expect(component.hasSubstitute(item)).toBeFalse();
+    expect(component.canSubstitute(item)).toBeTrue();
+  });
+
+  it('does not open the substitution workflow for items without a suggestion', () => {
+    const item = checklist.sections[0].items[1];
+
+    component.toggleSubstitutionPanel(item);
+
+    expect(component.canSubstitute(item)).toBeFalse();
+    expect(component.activeSubstitutionItemId).toBe('');
+  });
+
+  it('lists related substitution options from unreserved inventory', () => {
+    const item = checklist.sections[0].items[2];
+
+    const options = component.substitutionOptionsFor(item);
+
+    expect(options.map(option => option.internalID)).toEqual(['INV-2']);
+    expect(component.unreservedQuantity(options[0])).toBe(3);
+  });
+
+  it('applies a substitute from the suggestions list', () => {
+    const item = checklist.sections[0].items[2];
+    component.clearSubstitution(item);
+
+    component.applySubstituteOption(item, component.substitutionOptionsFor(item)[0]);
+
+    expect(item.selected).toBeFalse();
+    expect(item.substituteBarcode).toBe('ITEM-00002');
+    expect(item.substituteInventoryId).toBe('INV-2');
+    expect(item.substituteItem).toBe('Marker');
+    expect(item.substituteDescription).toBe('Black Marker');
+    expect(item.notPickedUpReason).toBe('substituted');
   });
 
   it('clears substitution data when a substituted item is selected again', () => {

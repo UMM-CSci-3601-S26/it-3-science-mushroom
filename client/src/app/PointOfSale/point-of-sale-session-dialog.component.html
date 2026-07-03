@@ -126,12 +126,12 @@
                         [class.app-badge-warn]="!item.available">
                         {{ item.available ? 'Available' : 'Needs review' }}
                       </span>
-                      @if (item.available) {
+                      @if (canSubstitute(item)) {
                         <button
                           mat-stroked-button
                           type="button"
                           class="substitute-button"
-                          (click)="toggleSubstitutionScanner(item)">
+                          (click)="toggleSubstitutionPanel(item)">
                           Substitute
                         </button>
                       }
@@ -148,17 +148,46 @@
 
                     @if (activeSubstitutionItemId === item.id) {
                       <div class="substitution-panel app-status-panel app-status-warning">
-                        <div>
-                          <strong>Scan substitute item</strong>
-                          <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
-                        </div>
                         @if (substituteErrorMessage) {
                           <p class="substitute-error">{{ substituteErrorMessage }}</p>
                         }
-                        <app-scanner
-                          [processOnDone]="false"
-                          (scanned)="applySubstituteBarcode(item, $event)">
-                        </app-scanner>
+                        <mat-tab-group class="substitution-tabs">
+                          <mat-tab label="Suggestions">
+                            @if (substitutionOptionsFor(item); as options) {
+                              @if (options.length > 0) {
+                                <div class="substitution-options">
+                                  @for (option of options; track option.internalID) {
+                                    <div class="substitution-option">
+                                      <div>
+                                        <strong>{{ option.item }}</strong>
+                                        <p>{{ inventoryDescription(option) }}</p>
+                                        <span>Unreserved: {{ unreservedQuantity(option) }}</span>
+                                      </div>
+                                      <button
+                                        mat-stroked-button
+                                        type="button"
+                                        (click)="applySubstituteOption(item, option)">
+                                        Use
+                                      </button>
+                                    </div>
+                                  }
+                                </div>
+                              } @else {
+                                <p>No related unreserved inventory items are available.</p>
+                              }
+                            }
+                          </mat-tab>
+                          <mat-tab label="Scan Item">
+                            <div class="scanner-tab">
+                              <strong>Scan substitute item</strong>
+                              <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
+                              <app-scanner
+                                [processOnDone]="false"
+                                (scanned)="applySubstituteBarcode(item, $event)">
+                              </app-scanner>
+                            </div>
+                          </mat-tab>
+                        </mat-tab-group>
                       </div>
                     }
                   </div>
