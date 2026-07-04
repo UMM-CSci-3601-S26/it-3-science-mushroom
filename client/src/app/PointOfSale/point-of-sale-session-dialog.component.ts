@@ -101,7 +101,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   canSubstitute(item: ChecklistItem): boolean {
-    return this.hasSubstitute(item) || this.hasSubstitutionSuggestion(item);
+    return this.hasSubstitute(item) || this.hasSubstitutionSuggestion(item) || !!item.matchedInventoryId;
   }
 
   needsReason(item: ChecklistItem): boolean {

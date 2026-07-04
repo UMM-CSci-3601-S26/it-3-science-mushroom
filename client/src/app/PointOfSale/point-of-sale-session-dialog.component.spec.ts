@@ -492,6 +492,15 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(component.activeSubstitutionItemId).toBe('');
   });
 
+  it('allows matched inventory items to be substituted', () => {
+    const item = checklist.sections[0].items[0];
+
+    component.toggleSubstitutionPanel(item);
+
+    expect(component.canSubstitute(item)).toBeTrue();
+    expect(component.activeSubstitutionItemId).toBe(item.id);
+  });
+
   it('lists related substitution options from unreserved inventory', () => {
     const item = checklist.sections[0].items[2];
 

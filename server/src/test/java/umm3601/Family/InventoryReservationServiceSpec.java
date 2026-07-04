@@ -98,6 +98,17 @@ class InventoryReservationServiceSpec {
   }
 
   @Test
+  void rebuildInventoryReservationDoesNotReserveSubstitutedChecklistMatches() {
+    db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 2, "PENCIL-1"));
+    db.getCollection("family").insertOne(familyWithSubstitutedChecklistDoc());
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    Document inventory = findInventoryByInternalId("PENCIL-1");
+    assertEquals(0, inventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
   void rebuildInventoryReservationSkipsSavedChecklistSections() {
     db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 2, "PENCIL-1"));
     db.getCollection("family").insertOne(familyWithChecklistDoc(true));
@@ -165,6 +176,23 @@ class InventoryReservationServiceSpec {
           .append("items", List.of(new Document()
             .append("id", "student-1-item-1")
             .append("matchedInventoryId", "PENCIL-1")
+            .append("requestedQuantity", 2))))));
+  }
+
+  private Document familyWithSubstitutedChecklistDoc() {
+    return new Document()
+      .append("status", "being_helped")
+      .append("helped", false)
+      .append("checklist", new Document()
+        .append("snapshot", true)
+        .append("sections", List.of(new Document()
+          .append("id", "student-1")
+          .append("saved", false)
+          .append("items", List.of(new Document()
+            .append("id", "student-1-item-1")
+            .append("selected", false)
+            .append("matchedInventoryId", "PENCIL-1")
+            .append("substituteBarcode", "SUB-1")
             .append("requestedQuantity", 2))))));
   }
 

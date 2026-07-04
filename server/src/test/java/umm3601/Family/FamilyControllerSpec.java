@@ -799,6 +799,43 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void saveFamilyHelpSessionAllReleasesMatchedInventoryWhenSubstitutionTakesItsPlace() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    Family.ChecklistItem backpackItem = section.items.get(0);
+    backpackItem.selected = false;
+    backpackItem.substituteBarcode = "SUB-10001";
+
+    db.getCollection("inventory").updateOne(
+      eq("internalID", backpackItem.matchedInventoryId),
+      new Document("$set", new Document("reservedQuantity", backpackItem.requestedQuantity)));
+
+    FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
+    request.setChecklist(family.checklist);
+    String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyHelpSessionSaveAllRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyHelpSessionSaveAllRequest.class)));
+
+    familyController.saveFamilyHelpSessionAll(ctx);
+
+    Document originalInventory = db.getCollection("inventory")
+      .find(eq("internalID", backpackItem.matchedInventoryId))
+      .first();
+    assertEquals(3, originalInventory.getInteger("quantity"));
+    assertEquals(0, originalInventory.getInteger("reservedQuantity"));
+
+    Document substituteInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10001"))
+      .first();
+    assertEquals(3, substituteInventory.getInteger("quantity"));
+  }
+
+  @Test
   void saveFamilyHelpSessionChildKeepsCompletedChecklistWhenLastSectionIsSaved() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);

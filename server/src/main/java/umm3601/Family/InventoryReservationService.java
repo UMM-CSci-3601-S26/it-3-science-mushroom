@@ -109,6 +109,10 @@ public class InventoryReservationService {
       return;
     }
 
+    if (Boolean.FALSE.equals(item.selected) || hasText(item.substituteBarcode)) {
+      return;
+    }
+
     int quantityToReserve = item.requestedQuantity == null || item.requestedQuantity <= 0
       ? 1
       : item.requestedQuantity;
