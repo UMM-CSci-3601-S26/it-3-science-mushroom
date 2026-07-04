@@ -122,8 +122,12 @@ public class TermsController {
       // batteries -> battery
       return word.substring(0, word.length() - 3) + "y";
     } else if (lower.endsWith("es") && lower.length() > 2) {
-      // boxes -> box, matches -> match
-      return word.substring(0, word.length() - 2);
+      if (word.contains("Headphones") || word.contains("Shoes")) {
+        return word;
+      } else {
+        // boxes -> box, matches -> match
+        return word.substring(0, word.length() - 2);
+      }
     } else if (lower.endsWith("s") && lower.length() > 1 && !lower.endsWith("ss")) {
       // pens -> pen, but not 'glass' -> 'glas'
       return word.substring(0, word.length() - 1);
