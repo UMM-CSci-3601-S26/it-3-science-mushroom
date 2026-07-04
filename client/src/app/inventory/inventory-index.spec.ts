@@ -18,6 +18,8 @@ describe('InventoryIndex', () => {
     quantity: 25,
     maxQuantity: 100,
     minQuantity: 5,
+    calculatedMinQuantity: 0,
+    calculatedStockState: 'N/A',
     stockState: 'under stock',
     notes: 'A sharpened pencil',
     description: 'Wood pencil'
@@ -39,6 +41,8 @@ describe('InventoryIndex', () => {
     maxQuantity: 50,
     minQuantity: 2,
     stockState: 'in stock',
+    calculatedMinQuantity: 0,
+    calculatedStockState: 'N/A',
     notes: 'Black marker',
   };
 
@@ -103,6 +107,8 @@ describe('InventoryIndex', () => {
       maxQuantity: 100,
       minQuantity: 5,
       stockState: 'in stock',
+      calculatedMinQuantity: 0,
+      calculatedStockState: 'N/A',
       notes: 'Updated item'
     };
 
