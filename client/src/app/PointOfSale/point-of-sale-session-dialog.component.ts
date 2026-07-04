@@ -97,12 +97,24 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     return !!(item.substituteBarcode || item.substituteInventoryId || item.substituteItem || item.substituteDescription);
   }
 
+  isSubstituted(item: ChecklistItem): boolean {
+    return item.selected && this.hasSubstitute(item);
+  }
+
+  itemStatusLabel(item: ChecklistItem): string {
+    if (this.isSubstituted(item)) {
+      return 'Substituted';
+    }
+    return item.available ? 'Available' : 'Needs review';
+  }
+
   hasSubstitutionSuggestion(item: ChecklistItem): boolean {
     return this.originalSubstitutionSuggestions.has(item.id);
   }
 
   canSubstitute(item: ChecklistItem): boolean {
-    return this.hasSubstitute(item) || this.hasSubstitutionSuggestion(item) || !!item.matchedInventoryId;
+    return !item.selected
+      && (this.hasSubstitute(item) || this.hasSubstitutionSuggestion(item) || !!item.matchedInventoryId);
   }
 
   needsReason(item: ChecklistItem): boolean {
@@ -157,6 +169,9 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     item.substituteDescription = undefined;
     if (item.notPickedUpReason === 'substituted') {
       item.notPickedUpReason = undefined;
+    }
+    if (!item.matchedInventoryId || !item.available) {
+      item.selected = false;
     }
   }
 
@@ -301,7 +316,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   private applySubstituteInventory(item: ChecklistItem, barcode: string, inventory: Inventory): void {
-    item.selected = false;
+    item.selected = true;
     item.substituteBarcode = barcode;
     item.substituteInventoryId = inventory.internalID;
     item.substituteItem = inventory.item;

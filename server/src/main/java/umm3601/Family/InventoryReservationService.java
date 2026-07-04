@@ -109,7 +109,7 @@ public class InventoryReservationService {
       return;
     }
 
-    if (Boolean.FALSE.equals(item.selected) || hasText(item.substituteBarcode)) {
+    if (hasText(item.substituteBarcode) || hasText(item.notPickedUpReason)) {
       return;
     }
 

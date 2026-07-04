@@ -246,7 +246,7 @@ class FamilyChecklistServiceSpec {
     Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
 
     assertTrue(item.available);
-    assertTrue(item.selected);
+    assertFalse(item.selected);
     assertEquals("PLAIN-PENCIL", item.matchedInventoryId);
   }
 

@@ -92,7 +92,7 @@ public class FamilyChecklistService {
 
     Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, checklistItem.requestedQuantity);
     checklistItem.available = match != null;
-    checklistItem.selected = checklistItem.available;
+    checklistItem.selected = false;
     checklistItem.matchedInventoryId = match != null ? match.internalID : null;
     checklistItem.matchedInventoryItem = match != null ? match.item : null;
     checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;

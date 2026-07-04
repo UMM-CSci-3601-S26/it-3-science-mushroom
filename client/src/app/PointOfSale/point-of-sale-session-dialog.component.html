@@ -122,9 +122,10 @@
                     <div class="item-actions">
                       <span
                         class="item-status app-badge"
-                        [class.app-badge-success]="item.available"
-                        [class.app-badge-warn]="!item.available">
-                        {{ item.available ? 'Available' : 'Needs review' }}
+                        [class.app-badge-accent]="isSubstituted(item)"
+                        [class.app-badge-success]="!isSubstituted(item) && item.available"
+                        [class.app-badge-warn]="!isSubstituted(item) && !item.available">
+                        {{ itemStatusLabel(item) }}
                       </span>
                       @if (canSubstitute(item)) {
                         <button

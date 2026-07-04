@@ -33,7 +33,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
           {
             id: 'student-1-item-1',
             label: 'Pencil',
-            selected: true,
+            selected: false,
             available: true,
             matchedInventoryId: 'INV-1',
             matchedInventoryItem: 'Yellow Pencil',
@@ -178,7 +178,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     dialogService.openDialog.and.returnValue({
       afterClosed: () => of(true)
     } as never);
-    checklist.sections[0].items[0].selected = true;
+    checklist.sections[0].items[0].selected = false;
     checklist.sections[0].items[0].notPickedUpReason = undefined;
     checklist.sections[0].items[0].substituteBarcode = undefined;
     checklist.sections[0].items[0].substituteInventoryId = undefined;
@@ -308,6 +308,25 @@ describe('PointOfSaleSessionDialogComponent', () => {
     })).toBeFalse();
   });
 
+  it('labels selected substituted items separately from normal availability', () => {
+    expect(component.itemStatusLabel({
+      ...checklist.sections[0].items[0],
+      selected: true,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Substituted');
+    expect(component.itemStatusLabel({
+      ...checklist.sections[0].items[0],
+      selected: false,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Available');
+    expect(component.itemStatusLabel({
+      ...checklist.sections[0].items[0],
+      available: false,
+      selected: false,
+      substituteBarcode: undefined
+    })).toBe('Needs review');
+  });
+
   it('saves the current checklist as a draft when closing', () => {
     component.closeAndSaveDraft();
 
@@ -387,6 +406,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('saves a completed session when the user confirms', () => {
+    checklist.sections[0].items[0].selected = true;
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
@@ -433,6 +453,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     dialogService.openDialog.and.returnValue({
       afterClosed: () => of(false)
     } as never);
+    checklist.sections[0].items[0].selected = true;
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
@@ -452,6 +473,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
   it('shows a useful error when saving a completed session fails', () => {
     familyService.saveFamilyHelpSessionAll.and.returnValue(throwError(() => new Error('save failed')));
+    checklist.sections[0].items[0].selected = true;
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
@@ -466,7 +488,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     component.applySubstituteBarcode(item, 'UPC-2');
 
     expect(inventoryService.lookUpByBarcode).toHaveBeenCalledWith('UPC-2');
-    expect(item.selected).toBeFalse();
+    expect(item.selected).toBeTrue();
     expect(item.substituteBarcode).toBe('UPC-2');
     expect(item.substituteInventoryId).toBe('INV-2');
     expect(item.substituteItem).toBe('Marker');
@@ -519,6 +541,14 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(component.activeSubstitutionItemId).toBe(item.id);
   });
 
+  it('removes substitution access after an item is confirmed selected', () => {
+    const item = checklist.sections[0].items[0];
+
+    component.setItemSelected(item, true);
+
+    expect(component.canSubstitute(item)).toBeFalse();
+  });
+
   it('lists related substitution options from unreserved inventory', () => {
     const item = checklist.sections[0].items[2];
 
@@ -562,7 +592,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
     component.applySubstituteOption(item, component.substitutionOptionsFor(item)[0]);
 
-    expect(item.selected).toBeFalse();
+    expect(item.selected).toBeTrue();
     expect(item.substituteBarcode).toBe('ITEM-00002');
     expect(item.substituteInventoryId).toBe('INV-2');
     expect(item.substituteItem).toBe('Marker');

@@ -1116,18 +1116,15 @@ public class FamilyController {
     for (Family.ChecklistItem item : section.items) {
       validateChecklistItemForSave(item);
 
-      if (item.selected) {
-        consumeInventory(item.matchedInventoryId, item.requestedQuantity);
-        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
-      } else if (hasText(item.substituteBarcode)) {
-      Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
+      if (hasText(item.substituteBarcode)) {
+        Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
         if (substituteInventory == null) {
           throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
         }
 
-    if (inventoryMatcher.unreservedQuantity(substituteInventory) < item.requestedQuantity) {
-      throw new BadRequestResponse("Not enough unreserved stock available for substitute item.");
-    }
+        if (inventoryMatcher.unreservedQuantity(substituteInventory) < item.requestedQuantity) {
+          throw new BadRequestResponse("Not enough unreserved stock available for substitute item.");
+        }
 
         releaseInventory(item.matchedInventoryId, item.requestedQuantity);
         consumeInventory(substituteInventory.internalID, item.requestedQuantity);
@@ -1135,6 +1132,9 @@ public class FamilyController {
         item.substituteItem = substituteInventory.item;
         item.substituteDescription = substituteInventory.description;
         item.notPickedUpReason = REASON_SUBSTITUTED;
+      } else if (item.selected) {
+        consumeInventory(item.matchedInventoryId, item.requestedQuantity);
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
       } else {
         releaseInventory(item.matchedInventoryId, item.requestedQuantity);
       }
@@ -1144,9 +1144,7 @@ public class FamilyController {
   private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
     for (Family.ChecklistSection section : checklist.sections) {
       for (Family.ChecklistItem item : section.items) {
-        if (item.selected) {
-          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
-        } else if (hasText(item.substituteInventoryId)) {
+        if (hasText(item.substituteInventoryId)) {
           restoreInventory(item.substituteInventoryId, item.requestedQuantity);
         } else if (hasText(item.substituteBarcode)) {
           Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
@@ -1155,18 +1153,20 @@ public class FamilyController {
           }
           restoreInventory(substituteInventory.internalID, item.requestedQuantity);
           item.substituteInventoryId = substituteInventory.internalID;
+        } else if (item.selected) {
+          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
         }
       }
     }
   }
 
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
-    if (item.selected && !item.available) {
+    boolean hasSubstitution = hasText(item.substituteBarcode);
+    if (item.selected && !item.available && !hasSubstitution) {
       throw new BadRequestResponse("Unavailable items cannot be saved as selected.");
     }
 
     if (!item.selected) {
-      boolean hasSubstitution = hasText(item.substituteBarcode);
       boolean hasReason = hasText(item.notPickedUpReason);
 
       if (!item.available && !hasReason && !hasSubstitution) {

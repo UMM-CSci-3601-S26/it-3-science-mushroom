@@ -350,6 +350,7 @@ class FamilyControllerSpec {
   @Test
   void getFinalizedFamilyChecklistReturnsCompletedChecklist() {
     Family family = startHelpSessionAndGetFamily();
+    family.checklist.sections.get(0).items.get(0).selected = true;
     family.checklist.sections.get(0).items.get(1).selected = false;
     family.checklist.sections.get(0).items.get(1).substituteBarcode = "SUB-10001";
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
@@ -694,6 +695,7 @@ class FamilyControllerSpec {
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem backpackItem = section.items.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    backpackItem.selected = true;
     unavailableItem.selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -730,6 +732,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    section.items.get(0).selected = true;
     unavailableItem.selected = false;
     unavailableItem.substituteBarcode = "SUB-10001";
 
@@ -769,6 +772,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionAllSupportsProvidedChecklistPayload() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -803,7 +807,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem backpackItem = section.items.get(0);
-    backpackItem.selected = false;
+    backpackItem.selected = true;
     backpackItem.substituteBarcode = "SUB-10001";
 
     db.getCollection("inventory").updateOne(
@@ -839,6 +843,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildKeepsCompletedChecklistWhenLastSectionIsSaved() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -956,6 +961,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     addUnsavedChecklistSection(testFamilyId, "student-2");
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -983,6 +989,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsSelectedUnavailableItem() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = true;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -1007,6 +1014,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsUnknownSubstituteBarcode() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "UNKNOWN";
 
