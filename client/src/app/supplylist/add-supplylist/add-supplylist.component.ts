@@ -232,10 +232,10 @@ export class AddSupplyListComponent implements OnInit {
       }
     }
 
-    // Package size: "24 count", "24ct", "pack of 24", or "box of 24".
-    // "24 count", "24ct", "24-count", "pack of 24", "box of 24"
+    // Package size: "24 count", "24ct", "pack/container/bag of 24", etc.
+    // "24 count", "24ct", "24-count", "pack of 24", "container of 24", "bag of 24"
     const packageSizeMatch = lower.match(/(\d+)\s*[-]?\s*(?:count|ct|pk|pack)\b/)
-      || lower.match(/(?:pack|box|set)\s+of\s+(\d+)/);
+      || lower.match(/(?:pack|box|set|container|bag)\s+of\s+(\d+)/);
     if (packageSizeMatch) {
       patch['packageSize'] = packageSizeMatch[1];
     }
