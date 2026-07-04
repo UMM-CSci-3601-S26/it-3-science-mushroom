@@ -1132,7 +1132,7 @@ public class FamilyController {
     if (options == null) {
       return 0;
     }
-    if (hasText(options.allOf) && nameEquivalent(options.allOf, inventoryValue)) {
+    if (hasText(options.exactly) && nameEquivalent(options.exactly, inventoryValue)) {
       return REQUIRED_ATTRIBUTE_MATCH_SCORE;
     }
     if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
@@ -1141,11 +1141,11 @@ public class FamilyController {
     return 0;
   }
 
-  private int colorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue) {
+  private int colorSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue) {
     if (options == null) {
       return 0;
     }
-    if (options.allOf != null && options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+    if (hasText(options.exactly) && nameEquivalent(options.exactly, inventoryValue)) {
       return REQUIRED_ATTRIBUTE_MATCH_SCORE;
     }
     if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
@@ -1215,7 +1215,7 @@ public class FamilyController {
     if (options == null) {
       return true;
     }
-    if (hasText(options.allOf) && !nameEquivalent(options.allOf, inventoryValue)) {
+    if (hasText(options.exactly) && !nameEquivalent(options.exactly, inventoryValue)) {
       return false;
     }
     if (options.anyOf != null && !options.anyOf.isEmpty()) {
@@ -1224,15 +1224,12 @@ public class FamilyController {
     return true;
   }
 
-  private boolean matchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue) {
+  private boolean matchesColorAttribute(SupplyList.AttributeOptions options, String inventoryValue) {
     if (options == null) {
       return true;
     }
-    if (options.allOf != null && !options.allOf.isEmpty()) {
-      boolean allOfMatch = options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-      if (!allOfMatch) {
-        return false;
-      }
+    if (hasText(options.exactly) && !nameEquivalent(options.exactly, inventoryValue)) {
+      return false;
     }
     if (options.anyOf != null && !options.anyOf.isEmpty()) {
       return options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
