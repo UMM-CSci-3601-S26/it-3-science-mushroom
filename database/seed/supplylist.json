@@ -39,7 +39,7 @@
     "grade": "PreK",
     "teacher": "",
     "item": [
-      "rug"
+      "Rug"
     ],
     "brand": {
       "allOf": "",
@@ -536,7 +536,7 @@
     "grade": "Kindergarten",
     "teacher": "",
     "item": [
-      "rug"
+      "Rug"
     ],
     "brand": {
       "allOf": "",
@@ -3708,11 +3708,11 @@
       "anyOf": []
     },
     "size": {
-      "allOf": "",
+      "allOf": "#2",
       "anyOf": []
     },
     "type": {
-      "allOf": "#2",
+      "allOf": "",
       "anyOf": []
     },
     "material": {
@@ -4728,11 +4728,11 @@
       "anyOf": []
     },
     "size": {
-      "allOf": "",
+      "allOf": "#2",
       "anyOf": []
     },
     "type": {
-      "allOf": "#2",
+      "allOf": "",
       "anyOf": []
     },
     "material": {
@@ -9261,7 +9261,7 @@
     "grade": "High School",
     "teacher": "Mr. Hoffmann",
     "item": [
-      "mechanical Pencil",
+      "Mechanical Pencil",
       "Pencil"
     ],
     "brand": {
@@ -10856,7 +10856,7 @@
     "grade": "Kindergarten",
     "teacher": "",
     "item": [
-      "rug"
+      "Rug"
     ],
     "brand": {
       "allOf": "",
