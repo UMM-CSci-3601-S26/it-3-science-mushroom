@@ -523,6 +523,18 @@ describe('AddSupplyListComponent#parseDescription()', () => {
     expect(color).toContain('|');
   });
 
+  it('should not infer container words as size when not present in terms', () => {
+    component.parseDescription('2 boxes of 24 count crayons');
+    expect(component.addSupplyListForm.get('size')?.value || '').toBe('');
+    expect(component.addSupplyListForm.get('quantity')?.value).toBe('2');
+    expect(component.addSupplyListForm.get('packageSize')?.value).toBe('24');
+  });
+
+  it('should not infer free-form size adjectives when they are not present in terms', () => {
+    component.parseDescription('large crayons');
+    expect(component.addSupplyListForm.get('size')?.value || '').toBe('');
+  });
+
   it('should parse a parenthetical note into the notes field', () => {
     component.parseDescription('crayons (for art class)');
     expect(component.addSupplyListForm.get('notes')?.value).toBe('for art class');
