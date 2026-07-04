@@ -175,6 +175,27 @@
   width: 100%;
 }
 
+.substitution-search {
+  display: grid;
+  gap: 0.3rem;
+  padding-top: 0.75rem;
+}
+
+.substitution-search span {
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.substitution-search input {
+  width: min(100%, 22rem);
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  color: var(--app-text);
+  background: var(--app-surface);
+}
+
 .substitution-options {
   display: grid;
   gap: 0.55rem;

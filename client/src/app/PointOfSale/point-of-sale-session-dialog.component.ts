@@ -55,6 +55,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   substituteErrorMessage = '';
   activeSubstitutionItemId = '';
   saving = false;
+  private readonly substitutionDescriptionSearchTerms = new Map<string, string>();
   private readonly originalSubstitutionSuggestions = new Map<string, SubstitutionSuggestion>();
 
   ngOnInit(): void {
@@ -161,10 +162,27 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
 
   substitutionOptionsFor(item: ChecklistItem): Inventory[] {
     const requestedQuantity = Math.max(1, item.requestedQuantity ?? 1);
+    const descriptionSearch = this.normalizedSubstitutionDescriptionSearchFor(item);
     return this.inventoryService.inventory()
       .filter(inventory => this.unreservedQuantity(inventory) >= requestedQuantity)
       .filter(inventory => this.substitutionOptionScore(item, inventory) > 0)
+      .filter(inventory => this.inventoryMatchesDescriptionSearch(inventory, descriptionSearch))
       .sort((left, right) => this.substitutionOptionScore(item, right) - this.substitutionOptionScore(item, left));
+  }
+
+  substitutionDescriptionSearchFor(item: ChecklistItem): string {
+    return this.substitutionDescriptionSearchTerms.get(item.id) ?? '';
+  }
+
+  setSubstitutionDescriptionSearch(item: ChecklistItem, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const searchTerm = input.value.trim();
+    if (!searchTerm) {
+      this.substitutionDescriptionSearchTerms.delete(item.id);
+      return;
+    }
+
+    this.substitutionDescriptionSearchTerms.set(item.id, searchTerm);
   }
 
   unreservedQuantity(inventory: Inventory): number {
@@ -339,11 +357,23 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
       inventory.material
     );
 
-    return itemTokens.filter(token => inventoryTokens.includes(token)).length;
+    return this.relatedTokenScore(itemTokens, inventoryTokens);
   }
 
   private substitutionBarcodeForInventory(inventory: Inventory): string {
     return inventory.internalBarcode || inventory.externalBarcode?.[0] || '';
+  }
+
+  private normalizedSubstitutionDescriptionSearchFor(item: ChecklistItem): string {
+    return this.substitutionDescriptionSearchFor(item).toLowerCase();
+  }
+
+  private inventoryMatchesDescriptionSearch(inventory: Inventory, searchTerm: string): boolean {
+    if (!searchTerm) {
+      return true;
+    }
+
+    return this.inventoryDescription(inventory).toLowerCase().includes(searchTerm);
   }
 
   private validateReadyToFinalize(checklist: FamilyChecklist): string {
@@ -368,6 +398,21 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
       .map(value => value.endsWith('s') && value.length > 1 ? value.slice(0, -1) : value)
       .filter(value => value.length > 0)
       .filter((value, index, valuesArray) => valuesArray.indexOf(value) === index);
+  }
+
+  private relatedTokenScore(itemTokens: string[], inventoryTokens: string[]): number {
+    return itemTokens.reduce((score, itemToken) => {
+      if (inventoryTokens.includes(itemToken)) {
+        return score + 3;
+      }
+
+      const hasPartialMatch = itemToken.length >= 4 && inventoryTokens.some(inventoryToken =>
+        inventoryToken.length >= 4
+        && (inventoryToken.includes(itemToken) || itemToken.includes(inventoryToken))
+      );
+
+      return hasPartialMatch ? score + 1 : score;
+    }, 0);
   }
 
   private startSession(regenerateSnapshot = false): void {

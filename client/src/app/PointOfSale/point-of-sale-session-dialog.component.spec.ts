@@ -133,7 +133,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
       {
         internalID: 'INV-4',
         internalBarcode: 'ITEM-00004',
-        item: 'Notebook',
+        item: 'Binder',
         brand: '',
         size: '',
         color: '',
@@ -147,6 +147,24 @@ describe('PointOfSaleSessionDialogComponent', () => {
         stockState: 'Stocked',
         notes: '',
         externalBarcode: ['UPC-4']
+      },
+      {
+        internalID: 'INV-5',
+        internalBarcode: 'ITEM-00005',
+        item: 'Marker Set',
+        brand: '',
+        size: '',
+        color: '',
+        type: '',
+        material: '',
+        description: 'Washable Marker Set',
+        quantity: 5,
+        reservedQuantity: 0,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-5']
       }
     ];
     Object.defineProperty(inventoryService, 'inventory', { value: signal(inventoryItems) });
@@ -506,8 +524,36 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
     const options = component.substitutionOptionsFor(item);
 
-    expect(options.map(option => option.internalID)).toEqual(['INV-2']);
+    expect(options.map(option => option.internalID)).toEqual(['INV-2', 'INV-5']);
     expect(component.unreservedQuantity(options[0])).toBe(3);
+  });
+
+  it('keeps substitution matching related but allows partial item tokens', () => {
+    const options = component.substitutionOptionsFor({
+      id: 'manual-marker-item',
+      label: 'Markers',
+      selected: false,
+      available: true,
+      requestedQuantity: 1
+    });
+
+    expect(options.map(option => option.internalID)).toEqual(['INV-2', 'INV-5']);
+  });
+
+  it('filters substitution options by description search', () => {
+    const item = checklist.sections[0].items[2];
+    component.setSubstitutionDescriptionSearch(item, {
+      target: { value: 'blue' }
+    } as unknown as Event);
+
+    expect(component.substitutionDescriptionSearchFor(item)).toBe('blue');
+    expect(component.substitutionOptionsFor(item)).toEqual([]);
+
+    component.setSubstitutionDescriptionSearch(item, {
+      target: { value: 'black' }
+    } as unknown as Event);
+
+    expect(component.substitutionOptionsFor(item).map(option => option.internalID)).toEqual(['INV-2']);
   });
 
   it('applies a substitute from the suggestions list', () => {
