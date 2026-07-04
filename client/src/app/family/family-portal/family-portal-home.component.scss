@@ -45,6 +45,21 @@
   border-radius: var(--app-radius-lg);
 }
 
+.portal-info-card mat-card-header {
+  align-items: center;
+}
+
+.portal-info-card mat-icon.mat-mdc-card-avatar {
+  align-items: center;
+  display: inline-flex;
+  font-size: 24px;
+  height: 44px;
+  justify-content: center;
+  line-height: 1;
+  overflow: visible;
+  width: 44px;
+}
+
 .portal-info-value {
   font-size: 1.3rem;
   font-weight: 600;
