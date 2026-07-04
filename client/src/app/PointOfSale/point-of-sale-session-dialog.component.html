@@ -101,8 +101,11 @@
                         </p>
                       }
                       @if (hasSubstitute(item)) {
-                        <p class="substitute-match app-badge app-badge-warn">
-                          Replacing with: {{ substituteDisplay(item) }}
+                        <p
+                          class="substitute-match app-badge"
+                          [class.app-badge-warn]="isSubstituted(item)"
+                          [class.app-badge-tertiary]="!isSubstituted(item)">
+                          {{ substituteMatchLabel(item) }}: {{ substituteDisplay(item) }}
                         </p>
                       }
                       @if (needsReason(item)) {

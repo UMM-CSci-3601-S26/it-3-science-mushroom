@@ -83,6 +83,10 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     return item.substituteDescription || item.substituteItem || item.substituteBarcode || 'Unknown substitute item';
   }
 
+  substituteMatchLabel(item: ChecklistItem): string {
+    return this.isSubstituted(item) ? 'Replacing with' : 'Suggested substitute';
+  }
+
   shouldShowMatchedInventory(item: ChecklistItem): boolean {
     if (!item.available || (!item.matchedInventoryDescription && !item.matchedInventoryItem)) {
       return false;

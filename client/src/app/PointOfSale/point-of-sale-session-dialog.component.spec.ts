@@ -308,6 +308,19 @@ describe('PointOfSaleSessionDialogComponent', () => {
     })).toBeFalse();
   });
 
+  it('labels substitute matches as suggestions until they are selected', () => {
+    expect(component.substituteMatchLabel({
+      ...checklist.sections[0].items[0],
+      selected: false,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Suggested substitute');
+    expect(component.substituteMatchLabel({
+      ...checklist.sections[0].items[0],
+      selected: true,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Replacing with');
+  });
+
   it('labels selected substituted items separately from normal availability', () => {
     expect(component.itemStatusLabel({
       ...checklist.sections[0].items[0],
