@@ -45,6 +45,7 @@ export class GuardianLinkDialogComponent implements OnInit {
 
     this.userService.getGuardianUsers().subscribe(users => {
       this.guardianUsers = users;
+      this.prefillGuardianSearch();
     });
   }
 
@@ -64,6 +65,26 @@ export class GuardianLinkDialogComponent implements OnInit {
     this.selectedFamilyValue = this.families.find(loadedFamily =>
       loadedFamily._id === family._id
     ) ?? family;
+    this.prefillGuardianSearch();
+  }
+
+  private prefillGuardianSearch() {
+    const ownerUserId = this.selectedFamilyValue?.ownerUserId?.trim();
+
+    if (!ownerUserId) {
+      return;
+    }
+
+    const guardian = this.guardianUsers.find(user =>
+      user._id === ownerUserId && user.systemRole === 'GUARDIAN'
+    );
+
+    if (!guardian) {
+      return;
+    }
+
+    this.guardianSearch = guardian.username;
+    this.selectedGuardianValue = guardian;
   }
 
   selectedFamily(): Family | undefined {
@@ -109,6 +130,7 @@ export class GuardianLinkDialogComponent implements OnInit {
     this.selectedFamilyValue = this.families.find(family =>
       family.guardianName === guardianName
     );
+    this.prefillGuardianSearch();
   }
 
   selectGuardian(username: string) {
