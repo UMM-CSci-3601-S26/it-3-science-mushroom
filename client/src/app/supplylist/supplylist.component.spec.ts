@@ -237,14 +237,16 @@ describe('SupplyList Table', () => {
         school: '',
         grade: '',
         item: ['Pencil'],
-        brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] },
+        brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] },
         packageSize: 1,
-        size: { allOf: '', anyOf: [] },
-        type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] },
+        size: { exactly: '', anyOf: [] },
+        type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] },
         quantity: 0,
-        notes: ''
+        notes: '',
+        supplyID: '',
+        invIDs: []
       }
     ]));
 
@@ -265,9 +267,9 @@ describe('SupplyList Table', () => {
         _id: 'delete-me',
         academicYear: '',
         teacher: '',
-        school: 'MHS', grade: 'PreK', item: ['Eraser'], brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
+        school: 'MHS', grade: 'PreK', item: ['Eraser'], brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -292,9 +294,9 @@ describe('SupplyList Table', () => {
         _id: 'keep-me',
         academicYear: '',
         teacher: '',
-        school: 'MHS', grade: 'PreK', item: ['Ruler'], brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
+        school: 'MHS', grade: 'PreK', item: ['Ruler'], brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -325,9 +327,9 @@ describe('SupplyList Table', () => {
         _id: 'fail-delete',
         academicYear: '',
         teacher: '',
-        school: 'MHS', grade: 'PreK', item: ['Tape'], brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
+        school: 'MHS', grade: 'PreK', item: ['Tape'], brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -350,9 +352,9 @@ describe('SupplyList Table', () => {
         _id: 'edit-id',
         academicYear: '',
         teacher: '',
-        school: 'MHS', grade: 'PreK', item: ['Marker'], brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] }, size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: ''
+        school: 'MHS', grade: 'PreK', item: ['Marker'], brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
       };
       supplylistTable.startEdit(item);
       expect(supplylistTable.editingItemId).toBe('edit-id');
@@ -366,14 +368,16 @@ describe('SupplyList Table', () => {
         school: 'Herman',
         grade: '3rd grade',
         item: ['Glue'],
-        brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] },
-        size: { allOf: '', anyOf: [] },
-        type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] },
+        brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] },
+        size: { exactly: '', anyOf: [] },
+        type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] },
         packageSize: 1,
         quantity: 2,
-        notes: ''
+        notes: '',
+        supplyID: '',
+        invIDs: []
       };
       supplylistTable.startEdit(item);
       // Mutating the original should not affect the backup
@@ -394,14 +398,16 @@ describe('SupplyList Table', () => {
         school: 'MHS',
         grade: 'PreK',
         item: ['Pen'],
-        brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] },
-        size: { allOf: '', anyOf: [] },
-        type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] },
+        brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] },
+        size: { exactly: '', anyOf: [] },
+        type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] },
         packageSize: 1,
         quantity: 1,
-        notes: ''
+        notes: '',
+        supplyID: '',
+        invIDs: []
       };
       supplylistTable.dataSource.data = [item];
       supplylistTable.startEdit(item);
@@ -417,14 +423,16 @@ describe('SupplyList Table', () => {
         school: 'MHS',
         grade: '1st grade',
         item: ['Crayon'],
-        brand: { allOf: '', anyOf: ['Crayola'] },
-        color: { allOf: [], anyOf: ['Red'] },
-        size: { allOf: '', anyOf: [] },
-        type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] },
+        brand: { exactly: '', anyOf: ['Crayola'] },
+        color: { exactly: '', anyOf: ['Red'] },
+        size: { exactly: '', anyOf: [] },
+        type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] },
         packageSize: 1,
         quantity: 3,
-        notes: ''
+        notes: '',
+        supplyID: '',
+        invIDs: []
       };
       supplylistTable.dataSource.data = [{ ...item }];
       supplylistTable.startEdit(supplylistTable.dataSource.data[0]);
@@ -443,14 +451,16 @@ describe('SupplyList Table', () => {
         school: 'MHS',
         grade: 'PreK',
         item: ['Notebook'],
-        brand: { allOf: '', anyOf: ['Five Star'] },
-        color: { allOf: [], anyOf: ['Blue'] },
-        size: { allOf: 'Wide Ruled', anyOf: [] },
-        type: { allOf: 'Spiral', anyOf: [] },
-        material: { allOf: '', anyOf: [] },
+        brand: { exactly: '', anyOf: ['Five Star'] },
+        color: { exactly: '', anyOf: ['Blue'] },
+        size: { exactly: 'Wide Ruled', anyOf: [] },
+        type: { exactly: 'Spiral', anyOf: [] },
+        material: { exactly: '', anyOf: [] },
         packageSize: 1,
         quantity: 2,
-        notes: ''
+        notes: '',
+        supplyID: '',
+        invIDs: []
       };
       const saveSpy = spyOn(supplylistService, 'editSupplyList').and.returnValue(of(undefined));
 
@@ -470,14 +480,16 @@ describe('SupplyList Table', () => {
         school: 'MHS',
         grade: 'PreK',
         item: ['Notebook'],
-        brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] },
-        size: { allOf: '', anyOf: [] },
-        type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] },
+        brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] },
+        size: { exactly: '', anyOf: [] },
+        type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] },
         packageSize: 1,
         quantity: 1,
-        notes: ''
+        notes: '',
+        supplyID: '',
+        invIDs: []
       };
       const saveSpy = spyOn(supplylistService, 'editSupplyList').and.returnValue(of(undefined));
 
@@ -495,14 +507,16 @@ describe('SupplyList Table', () => {
         school: 'MHS',
         grade: 'PreK',
         item: ['Folder'],
-        brand: { allOf: '', anyOf: [] },
-        color: { allOf: [], anyOf: [] },
-        size: { allOf: '', anyOf: [] },
-        type: { allOf: '', anyOf: [] },
-        material: { allOf: '', anyOf: [] },
+        brand: { exactly: '', anyOf: [] },
+        color: { exactly: '', anyOf: [] },
+        size: { exactly: '', anyOf: [] },
+        type: { exactly: '', anyOf: [] },
+        material: { exactly: '', anyOf: [] },
         packageSize: 1,
         quantity: 1,
-        notes: ''
+        notes: '',
+        supplyID: '',
+        invIDs: []
       };
       spyOn(supplylistService, 'editSupplyList').and.returnValue(
         new Observable(o => o.error({ status: 422, message: 'Unprocessable' }))
@@ -581,9 +595,9 @@ describe('SupplyListComponent#toLabel()', () => {
   // Minimal valid SupplyList with no optional fields set
   const base: SupplyList = {
     _id: '', academicYear: '', teacher: '', school: 'MHS', grade: 'K', item: ['crayon'],
-    brand: { allOf: '', anyOf: [] }, color: { allOf: [], anyOf: [] },
-    size: { allOf: '', anyOf: [] }, type: { allOf: '', anyOf: [] },
-    material: { allOf: '', anyOf: [] }, packageSize: 0, quantity: 1, notes: ''
+    brand: { exactly: '', anyOf: [] }, color: { exactly: '', anyOf: [] },
+    size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
+    material: { exactly: '', anyOf: [] }, packageSize: 0, quantity: 1, notes: '', supplyID: '', invIDs: []
   };
 
   beforeEach(() => {
@@ -609,29 +623,29 @@ describe('SupplyListComponent#toLabel()', () => {
     tick(300);
   }));
 
-  it('should include brand allOf values in the label', () => {
-    const label = supplylistTable.toLabel({ ...base, brand: { allOf: ['Crayola'], anyOf: [] } } as unknown as SupplyList);
+  it('should include brand exactly values in the label', () => {
+    const label = supplylistTable.toLabel({ ...base, brand: { exactly: ['Crayola'], anyOf: [] } } as unknown as SupplyList);
     expect(label).toContain('Crayola');
   });
 
   it('should include brand anyOf values in the label', () => {
-    const label = supplylistTable.toLabel({ ...base, brand: { allOf: [], anyOf: ['Expo'] } } as unknown as SupplyList);
+    const label = supplylistTable.toLabel({ ...base, brand: { exactly: '', anyOf: ['Expo'] } } as unknown as SupplyList);
     expect(label).toContain('Expo');
   });
 
   it('should not pluralize size when quantity is 1', () => {
-    const label = supplylistTable.toLabel({ ...base, size: { allOf: 'pack', anyOf: [] }, quantity: 1 } as unknown as SupplyList);
+    const label = supplylistTable.toLabel({ ...base, size: { exactly: 'pack', anyOf: [] }, quantity: 1 } as unknown as SupplyList);
     expect(label).toContain('pack of');
     expect(label).not.toContain('packs');
   });
 
   it('should omit size section when size is empty string', () => {
-    const label = supplylistTable.toLabel({ ...base, size: { allOf: '', anyOf: [] } } as unknown as SupplyList);
+    const label = supplylistTable.toLabel({ ...base, size: { exactly: '', anyOf: [] } } as unknown as SupplyList);
     expect(label).not.toContain(' of ');
   });
 
   it('should omit size section when size is N/A', () => {
-    const label = supplylistTable.toLabel({ ...base, size: { allOf: 'N/A', anyOf: [] } } as unknown as SupplyList);
+    const label = supplylistTable.toLabel({ ...base, size: { exactly: 'N/A', anyOf: [] } } as unknown as SupplyList);
     expect(label).not.toContain(' of ');
   });
 
@@ -664,8 +678,8 @@ describe('SupplyListComponent#toLabel()', () => {
     expect(label).not.toContain('(');
   });
 
-  it('should handle undefined brand gracefully (attrStr ?? [] fallback for allOf/anyOf)', () => {
-    // When brand is undefined, a?.allOf and a?.anyOf are undefined → ?? [] kicks in
+  it('should handle undefined brand gracefully (attrStr ?? [] fallback for exactly/anyOf)', () => {
+    // When brand is undefined, a?.exactly and a?.anyOf are undefined → ?? [] kicks in
     const label = supplylistTable.toLabel({ ...base, brand: undefined } as unknown as SupplyList);
     expect(typeof label).toBe('string');
     expect(label).toBeTruthy();

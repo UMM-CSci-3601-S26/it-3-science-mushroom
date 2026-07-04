@@ -1,10 +1,5 @@
 export interface AttributeOptions {
-  allOf: string;
-  anyOf: string[];
-}
-
-export interface ColorAttributeOptions {
-  allOf: string[];
+  exactly: string;
   anyOf: string[];
 }
 
@@ -23,10 +18,12 @@ export interface SupplyList {
   item: string[];
   brand: AttributeOptions;
   type: AttributeOptions;
-  color: ColorAttributeOptions;
+  color: AttributeOptions;
   size: AttributeOptions;
   material: AttributeOptions;
   packageSize: number;
   quantity: number;
   notes: string;
+  supplyID: string;
+  invIDs: string[];
 }
