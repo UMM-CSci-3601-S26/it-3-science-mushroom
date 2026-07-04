@@ -141,7 +141,10 @@ export class GuardianLinkDialogComponent implements OnInit {
   }
 
   canLinkGuardianAccount(): boolean {
-    return !!this.selectedFamily()?._id && !!this.selectedGuardian()?._id && !this.isSaving;
+    return !!this.selectedFamily()?._id
+      && !this.selectedFamily()?.ownerUserId?.trim()
+      && !!this.selectedGuardian()?._id
+      && !this.isSaving;
   }
 
   canUnlinkGuardianAccount(): boolean {
