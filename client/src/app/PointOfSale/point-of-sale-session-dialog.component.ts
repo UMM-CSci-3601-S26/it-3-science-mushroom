@@ -146,6 +146,10 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     if (selected) {
       item.notPickedUpReason = undefined;
       this.clearSubstitution(item);
+      if (this.activeSubstitutionItemId === item.id) {
+        this.activeSubstitutionItemId = '';
+        this.substituteErrorMessage = '';
+      }
     }
   }
 

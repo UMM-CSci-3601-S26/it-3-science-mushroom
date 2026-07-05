@@ -558,9 +558,16 @@ describe('PointOfSaleSessionDialogComponent', () => {
   it('removes substitution access after an item is confirmed selected', () => {
     const item = checklist.sections[0].items[0];
 
+    component.toggleSubstitutionPanel(item);
+    component.substituteErrorMessage = 'Scan failed';
+
+    expect(component.activeSubstitutionItemId).toBe(item.id);
+
     component.setItemSelected(item, true);
 
     expect(component.canSubstitute(item)).toBeFalse();
+    expect(component.activeSubstitutionItemId).toBe('');
+    expect(component.substituteErrorMessage).toBe('');
   });
 
   it('lists related substitution options from unreserved inventory', () => {
