@@ -205,14 +205,20 @@ describe('GuardianLinkDialogComponent', () => {
   });
 
   it('resets saving state when linking fails', () => {
-    familyService.linkGuardianAccount.and.returnValue(throwError(() => new Error('link failed')));
+    familyService.linkGuardianAccount.and.returnValue(throwError(() => ({
+      error: { error: 'Guardian account is already linked to a family' }
+    })));
     component.selectedFamilyValue = unlinkedFamily;
     component.selectedGuardianValue = guardianUser;
 
     component.linkGuardianAccount();
 
     expect(component.isSaving).toBeFalse();
-    expect(snackBar.open).toHaveBeenCalledWith('Unable to link guardian account.', 'Close', { duration: 3500 });
+    expect(snackBar.open).toHaveBeenCalledWith(
+      "Can't link Taylor Guardian: already linked to a family",
+      'Close',
+      { duration: 5000 }
+    );
     expect(dialogRef.close).not.toHaveBeenCalled();
   });
 
@@ -234,13 +240,19 @@ describe('GuardianLinkDialogComponent', () => {
   });
 
   it('resets saving state when unlinking fails', () => {
-    familyService.unlinkGuardianAccount.and.returnValue(throwError(() => new Error('unlink failed')));
+    familyService.unlinkGuardianAccount.and.returnValue(throwError(() => ({
+      error: { error: 'The requested family was not found' }
+    })));
     component.selectedFamilyValue = linkedFamily;
 
     component.unlinkGuardianAccount();
 
     expect(component.isSaving).toBeFalse();
-    expect(snackBar.open).toHaveBeenCalledWith('Unable to unlink guardian account.', 'Close', { duration: 3500 });
+    expect(snackBar.open).toHaveBeenCalledWith(
+      "Can't unlink Morgan Guardian: family was not found",
+      'Close',
+      { duration: 5000 }
+    );
     expect(dialogRef.close).not.toHaveBeenCalled();
   });
 

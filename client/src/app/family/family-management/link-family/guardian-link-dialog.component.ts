@@ -1,4 +1,5 @@
 import { Component, inject, OnInit } from "@angular/core";
+import { HttpErrorResponse } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialogContent, MatDialogActions, MatDialogClose, MatDialogRef } from "@angular/material/dialog";
 import { MatFormField, MatLabel } from "@angular/material/form-field";
@@ -148,7 +149,7 @@ export class GuardianLinkDialogComponent implements OnInit {
   }
 
   canUnlinkGuardianAccount(): boolean {
-    return !!this.selectedFamily()?._id && !!this.selectedFamily()?.ownerUserId && !this.isSaving;
+    return !!this.selectedFamily()?._id && !!this.selectedFamily()?.ownerUserId?.trim() && !this.isSaving;
   }
 
   linkGuardianAccount() {
@@ -159,6 +160,14 @@ export class GuardianLinkDialogComponent implements OnInit {
       this.snackBar.open('Choose a family and guardian account first.', 'Close', { duration: 3000 });
       return;
     }
+    if (family.ownerUserId?.trim()) {
+      this.snackBar.open(
+        `Can't link ${this.guardianAccountLabel(guardian)}: family already has a linked guardian.`,
+        'Close',
+        { duration: 4500 }
+      );
+      return;
+    }
 
     this.isSaving = true;
     this.familyService.linkGuardianAccount(family._id, guardian._id).subscribe({
@@ -166,9 +175,9 @@ export class GuardianLinkDialogComponent implements OnInit {
         this.snackBar.open('Guardian account linked.', 'Close', { duration: 2500 });
         this.dialogRef.close(true);
       },
-      error: () => {
+      error: error => {
         this.isSaving = false;
-        this.snackBar.open('Unable to link guardian account.', 'Close', { duration: 3500 });
+        this.snackBar.open(this.failureMessage('link', error), 'Close', { duration: 5000 });
       }
     });
   }
@@ -180,6 +189,14 @@ export class GuardianLinkDialogComponent implements OnInit {
       this.snackBar.open('Choose a family first.', 'Close', { duration: 3000 });
       return;
     }
+    if (!family.ownerUserId?.trim()) {
+      this.snackBar.open(
+        `Can't unlink ${this.linkedGuardianAccountLabel(family)}: family is not linked.`,
+        'Close',
+        { duration: 4500 }
+      );
+      return;
+    }
 
     this.isSaving = true;
     this.familyService.unlinkGuardianAccount(family._id).subscribe({
@@ -187,11 +204,102 @@ export class GuardianLinkDialogComponent implements OnInit {
         this.snackBar.open('Guardian account unlinked.', 'Close', { duration: 2500 });
         this.dialogRef.close(true);
       },
-      error: () => {
+      error: error => {
         this.isSaving = false;
-        this.snackBar.open('Unable to unlink guardian account.', 'Close', { duration: 3500 });
+        this.snackBar.open(this.failureMessage('unlink', error), 'Close', { duration: 5000 });
       }
     });
+  }
+
+  private failureMessage(action: 'link' | 'unlink', error: unknown): string {
+    const reason = this.errorReason(error);
+    const actionLabel = action === 'link' ? 'link' : 'unlink';
+    const guardianLabel = action === 'link'
+      ? this.guardianAccountLabel(this.selectedGuardian())
+      : this.linkedGuardianAccountLabel(this.selectedFamily());
+
+    return reason
+      ? `Can't ${actionLabel} ${guardianLabel}: ${this.shortReason(reason)}`
+      : `Can't ${actionLabel} ${guardianLabel}. Try again.`;
+  }
+
+  private guardianAccountLabel(guardian?: User): string {
+    const name = guardian?.fullName?.trim() || guardian?.username?.trim();
+    return name ? name : 'guardian account';
+  }
+
+  private linkedGuardianAccountLabel(family?: Family): string {
+    const ownerUserId = family?.ownerUserId?.trim();
+    const guardian = ownerUserId
+      ? this.guardianUsers.find(user => user._id === ownerUserId)
+      : this.selectedGuardian();
+
+    return this.guardianAccountLabel(guardian);
+  }
+
+  private shortReason(reason: string): string {
+    return reason
+      .replace(/^guardian account is\s+/i, '')
+      .replace(/^the requested family was not found$/i, 'family was not found')
+      .replace(/\.$/, '');
+  }
+
+  private errorReason(error: unknown): string | undefined {
+    if (error instanceof HttpErrorResponse) {
+      const responseError = error.error;
+
+      if (typeof responseError === 'string') {
+        return this.reasonFromString(responseError);
+      }
+
+      return this.reasonFromErrorBody(responseError);
+    }
+
+    if (error instanceof Error) {
+      return error.message.trim() || undefined;
+    }
+
+    return this.reasonFromErrorBody(error);
+  }
+
+  private reasonFromErrorBody(errorBody: unknown): string | undefined {
+    if (typeof errorBody === 'string') {
+      return this.reasonFromString(errorBody);
+    }
+
+    if (!errorBody || typeof errorBody !== 'object') {
+      return undefined;
+    }
+
+    const body = errorBody as {
+      error?: unknown;
+      message?: string;
+      title?: string;
+      detail?: string;
+    };
+
+    if (body.error !== undefined) {
+      return this.reasonFromErrorBody(body.error)
+        || body.message?.trim()
+        || body.title?.trim()
+        || body.detail?.trim();
+    }
+
+    return body.message?.trim() || body.title?.trim() || body.detail?.trim();
+  }
+
+  private reasonFromString(value: string): string | undefined {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return undefined;
+    }
+
+    try {
+      return this.reasonFromErrorBody(JSON.parse(trimmed)) || trimmed;
+    } catch {
+      return trimmed;
+    }
   }
 
   filteredFamilies() {
