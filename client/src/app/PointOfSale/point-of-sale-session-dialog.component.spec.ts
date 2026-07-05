@@ -536,13 +536,14 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(component.canSubstitute(item)).toBeTrue();
   });
 
-  it('does not open the substitution workflow for items without a suggestion', () => {
+  it('opens the substitution workflow for items without a suggestion', () => {
     const item = checklist.sections[0].items[1];
 
     component.toggleSubstitutionPanel(item);
 
-    expect(component.canSubstitute(item)).toBeFalse();
-    expect(component.activeSubstitutionItemId).toBe('');
+    expect(component.canSubstitute(item)).toBeTrue();
+    expect(component.substitutionOptionsFor(item)).toEqual([]);
+    expect(component.activeSubstitutionItemId).toBe(item.id);
   });
 
   it('allows matched inventory items to be substituted', () => {
