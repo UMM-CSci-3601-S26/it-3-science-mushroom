@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -167,6 +168,9 @@ describe('GuardianLinkDialogComponent', () => {
     component.selectedGuardianValue = guardianUser;
     expect(component.canLinkGuardianAccount()).toBeTrue();
 
+    component.selectedFamilyValue = linkedFamily;
+    expect(component.canLinkGuardianAccount()).toBeFalse();
+
     component.isSaving = true;
     expect(component.canLinkGuardianAccount()).toBeFalse();
   });
@@ -204,6 +208,20 @@ describe('GuardianLinkDialogComponent', () => {
     expect(dialogRef.close).toHaveBeenCalledWith(true);
   });
 
+  it('explains when the selected family is already linked before linking', () => {
+    component.selectedFamilyValue = linkedFamily;
+    component.selectedGuardianValue = guardianUser;
+
+    component.linkGuardianAccount();
+
+    expect(familyService.linkGuardianAccount).not.toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      "Can't link Taylor Guardian: family already has a linked guardian.",
+      'Close',
+      { duration: 4500 }
+    );
+  });
+
   it('resets saving state when linking fails', () => {
     familyService.linkGuardianAccount.and.returnValue(throwError(() => ({
       error: { error: 'Guardian account is already linked to a family' }
@@ -222,6 +240,23 @@ describe('GuardianLinkDialogComponent', () => {
     expect(dialogRef.close).not.toHaveBeenCalled();
   });
 
+  it('shows server link failure reasons from HTTP error strings', () => {
+    familyService.linkGuardianAccount.and.returnValue(throwError(() => new HttpErrorResponse({
+      error: '{"error":"Guardian account is already linked to a family"}',
+      status: 400
+    })));
+    component.selectedFamilyValue = unlinkedFamily;
+    component.selectedGuardianValue = guardianUser;
+
+    component.linkGuardianAccount();
+
+    expect(snackBar.open).toHaveBeenCalledWith(
+      "Can't link Taylor Guardian: already linked to a family",
+      'Close',
+      { duration: 5000 }
+    );
+  });
+
   it('asks for a family before unlinking', () => {
     component.unlinkGuardianAccount();
 
@@ -237,6 +272,20 @@ describe('GuardianLinkDialogComponent', () => {
     expect(familyService.unlinkGuardianAccount).toHaveBeenCalledWith('family-2');
     expect(snackBar.open).toHaveBeenCalledWith('Guardian account unlinked.', 'Close', { duration: 2500 });
     expect(dialogRef.close).toHaveBeenCalledWith(true);
+  });
+
+  it('explains when the selected family is not linked before unlinking', () => {
+    component.selectedFamilyValue = unlinkedFamily;
+    component.selectedGuardianValue = guardianUser;
+
+    component.unlinkGuardianAccount();
+
+    expect(familyService.unlinkGuardianAccount).not.toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      "Can't unlink Taylor Guardian: family is not linked.",
+      'Close',
+      { duration: 4500 }
+    );
   });
 
   it('resets saving state when unlinking fails', () => {
