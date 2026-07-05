@@ -170,14 +170,17 @@
 
 .substitution-panel {
   grid-column: 1 / -1;
+  border-color: color-mix(in srgb, var(--app-primary) 24%, var(--app-border));
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--app-primary) 5%, var(--app-surface)),
+    var(--app-surface)
+  );
+  color: var(--app-text);
 }
 
 .substitution-panel p {
   margin: 0.25rem 0 0.75rem;
-}
-
-.substitution-tabs {
-  width: 100%;
 }
 
 .substitution-search {
@@ -201,6 +204,12 @@
   background: var(--app-surface);
 }
 
+.substitution-search input:focus {
+  border-color: var(--app-primary);
+  outline: 2px solid color-mix(in srgb, var(--app-primary) 24%, transparent);
+  outline-offset: 2px;
+}
+
 .substitution-options {
   display: grid;
   gap: 0.55rem;
@@ -213,9 +222,10 @@
   justify-content: space-between;
   gap: var(--app-space-md);
   padding: 0.65rem;
-  border: 1px solid var(--app-border);
+  border: 1px solid color-mix(in srgb, var(--app-primary) 18%, var(--app-border));
   border-radius: var(--app-radius-md);
-  background: var(--app-surface);
+  background: color-mix(in srgb, var(--app-primary) 4%, var(--app-surface));
+  color: var(--app-text);
 }
 
 .substitution-option div {
@@ -224,6 +234,7 @@
 
 .substitution-option strong,
 .substitution-option p {
+  color: var(--app-text);
   overflow-wrap: anywhere;
 }
 
@@ -234,7 +245,18 @@
 }
 
 .scanner-tab {
+  display: grid;
+  gap: 0.45rem;
   padding-top: 0.75rem;
+  color: var(--app-text);
+}
+
+.scanner-tab strong {
+  color: var(--app-text);
+}
+
+.scanner-tab p {
+  color: var(--app-text-muted);
 }
 
 .substitute-error {

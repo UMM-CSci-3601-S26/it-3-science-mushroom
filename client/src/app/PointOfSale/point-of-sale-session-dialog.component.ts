@@ -7,7 +7,6 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTabsModule } from '@angular/material/tabs';
 import { switchMap } from 'rxjs';
 
 import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
@@ -16,6 +15,8 @@ import { Inventory } from '../inventory/inventory';
 import { InventoryService } from '../inventory/inventory.service';
 import { ScannerComponent } from '../scanner/scanner.component';
 import { DialogService } from '../shared/dialog/dialog.service';
+import { AppTabComponent } from '../shared/tabs/app-tab.component';
+import { AppTabsComponent } from '../shared/tabs/app-tabs.component';
 
 type SubstitutionSuggestion = {
   substituteItem?: string;
@@ -36,7 +37,8 @@ type SubstitutionSuggestion = {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    MatTabsModule,
+    AppTabComponent,
+    AppTabsComponent,
     ScannerComponent
   ],
   templateUrl: './point-of-sale-session-dialog.component.html',

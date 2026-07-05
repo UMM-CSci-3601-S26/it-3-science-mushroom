@@ -151,12 +151,12 @@
                     </div>
 
                     @if (activeSubstitutionItemId === item.id) {
-                      <div class="substitution-panel app-status-panel app-status-warning">
+                      <div class="substitution-panel app-panel">
                         @if (substituteErrorMessage) {
                           <p class="substitute-error">{{ substituteErrorMessage }}</p>
                         }
-                        <mat-tab-group class="substitution-tabs">
-                          <mat-tab label="Suggestions">
+                        <app-tabs>
+                          <app-tab label="Suggestions">
                             @if (substitutionOptionsFor(item); as options) {
                               <label class="substitution-search">
                                 <span>Search descriptions</span>
@@ -187,8 +187,8 @@
                                 <p>No suggested unreserved inventory items are available. Scan an item to substitute manually.</p>
                               }
                             }
-                          </mat-tab>
-                          <mat-tab label="Scan Item">
+                          </app-tab>
+                          <app-tab label="Scan Item">
                             <div class="scanner-tab">
                               <strong>Scan substitute item</strong>
                               <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
@@ -197,8 +197,8 @@
                                 (scanned)="applySubstituteBarcode(item, $event)">
                               </app-scanner>
                             </div>
-                          </mat-tab>
-                        </mat-tab-group>
+                          </app-tab>
+                        </app-tabs>
                       </div>
                     }
                   </div>
