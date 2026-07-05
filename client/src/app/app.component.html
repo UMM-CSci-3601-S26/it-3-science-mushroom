@@ -140,7 +140,7 @@
         <mat-slide-toggle
           [checked]="posterStyleEnabled"
           (change)="setPosterStyle($event.checked)">
-          Poster style
+          {{ posterStyleEnabled ? 'Retro theme' : 'Calm theme' }}
         </mat-slide-toggle>
       </div>
       <mat-divider></mat-divider>

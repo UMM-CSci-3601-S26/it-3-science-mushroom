@@ -47,6 +47,16 @@ describe('AppComponent', () => {
     // Clear any persisted theme mode and classes before each test to ensure a consistent starting state.
     localStorage.removeItem('r4l-color-mode');
     localStorage.removeItem('r4l-poster-style');
+    spyOn(window, 'matchMedia').and.returnValue({
+      matches: false,
+      media: '(prefers-color-scheme: dark)',
+      onchange: null,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      dispatchEvent: () => true
+    });
     document.documentElement.classList.remove(
       'app-theme-dark',
       'app-theme-light',
@@ -132,8 +142,24 @@ describe('AppComponent', () => {
     expect(authServiceSpy.syncAccessProfile).toHaveBeenCalled();
   });
 
-  it('should apply the saved app theme class on init', () => {
+  it('should use the retro theme by default for first-time visitors', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    fixture.detectChanges();
+
+    expect(app.currentMode).toBe('light');
+    expect(app.posterStyleEnabled).toBeTrue();
+    expect(document.documentElement.classList).toContain('app-theme-r4l-poster');
+    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster-dark');
+    expect(document.documentElement.classList).not.toContain('app-theme-dark');
+    expect(document.documentElement.classList).not.toContain('app-theme-light');
+    expect(localStorage.getItem('r4l-poster-style')).toBe('true');
+  });
+
+  it('should apply the saved calm app theme class on init', () => {
     localStorage.setItem('r4l-color-mode', 'dark');
+    localStorage.setItem('r4l-poster-style', 'false');
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
 
@@ -142,24 +168,8 @@ describe('AppComponent', () => {
     expect(app.currentMode).toBe('dark');
     expect(app.posterStyleEnabled).toBeFalse();
     expect(document.documentElement.classList).toContain('app-theme-dark');
-    expect(document.documentElement.classList).not.toContain('app-theme-light');
     expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
     expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster-dark');
-  });
-
-  it('should apply the saved poster style independently from color mode', () => {
-    localStorage.setItem('r4l-color-mode', 'dark');
-    localStorage.setItem('r4l-poster-style', 'true');
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-
-    fixture.detectChanges();
-
-    expect(app.currentMode).toBe('dark');
-    expect(app.posterStyleEnabled).toBeTrue();
-    expect(document.documentElement.classList).toContain('app-theme-r4l-poster-dark');
-    expect(document.documentElement.classList).not.toContain('app-theme-r4l-poster');
-    expect(document.documentElement.classList).not.toContain('app-theme-dark');
     expect(document.documentElement.classList).not.toContain('app-theme-light');
   });
 

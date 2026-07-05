@@ -14,6 +14,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ActivatedRouteSnapshot, Route, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './auth/auth-service';
 import { Family } from './family/family';
+// import { MatDivider } from "@angular/material/divider";
 import { DeleteRequestNotificationService } from './family/family-management/delete-family/delete-request-notification.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -30,6 +31,12 @@ type AppMode = 'light' | 'dark';
     RouterLink,
     RouterLinkActive,
     MatIconModule,
+    MatButtonModule,
+    MatBadgeModule,
+    MatMenuModule,
+    RouterOutlet,
+    MatSnackBarModule,
+    MatDividerModule,
     MatButtonModule,
     MatBadgeModule,
     MatDividerModule,
@@ -56,10 +63,10 @@ export class AppComponent implements OnInit {
   private clipboard = inject(Clipboard);
   private snackBar = inject(MatSnackBar);
 
-  // Color mode and poster styling are stored separately so users can keep
-  // their preferred contrast mode while trying the R4L poster treatment.
+  // Color mode and visual style are stored separately so users can keep
+  // their preferred contrast mode while choosing between Calm and Retro.
   currentMode: AppMode = 'light';
-  posterStyleEnabled = false;
+  posterStyleEnabled = true;
   private document = inject(DOCUMENT);
   private readonly modeStorageKey = 'r4l-color-mode';
   private readonly posterStyleStorageKey = 'r4l-poster-style';
@@ -178,6 +185,8 @@ export class AppComponent implements OnInit {
       this.currentMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
+    // Retro is the public default; a saved preference switches users back to
+    // Calm only when they have explicitly chosen it.
     if (savedPosterStyle === 'true' || savedPosterStyle === 'false') {
       this.posterStyleEnabled = savedPosterStyle === 'true';
     }
