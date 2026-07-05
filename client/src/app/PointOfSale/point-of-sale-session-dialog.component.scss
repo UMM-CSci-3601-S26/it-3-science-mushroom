@@ -196,18 +196,22 @@
 }
 
 .substitution-search input {
+  box-sizing: border-box;
   width: min(100%, 22rem);
   padding: 0.55rem 0.65rem;
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   color: var(--app-text);
   background: var(--app-surface);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .substitution-search input:focus {
   border-color: var(--app-primary);
-  outline: 2px solid color-mix(in srgb, var(--app-primary) 24%, transparent);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px var(--app-primary),
+    inset 0 0 0 3px color-mix(in srgb, var(--app-primary) 18%, transparent);
 }
 
 .substitution-options {
