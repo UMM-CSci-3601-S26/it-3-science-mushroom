@@ -39,10 +39,10 @@
     @if (sessionHasNoChecklistItems(sessionFamily)) {
       <mat-card class="session-empty-checklist app-status-panel app-status-warning">
         <div>
-          <p><strong>No checklist items were found yet.</strong></p>
+          <p><strong>Checklist needs attention.</strong></p>
           <p>
-            Add matching supply-list rows for these students, then regenerate this session so the backend
-            rebuilds the snapshot.
+            We could not find supply-list matches for this family. Check the students' school, grade,
+            and teacher, or add matching supply-list rows, then regenerate the checklist.
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="restartSession()">
@@ -206,14 +206,17 @@
               </div>
             } @else {
               <p class="placeholder-text">
-                No checklist items were generated for this student. Check that this student's school,
-                grade, and teacher match at least one supply-list row.
+                We could not find checklist item for this student. Check the school, grade, and teacher,
+                or add a matching supply-list row.
               </p>
             }
           </mat-card>
         } @empty {
           <mat-card class="student-session-card app-panel">
-            <p class="placeholder-text">No checklist sections were returned for this family.</p>
+            <p class="placeholder-text">
+              We could not build a checklist for this family yet. Check that student details and matching
+              supply-list rows are set up.
+            </p>
           </mat-card>
         }
       </div>
