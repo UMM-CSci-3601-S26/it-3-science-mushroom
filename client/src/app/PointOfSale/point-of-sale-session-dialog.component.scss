@@ -36,6 +36,11 @@
   white-space: nowrap;
 }
 
+.session-summary > p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 .session-empty-checklist {
   display: flex;
   align-items: center;
