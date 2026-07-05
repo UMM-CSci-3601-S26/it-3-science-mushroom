@@ -59,6 +59,20 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   saving = false;
   private readonly substitutionDescriptionSearchTerms = new Map<string, string>();
   private readonly originalSubstitutionSuggestions = new Map<string, SubstitutionSuggestion>();
+  private readonly substitutionTokenStopWords = new Set([
+    'a',
+    'an',
+    'and',
+    'box',
+    'count',
+    'ct',
+    'for',
+    'of',
+    'or',
+    'pack',
+    'the',
+    'with'
+  ]);
 
   ngOnInit(): void {
     this.startSession();
@@ -416,8 +430,14 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     return values
       .flatMap(value => (value ?? '').toLowerCase().split(/[^a-z0-9]+/g))
       .map(value => value.endsWith('s') && value.length > 1 ? value.slice(0, -1) : value)
-      .filter(value => value.length > 0)
+      .filter(value => this.isMeaningfulSubstitutionToken(value))
       .filter((value, index, valuesArray) => valuesArray.indexOf(value) === index);
+  }
+
+  private isMeaningfulSubstitutionToken(value: string): boolean {
+    return value.length > 1
+      && !/^\d+$/.test(value)
+      && !this.substitutionTokenStopWords.has(value);
   }
 
   private relatedTokenScore(itemTokens: string[], inventoryTokens: string[]): number {

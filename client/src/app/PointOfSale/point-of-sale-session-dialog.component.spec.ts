@@ -584,6 +584,19 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(options.map(option => option.internalID)).toEqual(['INV-2', 'INV-5']);
   });
 
+  it('ignores quantity and size-only token matches in substitution options', () => {
+    const options = component.substitutionOptionsFor({
+      id: 'manual-tissue-item',
+      label: '1 Pack of Tissues',
+      selected: false,
+      available: false,
+      requestedQuantity: 1
+    });
+
+    expect(options.map(option => option.internalID)).not.toContain('INV-4');
+    expect(options).toEqual([]);
+  });
+
   it('filters substitution options by description search', () => {
     const item = checklist.sections[0].items[2];
     component.setSubstitutionDescriptionSearch(item, {
