@@ -13,7 +13,7 @@ import { map, tap } from 'rxjs/operators';
 
 // Other Imports
 import { environment } from '../../environments/environment';
-import { Family, DashboardStats, FamilyChecklist, SelectOption } from './family';
+import { Family, DashboardStats, FamilyChecklist, NeededItemLog, SelectOption } from './family';
 import { FormatDateTimeService } from '../shared/format-date-time/format-date-time.service';
 import { DeleteRequestNotificationService } from './family-management/delete-family/delete-request-notification.service';
 
@@ -105,6 +105,10 @@ export class FamilyService {
 
   getFinalizedFamilyChecklist(id: string): Observable<FamilyChecklist> {
     return this.httpClient.get<FamilyChecklist>(`${this.familyUrl}/${id}/finalized-checklist`);
+  }
+
+  getNeededItemLogs(): Observable<NeededItemLog[]> {
+    return this.httpClient.get<NeededItemLog[]>(`${this.familyUrl}/needed-item-logs`);
   }
 
   startFamilyHelpSession(id: string): Observable<Family> {

@@ -116,11 +116,13 @@ class FamilyControllerSpec {
     MongoCollection<Document> supplyListDocuments = db.getCollection("supplylist");
     MongoCollection<Document> inventoryDocuments = db.getCollection("inventory");
     MongoCollection<Document> settingsDocuments = db.getCollection("settings");
+    MongoCollection<Document> neededItemLogDocuments = db.getCollection("neededItemLog");
 
     familyDocuments.drop();
     supplyListDocuments.drop();
     inventoryDocuments.drop();
     settingsDocuments.drop();
+    neededItemLogDocuments.drop();
 
     List<Document> testFamilies = List.of(
       familyDoc("Jane Doe", "jane@email.com", "123 Street", "None", "10:00-11:00",
@@ -379,6 +381,30 @@ class FamilyControllerSpec {
       () -> familyController.getFinalizedFamilyChecklist(ctx));
 
     assertEquals("The finalized checklist for this family was not found", exception.getMessage());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void getNeededItemLogsReturnsPersistedNeededItemLogs() {
+    db.getCollection("neededItemLog").insertOne(new Document()
+      .append("familyId", "family-1")
+      .append("guardianName", "Jordan Smith")
+      .append("sectionId", "student-1")
+      .append("sectionTitle", "Sam Supplies")
+      .append("itemId", "item-1")
+      .append("label", "Pencils")
+      .append("requestedQuantity", 2)
+      .append("reason", "not_available_didnt_receive")
+      .append("createdAt", "2026-07-07T12:00:00Z"));
+    ArgumentCaptor<List<NeededItemLog>> neededItemLogCaptor = ArgumentCaptor.forClass(List.class);
+
+    familyController.getNeededItemLogs(ctx);
+
+    verify(ctx).json(neededItemLogCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertEquals(1, neededItemLogCaptor.getValue().size());
+    assertEquals("family-1", neededItemLogCaptor.getValue().get(0).familyId);
+    assertEquals("Pencils", neededItemLogCaptor.getValue().get(0).label);
   }
 
   @Test

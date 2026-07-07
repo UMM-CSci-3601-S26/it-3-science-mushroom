@@ -78,6 +78,19 @@ export interface FamilyDeleteRequest {
   requestedAt?: string;
 }
 
+export interface NeededItemLog {
+  _id?: string;
+  familyId: string;
+  guardianName: string;
+  sectionId: string;
+  sectionTitle: string;
+  itemId: string;
+  label: string;
+  requestedQuantity: number;
+  reason: string;
+  createdAt?: string;
+}
+
 // dashboard statistics interface
 export interface DashboardStats {
   studentsPerSchool: { [school: string]: number};

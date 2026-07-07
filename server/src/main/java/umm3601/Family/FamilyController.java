@@ -69,6 +69,7 @@ public class FamilyController {
   private static final String API_FAMILY_EXPORT = "/api/family/export";
   private static final String API_FAMILY_HELPED = "/api/family/{id}/helped";
   private static final String API_FAMILY_STATUS = "/api/family/{id}/status";
+  private static final String API_FAMILY_NEEDED_ITEM_LOGS = "/api/family/needed-item-logs";
   private static final String API_FAMILY_CHECKLIST = "/api/family/{id}/checklist";
   private static final String API_FAMILY_FINALIZED_CHECKLIST = "/api/family/{id}/finalized-checklist";
   private static final String API_FAMILY_HELP_SESSION = "/api/family/{id}/help-session";
@@ -197,6 +198,13 @@ public class FamilyController {
     }
 
     ctx.json(family.checklist);
+  }
+
+  @Route(method = HttpMethod.GET, path = API_FAMILY_NEEDED_ITEM_LOGS)
+  @RequirePermission("manage_family_help_sessions")
+  public void getNeededItemLogs(Context ctx) {
+    ctx.json(familyNeededItemService.getNeededItemLogs());
+    ctx.status(HttpStatus.OK);
   }
 
   public Family getByOwnerUserId(String ownerUserId) {

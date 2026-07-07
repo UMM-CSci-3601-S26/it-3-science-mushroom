@@ -7,7 +7,7 @@ import { TestBed, waitForAsync, fakeAsync, tick } from '@angular/core/testing';
 import { Observable, of } from 'rxjs';
 
 // Family Imports
-import { Family, FamilyChecklist } from './family';
+import { Family, FamilyChecklist, NeededItemLog } from './family';
 import { FamilyService } from './family.service';
 import { DeleteRequestNotificationService } from './family-management/delete-family/delete-request-notification.service';
 
@@ -453,6 +453,30 @@ describe('FamilyService', () => {
       req.flush({});
 
       expect(notifySpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('When getNeededItemLogs() is called', () => {
+    it('gets needed item logs from the family endpoint', () => {
+      const neededItemLogs: NeededItemLog[] = [{
+        familyId: 'family-1',
+        guardianName: 'Jordan Smith',
+        sectionId: 'student-1',
+        sectionTitle: 'Sam Supplies',
+        itemId: 'item-1',
+        label: 'Pencils',
+        requestedQuantity: 2,
+        reason: 'not_available_didnt_receive',
+        createdAt: '2026-07-07T12:00:00Z'
+      }];
+
+      familyService.getNeededItemLogs().subscribe(logs => {
+        expect(logs).toEqual(neededItemLogs);
+      });
+
+      const req = httpTestingController.expectOne(`${familyService.familyUrl}/needed-item-logs`);
+      expect(req.request.method).toBe('GET');
+      req.flush(neededItemLogs);
     });
   });
 

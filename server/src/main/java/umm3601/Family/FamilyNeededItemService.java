@@ -48,6 +48,10 @@ public class FamilyNeededItemService {
     return neededItems;
   }
 
+  public List<NeededItemLog> getNeededItemLogs() {
+    return neededItemLogCollection.find().into(new ArrayList<>());
+  }
+
   private List<NeededItem> neededButNotAcquiredItemsFor(Family family) {
     List<NeededItem> neededItems = new ArrayList<>();
     if (family == null || family.checklist == null || family.checklist.sections == null) {
