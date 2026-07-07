@@ -1,3 +1,41 @@
 :host {
   display: block;
 }
+
+.admin-panel-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-md);
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: var(--app-space-md);
+}
+
+.admin-summary-band {
+  align-items: center;
+  border-left: 6px solid var(--app-primary);
+  display: flex;
+  gap: var(--app-space-md);
+  justify-content: space-between;
+  padding: 20px;
+
+  h1 {
+    font-size: 1.8rem;
+    margin: 0 0 6px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.admin-panel-content {
+  min-height: 1px;
+}
+
+@media (max-width: 700px) {
+  .admin-summary-band {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
