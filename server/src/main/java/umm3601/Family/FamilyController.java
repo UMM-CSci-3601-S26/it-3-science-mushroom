@@ -139,7 +139,7 @@ public class FamilyController {
         "users",
         Users.class,
         UuidRepresentation.STANDARD);
-    familyNeededItemService = new FamilyNeededItemService();
+    familyNeededItemService = new FamilyNeededItemService(database);
   }
 
   // GET all families

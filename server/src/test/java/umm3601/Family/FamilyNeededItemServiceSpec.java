@@ -2,18 +2,29 @@ package umm3601.Family;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
+import org.bson.conversions.Bson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mongojack.JacksonMongoCollection;
+
+import com.mongodb.client.model.ReplaceOptions;
 
 class FamilyNeededItemServiceSpec {
   private FamilyNeededItemService familyNeededItemService;
+  private JacksonMongoCollection<NeededItemLog> neededItemLogCollection;
 
   @BeforeEach
+  @SuppressWarnings("unchecked")
   void setUp() {
-    familyNeededItemService = new FamilyNeededItemService();
+    neededItemLogCollection = mock(JacksonMongoCollection.class);
+    familyNeededItemService = new FamilyNeededItemService(neededItemLogCollection);
   }
 
   @Test
@@ -42,6 +53,28 @@ class FamilyNeededItemServiceSpec {
     assertEquals("item-1", selectedItem.getItemId());
     assertEquals("Pencils", selectedItem.getLabel());
     assertEquals(2, selectedItem.getRequestedQuantity());
+  }
+
+  @Test
+  void recordNeededButNotAcquiredItemsUpsertsMatchingChecklistItemLogs() {
+    Family family = buildFamilyWithChecklist();
+    ArgumentCaptor<NeededItemLog> logCaptor = ArgumentCaptor.forClass(NeededItemLog.class);
+    ArgumentCaptor<ReplaceOptions> optionsCaptor = ArgumentCaptor.forClass(ReplaceOptions.class);
+    family.checklist.sections.get(0).items.add(buildItem(
+      "item-1",
+      "Pencils",
+      false,
+      "not_available_didnt_receive"));
+
+    familyNeededItemService.recordNeededButNotAcquiredItems(family);
+
+    verify(neededItemLogCollection).replaceOne(any(Bson.class), logCaptor.capture(), optionsCaptor.capture());
+    assertTrue(optionsCaptor.getValue().isUpsert());
+    assertEquals("family-1", logCaptor.getValue().familyId);
+    assertEquals("student-1", logCaptor.getValue().sectionId);
+    assertEquals("item-1", logCaptor.getValue().itemId);
+    assertEquals("Pencils", logCaptor.getValue().label);
+    assertEquals(2, logCaptor.getValue().requestedQuantity);
   }
 
   @Test
@@ -85,6 +118,7 @@ class FamilyNeededItemServiceSpec {
 
     assertEquals(1, removedLogs.size());
     assertEquals("item-1", removedLogs.get(0).getItemId());
+    verify(neededItemLogCollection).deleteOne(any(Bson.class));
   }
 
   private Family buildFamilyWithChecklist() {

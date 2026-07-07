@@ -1,18 +1,51 @@
 package umm3601.Family;
 
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
+import org.mongojack.JacksonMongoCollection;
+
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.ReplaceOptions;
+
 public class FamilyNeededItemService {
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
+  private final JacksonMongoCollection<NeededItemLog> neededItemLogCollection;
+
+  public FamilyNeededItemService(MongoDatabase database) {
+    this(JacksonMongoCollection.builder().build(
+      database,
+      "neededItemLog",
+      NeededItemLog.class,
+      UuidRepresentation.STANDARD));
+  }
+
+  FamilyNeededItemService(JacksonMongoCollection<NeededItemLog> neededItemLogCollection) {
+    this.neededItemLogCollection = neededItemLogCollection;
+  }
 
   public List<NeededItem> recordNeededButNotAcquiredItems(Family family) {
-    return neededButNotAcquiredItemsFor(family);
+    List<NeededItem> neededItems = neededButNotAcquiredItemsFor(family);
+    for (NeededItem neededItem : neededItems) {
+      NeededItemLog log = NeededItemLog.from(neededItem, Instant.now().toString());
+      neededItemLogCollection.replaceOne(logFilter(log), log, new ReplaceOptions().upsert(true));
+    }
+    return neededItems;
   }
 
   public List<NeededItem> removeNeededButNotAcquiredItemLogs(Family family) {
-    return neededButNotAcquiredItemsFor(family);
+    List<NeededItem> neededItems = neededButNotAcquiredItemsFor(family);
+    for (NeededItem neededItem : neededItems) {
+      neededItemLogCollection.deleteOne(logFilter(NeededItemLog.from(neededItem, null)));
+    }
+    return neededItems;
   }
 
   private List<NeededItem> neededButNotAcquiredItemsFor(Family family) {
@@ -50,6 +83,13 @@ public class FamilyNeededItemService {
       .toLowerCase(Locale.US)
       .replace("'", "")
       .replaceAll("[\\s-]+", "_");
+  }
+
+  private Bson logFilter(NeededItemLog log) {
+    return and(
+      eq("familyId", log.familyId),
+      eq("sectionId", log.sectionId),
+      eq("itemId", log.itemId));
   }
 
   public static class NeededItem {
