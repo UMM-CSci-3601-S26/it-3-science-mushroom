@@ -70,6 +70,8 @@ const routes: Routes = [
   {path: 'style-guide', loadComponent: () => import('./style-guide/style-showcase.component').then(m => m.StyleShowcaseComponent), title: 'Frontend Style Template',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN'] }},
 
+  {path: 'admin-panel', loadComponent: () => import('./admin/admin-panel.component').then(m => m.AdminPanelComponent), title: 'Admin Panel',
+    canActivate: [AuthGuard,RoleGuard], data: { roles: ['ADMIN']}},
 ];
 
 @NgModule({
