@@ -8,6 +8,14 @@ public class FamilyNeededItemService {
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
 
   public List<NeededItem> recordNeededButNotAcquiredItems(Family family) {
+    return neededButNotAcquiredItemsFor(family);
+  }
+
+  public List<NeededItem> removeNeededButNotAcquiredItemLogs(Family family) {
+    return neededButNotAcquiredItemsFor(family);
+  }
+
+  private List<NeededItem> neededButNotAcquiredItemsFor(Family family) {
     List<NeededItem> neededItems = new ArrayList<>();
     if (family == null || family.checklist == null || family.checklist.sections == null) {
       return neededItems;

@@ -71,6 +71,22 @@ class FamilyNeededItemServiceSpec {
     assertTrue(familyNeededItemService.recordNeededButNotAcquiredItems(family).isEmpty());
   }
 
+  @Test
+  void removeNeededButNotAcquiredItemLogsReturnsMatchingChecklistItems() {
+    Family family = buildFamilyWithChecklist();
+    family.checklist.sections.get(0).items.add(buildItem(
+      "item-1",
+      "Glue",
+      false,
+      "not_available_didnt_receive"));
+
+    List<FamilyNeededItemService.NeededItem> removedLogs =
+      familyNeededItemService.removeNeededButNotAcquiredItemLogs(family);
+
+    assertEquals(1, removedLogs.size());
+    assertEquals("item-1", removedLogs.get(0).getItemId());
+  }
+
   private Family buildFamilyWithChecklist() {
     Family family = new Family();
     family._id = "family-1";

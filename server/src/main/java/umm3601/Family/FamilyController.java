@@ -822,6 +822,7 @@ public class FamilyController {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureCompletedHelpSessionExists(family);
 
+    familyNeededItemService.removeNeededButNotAcquiredItemLogs(family);
     restoreChecklistInventoryChanges(family.checklist);
     for (Family.ChecklistSection section : family.checklist.sections) {
       section.saved = false;
