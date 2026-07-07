@@ -109,6 +109,7 @@ public class FamilyController {
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
   private final JacksonMongoCollection<Users> usersCollection;
+  private final FamilyNeededItemService familyNeededItemService;
 
 
   // Database Constructor
@@ -138,6 +139,7 @@ public class FamilyController {
         "users",
         Users.class,
         UuidRepresentation.STANDARD);
+    familyNeededItemService = new FamilyNeededItemService();
   }
 
   // GET all families
@@ -786,6 +788,7 @@ public class FamilyController {
         replaceSection(family.checklist, normalizedSection);
       }
     }
+    familyNeededItemService.recordNeededButNotAcquiredItems(family);
 
     family.status = STATUS_HELPED;
     family.helped = true;
