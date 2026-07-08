@@ -55,10 +55,8 @@ import umm3601.Auth.Role;
 import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
 // Misc Imports
-import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Settings.Settings.TimeAvailabilityLabels;
-import umm3601.SupplyList.SupplyList;
 import umm3601.Users.Users;
 import umm3601.Users.UsersService;
 
@@ -163,7 +161,8 @@ class FamilyControllerSpec {
 
     settingsDocuments.insertOne(new Document().append("availableSpots", 5));
 
-    familyController = new FamilyController(db);
+    InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
+    familyController = new FamilyController(db, inventoryMatcher);
   }
 
   private Document familyDoc(String guardianName, String email, String address, String accommodations,
@@ -351,6 +350,7 @@ class FamilyControllerSpec {
   @Test
   void getFinalizedFamilyChecklistReturnsCompletedChecklist() {
     Family family = startHelpSessionAndGetFamily();
+    family.checklist.sections.get(0).items.get(0).selected = true;
     family.checklist.sections.get(0).items.get(1).selected = false;
     family.checklist.sections.get(0).items.get(1).substituteBarcode = "SUB-10001";
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
@@ -695,6 +695,7 @@ class FamilyControllerSpec {
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem backpackItem = section.items.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    backpackItem.selected = true;
     unavailableItem.selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -731,6 +732,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    section.items.get(0).selected = true;
     unavailableItem.selected = false;
     unavailableItem.substituteBarcode = "SUB-10001";
 
@@ -770,6 +772,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionAllSupportsProvidedChecklistPayload() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -800,9 +803,47 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void saveFamilyHelpSessionAllReleasesMatchedInventoryWhenSubstitutionTakesItsPlace() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    Family.ChecklistItem backpackItem = section.items.get(0);
+    backpackItem.selected = true;
+    backpackItem.substituteBarcode = "SUB-10001";
+
+    db.getCollection("inventory").updateOne(
+      eq("internalID", backpackItem.matchedInventoryId),
+      new Document("$set", new Document("reservedQuantity", backpackItem.requestedQuantity)));
+
+    FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
+    request.setChecklist(family.checklist);
+    String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyHelpSessionSaveAllRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyHelpSessionSaveAllRequest.class)));
+
+    familyController.saveFamilyHelpSessionAll(ctx);
+
+    Document originalInventory = db.getCollection("inventory")
+      .find(eq("internalID", backpackItem.matchedInventoryId))
+      .first();
+    assertEquals(3, originalInventory.getInteger("quantity"));
+    assertEquals(0, originalInventory.getInteger("reservedQuantity"));
+
+    Document substituteInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10001"))
+      .first();
+    assertEquals(3, substituteInventory.getInteger("quantity"));
+  }
+
+  @Test
   void saveFamilyHelpSessionChildKeepsCompletedChecklistWhenLastSectionIsSaved() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -920,6 +961,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     addUnsavedChecklistSection(testFamilyId, "student-2");
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -947,6 +989,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsSelectedUnavailableItem() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = true;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -971,6 +1014,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsUnknownSubstituteBarcode() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "UNKNOWN";
 
@@ -1130,43 +1174,7 @@ class FamilyControllerSpec {
   }
 
   @Test
-  void privateMatchingHelpersCoverBranchyCases() throws Exception {
-    SupplyList supplyList = new SupplyList();
-    supplyList.item = List.of("Notebook");
-    supplyList.brand = new SupplyList.AttributeOptions();
-    supplyList.brand.allOf = "Five Star";
-    supplyList.color = new SupplyList.ColorAttributeOptions();
-    supplyList.color.anyOf = List.of("Blue", "Black");
-    supplyList.size = new SupplyList.AttributeOptions();
-    supplyList.size.anyOf = List.of("Wide");
-    supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Ruled";
-    supplyList.material = new SupplyList.AttributeOptions();
-    supplyList.material.anyOf = List.of("Paper");
-    supplyList.packageSize = 1;
-
-    Inventory inventory = new Inventory();
-    inventory.item = "Notebook";
-    inventory.brand = "Five Star";
-    inventory.color = "Blue";
-    inventory.size = "Wide";
-    inventory.type = "Ruled";
-    inventory.material = "Paper";
-    inventory.packageSize = 1;
-
-    boolean matches = invokeInventoryMatchesSupplyList(inventory, supplyList);
-    int score = invokeInventorySpecificityScore(inventory);
-
-    assertTrue(matches);
-    assertTrue(score > 0);
-  }
-
-  @Test
   void privateLookupAndConsumeHelpersCoverErrorBranches() throws Exception {
-    Inventory found = invokeFindInventoryByBarcode("SUB-10001");
-    assertNotNull(found);
-    assertEquals("ID-10001", found.internalID);
-
     NotFoundResponse missingInventory = assertThrows(NotFoundResponse.class,
       () -> invokeConsumeInventory("DOES-NOT-EXIST", 1));
     assertTrue(missingInventory.getMessage().contains("No item found for internalID"));
@@ -1185,12 +1193,6 @@ class FamilyControllerSpec {
     assertEquals("available_didnt_need", normalized);
     assertTrue(valid);
     assertFalse(invalid);
-  }
-
-  @Test
-  void privateFindInventoryByBarcodeReturnsNullWhenMissing() throws Exception {
-    Inventory found = invokeFindInventoryByBarcode("MISSING-BARCODE");
-    assertNull(found);
   }
 
   @Test
@@ -1243,206 +1245,6 @@ class FamilyControllerSpec {
       () -> familyController.saveFamilyHelpSessionAll(ctx));
 
     assertTrue(exception.getMessage().contains("must be started before saving checklist progress"));
-  }
-
-  @Test
-  void privateInventoryMatchCoversNegativeBranches() throws Exception {
-    SupplyList emptyItems = new SupplyList();
-    emptyItems.item = null;
-
-    Inventory inventory = new Inventory();
-    inventory.item = "Notebook";
-    inventory.brand = "Acme";
-    inventory.color = "Blue";
-    inventory.size = "Wide";
-    inventory.type = "Ruled";
-    inventory.material = "Paper";
-    inventory.packageSize = 2;
-
-    boolean missingItems = invokeInventoryMatchesSupplyList(inventory, emptyItems);
-    assertFalse(missingItems);
-
-    SupplyList mismatchedBrand = new SupplyList();
-    mismatchedBrand.item = List.of("Notebook");
-    mismatchedBrand.brand = new SupplyList.AttributeOptions();
-    mismatchedBrand.brand.allOf = "Other";
-
-    boolean brandMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedBrand);
-    assertFalse(brandMismatch);
-
-    SupplyList mismatchedPackage = new SupplyList();
-    mismatchedPackage.item = List.of("Notebook");
-    mismatchedPackage.packageSize = 1;
-
-    boolean packageMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedPackage);
-    assertFalse(packageMismatch);
-
-    SupplyList mismatchedColor = new SupplyList();
-    mismatchedColor.item = List.of("Notebook");
-    mismatchedColor.color = new SupplyList.ColorAttributeOptions();
-    mismatchedColor.color.allOf = List.of("Red");
-
-    boolean colorMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedColor);
-    assertFalse(colorMismatch);
-
-    SupplyList mismatchedSize = new SupplyList();
-    mismatchedSize.item = List.of("Notebook");
-    mismatchedSize.size = new SupplyList.AttributeOptions();
-    mismatchedSize.size.allOf = "Narrow";
-
-    boolean sizeMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedSize);
-    assertFalse(sizeMismatch);
-
-    SupplyList mismatchedType = new SupplyList();
-    mismatchedType.item = List.of("Notebook");
-    mismatchedType.type = new SupplyList.AttributeOptions();
-    mismatchedType.type.allOf = "Composition";
-
-    boolean typeMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedType);
-    assertFalse(typeMismatch);
-
-    SupplyList mismatchedMaterial = new SupplyList();
-    mismatchedMaterial.item = List.of("Notebook");
-    mismatchedMaterial.material = new SupplyList.AttributeOptions();
-    mismatchedMaterial.material.allOf = "Plastic";
-
-    boolean materialMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedMaterial);
-    assertFalse(materialMismatch);
-
-    SupplyList exactMatch = new SupplyList();
-    exactMatch.item = List.of("Notebook");
-    exactMatch.brand = new SupplyList.AttributeOptions();
-    exactMatch.brand.allOf = "Acme";
-    exactMatch.color = new SupplyList.ColorAttributeOptions();
-    exactMatch.color.allOf = List.of("Blue");
-    exactMatch.size = new SupplyList.AttributeOptions();
-    exactMatch.size.allOf = "Wide";
-    exactMatch.type = new SupplyList.AttributeOptions();
-    exactMatch.type.allOf = "Ruled";
-    exactMatch.material = new SupplyList.AttributeOptions();
-    exactMatch.material.allOf = "Paper";
-    exactMatch.packageSize = 2;
-
-    boolean exactMatchResult = invokeInventoryMatchesSupplyList(inventory, exactMatch);
-    assertTrue(exactMatchResult);
-  }
-
-  @Test
-  void privateAttributeHelpersCoverNullAndMismatchBranches() throws Exception {
-    boolean nullAttribute = invokeMatchesAttribute(null, "Blue");
-    assertTrue(nullAttribute);
-
-    SupplyList.AttributeOptions anyOf = new SupplyList.AttributeOptions();
-    anyOf.anyOf = List.of("Blue", "Black");
-    boolean anyOfMatch = invokeMatchesAttribute(anyOf, "Blue");
-    boolean anyOfMiss = invokeMatchesAttribute(anyOf, "Red");
-    assertTrue(anyOfMatch);
-    assertFalse(anyOfMiss);
-
-    SupplyList.AttributeOptions allOfMismatch = new SupplyList.AttributeOptions();
-    allOfMismatch.allOf = "Wide";
-    boolean allOfFalse = invokeMatchesAttribute(allOfMismatch, "Narrow");
-    assertFalse(allOfFalse);
-
-    SupplyList.ColorAttributeOptions colorAllOf = new SupplyList.ColorAttributeOptions();
-    colorAllOf.allOf = List.of("Blue");
-    boolean colorAllOfMiss = invokeMatchesColorAttribute(colorAllOf, "Red");
-    assertFalse(colorAllOfMiss);
-
-    SupplyList.ColorAttributeOptions colorAnyOf = new SupplyList.ColorAttributeOptions();
-    colorAnyOf.anyOf = List.of("Black", "Red");
-    boolean colorAnyOfMatch = invokeMatchesColorAttribute(colorAnyOf, "Red");
-    boolean colorAnyOfMiss = invokeMatchesColorAttribute(colorAnyOf, "Green");
-    assertTrue(colorAnyOfMatch);
-    assertFalse(colorAnyOfMiss);
-  }
-
-  @Test
-  void privateSimilarityHelpersCoverScoreBranches() throws Exception {
-    Inventory inventory = new Inventory();
-    inventory.item = "Yellow Pencil";
-    inventory.description = "Plastic writing pencil";
-    inventory.brand = "Ticonderoga";
-    inventory.color = "Yellow";
-    inventory.material = "Wood";
-
-    SupplyList exactItemSupplyList = new SupplyList();
-    exactItemSupplyList.item = List.of("Yellow Pencil");
-    assertEquals(100, invokeItemSimilarityScore(inventory, exactItemSupplyList));
-
-    SupplyList searchableItemSupplyList = new SupplyList();
-    searchableItemSupplyList.item = List.of("Plastic");
-    assertEquals(75, invokeItemSimilarityScore(inventory, searchableItemSupplyList));
-
-    SupplyList partialItemSupplyList = new SupplyList();
-    partialItemSupplyList.item = List.of("Classroom Pencil");
-    assertEquals(50, invokeItemSimilarityScore(inventory, partialItemSupplyList));
-
-    SupplyList blankItemSupplyList = new SupplyList();
-    blankItemSupplyList.item = List.of(" ");
-    assertEquals(0, invokeItemSimilarityScore(inventory, blankItemSupplyList));
-
-    SupplyList emptyItemSupplyList = new SupplyList();
-    emptyItemSupplyList.item = List.of();
-    assertEquals(0, invokeItemSimilarityScore(inventory, emptyItemSupplyList));
-
-    SupplyList nullItemSupplyList = new SupplyList();
-    nullItemSupplyList.item = null;
-    assertEquals(0, invokeItemSimilarityScore(inventory, nullItemSupplyList));
-
-    SupplyList shortPartialItemSupplyList = new SupplyList();
-    shortPartialItemSupplyList.item = List.of("No 2");
-    assertEquals(0, invokeItemSimilarityScore(inventory, shortPartialItemSupplyList));
-
-    SupplyList.AttributeOptions requiredBrand = new SupplyList.AttributeOptions();
-    requiredBrand.allOf = "Ticonderoga";
-    assertEquals(5, invokeAttributeSimilarityScore(requiredBrand, inventory.brand));
-
-    SupplyList.AttributeOptions requiredBrandMiss = new SupplyList.AttributeOptions();
-    requiredBrandMiss.allOf = "Crayola";
-    assertEquals(0, invokeAttributeSimilarityScore(requiredBrandMiss, inventory.brand));
-
-    SupplyList.AttributeOptions optionalBrand = new SupplyList.AttributeOptions();
-    optionalBrand.anyOf = List.of("Crayola", "Ticonderoga");
-    assertEquals(3, invokeAttributeSimilarityScore(optionalBrand, inventory.brand));
-
-    SupplyList.AttributeOptions missingBrand = new SupplyList.AttributeOptions();
-    missingBrand.allOf = "";
-    missingBrand.anyOf = List.of("Crayola");
-    assertEquals(0, invokeAttributeSimilarityScore(missingBrand, inventory.brand));
-    assertEquals(0, invokeAttributeSimilarityScore(null, inventory.brand));
-
-    SupplyList.ColorAttributeOptions requiredColor = new SupplyList.ColorAttributeOptions();
-    requiredColor.allOf = List.of("Yellow");
-    assertEquals(5, invokeColorSimilarityScore(requiredColor, inventory.color));
-
-    SupplyList.ColorAttributeOptions requiredColorMiss = new SupplyList.ColorAttributeOptions();
-    requiredColorMiss.allOf = List.of("Blue");
-    assertEquals(0, invokeColorSimilarityScore(requiredColorMiss, inventory.color));
-
-    SupplyList.ColorAttributeOptions optionalColor = new SupplyList.ColorAttributeOptions();
-    optionalColor.anyOf = List.of("Blue", "Yellow");
-    assertEquals(3, invokeColorSimilarityScore(optionalColor, inventory.color));
-
-    SupplyList.ColorAttributeOptions missingColor = new SupplyList.ColorAttributeOptions();
-    missingColor.allOf = List.of("Blue");
-    missingColor.anyOf = List.of("Red");
-    assertEquals(0, invokeColorSimilarityScore(missingColor, inventory.color));
-    assertEquals(0, invokeColorSimilarityScore(null, inventory.color));
-  }
-
-  @Test
-  void privateBestInventoryDescriptionFallsBackToItemString() throws Exception {
-    Inventory inventoryWithDescription = new Inventory();
-    inventoryWithDescription.item = "Backpack";
-    inventoryWithDescription.description = "Blue student backpack";
-
-    Inventory inventoryWithoutDescription = new Inventory();
-    inventoryWithoutDescription.item = "Notebook";
-    inventoryWithoutDescription.description = "";
-
-    assertEquals("Blue student backpack", invokeBestInventoryDescription(inventoryWithDescription));
-    assertEquals("Notebook", invokeBestInventoryDescription(inventoryWithoutDescription));
   }
 
   @Test
@@ -1557,11 +1359,6 @@ class FamilyControllerSpec {
     BadRequestResponse invalidStatus = assertThrows(BadRequestResponse.class,
       () -> invokeNormalizeStatusValue("done"));
     assertTrue(invalidStatus.getMessage().contains("must be helped, not_helped, or being_helped"));
-
-    String normalizedToken = invokeNormalizeToken(" Notebooks ");
-    String normalizedNull = invokeNormalizeToken(null);
-    assertEquals("notebook", normalizedToken);
-    assertEquals("", normalizedNull);
   }
 
   @Test
@@ -1570,193 +1367,6 @@ class FamilyControllerSpec {
       () -> invokeConsumeInventory("ID-10000", 10));
 
     assertTrue(exception.getMessage().contains("Inventory quantity is too low"));
-  }
-
-  @Test
-  void privateInventorySpecificityScoreCoversFalseBranches() throws Exception {
-    Inventory sparseInventory = new Inventory();
-    sparseInventory.brand = "N/A";
-    sparseInventory.color = null;
-    sparseInventory.size = "";
-    sparseInventory.type = " ";
-    sparseInventory.material = "N/A";
-    sparseInventory.packageSize = 1;
-
-    int score = invokeInventorySpecificityScore(sparseInventory);
-
-    assertEquals(0, score);
-  }
-
-  @Test
-  void privateInventorySpecificityScoreCountsPackageSizeGreaterThanOne() throws Exception {
-    Inventory bulkInventory = new Inventory();
-    bulkInventory.brand = "N/A";
-    bulkInventory.color = null;
-    bulkInventory.size = "";
-    bulkInventory.type = " ";
-    bulkInventory.material = "N/A";
-    bulkInventory.packageSize = 2;
-
-    int score = invokeInventorySpecificityScore(bulkInventory);
-
-    assertEquals(1, score);
-  }
-
-  @Test
-  void privateGetSupplyListsForStudentCoversTeacherMismatchAndNoMatches() throws Exception {
-    db.getCollection("supplylist").insertOne(new Document()
-      .append("district", "District 1")
-      .append("school", "Roosevelt")
-      .append("grade", "5")
-      .append("teacher", "Ms Smith")
-      .append("item", List.of("Folder"))
-      .append("quantity", 1));
-
-    Family.StudentInfo mismatchedSchool = new Family.StudentInfo();
-    mismatchedSchool.school = "Different";
-    mismatchedSchool.grade = "5";
-    mismatchedSchool.teacher = "N/A";
-
-    List<SupplyList> noMatches = invokeGetSupplyListsForStudent(mismatchedSchool);
-    assertEquals(0, noMatches.size());
-
-    Family.StudentInfo mismatchedGrade = new Family.StudentInfo();
-    mismatchedGrade.school = "Roosevelt";
-    mismatchedGrade.grade = "6";
-    mismatchedGrade.teacher = "N/A";
-
-    List<SupplyList> wrongGradeMatches = invokeGetSupplyListsForStudent(mismatchedGrade);
-    assertEquals(0, wrongGradeMatches.size());
-
-    Family.StudentInfo mismatchedTeacher = new Family.StudentInfo();
-    mismatchedTeacher.school = "Roosevelt";
-    mismatchedTeacher.grade = "5";
-    mismatchedTeacher.teacher = "N/A";
-
-    List<SupplyList> filteredMatches = invokeGetSupplyListsForStudent(mismatchedTeacher);
-    assertEquals(2, filteredMatches.size());
-  }
-
-  @Test
-  void privateGetSupplyListsForStudentMatchesSchoolAcronymsAndGradeFormats() throws Exception {
-    db.getCollection("supplylist").drop();
-    db.getCollection("supplylist").insertMany(List.of(
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Morris Area High School")
-        .append("grade", "12th Grade")
-        .append("teacher", "N/A")
-        .append("item", List.of("Notebook"))
-        .append("quantity", 1),
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Morris Area High School")
-        .append("grade", "High School")
-        .append("teacher", "")
-        .append("item", List.of("Folder"))
-        .append("quantity", 1),
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Morris Area Middle School")
-        .append("grade", "Middle School")
-        .append("teacher", "")
-        .append("item", List.of("Pencil"))
-        .append("quantity", 1),
-      new Document()
-        .append("district", "District 1")
-        .append("school", "Morris Area Elementary")
-        .append("grade", "Elementary")
-        .append("teacher", "")
-        .append("item", List.of("Crayon"))
-        .append("quantity", 1)));
-
-    Family.StudentInfo student = new Family.StudentInfo();
-    student.school = "MAHS";
-    student.grade = "12";
-    student.teacher = "N/A";
-
-    List<SupplyList> matches = invokeGetSupplyListsForStudent(student);
-
-    assertEquals(2, matches.size());
-    assertTrue(matches.stream().anyMatch(match -> List.of("Notebook").equals(match.item)));
-    assertTrue(matches.stream().anyMatch(match -> List.of("Folder").equals(match.item)));
-
-    Family.StudentInfo middleSchoolStudent = new Family.StudentInfo();
-    middleSchoolStudent.school = "MAMS";
-    middleSchoolStudent.grade = "7";
-    middleSchoolStudent.teacher = "N/A";
-
-    List<SupplyList> middleSchoolMatches = invokeGetSupplyListsForStudent(middleSchoolStudent);
-    assertEquals(1, middleSchoolMatches.size());
-    assertEquals(List.of("Pencil"), middleSchoolMatches.get(0).item);
-
-    Family.StudentInfo elementaryStudent = new Family.StudentInfo();
-    elementaryStudent.school = "MAE";
-    elementaryStudent.grade = "5";
-    elementaryStudent.teacher = "N/A";
-
-    List<SupplyList> elementaryMatches = invokeGetSupplyListsForStudent(elementaryStudent);
-    assertEquals(1, elementaryMatches.size());
-    assertEquals(List.of("Crayon"), elementaryMatches.get(0).item);
-  }
-
-  @Test
-  void privateBuildChecklistItemSnapshotCoversUnavailableFallbackBranch() throws Exception {
-    SupplyList supplyList = new SupplyList();
-    supplyList.item = List.of("Scissors");
-    supplyList.quantity = 0;
-
-    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
-
-    assertEquals("section-item-1", item.id);
-    assertEquals(1, item.requestedQuantity);
-    assertFalse(item.available);
-    assertFalse(item.selected);
-    assertNull(item.matchedInventoryId);
-  }
-
-  @Test
-  void privateBuildChecklistItemSnapshotUsesHighestQuantitySimilarInventoryItem() throws Exception {
-    db.getCollection("inventory").drop();
-    db.getCollection("inventory").insertMany(List.of(
-      new Document()
-        .append("item", "Yellow Pencil")
-        .append("description", "Yellow #2 pencil")
-        .append("quantity", 4)
-        .append("size", "Wide")
-        .append("type", "Mechanical")
-        .append("material", "Wood")
-        .append("internalID", "LOW-QTY-PENCIL")
-        .append("internalBarcode", "LOW-QTY-PENCIL"),
-      new Document()
-        .append("item", "Plastic Pencil")
-        .append("description", "Plastic writing pencil")
-        .append("quantity", 30)
-        .append("size", "Narrow")
-        .append("type", "Wooden")
-        .append("material", "Plastic")
-        .append("internalID", "HIGH-QTY-PENCIL")
-        .append("internalBarcode", "HIGH-QTY-PENCIL"),
-      new Document()
-        .append("item", "Pen")
-        .append("description", "Blue ink pen")
-        .append("quantity", 100)
-        .append("internalID", "NOT-A-PENCIL")
-        .append("internalBarcode", "NOT-A-PENCIL")));
-
-    SupplyList supplyList = new SupplyList();
-    supplyList.item = List.of("Pencil");
-    supplyList.size = new SupplyList.AttributeOptions();
-    supplyList.size.allOf = "Wide";
-    supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Mechanical";
-    supplyList.quantity = 1;
-
-    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
-
-    assertTrue(item.available);
-    assertTrue(item.selected);
-    assertEquals("HIGH-QTY-PENCIL", item.matchedInventoryId);
   }
 
   @Test
@@ -1795,19 +1405,6 @@ class FamilyControllerSpec {
       "$set", new Document("checklist", checklist)));
   }
 
-  private boolean invokeInventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) throws Exception {
-    return invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, supplyList);
-  }
-
-  private int invokeInventorySpecificityScore(Inventory inventory) throws Exception {
-    return invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, inventory);
-  }
-
-  private Inventory invokeFindInventoryByBarcode(String barcode) throws Exception {
-    return invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, barcode);
-  }
-
   private void invokeConsumeInventory(String internalId, int amount) throws Exception {
     invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, internalId, amount);
   }
@@ -1818,38 +1415,6 @@ class FamilyControllerSpec {
 
   private boolean invokeIsValidNotPickedUpReason(String reason) throws Exception {
     return invokePrivate("isValidNotPickedUpReason", new Class<?>[] {String.class}, reason);
-  }
-
-  private boolean invokeMatchesAttribute(SupplyList.AttributeOptions options, String inventoryValue) throws Exception {
-    return invokePrivate("matchesAttribute",
-      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
-  }
-
-  private boolean invokeMatchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue)
-      throws Exception {
-    return invokePrivate("matchesColorAttribute",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
-  }
-
-  private int invokeAttributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
-      throws Exception {
-    return invokePrivate("attributeSimilarityScore",
-      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
-  }
-
-  private int invokeColorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue)
-      throws Exception {
-    return invokePrivate("colorSimilarityScore",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
-  }
-
-  private int invokeItemSimilarityScore(Inventory inventory, SupplyList supplyList) throws Exception {
-    return invokePrivate("itemSimilarityScore", new Class<?>[] {Inventory.class, SupplyList.class},
-      inventory, supplyList);
-  }
-
-  private String invokeBestInventoryDescription(Inventory inventory) throws Exception {
-    return invokePrivate("bestInventoryDescription", new Class<?>[] {Inventory.class}, inventory);
   }
 
   private void invokeValidateChecklistItemForSave(Family.ChecklistItem item) throws Exception {
@@ -1878,31 +1443,23 @@ class FamilyControllerSpec {
     return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
   }
 
-  private String invokeNormalizeToken(String value) throws Exception {
-    return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
-  }
-
-  private List<SupplyList> invokeGetSupplyListsForStudent(Family.StudentInfo student) throws Exception {
-    return invokePrivate("getSupplyListsForStudent", new Class<?>[] {Family.StudentInfo.class}, student);
-  }
-
-  private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
-      throws Exception {
-    return invokePrivate("buildChecklistItemSnapshot",
-      new Class<?>[] {SupplyList.class, String.class}, supplyList, itemId);
-  }
-
   private Family invokeRequireFamily(String id) throws Exception {
     return invokePrivate("requireFamily", new Class<?>[] {String.class}, id);
   }
 
   @SuppressWarnings("unchecked")
   private <T> T invokePrivate(String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
-    Method method = FamilyController.class.getDeclaredMethod(methodName, parameterTypes);
+    return invokePrivateOn(familyController, FamilyController.class, methodName, parameterTypes, args);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T invokePrivateOn(Object target, Class<?> owner, String methodName,
+      Class<?>[] parameterTypes, Object... args) throws Exception {
+    Method method = owner.getDeclaredMethod(methodName, parameterTypes);
     method.setAccessible(true);
 
     try {
-      return (T) method.invoke(familyController, args);
+      return (T) method.invoke(target, args);
     } catch (InvocationTargetException exception) {
       if (exception.getCause() instanceof Exception) {
         throw (Exception) exception.getCause();
@@ -1928,19 +1485,14 @@ class FamilyControllerSpec {
 
     assertEquals("John Christensen", families.get(0).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(0).timeSlot);
-
     assertEquals("John Johnson", families.get(1).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(1).timeSlot);
-
     assertEquals("Melina Brim", families.get(2).guardianName);
     assertEquals(currentSettings.earlyAfternoon, families.get(2).timeSlot);
-
     assertEquals("Bob Jones", families.get(3).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(3).timeSlot);
-
     assertEquals("Bob Dylan", families.get(4).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
-
     assertEquals("Jane Doe", families.get(5).guardianName);
     assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
   }

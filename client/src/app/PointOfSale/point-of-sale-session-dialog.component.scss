@@ -36,6 +36,11 @@
   white-space: nowrap;
 }
 
+.session-summary > p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 .session-empty-checklist {
   display: flex;
   align-items: center;
@@ -165,10 +170,97 @@
 
 .substitution-panel {
   grid-column: 1 / -1;
+  border-color: color-mix(in srgb, var(--app-primary) 24%, var(--app-border));
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--app-primary) 5%, var(--app-surface)),
+    var(--app-surface)
+  );
+  color: var(--app-text);
 }
 
 .substitution-panel p {
   margin: 0.25rem 0 0.75rem;
+}
+
+.substitution-search {
+  display: grid;
+  gap: 0.3rem;
+  padding-top: 0.75rem;
+}
+
+.substitution-search span {
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.substitution-search input {
+  box-sizing: border-box;
+  width: min(100%, 22rem);
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  color: var(--app-text);
+  background: var(--app-surface);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.substitution-search input:focus {
+  border-color: var(--app-primary);
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px var(--app-primary),
+    inset 0 0 0 3px color-mix(in srgb, var(--app-primary) 18%, transparent);
+}
+
+.substitution-options {
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.75rem;
+}
+
+.substitution-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+  padding: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--app-primary) 18%, var(--app-border));
+  border-radius: var(--app-radius-md);
+  background: color-mix(in srgb, var(--app-primary) 4%, var(--app-surface));
+  color: var(--app-text);
+}
+
+.substitution-option div {
+  min-width: 0;
+}
+
+.substitution-option strong,
+.substitution-option p {
+  color: var(--app-text);
+  overflow-wrap: anywhere;
+}
+
+.substitution-option span {
+  color: var(--app-text-muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.scanner-tab {
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.75rem;
+  color: var(--app-text);
+}
+
+.scanner-tab strong {
+  color: var(--app-text);
+}
+
+.scanner-tab p {
+  color: var(--app-text-muted);
 }
 
 .substitute-error {
