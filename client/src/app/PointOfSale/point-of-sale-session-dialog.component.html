@@ -39,10 +39,10 @@
     @if (sessionHasNoChecklistItems(sessionFamily)) {
       <mat-card class="session-empty-checklist app-status-panel app-status-warning">
         <div>
-          <p><strong>No checklist items were found yet.</strong></p>
+          <p><strong>Checklist needs attention.</strong></p>
           <p>
-            Add matching supply-list rows for these students, then regenerate this session so the backend
-            rebuilds the snapshot.
+            We could not find supply-list matches for this family. Check the students' school, grade,
+            and teacher, or add matching supply-list rows, then regenerate the checklist.
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="restartSession()">
@@ -101,8 +101,11 @@
                         </p>
                       }
                       @if (hasSubstitute(item)) {
-                        <p class="substitute-match app-badge app-badge-warn">
-                          Replacing with: {{ substituteDisplay(item) }}
+                        <p
+                          class="substitute-match app-badge"
+                          [class.app-badge-warn]="isSubstituted(item)"
+                          [class.app-badge-tertiary]="!isSubstituted(item)">
+                          {{ substituteMatchLabel(item) }}: {{ substituteDisplay(item) }}
                         </p>
                       }
                       @if (needsReason(item)) {
@@ -122,16 +125,17 @@
                     <div class="item-actions">
                       <span
                         class="item-status app-badge"
-                        [class.app-badge-success]="item.available"
-                        [class.app-badge-warn]="!item.available">
-                        {{ item.available ? 'Available' : 'Needs review' }}
+                        [class.app-badge-accent]="isSubstituted(item)"
+                        [class.app-badge-success]="!isSubstituted(item) && item.available"
+                        [class.app-badge-warn]="!isSubstituted(item) && !item.available">
+                        {{ itemStatusLabel(item) }}
                       </span>
-                      @if (item.available) {
+                      @if (canSubstitute(item)) {
                         <button
                           mat-stroked-button
                           type="button"
                           class="substitute-button"
-                          (click)="toggleSubstitutionScanner(item)">
+                          (click)="toggleSubstitutionPanel(item)">
                           Substitute
                         </button>
                       }
@@ -147,18 +151,54 @@
                     </div>
 
                     @if (activeSubstitutionItemId === item.id) {
-                      <div class="substitution-panel app-status-panel app-status-warning">
-                        <div>
-                          <strong>Scan substitute item</strong>
-                          <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
-                        </div>
+                      <div class="substitution-panel app-panel">
                         @if (substituteErrorMessage) {
                           <p class="substitute-error">{{ substituteErrorMessage }}</p>
                         }
-                        <app-scanner
-                          [processOnDone]="false"
-                          (scanned)="applySubstituteBarcode(item, $event)">
-                        </app-scanner>
+                        <app-tabs>
+                          <app-tab label="Suggestions">
+                            @if (substitutionOptionsFor(item); as options) {
+                              <label class="substitution-search">
+                                <span>Search descriptions</span>
+                                <input
+                                  type="search"
+                                  [value]="substitutionDescriptionSearchFor(item)"
+                                  (input)="setSubstitutionDescriptionSearch(item, $event)">
+                              </label>
+                              @if (options.length > 0) {
+                                <div class="substitution-options">
+                                  @for (option of options; track option.internalID) {
+                                    <div class="substitution-option">
+                                      <div>
+                                        <strong>{{ option.item }}</strong>
+                                        <p>{{ inventoryDescription(option) }}</p>
+                                        <span>Unreserved: {{ unreservedQuantity(option) }}</span>
+                                      </div>
+                                      <button
+                                        mat-stroked-button
+                                        type="button"
+                                        (click)="applySubstituteOption(item, option)">
+                                        Use
+                                      </button>
+                                    </div>
+                                  }
+                                </div>
+                              } @else {
+                                <p>No suggested unreserved inventory items are available. Scan an item to substitute manually.</p>
+                              }
+                            }
+                          </app-tab>
+                          <app-tab label="Scan Item">
+                            <div class="scanner-tab">
+                              <strong>Scan substitute item</strong>
+                              <p>Use camera mode or a handheld scanner, then the item will replace this checklist item.</p>
+                              <app-scanner
+                                [processOnDone]="false"
+                                (scanned)="applySubstituteBarcode(item, $event)">
+                              </app-scanner>
+                            </div>
+                          </app-tab>
+                        </app-tabs>
                       </div>
                     }
                   </div>
@@ -166,14 +206,17 @@
               </div>
             } @else {
               <p class="placeholder-text">
-                No checklist items were generated for this student. Check that this student's school,
-                grade, and teacher match at least one supply-list row.
+                We could not find checklist item for this student. Check the school, grade, and teacher,
+                or add a matching supply-list row.
               </p>
             }
           </mat-card>
         } @empty {
           <mat-card class="student-session-card app-panel">
-            <p class="placeholder-text">No checklist sections were returned for this family.</p>
+            <p class="placeholder-text">
+              We could not build a checklist for this family yet. Check that student details and matching
+              supply-list rows are set up.
+            </p>
           </mat-card>
         }
       </div>

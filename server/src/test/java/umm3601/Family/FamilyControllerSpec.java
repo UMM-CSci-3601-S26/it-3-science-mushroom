@@ -55,10 +55,8 @@ import umm3601.Auth.Role;
 import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
 // Misc Imports
-import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Settings.Settings.TimeAvailabilityLabels;
-import umm3601.SupplyList.SupplyList;
 import umm3601.Users.Users;
 import umm3601.Users.UsersService;
 
@@ -163,7 +161,8 @@ class FamilyControllerSpec {
 
     settingsDocuments.insertOne(new Document().append("availableSpots", 5));
 
-    familyController = new FamilyController(db);
+    InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
+    familyController = new FamilyController(db, inventoryMatcher);
   }
 
   private Document familyDoc(String guardianName, String email, String address, String accommodations,
@@ -351,6 +350,7 @@ class FamilyControllerSpec {
   @Test
   void getFinalizedFamilyChecklistReturnsCompletedChecklist() {
     Family family = startHelpSessionAndGetFamily();
+    family.checklist.sections.get(0).items.get(0).selected = true;
     family.checklist.sections.get(0).items.get(1).selected = false;
     family.checklist.sections.get(0).items.get(1).substituteBarcode = "SUB-10001";
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
@@ -695,6 +695,7 @@ class FamilyControllerSpec {
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem backpackItem = section.items.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    backpackItem.selected = true;
     unavailableItem.selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -731,6 +732,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    section.items.get(0).selected = true;
     unavailableItem.selected = false;
     unavailableItem.substituteBarcode = "SUB-10001";
 
@@ -770,6 +772,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionAllSupportsProvidedChecklistPayload() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -800,9 +803,47 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void saveFamilyHelpSessionAllReleasesMatchedInventoryWhenSubstitutionTakesItsPlace() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    Family.ChecklistItem backpackItem = section.items.get(0);
+    backpackItem.selected = true;
+    backpackItem.substituteBarcode = "SUB-10001";
+
+    db.getCollection("inventory").updateOne(
+      eq("internalID", backpackItem.matchedInventoryId),
+      new Document("$set", new Document("reservedQuantity", backpackItem.requestedQuantity)));
+
+    FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
+    request.setChecklist(family.checklist);
+    String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyHelpSessionSaveAllRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyHelpSessionSaveAllRequest.class)));
+
+    familyController.saveFamilyHelpSessionAll(ctx);
+
+    Document originalInventory = db.getCollection("inventory")
+      .find(eq("internalID", backpackItem.matchedInventoryId))
+      .first();
+    assertEquals(3, originalInventory.getInteger("quantity"));
+    assertEquals(0, originalInventory.getInteger("reservedQuantity"));
+
+    Document substituteInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10001"))
+      .first();
+    assertEquals(3, substituteInventory.getInteger("quantity"));
+  }
+
+  @Test
   void saveFamilyHelpSessionChildKeepsCompletedChecklistWhenLastSectionIsSaved() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -920,6 +961,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     addUnsavedChecklistSection(testFamilyId, "student-2");
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -947,6 +989,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsSelectedUnavailableItem() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = true;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -971,6 +1014,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsUnknownSubstituteBarcode() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "UNKNOWN";
 
@@ -1163,10 +1207,6 @@ class FamilyControllerSpec {
 
   @Test
   void privateLookupAndConsumeHelpersCoverErrorBranches() throws Exception {
-    Inventory found = invokeFindInventoryByBarcode("SUB-10001");
-    assertNotNull(found);
-    assertEquals("ID-10001", found.internalID);
-
     NotFoundResponse missingInventory = assertThrows(NotFoundResponse.class,
       () -> invokeConsumeInventory("DOES-NOT-EXIST", 1));
     assertTrue(missingInventory.getMessage().contains("No item found for internalID"));
@@ -1185,12 +1225,6 @@ class FamilyControllerSpec {
     assertEquals("available_didnt_need", normalized);
     assertTrue(valid);
     assertFalse(invalid);
-  }
-
-  @Test
-  void privateFindInventoryByBarcodeReturnsNullWhenMissing() throws Exception {
-    Inventory found = invokeFindInventoryByBarcode("MISSING-BARCODE");
-    assertNull(found);
   }
 
   @Test
@@ -1557,11 +1591,6 @@ class FamilyControllerSpec {
     BadRequestResponse invalidStatus = assertThrows(BadRequestResponse.class,
       () -> invokeNormalizeStatusValue("done"));
     assertTrue(invalidStatus.getMessage().contains("must be helped, not_helped, or being_helped"));
-
-    String normalizedToken = invokeNormalizeToken(" Notebooks ");
-    String normalizedNull = invokeNormalizeToken(null);
-    assertEquals("notebook", normalizedToken);
-    assertEquals("", normalizedNull);
   }
 
   @Test
@@ -1795,19 +1824,6 @@ class FamilyControllerSpec {
       "$set", new Document("checklist", checklist)));
   }
 
-  private boolean invokeInventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) throws Exception {
-    return invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, supplyList);
-  }
-
-  private int invokeInventorySpecificityScore(Inventory inventory) throws Exception {
-    return invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, inventory);
-  }
-
-  private Inventory invokeFindInventoryByBarcode(String barcode) throws Exception {
-    return invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, barcode);
-  }
-
   private void invokeConsumeInventory(String internalId, int amount) throws Exception {
     invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, internalId, amount);
   }
@@ -1872,31 +1888,23 @@ class FamilyControllerSpec {
     return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
   }
 
-  private String invokeNormalizeToken(String value) throws Exception {
-    return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
-  }
-
-  private List<SupplyList> invokeGetSupplyListsForStudent(Family.StudentInfo student) throws Exception {
-    return invokePrivate("getSupplyListsForStudent", new Class<?>[] {Family.StudentInfo.class}, student);
-  }
-
-  private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
-      throws Exception {
-    return invokePrivate("buildChecklistItemSnapshot",
-      new Class<?>[] {SupplyList.class, String.class}, supplyList, itemId);
-  }
-
   private Family invokeRequireFamily(String id) throws Exception {
     return invokePrivate("requireFamily", new Class<?>[] {String.class}, id);
   }
 
   @SuppressWarnings("unchecked")
   private <T> T invokePrivate(String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
-    Method method = FamilyController.class.getDeclaredMethod(methodName, parameterTypes);
+    return invokePrivateOn(familyController, FamilyController.class, methodName, parameterTypes, args);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T invokePrivateOn(Object target, Class<?> owner, String methodName,
+      Class<?>[] parameterTypes, Object... args) throws Exception {
+    Method method = owner.getDeclaredMethod(methodName, parameterTypes);
     method.setAccessible(true);
 
     try {
-      return (T) method.invoke(familyController, args);
+      return (T) method.invoke(target, args);
     } catch (InvocationTargetException exception) {
       if (exception.getCause() instanceof Exception) {
         throw (Exception) exception.getCause();
@@ -1922,19 +1930,14 @@ class FamilyControllerSpec {
 
     assertEquals("John Christensen", families.get(0).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(0).timeSlot);
-
     assertEquals("John Johnson", families.get(1).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(1).timeSlot);
-
     assertEquals("Melina Brim", families.get(2).guardianName);
     assertEquals(currentSettings.earlyAfternoon, families.get(2).timeSlot);
-
     assertEquals("Bob Jones", families.get(3).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(3).timeSlot);
-
     assertEquals("Bob Dylan", families.get(4).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
-
     assertEquals("Jane Doe", families.get(5).guardianName);
     assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
   }

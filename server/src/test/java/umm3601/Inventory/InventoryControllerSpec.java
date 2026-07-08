@@ -353,6 +353,34 @@ public class InventoryControllerSpec {
   }
 
   @Test
+  void getInventoriesPersistsGeneratedDescriptionWhenStoredDescriptionIsStale() {
+    db.getCollection("inventory").insertOne(
+        new Document()
+            .append("item", "Notebook")
+            .append("brand", "N/A")
+            .append("packageSize", 1)
+            .append("size", "College Ruled")
+            .append("color", "N/A")
+            .append("type", "N/A")
+            .append("material", "N/A")
+            .append("description", "College Ruled Composition Notebook")
+            .append("quantity", 67)
+            .append("maxQuantity", 10)
+            .append("minQuantity", 1)
+            .append("stockState", "Overstocked")
+            .append("notes", "N/A")
+            .append("internalID", "IID-0144"));
+    when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
+
+    inventoryController.getInventories(ctx);
+
+    Document updated = db.getCollection("inventory")
+        .find(new Document("internalID", "IID-0144"))
+        .first();
+    assertEquals("College Ruled Notebook", updated.getString("description"));
+  }
+
+  @Test
   void canFilterInventoryByNotesCaseInsensitive() {
     when(ctx.queryParamMap()).thenReturn(Map.of("notes", List.of("Plain colors only")));
     when(ctx.queryParam("notes")).thenReturn("Plain colors only");

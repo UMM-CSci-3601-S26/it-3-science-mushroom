@@ -104,6 +104,7 @@ class FamilyControllerRevertSessionSpec {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     String matchedInventoryId = section.items.get(0).matchedInventoryId;
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
     saveAllSections(family);
