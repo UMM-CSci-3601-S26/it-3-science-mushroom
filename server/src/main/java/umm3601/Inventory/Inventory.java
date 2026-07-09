@@ -25,6 +25,7 @@ public class Inventory {
   public String material;
   public String description;
   public int quantity;
+  public int reservedQuantity;
   public int maxQuantity;
   public int minQuantity;
   public String stockState; // "Stocked", "Under-Stocked", "Over-Stocked", "Out of Stock"
