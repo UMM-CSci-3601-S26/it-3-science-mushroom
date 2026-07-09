@@ -109,7 +109,9 @@ public class InventoryControllerSpec {
             .append("quantity", 10) // Over stocked
             .append("maxQuantity", 5)
             .append("minQuantity", 1)
+            .append("calculatedMinQuantity", 0)
             .append("stockState", "Over-Stocked")
+            .append("calculatedStockState", "N/A")
             .append("notes",  "N/A"));
     testInventory.add(
         new Document()
@@ -124,7 +126,9 @@ public class InventoryControllerSpec {
             .append("quantity", 5) // Properly stocked
             .append("maxQuantity", 10)
             .append("minQuantity", 1)
+            .append("calculatedMinQuantity", 0)
             .append("stockState", "Stocked")
+            .append("calculatedStockState", "N/A")
             .append("notes", "N/A"));
     testInventory.add(
         new Document()
@@ -139,7 +143,9 @@ public class InventoryControllerSpec {
             .append("quantity", 3) // Under stocked
             .append("maxQuantity", 10)
             .append("minQuantity", 5)
+            .append("calculatedMinQuantity", 0)
             .append("stockState", "Under-Stocked")
+            .append("calculatedStockState", "N/A")
             .append("notes", "N/A"));
     testInventory.add(
         new Document()
@@ -154,7 +160,9 @@ public class InventoryControllerSpec {
             .append("quantity", 0) // Out of stock
             .append("maxQuantity", 10)
             .append("minQuantity", 5)
+            .append("calculatedMinQuantity", 0)
             .append("stockState", "Out of Stock")
+            .append("calculatedStockState", "N/A")
             .append("notes", "N/A")
 );
 
@@ -172,7 +180,9 @@ public class InventoryControllerSpec {
         .append("quantity", 2)
         .append("maxQuantity", 10)
         .append("minQuantity", 1)
+        .append("calculatedMinQuantity", 0)
         .append("stockState", "Stocked")
+        .append("calculatedStockState", "N/A")
         .append("notes", "Plain colors only");
 
     inventoryDocuments.insertMany(testInventory);
@@ -340,6 +350,34 @@ public class InventoryControllerSpec {
     Inventory result = results.get(0);
     assertEquals("Backpack", result.item);
     assertEquals(result.buildDescription(), result.description);
+  }
+
+  @Test
+  void getInventoriesPersistsGeneratedDescriptionWhenStoredDescriptionIsStale() {
+    db.getCollection("inventory").insertOne(
+        new Document()
+            .append("item", "Notebook")
+            .append("brand", "N/A")
+            .append("packageSize", 1)
+            .append("size", "College Ruled")
+            .append("color", "N/A")
+            .append("type", "N/A")
+            .append("material", "N/A")
+            .append("description", "College Ruled Composition Notebook")
+            .append("quantity", 67)
+            .append("maxQuantity", 10)
+            .append("minQuantity", 1)
+            .append("stockState", "Overstocked")
+            .append("notes", "N/A")
+            .append("internalID", "IID-0144"));
+    when(ctx.queryParamMap()).thenReturn(Collections.emptyMap());
+
+    inventoryController.getInventories(ctx);
+
+    Document updated = db.getCollection("inventory")
+        .find(new Document("internalID", "IID-0144"))
+        .first();
+    assertEquals("College Ruled Notebook", updated.getString("description"));
   }
 
   @Test

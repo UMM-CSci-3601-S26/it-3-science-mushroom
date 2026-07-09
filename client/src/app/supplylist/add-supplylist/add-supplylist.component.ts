@@ -215,7 +215,7 @@ export class AddSupplyListComponent implements OnInit {
     const patch: Record<string, string> = {};
 
     // Detect whether the input uses "or" to join options (anyOf) versus
-    // "and" / commas (allOf). This drives how multi-value fields are stored.
+    // "and" / commas (exactly). This drives how multi-value fields are stored.
     const hasOr = /\bor\b/.test(lower);
     // Separator written into the form field value; toAttr() reads this.
     const sep = hasOr ? ' | ' : ', ';
@@ -386,26 +386,26 @@ export class AddSupplyListComponent implements OnInit {
 
   submitForm() {
     const raw = this.addSupplyListForm.value;
-    // For AttributeOptions fields, '|' means anyOf; otherwise value is stored in allOf.
+    // For AttributeOptions fields, '|' means anyOf; otherwise value is stored in exactly.
     const toAttr = (val: string | null | undefined): import('../supplylist').AttributeOptions => {
       if (!val || !val.trim()) {
-        return { allOf: '', anyOf: [] };
+        return { exactly: '', anyOf: [] };
       }
       if (val.includes('|')) {
-        return { allOf: '', anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
+        return { exactly: '', anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
       }
-      return { allOf: val.split(',').map(s => s.trim()).filter(Boolean).join(', '), anyOf: [] };
+      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean).join(', '), anyOf: [] };
     };
 
-    // Color keeps allOf/anyOf as string arrays.
-    const toColorAttr = (val: string | null | undefined): import('../supplylist').ColorAttributeOptions => {
+    // Color keeps exactly/anyOf as string arrays.
+    const toColorAttr = (val: string | null | undefined): import('../supplylist').AttributeOptions => {
       if (!val || !val.trim()) {
-        return { allOf: [], anyOf: [] };
+        return { exactly: "", anyOf: [] };
       }
       if (val.includes('|')) {
-        return { allOf: [], anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
+        return { exactly: "", anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
       }
-      return { allOf: val.split(',').map(s => s.trim()).filter(Boolean), anyOf: [] };
+      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean).join(', '), anyOf: [] };
     };
 
     const formData: Partial<import('../supplylist').SupplyList> = {

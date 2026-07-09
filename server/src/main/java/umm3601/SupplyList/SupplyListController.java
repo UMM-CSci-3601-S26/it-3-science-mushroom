@@ -23,6 +23,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 
 // IO Imports
 import io.javalin.http.BadRequestResponse;
@@ -34,6 +35,7 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
+import umm3601.Inventory.Inventory;
 
 /**
  * API controller for school supply-list items.
@@ -61,6 +63,7 @@ public class SupplyListController {
   static final String MATERIAL_KEY = "material";
   static final String TYPE_KEY = "type";
   static final String SORT_ORDER_KEY = "sortorder";
+  static final String ID_KEY = "supplyID";
 
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
 
@@ -129,11 +132,11 @@ public class SupplyListController {
     return Filters.in(field, patterns);
   }
 
-  // AttributeOptions fields can express required values in allOf and acceptable
+  // AttributeOptions fields can express required values in exactly and acceptable
   // alternatives in anyOf, so a query should match either side.
   private Bson attributeOptionsFilter(String field, String raw) {
     return Filters.or(
-      multipleIntakeFilter(field + ".allOf", raw),
+      multipleIntakeFilter(field + ".exactly", raw),
       multipleIntakeFilter(field + ".anyOf", raw)
     );
   }
@@ -168,12 +171,12 @@ public class SupplyListController {
       filters.add(multipleIntakeFilter(ITEM_KEY, ctx.queryParam(ITEM_KEY)));
     }
 
-    // For brand (searches allOf and anyOf)
+    // For brand (searches exactly and anyOf)
     if (ctx.queryParamMap().containsKey(BRAND_KEY)) {
       filters.add(attributeOptionsFilter(BRAND_KEY, ctx.queryParam(BRAND_KEY)));
     }
 
-    // For color (searches allOf and anyOf)
+    // For color (searches exactly and anyOf)
     if (ctx.queryParamMap().containsKey(COLOR_KEY)) {
       filters.add(attributeOptionsFilter(COLOR_KEY, ctx.queryParam(COLOR_KEY)));
     }
@@ -211,18 +214,90 @@ public class SupplyListController {
       filters.add(regex(NOTES_KEY, pattern));
     }
 
-    // For material (searches allOf and anyOf)
+    // For material (searches exactly and anyOf)
     if (ctx.queryParamMap().containsKey(MATERIAL_KEY)) {
       filters.add(attributeOptionsFilter(MATERIAL_KEY, ctx.queryParam(MATERIAL_KEY)));
     }
 
-    // For type (searches allOf and anyOf)
+    // For type (searches exactly and anyOf)
     if (ctx.queryParamMap().containsKey(TYPE_KEY)) {
       filters.add(attributeOptionsFilter(TYPE_KEY, ctx.queryParam(TYPE_KEY)));
     }
 
+    // For supplyID
+    if (ctx.queryParamMap().containsKey(ID_KEY)) {
+      filters.add(multipleIntakeFilter(ID_KEY, ctx.queryParam(ID_KEY)));
+    }
+
     // An empty Document matches everything; otherwise every selected filter must match.
     return filters.isEmpty() ? new Document() : and(filters);
+  }
+
+  private int extractNumber(String value) {
+    if (value == null) {
+      return 0;
+    }
+
+    String digits = value.replaceAll("\\D", "");
+    if (digits.isBlank()) {
+      return 0;
+    }
+
+    try {
+      return Integer.parseInt(digits);
+    } catch (NumberFormatException e) {
+      // If the numeric value is too large or otherwise unparsable, fall back to 0.
+      return 0;
+    }
+  }
+
+  private String formatSupplyID(int n) {
+    return String.format("Supply-%05d", n);
+  }
+  private String formatRequestID(int n) {
+    return String.format("Request-%05d", n);
+  }
+
+  /**
+   * Scans supply list to find the next available ID number for supplyID
+   * @return The number to use
+   */
+  private int getNextSequence() {
+    SupplyList maxIdItem = supplyListCollection
+    .find(Filters.and(
+      Filters.exists("supplyID", true), Filters.ne("supplyID", null)))
+      .sort(Sorts.descending("supplyID")).first();
+
+    int idNum = extractNumber(maxIdItem != null ? maxIdItem.supplyID : null);
+    return idNum + 1;
+  }
+
+  /**
+   * Generates the next available ID in the format "ID-XXXXX"
+   * @return The generated ID
+   */
+  private String generateNextID() {
+  SupplyList last = supplyListCollection.find(new Document("supplyID", new Document("$exists", true)))
+    .sort(Sorts.descending("supplyID"))
+    .first();
+    String prefix = "Supply-";
+    int next = 1;
+    if (last != null && last.supplyID != null && last.supplyID.startsWith(prefix)) {
+      try {
+        next = Integer.parseInt(last.supplyID.substring(prefix.length())) + 1;
+      } catch (NumberFormatException e) {
+        // return 1 if not right format
+      }
+    }
+    return String.format("Supply-%05d", next);
+  }
+
+  // Endpoint to generate the next ID
+  @Route(method = HttpMethod.GET, path = "/api/supplylist/nextid")
+  @RequirePermission("add_supply_list")
+  public void generateNextID(Context ctx) {
+    ctx.json(generateNextID());
+    ctx.status(HttpStatus.OK);
   }
 
   /**

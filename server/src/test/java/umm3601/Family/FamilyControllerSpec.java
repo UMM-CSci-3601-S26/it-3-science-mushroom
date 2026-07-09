@@ -55,10 +55,8 @@ import umm3601.Auth.Role;
 import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
 // Misc Imports
-import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Settings.Settings.TimeAvailabilityLabels;
-import umm3601.SupplyList.SupplyList;
 import umm3601.Users.Users;
 import umm3601.Users.UsersService;
 
@@ -163,7 +161,8 @@ class FamilyControllerSpec {
 
     settingsDocuments.insertOne(new Document().append("availableSpots", 5));
 
-    familyController = new FamilyController(db);
+    InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
+    familyController = new FamilyController(db, inventoryMatcher);
   }
 
   private Document familyDoc(String guardianName, String email, String address, String accommodations,
@@ -351,6 +350,7 @@ class FamilyControllerSpec {
   @Test
   void getFinalizedFamilyChecklistReturnsCompletedChecklist() {
     Family family = startHelpSessionAndGetFamily();
+    family.checklist.sections.get(0).items.get(0).selected = true;
     family.checklist.sections.get(0).items.get(1).selected = false;
     family.checklist.sections.get(0).items.get(1).substituteBarcode = "SUB-10001";
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
@@ -695,6 +695,7 @@ class FamilyControllerSpec {
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem backpackItem = section.items.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    backpackItem.selected = true;
     unavailableItem.selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -731,6 +732,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
     Family.ChecklistItem unavailableItem = section.items.get(1);
+    section.items.get(0).selected = true;
     unavailableItem.selected = false;
     unavailableItem.substituteBarcode = "SUB-10001";
 
@@ -770,6 +772,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionAllSupportsProvidedChecklistPayload() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -800,9 +803,47 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void saveFamilyHelpSessionAllReleasesMatchedInventoryWhenSubstitutionTakesItsPlace() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    Family.ChecklistItem backpackItem = section.items.get(0);
+    backpackItem.selected = true;
+    backpackItem.substituteBarcode = "SUB-10001";
+
+    db.getCollection("inventory").updateOne(
+      eq("internalID", backpackItem.matchedInventoryId),
+      new Document("$set", new Document("reservedQuantity", backpackItem.requestedQuantity)));
+
+    FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
+    request.setChecklist(family.checklist);
+    String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyHelpSessionSaveAllRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyHelpSessionSaveAllRequest.class)));
+
+    familyController.saveFamilyHelpSessionAll(ctx);
+
+    Document originalInventory = db.getCollection("inventory")
+      .find(eq("internalID", backpackItem.matchedInventoryId))
+      .first();
+    assertEquals(3, originalInventory.getInteger("quantity"));
+    assertEquals(0, originalInventory.getInteger("reservedQuantity"));
+
+    Document substituteInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10001"))
+      .first();
+    assertEquals(3, substituteInventory.getInteger("quantity"));
+  }
+
+  @Test
   void saveFamilyHelpSessionChildKeepsCompletedChecklistWhenLastSectionIsSaved() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
 
@@ -920,6 +961,7 @@ class FamilyControllerSpec {
     Family family = startHelpSessionAndGetFamily();
     addUnsavedChecklistSection(testFamilyId, "student-2");
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -947,6 +989,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsSelectedUnavailableItem() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = true;
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
@@ -971,6 +1014,7 @@ class FamilyControllerSpec {
   void saveFamilyHelpSessionChildRejectsUnknownSubstituteBarcode() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "UNKNOWN";
 
@@ -1134,13 +1178,13 @@ class FamilyControllerSpec {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Notebook");
     supplyList.brand = new SupplyList.AttributeOptions();
-    supplyList.brand.allOf = "Five Star";
-    supplyList.color = new SupplyList.ColorAttributeOptions();
+    supplyList.brand.exactly = "Five Star";
+    supplyList.color = new SupplyList.AttributeOptions();
     supplyList.color.anyOf = List.of("Blue", "Black");
     supplyList.size = new SupplyList.AttributeOptions();
     supplyList.size.anyOf = List.of("Wide");
     supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Ruled";
+    supplyList.type.exactly = "Ruled";
     supplyList.material = new SupplyList.AttributeOptions();
     supplyList.material.anyOf = List.of("Paper");
     supplyList.packageSize = 1;
@@ -1163,10 +1207,6 @@ class FamilyControllerSpec {
 
   @Test
   void privateLookupAndConsumeHelpersCoverErrorBranches() throws Exception {
-    Inventory found = invokeFindInventoryByBarcode("SUB-10001");
-    assertNotNull(found);
-    assertEquals("ID-10001", found.internalID);
-
     NotFoundResponse missingInventory = assertThrows(NotFoundResponse.class,
       () -> invokeConsumeInventory("DOES-NOT-EXIST", 1));
     assertTrue(missingInventory.getMessage().contains("No item found for internalID"));
@@ -1185,12 +1225,6 @@ class FamilyControllerSpec {
     assertEquals("available_didnt_need", normalized);
     assertTrue(valid);
     assertFalse(invalid);
-  }
-
-  @Test
-  void privateFindInventoryByBarcodeReturnsNullWhenMissing() throws Exception {
-    Inventory found = invokeFindInventoryByBarcode("MISSING-BARCODE");
-    assertNull(found);
   }
 
   @Test
@@ -1265,7 +1299,7 @@ class FamilyControllerSpec {
     SupplyList mismatchedBrand = new SupplyList();
     mismatchedBrand.item = List.of("Notebook");
     mismatchedBrand.brand = new SupplyList.AttributeOptions();
-    mismatchedBrand.brand.allOf = "Other";
+    mismatchedBrand.brand.exactly = "Other";
 
     boolean brandMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedBrand);
     assertFalse(brandMismatch);
@@ -1279,8 +1313,8 @@ class FamilyControllerSpec {
 
     SupplyList mismatchedColor = new SupplyList();
     mismatchedColor.item = List.of("Notebook");
-    mismatchedColor.color = new SupplyList.ColorAttributeOptions();
-    mismatchedColor.color.allOf = List.of("Red");
+    mismatchedColor.color = new SupplyList.AttributeOptions();
+    mismatchedColor.color.exactly = "Red";
 
     boolean colorMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedColor);
     assertFalse(colorMismatch);
@@ -1288,7 +1322,7 @@ class FamilyControllerSpec {
     SupplyList mismatchedSize = new SupplyList();
     mismatchedSize.item = List.of("Notebook");
     mismatchedSize.size = new SupplyList.AttributeOptions();
-    mismatchedSize.size.allOf = "Narrow";
+    mismatchedSize.size.exactly = "Narrow";
 
     boolean sizeMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedSize);
     assertFalse(sizeMismatch);
@@ -1296,7 +1330,7 @@ class FamilyControllerSpec {
     SupplyList mismatchedType = new SupplyList();
     mismatchedType.item = List.of("Notebook");
     mismatchedType.type = new SupplyList.AttributeOptions();
-    mismatchedType.type.allOf = "Composition";
+    mismatchedType.type.exactly = "Composition";
 
     boolean typeMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedType);
     assertFalse(typeMismatch);
@@ -1304,7 +1338,7 @@ class FamilyControllerSpec {
     SupplyList mismatchedMaterial = new SupplyList();
     mismatchedMaterial.item = List.of("Notebook");
     mismatchedMaterial.material = new SupplyList.AttributeOptions();
-    mismatchedMaterial.material.allOf = "Plastic";
+    mismatchedMaterial.material.exactly = "Plastic";
 
     boolean materialMismatch = invokeInventoryMatchesSupplyList(inventory, mismatchedMaterial);
     assertFalse(materialMismatch);
@@ -1312,15 +1346,15 @@ class FamilyControllerSpec {
     SupplyList exactMatch = new SupplyList();
     exactMatch.item = List.of("Notebook");
     exactMatch.brand = new SupplyList.AttributeOptions();
-    exactMatch.brand.allOf = "Acme";
-    exactMatch.color = new SupplyList.ColorAttributeOptions();
-    exactMatch.color.allOf = List.of("Blue");
+    exactMatch.brand.exactly = "Acme";
+    exactMatch.color = new SupplyList.AttributeOptions();
+    exactMatch.color.exactly = "Blue";
     exactMatch.size = new SupplyList.AttributeOptions();
-    exactMatch.size.allOf = "Wide";
+    exactMatch.size.exactly = "Wide";
     exactMatch.type = new SupplyList.AttributeOptions();
-    exactMatch.type.allOf = "Ruled";
+    exactMatch.type.exactly = "Ruled";
     exactMatch.material = new SupplyList.AttributeOptions();
-    exactMatch.material.allOf = "Paper";
+    exactMatch.material.exactly = "Paper";
     exactMatch.packageSize = 2;
 
     boolean exactMatchResult = invokeInventoryMatchesSupplyList(inventory, exactMatch);
@@ -1339,20 +1373,20 @@ class FamilyControllerSpec {
     assertTrue(anyOfMatch);
     assertFalse(anyOfMiss);
 
-    SupplyList.AttributeOptions allOfMismatch = new SupplyList.AttributeOptions();
-    allOfMismatch.allOf = "Wide";
-    boolean allOfFalse = invokeMatchesAttribute(allOfMismatch, "Narrow");
-    assertFalse(allOfFalse);
+    SupplyList.AttributeOptions exactlyMismatch = new SupplyList.AttributeOptions();
+    exactlyMismatch.exactly = "Wide";
+    boolean exactlyFalse = invokeMatchesAttribute(exactlyMismatch, "Narrow");
+    assertFalse(exactlyFalse);
 
-    SupplyList.ColorAttributeOptions colorAllOf = new SupplyList.ColorAttributeOptions();
-    colorAllOf.allOf = List.of("Blue");
-    boolean colorAllOfMiss = invokeMatchesColorAttribute(colorAllOf, "Red");
+    SupplyList.AttributeOptions colorAllOf = new SupplyList.AttributeOptions();
+    colorAllOf.exactly = "Blue";
+    boolean colorAllOfMiss = invokeMatchesAttribute(colorAllOf, "Red");
     assertFalse(colorAllOfMiss);
 
-    SupplyList.ColorAttributeOptions colorAnyOf = new SupplyList.ColorAttributeOptions();
+    SupplyList.AttributeOptions colorAnyOf = new SupplyList.AttributeOptions();
     colorAnyOf.anyOf = List.of("Black", "Red");
-    boolean colorAnyOfMatch = invokeMatchesColorAttribute(colorAnyOf, "Red");
-    boolean colorAnyOfMiss = invokeMatchesColorAttribute(colorAnyOf, "Green");
+    boolean colorAnyOfMatch = invokeMatchesAttribute(colorAnyOf, "Red");
+    boolean colorAnyOfMiss = invokeMatchesAttribute(colorAnyOf, "Green");
     assertTrue(colorAnyOfMatch);
     assertFalse(colorAnyOfMiss);
   }
@@ -1395,11 +1429,11 @@ class FamilyControllerSpec {
     assertEquals(0, invokeItemSimilarityScore(inventory, shortPartialItemSupplyList));
 
     SupplyList.AttributeOptions requiredBrand = new SupplyList.AttributeOptions();
-    requiredBrand.allOf = "Ticonderoga";
+    requiredBrand.exactly = "Ticonderoga";
     assertEquals(5, invokeAttributeSimilarityScore(requiredBrand, inventory.brand));
 
     SupplyList.AttributeOptions requiredBrandMiss = new SupplyList.AttributeOptions();
-    requiredBrandMiss.allOf = "Crayola";
+    requiredBrandMiss.exactly = "Crayola";
     assertEquals(0, invokeAttributeSimilarityScore(requiredBrandMiss, inventory.brand));
 
     SupplyList.AttributeOptions optionalBrand = new SupplyList.AttributeOptions();
@@ -1407,25 +1441,25 @@ class FamilyControllerSpec {
     assertEquals(3, invokeAttributeSimilarityScore(optionalBrand, inventory.brand));
 
     SupplyList.AttributeOptions missingBrand = new SupplyList.AttributeOptions();
-    missingBrand.allOf = "";
+    missingBrand.exactly = "";
     missingBrand.anyOf = List.of("Crayola");
     assertEquals(0, invokeAttributeSimilarityScore(missingBrand, inventory.brand));
     assertEquals(0, invokeAttributeSimilarityScore(null, inventory.brand));
 
-    SupplyList.ColorAttributeOptions requiredColor = new SupplyList.ColorAttributeOptions();
-    requiredColor.allOf = List.of("Yellow");
+    SupplyList.AttributeOptions requiredColor = new SupplyList.AttributeOptions();
+    requiredColor.exactly = "Yellow";
     assertEquals(5, invokeColorSimilarityScore(requiredColor, inventory.color));
 
-    SupplyList.ColorAttributeOptions requiredColorMiss = new SupplyList.ColorAttributeOptions();
-    requiredColorMiss.allOf = List.of("Blue");
+    SupplyList.AttributeOptions requiredColorMiss = new SupplyList.AttributeOptions();
+    requiredColorMiss.exactly = "Blue";
     assertEquals(0, invokeColorSimilarityScore(requiredColorMiss, inventory.color));
 
-    SupplyList.ColorAttributeOptions optionalColor = new SupplyList.ColorAttributeOptions();
+    SupplyList.AttributeOptions optionalColor = new SupplyList.AttributeOptions();
     optionalColor.anyOf = List.of("Blue", "Yellow");
     assertEquals(3, invokeColorSimilarityScore(optionalColor, inventory.color));
 
-    SupplyList.ColorAttributeOptions missingColor = new SupplyList.ColorAttributeOptions();
-    missingColor.allOf = List.of("Blue");
+    SupplyList.AttributeOptions missingColor = new SupplyList.AttributeOptions();
+    missingColor.exactly = "Blue";
     missingColor.anyOf = List.of("Red");
     assertEquals(0, invokeColorSimilarityScore(missingColor, inventory.color));
     assertEquals(0, invokeColorSimilarityScore(null, inventory.color));
@@ -1557,11 +1591,6 @@ class FamilyControllerSpec {
     BadRequestResponse invalidStatus = assertThrows(BadRequestResponse.class,
       () -> invokeNormalizeStatusValue("done"));
     assertTrue(invalidStatus.getMessage().contains("must be helped, not_helped, or being_helped"));
-
-    String normalizedToken = invokeNormalizeToken(" Notebooks ");
-    String normalizedNull = invokeNormalizeToken(null);
-    assertEquals("notebook", normalizedToken);
-    assertEquals("", normalizedNull);
   }
 
   @Test
@@ -1747,9 +1776,9 @@ class FamilyControllerSpec {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Pencil");
     supplyList.size = new SupplyList.AttributeOptions();
-    supplyList.size.allOf = "Wide";
+    supplyList.size.exactly = "Wide";
     supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Mechanical";
+    supplyList.type.exactly = "Mechanical";
     supplyList.quantity = 1;
 
     Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
@@ -1795,19 +1824,6 @@ class FamilyControllerSpec {
       "$set", new Document("checklist", checklist)));
   }
 
-  private boolean invokeInventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) throws Exception {
-    return invokePrivate("inventoryMatchesSupplyList",
-      new Class<?>[] {Inventory.class, SupplyList.class}, inventory, supplyList);
-  }
-
-  private int invokeInventorySpecificityScore(Inventory inventory) throws Exception {
-    return invokePrivate("inventorySpecificityScore", new Class<?>[] {Inventory.class}, inventory);
-  }
-
-  private Inventory invokeFindInventoryByBarcode(String barcode) throws Exception {
-    return invokePrivate("findInventoryByBarcode", new Class<?>[] {String.class}, barcode);
-  }
-
   private void invokeConsumeInventory(String internalId, int amount) throws Exception {
     invokePrivate("consumeInventory", new Class<?>[] {String.class, int.class}, internalId, amount);
   }
@@ -1825,22 +1841,16 @@ class FamilyControllerSpec {
       new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
   }
 
-  private boolean invokeMatchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue)
-      throws Exception {
-    return invokePrivate("matchesColorAttribute",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
-  }
-
   private int invokeAttributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
       throws Exception {
     return invokePrivate("attributeSimilarityScore",
       new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
   }
 
-  private int invokeColorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue)
+  private int invokeColorSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue)
       throws Exception {
     return invokePrivate("colorSimilarityScore",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
+      new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
   }
 
   private int invokeItemSimilarityScore(Inventory inventory, SupplyList supplyList) throws Exception {
@@ -1878,31 +1888,23 @@ class FamilyControllerSpec {
     return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
   }
 
-  private String invokeNormalizeToken(String value) throws Exception {
-    return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
-  }
-
-  private List<SupplyList> invokeGetSupplyListsForStudent(Family.StudentInfo student) throws Exception {
-    return invokePrivate("getSupplyListsForStudent", new Class<?>[] {Family.StudentInfo.class}, student);
-  }
-
-  private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
-      throws Exception {
-    return invokePrivate("buildChecklistItemSnapshot",
-      new Class<?>[] {SupplyList.class, String.class}, supplyList, itemId);
-  }
-
   private Family invokeRequireFamily(String id) throws Exception {
     return invokePrivate("requireFamily", new Class<?>[] {String.class}, id);
   }
 
   @SuppressWarnings("unchecked")
   private <T> T invokePrivate(String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
-    Method method = FamilyController.class.getDeclaredMethod(methodName, parameterTypes);
+    return invokePrivateOn(familyController, FamilyController.class, methodName, parameterTypes, args);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T invokePrivateOn(Object target, Class<?> owner, String methodName,
+      Class<?>[] parameterTypes, Object... args) throws Exception {
+    Method method = owner.getDeclaredMethod(methodName, parameterTypes);
     method.setAccessible(true);
 
     try {
-      return (T) method.invoke(familyController, args);
+      return (T) method.invoke(target, args);
     } catch (InvocationTargetException exception) {
       if (exception.getCause() instanceof Exception) {
         throw (Exception) exception.getCause();
@@ -1928,19 +1930,14 @@ class FamilyControllerSpec {
 
     assertEquals("John Christensen", families.get(0).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(0).timeSlot);
-
     assertEquals("John Johnson", families.get(1).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(1).timeSlot);
-
     assertEquals("Melina Brim", families.get(2).guardianName);
     assertEquals(currentSettings.earlyAfternoon, families.get(2).timeSlot);
-
     assertEquals("Bob Jones", families.get(3).guardianName);
     assertEquals(currentSettings.lateMorning, families.get(3).timeSlot);
-
     assertEquals("Bob Dylan", families.get(4).guardianName);
     assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
-
     assertEquals("Jane Doe", families.get(5).guardianName);
     assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
   }

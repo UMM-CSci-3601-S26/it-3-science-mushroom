@@ -11,9 +11,12 @@ export interface Inventory {
   material:string;
   description?: string;
   quantity: number;
+  reservedQuantity?: number;
   maxQuantity: number;
   minQuantity: number;
+  calculatedMinQuantity: number;
   stockState: string;
+  calculatedStockState: string;
   notes: string;
 
   externalBarcode?: string[]; // collection of barcodes from external sources (e.g. manufacturer UPCs) that reference this inventory item
