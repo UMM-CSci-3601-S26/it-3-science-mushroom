@@ -143,6 +143,21 @@ class FamilySchedulingServiceSpec {
     assertEquals("8:30-8:45 AM", families.get(1).timeSlot);
   }
 
+  @Test
+  void schedulingAlgorithmUsesThreeBlocksForFamiliesWithMoreThanSixChildren() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Extra Large Family", true, false, false, false, 7),
+      familyForScheduling("Small Family", true, false, false, false, 2)));
+
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
+    currentSettings.earlyMorning = "8:00-9:00 AM";
+
+    familySchedulingService.schedulingAlgorithm(families, currentSettings);
+
+    assertEquals("8:00-8:45 AM", families.get(0).timeSlot);
+    assertEquals("8:45-9:00 AM", families.get(1).timeSlot);
+  }
+
   private Settings.TimeAvailabilityLabels defaultTimeAvailability() {
     Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
     currentSettings.earlyMorning = "8:00-9:00 AM";

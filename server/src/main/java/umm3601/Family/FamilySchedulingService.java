@@ -16,7 +16,11 @@ import umm3601.Family.Family.AvailabilityOptions;
 
 public class FamilySchedulingService {
   private static final int SCHEDULE_BLOCK_MINUTES = 15;
+  private static final int STANDARD_FAMILY_SCHEDULE_BLOCKS = 1;
+  private static final int LARGE_FAMILY_SCHEDULE_BLOCKS = 2;
+  private static final int EXTRA_LARGE_FAMILY_SCHEDULE_BLOCKS = 3;
   private static final int LARGE_FAMILY_CHILDREN_THRESHOLD = 3;
+  private static final int EXTRA_LARGE_FAMILY_CHILDREN_THRESHOLD = 6;
   private static final int SCHEDULE_MERIDIEM_SUFFIX_LENGTH = 3;
   private static final int DEFAULT_SCHEDULE_WINDOW_MINUTES = 60;
   private static final DateTimeFormatter SCHEDULE_TIME_FORMATTER =
@@ -170,11 +174,17 @@ public class FamilySchedulingService {
   }
 
   private int requiredScheduleBlocks(Family family) {
-    if (family.students != null && family.students.size() > LARGE_FAMILY_CHILDREN_THRESHOLD) {
-      return 2;
+    int studentCount = family.students == null ? 0 : family.students.size();
+
+    if (studentCount > EXTRA_LARGE_FAMILY_CHILDREN_THRESHOLD) {
+      return EXTRA_LARGE_FAMILY_SCHEDULE_BLOCKS;
     }
 
-    return 1;
+    if (studentCount > LARGE_FAMILY_CHILDREN_THRESHOLD) {
+      return LARGE_FAMILY_SCHEDULE_BLOCKS;
+    }
+
+    return STANDARD_FAMILY_SCHEDULE_BLOCKS;
   }
 
   private String combineScheduleBlocks(List<String> slots, int startIndex, int neededBlocks) {
