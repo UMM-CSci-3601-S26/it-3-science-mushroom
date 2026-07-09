@@ -676,7 +676,7 @@ export class SettingsComponent implements OnInit {
       next: () => {
         this.familyService.scheduleFamilies().subscribe({
           next: () => {
-            this.router.navigate(['/family']);
+            this.router.navigate(['/family-schedule']);
             this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
           },
           error: (err) => {

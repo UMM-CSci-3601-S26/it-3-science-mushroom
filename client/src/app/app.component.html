@@ -28,7 +28,7 @@
       @if (canAccessPath('/inventory')) {
         <a mat-button routerLink="/inventory" routerLinkActive="header-link-active">Inventory</a>
       }
-      @if (canAccessPath('/supplylist') || canAccessPath('/stock-report')) {
+      @if (canAccessPath('/supplylist') || canAccessPath('/stock-report') || canAccessPath('/family-schedule')) {
         <button type="button" mat-button [matMenuTriggerFor]="operationsMenu">
           Operations
           <mat-icon>expand_more</mat-icon>
@@ -86,6 +86,12 @@
         <span>Stock Reports</span>
       </a>
     }
+    @if (canAccessPath('/family-schedule')) {
+      <a mat-menu-item routerLink="/family-schedule">
+        <mat-icon>event</mat-icon>
+        <span>Family Schedule</span>
+      </a>
+    }
   </mat-menu>
 
   <mat-menu #mobileNavigationMenu="matMenu">
@@ -123,6 +129,12 @@
         <span>Stock Reports</span>
       </a>
     }
+    @if (canAccessPath('/family-schedule')) {
+      <a mat-menu-item routerLink="/family-schedule">
+        <mat-icon>event</mat-icon>
+        <span>Family Schedule</span>
+      </a>
+    }
   </mat-menu>
 
   <mat-menu #accountMenu="matMenu">
@@ -150,10 +162,6 @@
         </a>
       }
       @if (isAdmin) {
-        <a mat-menu-item routerLink="/family-schedule">
-          <mat-icon>event</mat-icon>
-          <span>Family Schedule</span>
-        </a>
         <a mat-menu-item routerLink="/style-guide">
           <mat-icon>palette</mat-icon>
           <span>Frontend Style Template</span>

@@ -898,7 +898,7 @@ describe('SettingsComponent', () => {
 
     expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
 
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/family']);
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/family-schedule']);
 
     expect(snackBarSpy.open).toHaveBeenCalledWith('Families scheduled', 'OK', { duration: 2000 });
   }));
