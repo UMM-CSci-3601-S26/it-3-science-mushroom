@@ -106,7 +106,6 @@ export class SettingsComponent implements OnInit {
   get canEditAvailableSlots(): boolean {
     return this.authService.hasPermission('edit_available_spots');
   }
-
   get canScheduleFamilies(): boolean {
     return this.authService.isAdmin() && this.authService.hasPermission('schedule_families');
   }
@@ -663,48 +662,40 @@ export class SettingsComponent implements OnInit {
   }
 
   /**
-  * Schedules families in first available timeslot according to the scheduling algorithm.
-  * The scheduling algorithm prioritizes people with the fewest selections and the earliest times.
+  * Schedules families according to their selected availability windows.
+  * The 15-minute schedule capacity comes from the saved time availability ranges.
   */
   scheduleFamilies(): void {
-    if (!this.canEditAvailableSlots || !this.canScheduleFamilies || !this.availableSpotsForm.valid) {
+    if (!this.canScheduleFamilies) {
       return;
     }
 
-    const availableSpots = this.availableSpotsForm.value.availableSpots ?? 5;
-    this.settingsService.updateAvailableSpots(availableSpots).subscribe({
+    this.familyService.scheduleFamilies().subscribe({
       next: () => {
-        this.familyService.scheduleFamilies().subscribe({
-          next: () => {
-            this.router.navigate(['/family-schedule'])
-              .then(navigated => {
-                if (navigated) {
-                  this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
-                } else {
-                  this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
-                }
-              })
-              .catch(() => {
-                this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
-              });
-          },
-          error: (err) => {
-            const lowCapacityMessage = 'Not all families were able to be sorted, your event capacity may be too low';
-            const errorText = [
-              typeof err?.error === 'string' ? err.error : JSON.stringify(err?.error ?? {}),
-              err?.message ?? ''
-            ].join(' ');
-
-            if (err?.status === 404 || errorText.includes(lowCapacityMessage)) {
-              this.snackBar.open('Your capacity is too low for the number of families', 'OK', {duration: 3000});
+        this.router.navigate(['/family-schedule'])
+          .then(navigated => {
+            if (navigated) {
+              this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
             } else {
-              this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
+              this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
             }
-          }
-        })
+          })
+          .catch(() => {
+            this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
+          });
       },
-      error: () => {
-        this.snackBar.open('Failed to update available spots', 'OK', { duration: 3000 });
+      error: (err) => {
+        const lowCapacityMessage = 'Not all families were able to be sorted, your event capacity may be too low';
+        const errorText = [
+          typeof err?.error === 'string' ? err.error : JSON.stringify(err?.error ?? {}),
+          err?.message ?? ''
+        ].join(' ');
+
+        if (err?.status === 404 || errorText.includes(lowCapacityMessage)) {
+          this.snackBar.open('Your time windows do not have enough 15-minute blocks for every family', 'OK', {duration: 3000});
+        } else {
+          this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
+        }
       }
     });
   }

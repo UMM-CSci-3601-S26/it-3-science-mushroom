@@ -22,7 +22,7 @@ describe('Settings', () => {
       page.getTab().should('exist');
       page.getTab().click();
       //used cypress recording lab to figure out what the tab label was
-      cy.contains('Set the number of available spots').should('be.visible');
+      cy.contains('Family scheduling uses the Time Availability').should('be.visible');
     });
 
     it('Should allow typing in the Available Spots Form', () => {
@@ -70,7 +70,7 @@ describe('Settings', () => {
 
     });
 
-    it('Should have error when scheduling families with low capacity', () => {
+    it('Should schedule families without using available spots as capacity', () => {
       page.getTab().click();
 
       page.getFormField('availableSpots').clear();
@@ -78,9 +78,11 @@ describe('Settings', () => {
       page.getFormField('availableSpots').type('2');
       cy.get('[data-test="scheduleFamiliesButton"]').click();
 
-      cy.get('.mat-mdc-simple-snack-bar', { timeout: 10000 })
+      cy.get('.mat-mdc-simple-snack-bar')
         .should('be.visible')
-        .and('contain.text', 'Your capacity is too low for the number of families');
+        .and('contain.text', 'Families scheduled');
+
+      cy.url().should('match', /\/family-schedule$/);
     });
   });
 

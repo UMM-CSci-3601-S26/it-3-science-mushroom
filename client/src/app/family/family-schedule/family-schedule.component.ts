@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, finalize, of } from 'rxjs';
+import { AuthService } from '../../auth/auth-service';
 
 import { Family } from '../family';
 import { FamilyService } from '../family.service';
@@ -27,6 +28,8 @@ import { FamilyService } from '../family.service';
 export class FamilyScheduleComponent {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+
 
   families = signal<Family[]>([]);
   isClearingScheduledTimes = signal(false);
@@ -61,6 +64,40 @@ export class FamilyScheduleComponent {
       },
       error: () => {
         this.snackBar.open('Failed to clear scheduled times', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  get canScheduleFamilies(): boolean {
+    return this.authService.isAdmin() && this.authService.hasPermission('schedule_families');
+  }
+
+  /**
+  * Schedules families according to their selected availability windows.
+  * The 15-minute schedule capacity comes from the saved time availability ranges.
+  */
+  scheduleFamilies(): void {
+    if (!this.canScheduleFamilies) {
+      return;
+    }
+
+    this.familyService.scheduleFamilies().subscribe({
+      next: (families) => {
+        this.families.set(families);
+        this.snackBar.open('Families scheduled', 'OK', { duration: 2000});
+      },
+      error: (err) => {
+        const lowCapacityMessage = 'Not all families were able to be sorted, your event capacity may be too low';
+        const errorText = [
+          typeof err?.error === 'string' ? err.error : JSON.stringify(err?.error ?? {}),
+          err?.message ?? ''
+        ].join(' ');
+
+        if (err?.status === 404 || errorText.includes(lowCapacityMessage)) {
+          this.snackBar.open('Your time windows do not have enough 15-minute blocks for every family', 'OK', {duration: 3000});
+        } else {
+          this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
+        }
       }
     });
   }

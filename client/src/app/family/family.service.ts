@@ -9,7 +9,7 @@ import autoTable from "jspdf-autotable";
 
 // RxJS Imports
 import { forkJoin, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 
 // Other Imports
 import { environment } from '../../environments/environment';
@@ -188,12 +188,16 @@ export class FamilyService {
   */
   scheduleFamilies(): Observable<Family[]> {
     return this.httpClient.post<Family[]>(`${this.familyUrl}/schedule`, {}).pipe(
-      tap(families => this.family.set(families))
+      switchMap(() => this.getFamilies()),
+      tap(families => {
+        this.family.set(families);
+      })
     );
   }
 
   clearScheduledTimes(): Observable<Family[]> {
     return this.httpClient.post<Family[]>(`${this.familyUrl}/schedule/clear`, {}).pipe(
+      switchMap(() => this.getFamilies()),
       tap(families => this.family.set(families))
     );
   }

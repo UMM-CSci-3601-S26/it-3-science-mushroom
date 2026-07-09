@@ -888,9 +888,6 @@ describe('SettingsComponent', () => {
   });
 
   it('Should call scheduleFamilies and show successful snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 5 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
     familyServiceSpy.scheduleFamilies.and.returnValue(of(undefined));
 
     component.scheduleFamilies();
@@ -898,6 +895,7 @@ describe('SettingsComponent', () => {
     tick();
 
     expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
+    expect(settingsServiceSpy.updateAvailableSpots).not.toHaveBeenCalled();
 
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/family-schedule']);
 
@@ -905,9 +903,6 @@ describe('SettingsComponent', () => {
   }));
 
   it('Should call scheduleFamilies and show capacity error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 1 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
     familyServiceSpy.scheduleFamilies.and.returnValue(
       throwError(() => ({
         error: {
@@ -922,13 +917,14 @@ describe('SettingsComponent', () => {
 
     expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
 
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Your capacity is too low for the number of families', 'OK', { duration: 3000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'Your time windows do not have enough 15-minute blocks for every family',
+      'OK',
+      { duration: 3000 }
+    );
   }));
 
   it('Should call scheduleFamilies and show general error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 1 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
     familyServiceSpy.scheduleFamilies.and.returnValue(
       throwError(() => ({
         error: { title: 'general error' }
@@ -944,21 +940,6 @@ describe('SettingsComponent', () => {
     expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to schedule families', 'OK', { duration: 3000 });
   }));
 
-  it('Should call scheduleFamilies and show update available spots error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 1 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(
-      throwError(() => ({
-        error: { title: 'update available spots error'}
-      }))
-    );
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to update available spots', 'OK', { duration: 3000 });
-  }));
   it('saves the barcode print warning limit setting', () => {
     settingsServiceSpy.updateBarcodePrintWarningLimit.and.returnValue(of(undefined));
     component.barcodePrintForm.setValue({ barcodePrintWarningLimit: 30 });

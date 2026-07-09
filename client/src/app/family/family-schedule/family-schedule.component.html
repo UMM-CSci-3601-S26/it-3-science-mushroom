@@ -5,10 +5,13 @@
       <p class="app-page-subtitle">Families ordered by their scheduled 15-minute window.</p>
     </div>
     <div class="schedule-actions" aria-label="Schedule actions">
-      <a mat-stroked-button routerLink="/settings" [queryParams]="{ tab: 'available-spots' }">
-        <mat-icon>settings</mat-icon>
-        <span>Save &amp; Schedule</span>
-      </a>
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="scheduleFamilies()">
+        <mat-icon>playlist_add_check</mat-icon>
+        <span>Schedule Families</span>
+      </button>
       <a mat-stroked-button routerLink="/settings" [queryParams]="{ tab: 'time-availability' }">
         <mat-icon>schedule</mat-icon>
         <span>Time Windows</span>

@@ -157,8 +157,8 @@
         <mat-tab label="Available Spots">
           <div class="tab-content">
             <p class="tab-description">
-              Set the number of available spots for each time slot of the event.
-              This will be the maximum number of people allowed at the event for each time slot.
+              Save the event's general available spots value. Family scheduling uses the Time Availability
+              windows above and assigns one family per 15-minute block.
             </p>
 
             <div>
@@ -182,7 +182,7 @@
                   @if (canScheduleFamilies) {
                   <button mat-raised-button color="accent" type="button" (click)="scheduleFamilies()" data-test="scheduleFamiliesButton">
                       <mat-icon>playlist_add_check</mat-icon>
-                     Save &amp; Schedule Families
+                     Schedule Families
                   </button>
                   }
                 </div>
