@@ -1,11 +1,20 @@
 .home-page {
-  padding-top: var(--app-space-lg);
+  padding-top: var(--app-space-lg); // Add top padding to the home page
 }
 
+// Home hero section: styles for the main hero section on the home page,
+// including layout, background, and decorative elements.
 .home-hero {
+  position: relative; // relative means the element is positioned relative to its normal position,
+                      // allowing absolutely positioned child elements to be positioned relative to this element.
+  overflow: hidden; // hide any content that overflows the boundaries of the home hero section
   display: grid;
+  // grid-template-columns defines the column structure of the grid layout within the home hero section.
+  // minmax(0, 1.6fr) means the first column can shrink to 0 and grow to 1.6 times the available space.
+  // minmax(260px, 1fr) means the second column has a minimum width of 260px and can grow to 1 fraction of the available space.
   grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
   gap: var(--app-space-lg);
+  // color-mix is used to blend two colors together. In this case, it blends the primary color with the border color.
   border-color: color-mix(in srgb, var(--app-primary) 36%, var(--app-border));
   background:
     radial-gradient(
@@ -17,6 +26,63 @@
       color-mix(in srgb, var(--app-primary) 12%, var(--app-surface)),
       color-mix(in srgb, var(--app-accent) 18%, var(--app-surface))
     );
+}
+
+// Home hero section decorative elements: styles for the pseudo-elements used for
+// decorative purposes within the home hero section.
+.home-hero::after {
+  content: "";
+  position: absolute;
+  right: -3.5rem;
+  bottom: -3rem;
+  width: clamp(9rem, 18vw, 15rem);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(135deg, transparent 0 38%, var(--decor-bolt, var(--app-accent)) 38% 50%, transparent 50% 58%, var(--decor-bolt, var(--app-accent)) 58% 68%, transparent 68%),
+    radial-gradient(circle at 26% 66%, var(--decor-dot, var(--app-success)) 0 6%, transparent 7%),
+    radial-gradient(circle at 72% 28%, var(--decor-squiggle, var(--app-primary)) 0 5%, transparent 6%),
+    linear-gradient(45deg, transparent 0 43%, var(--decor-outline, var(--app-primary)) 43% 48%, transparent 48% 52%, var(--decor-outline, var(--app-primary)) 52% 57%, transparent 57%);
+  transform: rotate(-8deg);
+}
+
+:host-context(.app-theme-r4l-poster) .home-hero::after,
+:host-context(.app-theme-r4l-poster-dark) .home-hero::after {
+  opacity: 0.24;
+}
+
+.hero-content,
+.hero-panel {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-logo-wrap {
+  display: none;
+  max-width: min(100%, 42rem);
+}
+
+.hero-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 0 color-mix(in srgb, var(--app-accent) 18%, transparent));
+}
+
+.hero-logo-stacked {
+  display: none;
+}
+
+:host-context(.app-theme-r4l-poster) .hero-logo-wrap,
+:host-context(.app-theme-r4l-poster-dark) .hero-logo-wrap {
+  display: block;
+}
+
+:host-context(.app-theme-r4l-poster) .hero-kicker,
+:host-context(.app-theme-r4l-poster-dark) .hero-kicker {
+  display: none;
 }
 
 .hero-kicker {
@@ -287,7 +353,23 @@
   }
 }
 
+// Mobile styles
 @media (max-width: 640px) {
+  .hero-logo-wide {
+    display: none;
+  }
+
+  .hero-logo-stacked {
+    display: block;
+    max-width: min(100%, 27rem);
+  }
+
+  .home-hero::after {
+    right: -4rem;
+    bottom: 7rem;
+    width: 10rem;
+  }
+
   .impact-grid {
     grid-template-columns: 1fr;
   }
