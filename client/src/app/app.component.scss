@@ -1,88 +1,171 @@
 /* Application shell and sticky navigation shared by every page. */
 .app-shell {
-  min-height: 100%;
+  min-height: 100vh;
   background: var(--app-page-bg);
   color: var(--app-text);
+  position: relative; // Ensures that absolutely positioned elements within the app shell are positioned relative to it.
+  overflow-x: clip; // Prevents horizontal overflow, ensuring that content does not extend beyond the viewport horizontally.
 }
 
+:host-context(.app-theme-r4l-poster) .app-shell,
+:host-context(.app-theme-r4l-poster-dark) .app-shell {
+  // Poster mode uses sparse edge doodles from the flyer style while keeping
+  // the central workspace clear for dense app screens.
+  background-image:
+    // The background side images for the poster theme, including SVG doodles and the page background color.
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='820' viewBox='0 0 140 820'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 34 63 8 50 68 87 61 37 131 49 82 16 89Z' fill='%23fbeb04' fill-opacity='.24' stroke='%23642e8c' stroke-opacity='.22' stroke-width='7'/%3E%3Cpath d='M14 213c22-34 50 34 76 0s48 29 26 58' stroke='%23e43894' stroke-opacity='.25' stroke-width='9'/%3E%3Cpath d='M24 374 76 320l33 67Z' fill='%23fbeb04' fill-opacity='.2' stroke='%23642e8c' stroke-opacity='.22' stroke-width='7'/%3E%3Cpath d='m34 501 54 54M88 501l-54 54' stroke='%23642e8c' stroke-opacity='.24' stroke-width='11'/%3E%3Cpath d='M27 682c25-27 53 26 79 0' stroke='%231ea16d' stroke-opacity='.26' stroke-width='10'/%3E%3Ccircle cx='101' cy='151' r='9' fill='%231ea16d' fill-opacity='.28'/%3E%3Ccircle cx='35' cy='621' r='7' fill='%23e43894' fill-opacity='.27'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='820' viewBox='0 0 140 820'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M104 45 65 18l9 57-37-4 48 68-8-48 37 6Z' fill='%23fbeb04' fill-opacity='.22' stroke='%23642e8c' stroke-opacity='.22' stroke-width='7'/%3E%3Cpath d='M122 225c-22-29-48 31-73 0s-45 27-24 54' stroke='%23e43894' stroke-opacity='.25' stroke-width='9'/%3E%3Cpath d='M105 372 56 316 24 386Z' fill='%23fbeb04' fill-opacity='.19' stroke='%23642e8c' stroke-opacity='.22' stroke-width='7'/%3E%3Cpath d='m102 520-56 54M46 520l56 54' stroke='%23642e8c' stroke-opacity='.24' stroke-width='11'/%3E%3Cpath d='M111 690c-25-27-54 26-80 0' stroke='%231ea16d' stroke-opacity='.26' stroke-width='10'/%3E%3Ccircle cx='40' cy='159' r='9' fill='%231ea16d' fill-opacity='.28'/%3E%3Ccircle cx='102' cy='625' r='7' fill='%23e43894' fill-opacity='.27'/%3E%3C/g%3E%3C/svg%3E"),
+    var(--app-page-bg);
+  // background-repeat defines how the background images are repeated. In this case, the side images repeat vertically, and the page background does not repeat.
+  background-repeat:
+    repeat-y, // The left side image repeats vertically.
+    repeat-y, // The right side image repeats vertically.
+    no-repeat; // The page background does not repeat.
+  // background-size defines the size of each background image. The side images have a responsive width and fixed height, while the page background covers the entire area.
+  background-size:
+    clamp(6rem, 11vw, 9rem) 52rem, // The left side image has a responsive width and fixed height.
+    clamp(6rem, 11vw, 9rem) 52rem, // The right side image has a responsive width and fixed height.
+    100% 100%; // The page background covers the entire area.
+  // background-position defines the position of each background image within the element. The side images are offset slightly from the edges, and the page background is centered at the top.
+  background-position:
+    left -1.5rem top 5.5rem, // The left side image is offset slightly from the left edge and positioned from the top.
+    right -1.5rem top 13rem, // The right side image is offset slightly from the right edge and positioned from the top.
+    center top; // The page background is centered at the top.
+  background-color: var(--app-bg);
+}
+
+// App toolbar: styles for the top toolbar of the application, including positioning, background, and shadow effects.
 .app-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  gap: var(--app-space-sm);
+  position: sticky; // Makes the toolbar stick to the top of the viewport when scrolling.
+  top: 0; // Positions the toolbar at the top of the viewport.
+  z-index: 1000; // Ensures the toolbar appears above other content.
+  gap: var(--app-space-sm); // Sets the spacing between toolbar items.
   background: var(--mat-toolbar-container-background-color, inherit);
   box-shadow: var(--app-shadow-sm);
 }
 
+// App title: styles for the application title section, including layout, alignment, and text decoration.
 .app-title {
-  display: inline-flex;
-  flex: 0 1 auto;
-  flex-direction: column;
-  gap: 1px;
-  justify-content: center;
-  min-width: 0;
-  color: inherit;
-  text-decoration: none;
+  display: inline-flex; // Uses inline-flex layout for the application title section, allowing flexible alignment of child elements.
+  flex: 0 1 auto; // Allows the application title section to grow and shrink as needed, but not beyond its content size.
+  flex-direction: column; // Arranges child elements in a vertical column.
+  align-items: flex-start; // Aligns child elements to the start of the cross axis (left side in a column layout).
+  gap: 1px; // Sets a small gap between child elements.
+  justify-content: center; // Centers child elements along the main axis (vertically in a column layout).
+  min-width: 0; // Ensures the application title section can shrink to fit its content.
+  color: inherit; // Inherits the text color from the parent element.
+  text-decoration: none; // Removes any text decoration (e.g., underline) from the application title section.
 }
 
+// App title logo: styles for the logo within the application title section, including display, size, and object fit.
+.app-title-logo {
+  display: none; // Hides the application title logo by default.
+  width: clamp(6.5rem, 11vw, 9.5rem); // Sets the width of the application title logo, responsive to viewport width.
+  // rem means root em, a relative unit based on the root element's font size.
+  // vw means viewport width, a relative unit based on the width of the viewport.
+  // width is responsive, clamped between 6.5rem (minimum) and 9.5rem (maximum), with 11vw as the preferred width based on viewport width.
+  max-height: 4.6rem; // Sets the maximum height of the application title logo.
+  margin-left: -2rem; // Applies a negative left margin to the application title logo.
+  object-fit: contain; // Ensures the application title logo maintains its aspect ratio within its container.
+}
+
+// Poster theme adjustments: styles that apply specifically when the poster theme is active, including adjustments to the application title and logo.
+:host-context(.app-theme-r4l-poster) .app-title,
+:host-context(.app-theme-r4l-poster-dark) .app-title {
+  // The graffiti-style logo replaces the text lockup only in poster mode.
+  min-width: clamp(5.6rem, 9vw, 7.7rem);
+}
+
+// App title logo visibility: styles that control the visibility of the application title logo specifically for the poster theme.
+:host-context(.app-theme-r4l-poster) .app-title-logo,
+:host-context(.app-theme-r4l-poster-dark) .app-title-logo {
+  display: block;
+}
+
+// App title mark and subtitle visibility: styles that control the visibility of the application title mark and subtitle specifically for the poster theme.
+:host-context(.app-theme-r4l-poster) .app-title-mark,
+:host-context(.app-theme-r4l-poster) .app-title-subtitle,
+:host-context(.app-theme-r4l-poster-dark) .app-title-mark,
+:host-context(.app-theme-r4l-poster-dark) .app-title-subtitle {
+  display: none;
+}
+
+// App title mark and subtitle: styles for the application title mark and subtitle, including display and line height.
 .app-title-mark,
 .app-title-subtitle {
   display: block;
   line-height: 1;
 }
 
+// App title mark: styles for the application title mark, including font size, weight, and letter spacing.
 .app-title-mark {
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: 0.03em;
 }
 
+// App title subtitle: styles for the application title subtitle, including font size, weight, and opacity.
 .app-title-subtitle {
   font-size: 0.68rem;
   font-weight: 600;
   opacity: 0.88;
 }
 
+// Desktop navigation: styles for the desktop navigation section, including layout, alignment, and spacing.
 .desktop-navigation {
-  align-items: center;
+  align-items: left;
   display: flex;
   gap: var(--app-space-sm);
   margin-left: var(--app-space-md);
 }
 
+// Poster theme adjustments for desktop navigation: styles that apply specifically when the poster theme is active, including adjustments to the desktop navigation layout and spacing.
+:host-context(.app-theme-r4l-poster) .desktop-navigation,
+:host-context(.app-theme-r4l-poster-dark) .desktop-navigation {
+  // The poster logo overhangs left, so keep nav links visually attached to it.
+  margin-left: 0;
+}
+
+// Desktop navigation links: styles for the links and buttons within the desktop navigation section, including color inheritance.
 .desktop-navigation a,
 .desktop-navigation button {
   color: inherit;
 }
 
+// Desktop navigation items: styles for the individual items within the desktop navigation section, including positioning for pseudo-elements.
 .desktop-navigation > * {
   position: relative;
 }
 
+// Desktop navigation item separators: styles for the separators between desktop navigation items, including positioning, size, and background.
 .desktop-navigation > *:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  right: calc(var(--app-space-sm) * -0.5);
-  top: 50%;
-  width: 1px;
-  height: 1.15rem;
-  background: color-mix(in srgb, currentColor 28%, transparent);
-  transform: translateY(-50%);
+  content: ""; // Creates an empty pseudo-element for the separator.
+  position: absolute; // positions the pseudo-element absolutely within its parent element.
+  right: calc(var(--app-space-sm) * -0.5); // Positions the pseudo-element slightly to the left of its parent element's right edge.
+  top: 50%; // Vertically centers the pseudo-element within its parent element.
+  width: 1px; // Sets the width of the pseudo-element to 1 pixel.
+  height: 1.15rem; // Sets the height of the pseudo-element relative to the root element's font size.
+  background: color-mix(in srgb, currentColor 28%, transparent); // Sets the background color of the pseudo-element using a color mix.
+  transform: translateY(-50%); // Adjusts the vertical position of the pseudo-element to be perfectly centered.
 }
 
+// Active header link: styles for the active link in the header, including background color.
 .header-link-active {
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
+// Mobile navigation: styles for the mobile navigation button within the application toolbar, including display behavior.
 /* Mobile navigation replaces, rather than duplicates, the desktop link row. */
 .app-toolbar .mobile-nav-button {
   display: none;
 }
 
+// Toolbar spacer: styles for the spacer element within the application toolbar, including flexible growth behavior.
 .toolbar-spacer {
   flex: 1 1 auto;
 }
 
+// Account button: styles for the account button within the application toolbar, including layout, alignment, and spacing.
 .account-button {
   align-items: center;
   display: inline-flex;
@@ -90,11 +173,13 @@
   gap: var(--app-space-xs);
 }
 
+// Theme toggle and login buttons: styles for the theme toggle and login buttons within the application toolbar, including flexible growth behavior.
 .theme-toggle-button,
 .login-button {
   flex: 0 0 auto;
 }
 
+// Account menu panel: styles for the account menu panel, including background, color, minimum width, and padding.
 .account-menu-panel {
   background: var(--mat-menu-container-color, transparent);
   color: var(--mat-menu-item-label-text-color, var(--app-contrast));
@@ -102,6 +187,7 @@
   padding: 8px 0;
 }
 
+// Account menu title: styles for the title within the account menu panel, including font size, weight, opacity, padding, and text transformation.
 .account-menu-title {
   font-size: 0.78rem;
   font-weight: 700;
@@ -110,6 +196,7 @@
   text-transform: uppercase;
 }
 
+// Account detail row: styles for the rows within the account menu panel that display account details, including layout, alignment, grid template, and padding.
 .account-detail-row {
   align-items: flex-start;
   display: grid;
@@ -118,21 +205,25 @@
   padding: 10px 16px;
 }
 
+// Account detail row icons: styles for the icons within the account detail rows, including opacity.
 .account-detail-row mat-icon {
   opacity: 0.78;
 }
 
+// Account detail labels: styles for the labels within the account detail rows, including font size and opacity.
 .account-detail-label {
   font-size: 0.78rem;
   opacity: 0.68;
 }
 
+// Account menu name: styles for the name within the account menu panel, including font weight, margin, and text wrapping.
 .account-menu-name {
   font-weight: 700;
   margin-top: 2px;
   overflow-wrap: anywhere;
 }
 
+// Account menu detail: styles for the detail text within the account menu panel, including color, margin, opacity, and text wrapping.
 .account-menu-detail {
   color: inherit;
   margin-top: 2px;
@@ -140,15 +231,50 @@
   overflow-wrap: anywhere;
 }
 
+// Appearance menu panel: styles for the appearance menu panel, including display, gap, minimum width, and padding.
+.appearance-menu-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 280px;
+  padding: 10px 16px 14px;
+}
+
+// Appearance menu title: styles for the title within the appearance menu panel, including color, font size, weight, and text transformation.
+.appearance-menu-title {
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+// Appearance menu slide toggle: styles for the slide toggle within the appearance menu panel, including colors for different states.
+.appearance-menu-panel mat-slide-toggle {
+  --mdc-switch-selected-focus-state-layer-color: var(--app-primary);
+  --mdc-switch-selected-handle-color: var(--app-primary);
+  --mdc-switch-selected-hover-state-layer-color: var(--app-primary);
+  --mdc-switch-selected-pressed-state-layer-color: var(--app-primary);
+  --mdc-switch-selected-track-color: color-mix(in srgb, var(--app-primary) 34%, var(--app-surface));
+}
+
+// Main content: styles for the main content area of the application, including margin, maximum width, minimum height, box-sizing, padding, position, background, and z-index.
 .main-content {
   margin: auto;
   max-width: 1280px;
   min-height: calc(100vh - 64px);
+  box-sizing: border-box;
   padding: var(--app-space-lg);
   position: relative;
   background: var(--app-page-bg);
+  z-index: 1;
 }
 
+// Main content themed backdrop: styles for the main content area when within specific themes, setting the background to transparent.
+:host-context(.app-theme-r4l-poster) .main-content,
+:host-context(.app-theme-r4l-poster-dark) .main-content {
+  background: transparent;
+}
+
+// Main content with POS: styles for the main content area when it contains the point-of-sale component, including maximum width, padding, and background gradients.
 .main-content:has(app-point-of-sale) {
   // POS keeps the themed backdrop, while its search and content panels remain
   // opaque surfaces so text does not compete with the decorative color.
@@ -167,6 +293,7 @@
   overflow: hidden;
 }
 
+// Responsive design for desktop navigation: hides the desktop navigation and shows the mobile navigation button on screens smaller than 960px.
 @media (max-width: 960px) {
   .desktop-navigation {
     display: none;
@@ -177,6 +304,7 @@
   }
 }
 
+// Responsive design for small screens: adjusts the toolbar, title, main content, and themed backdrop for screens smaller than 599px.
 @media (max-width: 599px) {
   .app-toolbar {
     gap: var(--app-space-xs);
@@ -185,6 +313,17 @@
 
   .app-title {
     gap: 0;
+  }
+
+  :host-context(.app-theme-r4l-poster) .app-title,
+  :host-context(.app-theme-r4l-poster-dark) .app-title {
+    min-width: 3.9rem;
+  }
+
+  .app-title-logo {
+    width: 5.7rem;
+    max-height: 3.2rem;
+    margin-left: -0.45rem;
   }
 
   .app-title-mark {
@@ -198,8 +337,22 @@
   .main-content {
     padding: var(--app-space-md);
   }
+
+  :host-context(.app-theme-r4l-poster) .app-shell,
+  :host-context(.app-theme-r4l-poster-dark) .app-shell {
+    background-size:
+      4.6rem 46rem,
+      4.6rem 46rem,
+      100% 100%;
+    background-position:
+      left -2.3rem top 5rem,
+      right -2.3rem top 12rem,
+      center top;
+  }
+
 }
 
+// Responsive design for extra small screens: adjusts the account and login buttons for screens smaller than 480px, including minimum width, padding, and hiding certain elements.
 @media (max-width: 480px) {
   .account-button,
   .login-button {
