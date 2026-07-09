@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 // Org Imports
@@ -46,7 +45,6 @@ import umm3601.Auth.Route;
 import umm3601.Common.AuthContext;
 import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
-import umm3601.SupplyList.SupplyList;
 import umm3601.Users.Users;
 
 /* FamilyController Contains the Following:
@@ -85,12 +83,6 @@ public class FamilyController {
   private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
   private static final String REASON_SUBSTITUTED = "substituted";
-  private static final int EXACT_ITEM_MATCH_SCORE = 100;
-  private static final int SEARCHABLE_ITEM_MATCH_SCORE = 75;
-  private static final int PARTIAL_ITEM_MATCH_SCORE = 50;
-  private static final int REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH = 4;
-  private static final int REQUIRED_ATTRIBUTE_MATCH_SCORE = 5;
-  private static final int OPTIONAL_ATTRIBUTE_MATCH_SCORE = 3;
 
   // Regex
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -106,24 +98,55 @@ public class FamilyController {
 
   // Database Collection
   private final JacksonMongoCollection<Family> familyCollection;
-  private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
   private final JacksonMongoCollection<Users> usersCollection;
   private final FamilyNeededItemService familyNeededItemService;
+  private final InventoryReservationService inventoryReservationService;
+  private final InventoryMatcher inventoryMatcher;
+  private final FamilyChecklistService familyChecklistService;
 
 
   // Database Constructor
   public FamilyController(MongoDatabase database) {
+    this(database, new InventoryMatcher(database));
+  }
+
+  public FamilyController(MongoDatabase database, InventoryMatcher inventoryMatcher) {
+    this(
+      database,
+      new InventoryReservationService(database, inventoryMatcher),
+      inventoryMatcher,
+      new FamilyChecklistService(database, inventoryMatcher)
+    );
+  }
+
+  public FamilyController(
+      MongoDatabase database,
+      InventoryReservationService inventoryReservationService,
+      InventoryMatcher inventoryMatcher
+  ) {
+    this(
+      database,
+      inventoryReservationService,
+      inventoryMatcher,
+      new FamilyChecklistService(database, inventoryMatcher)
+    );
+  }
+
+  public FamilyController(
+      MongoDatabase database,
+      InventoryReservationService inventoryReservationService,
+      InventoryMatcher inventoryMatcher,
+      FamilyChecklistService familyChecklistService
+  ) {
+    this.inventoryReservationService = inventoryReservationService;
+    this.inventoryMatcher = inventoryMatcher;
+    this.familyChecklistService = familyChecklistService;
     familyCollection = JacksonMongoCollection.builder().build(
         database,
         "family",
         Family.class,
-        UuidRepresentation.STANDARD);
-    supplyListCollection = JacksonMongoCollection.builder().build(
-        database,
-        "supplylist",
-        SupplyList.class,
         UuidRepresentation.STANDARD);
     inventoryCollection = JacksonMongoCollection.builder().build(
         database,
@@ -222,6 +245,7 @@ public class FamilyController {
 
     if (existingFamily == null) {
       familyCollection.insertOne(family);
+      rebuildInventoryReservation();
       return;
     }
 
@@ -230,6 +254,7 @@ public class FamilyController {
     family.status = determineStatus(existingFamily);
     family.deleteRequest = existingFamily.deleteRequest;
     familyCollection.replaceOne(eq("_id", new ObjectId(existingFamily._id)), family);
+    rebuildInventoryReservation();
   }
 
   /**
@@ -413,6 +438,7 @@ public class FamilyController {
     normalizeFamilyForPersistence(newFamily, null);
     newFamily.profileComplete = true;
     familyCollection.insertOne(newFamily);
+    rebuildInventoryReservation();
 
     ctx.json(Map.of("id", newFamily._id));
     ctx.status(HttpStatus.CREATED);
@@ -485,6 +511,7 @@ public class FamilyController {
     );
 
     familyCollection.updateOne(eq("_id", familyId), update);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
@@ -522,6 +549,7 @@ public class FamilyController {
           + id
           + "; perhaps illegal Family ID or an ID for a Family not in the system?");
     }
+    rebuildInventoryReservation();
     ctx.status(HttpStatus.OK);
   }
 
@@ -662,6 +690,7 @@ public class FamilyController {
       .append("status", normalizedStatus));
 
     familyCollection.updateOne(eq("_id", familyId), update);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
@@ -770,6 +799,7 @@ public class FamilyController {
       family.checklist.snapshot = false;
     }
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
@@ -802,10 +832,27 @@ public class FamilyController {
     family.helped = true;
     family.checklist.snapshot = false;
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
     ctx.status(HttpStatus.OK);
+  }
+
+  private void releaseChecklistReservations(Family.FamilyChecklist checklist) {
+    if (checklist == null || checklist.sections == null) {
+      return;
+    }
+
+    for (Family.ChecklistSection section : checklist.sections) {
+      if (section.saved || section.items == null) {
+        continue;
+      }
+
+      for (Family.ChecklistItem item : section.items) {
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
+      }
+    }
   }
 
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_CLEAR)
@@ -814,10 +861,13 @@ public class FamilyController {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
 
+    releaseChecklistReservations(family.checklist);
+
     family.checklist = null;
     family.status = STATUS_NOT_HELPED;
     family.helped = false;
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
@@ -840,6 +890,7 @@ public class FamilyController {
     family.status = STATUS_BEING_HELPED;
     family.helped = false;
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
@@ -988,268 +1039,31 @@ public class FamilyController {
   }
 
   private Family.FamilyChecklist generateChecklistSnapshot(Family family) {
-    Family.FamilyChecklist checklist = new Family.FamilyChecklist();
-    checklist.templateId = "family-help-session-v1";
-    checklist.printableTitle = family.guardianName + " Checklist";
-    checklist.snapshot = true;
-    checklist.sections = new ArrayList<>();
-
-    int studentIndex = 1;
-    for (Family.StudentInfo student : family.students) {
-      Family.ChecklistSection section = new Family.ChecklistSection();
-      section.id = "student-" + studentIndex;
-      section.title = hasText(student.name) ? student.name : "Student " + studentIndex;
-      section.printableTitle = section.title;
-      section.saved = false;
-      section.items = buildChecklistItemsForStudent(student, section.id);
-      checklist.sections.add(section);
-      studentIndex++;
-    }
-
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(family);
     return normalizeChecklist(checklist, family.guardianName, family.students);
   }
 
-  private List<Family.ChecklistItem> buildChecklistItemsForStudent(Family.StudentInfo student, String sectionId) {
-    List<Family.ChecklistItem> checklistItems = new ArrayList<>();
-    List<SupplyList> supplyLists = getSupplyListsForStudent(student);
-
-    int itemIndex = 1;
-    for (SupplyList supplyList : supplyLists) {
-      Family.ChecklistItem item = buildChecklistItemSnapshot(supplyList, sectionId + "-item-" + itemIndex);
-      checklistItems.add(item);
-      itemIndex++;
+  private void releaseInventory(String internalId, int amount) {
+    if (!hasText(internalId)) {
+      return;
     }
 
-    return checklistItems;
+    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    if (inventory == null) {
+      throw new NotFoundResponse("No item found for internalID: " + internalId);
+    }
+
+    int quantityToRelease = amount <= 0 ? 1 : amount;
+    int newReservedQuantity = Math.max(0, inventory.reservedQuantity - quantityToRelease);
+
+    inventoryCollection.updateOne(eq("_id", new ObjectId(inventory._id)),
+    Updates.set("reservedQuantity", newReservedQuantity));
+
+    inventory.reservedQuantity = newReservedQuantity;
   }
 
-  private List<SupplyList> getSupplyListsForStudent(Family.StudentInfo student) {
-    ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-    ArrayList<SupplyList> matching = new ArrayList<>();
-
-    for (SupplyList supplyList : allSupplyLists) {
-      if (!nameEquivalent(supplyList.school, student.school)) {
-        continue;
-      }
-      if (!gradeEquivalent(supplyList.grade, student.grade)) {
-        continue;
-      }
-      if (hasValue(supplyList.teacher) && !nameEquivalent(supplyList.teacher, student.teacher)) {
-        continue;
-      }
-      matching.add(supplyList);
-    }
-
-    matching.sort(Comparator.comparing(supplyList -> supplyList.toString().toLowerCase(Locale.US)));
-    return matching;
-  }
-
-  private Family.ChecklistItem buildChecklistItemSnapshot(SupplyList supplyList, String itemId) {
-    Family.ChecklistItem checklistItem = new Family.ChecklistItem();
-    checklistItem.id = itemId;
-    checklistItem.label = supplyList.toString();
-    checklistItem.itemDescription = supplyList.toString();
-    checklistItem.supplyListId = supplyList._id;
-    checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
-
-    Inventory match = findBestInventoryMatch(supplyList);
-    checklistItem.available = match != null && match.quantity > 0;
-    checklistItem.selected = checklistItem.available;
-    checklistItem.matchedInventoryId = match != null ? match.internalID : null;
-    checklistItem.matchedInventoryItem = match != null ? match.item : null;
-    checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
-
-    return checklistItem;
-  }
-
-  private String bestInventoryDescription(Inventory inventory) {
-    if (hasText(inventory.description)) {
-      return inventory.description;
-    }
-    return inventory.toString();
-  }
-
-  private Inventory findBestInventoryMatch(SupplyList supplyList) {
-    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
-
-    return inventories.stream()
-      .filter(inventory -> inventory.quantity > 0)
-      .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
-      .max(Comparator
-        .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
-        .thenComparingInt(inventory -> inventory.quantity)
-        .thenComparingInt(this::inventorySpecificityScore))
-      .orElse(null);
-  }
-
-  private int inventorySimilarityScore(Inventory inventory, SupplyList supplyList) {
-    int itemScore = itemSimilarityScore(inventory, supplyList);
-    if (itemScore == 0) {
-      return 0;
-    }
-
-    int score = itemScore;
-    score += attributeSimilarityScore(supplyList.brand, inventory.brand);
-    score += colorSimilarityScore(supplyList.color, inventory.color);
-    score += attributeSimilarityScore(supplyList.material, inventory.material);
-    return score;
-  }
-
-  private int itemSimilarityScore(Inventory inventory, SupplyList supplyList) {
-    if (supplyList.item == null || supplyList.item.isEmpty()) {
-      return 0;
-    }
-
-    String inventoryName = normalizeToken(inventory.item);
-    List<String> searchableTokens = searchableInventoryItemTokens(inventory);
-    int bestScore = 0;
-
-    for (String requestedItem : supplyList.item) {
-      String requestedName = normalizeToken(requestedItem);
-      if (requestedName.isBlank()) {
-        continue;
-      }
-      if (requestedName.equals(inventoryName)) {
-        bestScore = Math.max(bestScore, EXACT_ITEM_MATCH_SCORE);
-        continue;
-      }
-      if (searchableTokens.contains(requestedName)) {
-        bestScore = Math.max(bestScore, SEARCHABLE_ITEM_MATCH_SCORE);
-        continue;
-      }
-
-      for (String requestedToken : tokenParts(requestedItem)) {
-        if (requestedToken.length() >= REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH
-            && searchableTokens.contains(requestedToken)) {
-          bestScore = Math.max(bestScore, PARTIAL_ITEM_MATCH_SCORE);
-        }
-      }
-    }
-
-    return bestScore;
-  }
-
-  private List<String> searchableInventoryItemTokens(Inventory inventory) {
-    List<String> tokens = new ArrayList<>();
-    tokens.add(normalizeToken(inventory.item));
-    tokens.addAll(tokenParts(inventory.item));
-    tokens.addAll(tokenParts(inventory.description));
-    return tokens.stream()
-      .filter(token -> !token.isBlank())
-      .distinct()
-      .toList();
-  }
-
-  private int attributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return 0;
-    }
-    if (hasText(options.allOf) && nameEquivalent(options.allOf, inventoryValue)) {
-      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
-    }
-    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
-    }
-    return 0;
-  }
-
-  private int colorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return 0;
-    }
-    if (options.allOf != null && options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
-    }
-    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
-    }
-    return 0;
-  }
-
-  @SuppressWarnings("unused")
-  private boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {
-    if (supplyList.item == null || supplyList.item.isEmpty()) {
-      return false;
-    }
-
-    boolean itemMatch = supplyList.item.stream().anyMatch(item -> nameEquivalent(item, inventory.item));
-    if (!itemMatch) {
-      return false;
-    }
-
-    if (!matchesAttribute(supplyList.brand, inventory.brand)) {
-      return false;
-    }
-    if (!matchesColorAttribute(supplyList.color, inventory.color)) {
-      return false;
-    }
-    if (!matchesAttribute(supplyList.size, inventory.size)) {
-      return false;
-    }
-    if (!matchesAttribute(supplyList.type, inventory.type)) {
-      return false;
-    }
-    if (!matchesAttribute(supplyList.material, inventory.material)) {
-      return false;
-    }
-    if (supplyList.packageSize != null && supplyList.packageSize > 0 && inventory.packageSize > 0
-      && !Objects.equals(supplyList.packageSize, inventory.packageSize)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  private int inventorySpecificityScore(Inventory inventory) {
-    int score = 0;
-    if (hasValue(inventory.brand)) {
-      score++;
-    }
-    if (hasValue(inventory.color)) {
-      score++;
-    }
-    if (hasValue(inventory.size)) {
-      score++;
-    }
-    if (hasValue(inventory.type)) {
-      score++;
-    }
-    if (hasValue(inventory.material)) {
-      score++;
-    }
-    if (inventory.packageSize > 1) {
-      score++;
-    }
-    return score;
-  }
-
-  private boolean matchesAttribute(SupplyList.AttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return true;
-    }
-    if (hasText(options.allOf) && !nameEquivalent(options.allOf, inventoryValue)) {
-      return false;
-    }
-    if (options.anyOf != null && !options.anyOf.isEmpty()) {
-      return options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-    }
-    return true;
-  }
-
-  private boolean matchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return true;
-    }
-    if (options.allOf != null && !options.allOf.isEmpty()) {
-      boolean allOfMatch = options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-      if (!allOfMatch) {
-        return false;
-      }
-    }
-    if (options.anyOf != null && !options.anyOf.isEmpty()) {
-      return options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-    }
-    return true;
+  private void rebuildInventoryReservation() {
+    inventoryReservationService.rebuildInventoryReservation();
   }
 
   private void persistFamilyChecklistAndStatus(Family family) {
@@ -1314,18 +1128,27 @@ public class FamilyController {
     for (Family.ChecklistItem item : section.items) {
       validateChecklistItemForSave(item);
 
-      if (item.selected) {
-        consumeInventory(item.matchedInventoryId, item.requestedQuantity);
-      } else if (hasText(item.substituteBarcode)) {
-        Inventory substituteInventory = findInventoryByBarcode(item.substituteBarcode);
+      if (hasText(item.substituteBarcode)) {
+        Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
         if (substituteInventory == null) {
           throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
         }
+
+        if (inventoryMatcher.unreservedQuantity(substituteInventory) < item.requestedQuantity) {
+          throw new BadRequestResponse("Not enough unreserved stock available for substitute item.");
+        }
+
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
         consumeInventory(substituteInventory.internalID, item.requestedQuantity);
         item.substituteInventoryId = substituteInventory.internalID;
         item.substituteItem = substituteInventory.item;
         item.substituteDescription = substituteInventory.description;
         item.notPickedUpReason = REASON_SUBSTITUTED;
+      } else if (item.selected) {
+        consumeInventory(item.matchedInventoryId, item.requestedQuantity);
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
+      } else {
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
       }
     }
   }
@@ -1333,29 +1156,29 @@ public class FamilyController {
   private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
     for (Family.ChecklistSection section : checklist.sections) {
       for (Family.ChecklistItem item : section.items) {
-        if (item.selected) {
-          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
-        } else if (hasText(item.substituteInventoryId)) {
+        if (hasText(item.substituteInventoryId)) {
           restoreInventory(item.substituteInventoryId, item.requestedQuantity);
         } else if (hasText(item.substituteBarcode)) {
-          Inventory substituteInventory = findInventoryByBarcode(item.substituteBarcode);
+          Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
           if (substituteInventory == null) {
             throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
           }
           restoreInventory(substituteInventory.internalID, item.requestedQuantity);
           item.substituteInventoryId = substituteInventory.internalID;
+        } else if (item.selected) {
+          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
         }
       }
     }
   }
 
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
-    if (item.selected && !item.available) {
+    boolean hasSubstitution = hasText(item.substituteBarcode);
+    if (item.selected && !item.available && !hasSubstitution) {
       throw new BadRequestResponse("Unavailable items cannot be saved as selected.");
     }
 
     if (!item.selected) {
-      boolean hasSubstitution = hasText(item.substituteBarcode);
       boolean hasReason = hasText(item.notPickedUpReason);
 
       if (!item.available && !hasReason && !hasSubstitution) {
@@ -1392,20 +1215,6 @@ public class FamilyController {
       .replaceAll("[\\s-]+", "_");
   }
 
-  private Inventory findInventoryByBarcode(String barcode) {
-    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
-    for (Inventory inventory : inventories) {
-      if (nameEquivalent(inventory.internalBarcode, barcode)) {
-        return inventory;
-      }
-      if (inventory.externalBarcode != null && inventory.externalBarcode.stream()
-        .anyMatch(code -> nameEquivalent(code, barcode))) {
-        return inventory;
-      }
-    }
-    return null;
-  }
-
   private void consumeInventory(String internalId, int amount) {
     if (!hasText(internalId)) {
       throw new BadRequestResponse("A selected checklist item is missing its inventory match.");
@@ -1438,103 +1247,8 @@ public class FamilyController {
      new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
   }
 
-  private boolean nameEquivalent(String left, String right) {
-    String leftToken = normalizeToken(left);
-    String rightToken = normalizeToken(right);
-    String strictLeftToken = normalizeTokenWithoutPluralFold(left);
-    String strictRightToken = normalizeTokenWithoutPluralFold(right);
-    return leftToken.equals(rightToken)
-      || strictLeftToken.equals(acronymToken(right))
-      || strictRightToken.equals(acronymToken(left));
-  }
-
-  private boolean gradeEquivalent(String left, String right) {
-    String leftGrade = normalizeGradeToken(left);
-    String rightGrade = normalizeGradeToken(right);
-    return leftGrade.equals(rightGrade)
-      || "highschool".equals(leftGrade) && isHighSchoolGrade(rightGrade)
-      || "highschool".equals(rightGrade) && isHighSchoolGrade(leftGrade)
-      || "middleschool".equals(leftGrade) && isMiddleSchoolGrade(rightGrade)
-      || "middleschool".equals(rightGrade) && isMiddleSchoolGrade(leftGrade)
-      || "elementary".equals(leftGrade) && isElementaryGrade(rightGrade)
-      || "elementary".equals(rightGrade) && isElementaryGrade(leftGrade);
-  }
-
-  private String normalizeToken(String value) {
-    String normalized = normalizeTokenWithoutPluralFold(value);
-    if (normalized.endsWith("s") && normalized.length() > 1) {
-      return normalized.substring(0, normalized.length() - 1);
-    }
-    return normalized;
-  }
-
-  private String normalizeTokenWithoutPluralFold(String value) {
-    if (value == null) {
-      return "";
-    }
-    return value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
-  }
-
-  private List<String> tokenParts(String value) {
-    if (value == null) {
-      return List.of();
-    }
-    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
-    List<String> tokens = new ArrayList<>();
-    for (String part : parts) {
-      String normalized = normalizeToken(part);
-      if (!normalized.isBlank()) {
-        tokens.add(normalized);
-      }
-    }
-    return tokens;
-  }
-
-  private String normalizeGradeToken(String value) {
-    String normalized = normalizeToken(value);
-    if ("kindergarten".equals(normalized)) {
-      return "k";
-    }
-    if ("prekindergarten".equals(normalized) || "prekindergarden".equals(normalized)) {
-      return "prek";
-    }
-    String withoutGradeWord = normalized.replace("grade", "");
-    return withoutGradeWord.replaceAll("(\\d+)(st|nd|rd|th)$", "$1");
-  }
-
-  private boolean isHighSchoolGrade(String grade) {
-    return "9".equals(grade) || "10".equals(grade) || "11".equals(grade) || "12".equals(grade);
-  }
-
-  private boolean isMiddleSchoolGrade(String grade) {
-    return "6".equals(grade) || "7".equals(grade) || "8".equals(grade);
-  }
-
-  private boolean isElementaryGrade(String grade) {
-    return "prek".equals(grade) || "k".equals(grade)
-      || "1".equals(grade) || "2".equals(grade) || "3".equals(grade) || "4".equals(grade) || "5".equals(grade);
-  }
-
-  private String acronymToken(String value) {
-    if (value == null) {
-      return "";
-    }
-    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
-    StringBuilder acronym = new StringBuilder();
-    for (String part : parts) {
-      if (!part.isBlank()) {
-        acronym.append(part.charAt(0));
-      }
-    }
-    return acronym.length() > 1 ? acronym.toString() : "";
-  }
-
   private boolean hasText(String value) {
     return value != null && !value.isBlank();
-  }
-
-  private boolean hasValue(String value) {
-    return hasText(value) && !"n/a".equalsIgnoreCase(value.trim());
   }
 
   private void normalizeFamilyForPersistence(Family family, Family existingFamily) {

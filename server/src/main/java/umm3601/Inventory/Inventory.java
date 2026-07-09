@@ -33,6 +33,7 @@ public class Inventory {
   public String internalID;
   public String internalBarcode;
   public List<String> externalBarcode;
+  public int reservedQuantity; // Stock promised to a student
 
   @Override
   public boolean equals(Object obj) {
