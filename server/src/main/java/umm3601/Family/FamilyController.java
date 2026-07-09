@@ -102,7 +102,6 @@ public class FamilyController {
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
   private final JacksonMongoCollection<Users> usersCollection;
-  private final FamilyChecklistGenerator checklistGenerator;
   private final InventoryReservationService inventoryReservationService;
   private final InventoryMatcher inventoryMatcher;
   private final FamilyChecklistService familyChecklistService;
@@ -164,7 +163,6 @@ public class FamilyController {
         "users",
         Users.class,
         UuidRepresentation.STANDARD);
-    checklistGenerator = new FamilyChecklistGenerator(supplyListCollection);
   }
 
   // GET all families
@@ -1113,7 +1111,8 @@ public class FamilyController {
   }
 
   public Family.FamilyChecklist generateCurrentFamilyChecklist(Family family) {
-    Family.FamilyChecklist checklist = checklistGenerator.generateCurrentFamilyChecklist(family);
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(family);
+    checklist.snapshot = false;
     return normalizeChecklist(
       checklist,
       family == null ? null : family.guardianName,
@@ -1121,151 +1120,6 @@ public class FamilyController {
     );
   }
 
-  private List<Family.ChecklistItem> buildChecklistItemsForStudent(Family.StudentInfo student, String sectionId) {
-    List<Family.ChecklistItem> checklistItems = new ArrayList<>();
-    List<SupplyList> supplyLists = checklistGenerator.getSupplyListsForStudent(student);
-
-    int itemIndex = 1;
-    for (SupplyList supplyList : supplyLists) {
-      Family.ChecklistItem item = buildChecklistItemSnapshot(supplyList, sectionId + "-item-" + itemIndex);
-      checklistItems.add(item);
-      itemIndex++;
-    }
-
-    return checklistItems;
-  }
-
-  private Family.ChecklistItem buildChecklistItemSnapshot(SupplyList supplyList, String itemId) {
-    Family.ChecklistItem checklistItem = new Family.ChecklistItem();
-    checklistItem.id = itemId;
-    checklistItem.label = supplyList.toString();
-    checklistItem.itemDescription = supplyList.toString();
-    checklistItem.supplyListId = supplyList._id;
-    checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
-
-    Inventory match = findBestInventoryMatch(supplyList);
-    checklistItem.available = match != null && match.quantity > 0;
-    checklistItem.selected = checklistItem.available;
-    checklistItem.matchedInventoryId = match != null ? match.internalID : null;
-    checklistItem.matchedInventoryItem = match != null ? match.item : null;
-    checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
-
-    return checklistItem;
-  }
-
-  private String bestInventoryDescription(Inventory inventory) {
-    if (hasText(inventory.description)) {
-      return inventory.description;
-    }
-    return inventory.toString();
-  }
-
-  private Inventory findBestInventoryMatch(SupplyList supplyList) {
-    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
-
-    return inventories.stream()
-      .filter(inventory -> inventory.quantity > 0)
-      .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
-      .max(Comparator
-        .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
-        .thenComparingInt(inventory -> inventory.quantity)
-        .thenComparingInt(this::inventorySpecificityScore))
-      .orElse(null);
-  }
-
-  private int inventorySimilarityScore(Inventory inventory, SupplyList supplyList) {
-    int itemScore = itemSimilarityScore(inventory, supplyList);
-    if (itemScore == 0) {
-      return 0;
-    }
-
-    int score = itemScore;
-    score += attributeSimilarityScore(supplyList.brand, inventory.brand);
-    score += colorSimilarityScore(supplyList.color, inventory.color);
-    score += attributeSimilarityScore(supplyList.material, inventory.material);
-    return score;
-  }
-
-  private int itemSimilarityScore(Inventory inventory, SupplyList supplyList) {
-    if (supplyList.item == null || supplyList.item.isEmpty()) {
-      return 0;
-    }
-
-    String inventoryName = normalizeToken(inventory.item);
-    List<String> searchableTokens = searchableInventoryItemTokens(inventory);
-    int bestScore = 0;
-
-    for (String requestedItem : supplyList.item) {
-      String requestedName = normalizeToken(requestedItem);
-      if (requestedName.isBlank()) {
-        continue;
-      }
-      if (requestedName.equals(inventoryName)) {
-        bestScore = Math.max(bestScore, EXACT_ITEM_MATCH_SCORE);
-        continue;
-      }
-      if (searchableTokens.contains(requestedName)) {
-        bestScore = Math.max(bestScore, SEARCHABLE_ITEM_MATCH_SCORE);
-        continue;
-      }
-
-      for (String requestedToken : tokenParts(requestedItem)) {
-        if (requestedToken.length() >= REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH
-            && searchableTokens.contains(requestedToken)) {
-          bestScore = Math.max(bestScore, PARTIAL_ITEM_MATCH_SCORE);
-        }
-      }
-    }
-
-    return bestScore;
-  }
-
-  private List<String> searchableInventoryItemTokens(Inventory inventory) {
-    List<String> tokens = new ArrayList<>();
-    tokens.add(normalizeToken(inventory.item));
-    tokens.addAll(tokenParts(inventory.item));
-    tokens.addAll(tokenParts(inventory.description));
-    return tokens.stream()
-      .filter(token -> !token.isBlank())
-      .distinct()
-      .toList();
-  }
-
-  private int attributeSimilarityScore(SupplyList.AttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return 0;
-    }
-    if (hasText(options.allOf) && nameEquivalent(options.allOf, inventoryValue)) {
-      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
-    }
-    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
-    }
-    return 0;
-  }
-
-  private int colorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return 0;
-    }
-    if (options.allOf != null && options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
-    }
-    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
-    }
-    return 0;
-  }
-
-  @SuppressWarnings("unused")
-  private boolean inventoryMatchesSupplyList(Inventory inventory, SupplyList supplyList) {
-    if (supplyList.item == null || supplyList.item.isEmpty()) {
-      return false;
-    }
-
-    boolean itemMatch = supplyList.item.stream().anyMatch(item -> nameEquivalent(item, inventory.item));
-    if (!itemMatch) {
-      return false;
   private void releaseInventory(String internalId, int amount) {
     if (!hasText(internalId)) {
       return;

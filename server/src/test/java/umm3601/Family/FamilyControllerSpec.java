@@ -1370,95 +1370,6 @@ class FamilyControllerSpec {
   }
 
   @Test
-  void privateInventorySpecificityScoreCoversFalseBranches() throws Exception {
-    Inventory sparseInventory = new Inventory();
-    sparseInventory.brand = "N/A";
-    sparseInventory.color = null;
-    sparseInventory.size = "";
-    sparseInventory.type = " ";
-    sparseInventory.material = "N/A";
-    sparseInventory.packageSize = 1;
-
-    int score = invokeInventorySpecificityScore(sparseInventory);
-
-    assertEquals(0, score);
-  }
-
-  @Test
-  void privateInventorySpecificityScoreCountsPackageSizeGreaterThanOne() throws Exception {
-    Inventory bulkInventory = new Inventory();
-    bulkInventory.brand = "N/A";
-    bulkInventory.color = null;
-    bulkInventory.size = "";
-    bulkInventory.type = " ";
-    bulkInventory.material = "N/A";
-    bulkInventory.packageSize = 2;
-
-    int score = invokeInventorySpecificityScore(bulkInventory);
-
-    assertEquals(1, score);
-  }
-
-  @Test
-  void privateBuildChecklistItemSnapshotCoversUnavailableFallbackBranch() throws Exception {
-    SupplyList supplyList = new SupplyList();
-    supplyList.item = List.of("Scissors");
-    supplyList.quantity = 0;
-
-    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
-
-    assertEquals("section-item-1", item.id);
-    assertEquals(1, item.requestedQuantity);
-    assertFalse(item.available);
-    assertFalse(item.selected);
-    assertNull(item.matchedInventoryId);
-  }
-
-  @Test
-  void privateBuildChecklistItemSnapshotUsesHighestQuantitySimilarInventoryItem() throws Exception {
-    db.getCollection("inventory").drop();
-    db.getCollection("inventory").insertMany(List.of(
-      new Document()
-        .append("item", "Yellow Pencil")
-        .append("description", "Yellow #2 pencil")
-        .append("quantity", 4)
-        .append("size", "Wide")
-        .append("type", "Mechanical")
-        .append("material", "Wood")
-        .append("internalID", "LOW-QTY-PENCIL")
-        .append("internalBarcode", "LOW-QTY-PENCIL"),
-      new Document()
-        .append("item", "Plastic Pencil")
-        .append("description", "Plastic writing pencil")
-        .append("quantity", 30)
-        .append("size", "Narrow")
-        .append("type", "Wooden")
-        .append("material", "Plastic")
-        .append("internalID", "HIGH-QTY-PENCIL")
-        .append("internalBarcode", "HIGH-QTY-PENCIL"),
-      new Document()
-        .append("item", "Pen")
-        .append("description", "Blue ink pen")
-        .append("quantity", 100)
-        .append("internalID", "NOT-A-PENCIL")
-        .append("internalBarcode", "NOT-A-PENCIL")));
-
-    SupplyList supplyList = new SupplyList();
-    supplyList.item = List.of("Pencil");
-    supplyList.size = new SupplyList.AttributeOptions();
-    supplyList.size.allOf = "Wide";
-    supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Mechanical";
-    supplyList.quantity = 1;
-
-    Family.ChecklistItem item = invokeBuildChecklistItemSnapshot(supplyList, "section-item-1");
-
-    assertTrue(item.available);
-    assertTrue(item.selected);
-    assertEquals("HIGH-QTY-PENCIL", item.matchedInventoryId);
-  }
-
-  @Test
   void privateRequireFamilyCoversErrorBranches() {
     BadRequestResponse badId = assertThrows(BadRequestResponse.class,
       () -> invokeRequireFamily("bad-id"));
@@ -1534,12 +1445,6 @@ class FamilyControllerSpec {
 
   private String invokeNormalizeToken(String value) throws Exception {
     return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
-  }
-
-  private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
-      throws Exception {
-    return invokePrivate("buildChecklistItemSnapshot",
-      new Class<?>[] {SupplyList.class, String.class}, supplyList, itemId);
   }
 
   private Family invokeRequireFamily(String id) throws Exception {
