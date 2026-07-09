@@ -65,8 +65,8 @@ describe('Settings', () => {
         .should('be.visible')
         .and('contain.text', 'Families scheduled');
 
-      cy.url().should('match', /\/family$/);
-      cy.contains('h1', 'Families').should('be.visible');
+      cy.url().should('match', /\/family-schedule$/);
+      cy.contains('h1', 'Family Schedule').should('be.visible');
 
     });
 
