@@ -306,6 +306,12 @@ public class StockReportController {
             if (supplyList.school.equals(school) && (supplyList.grade.equals(grade)) && (supplyList.teacher.equals(teacher))) {
               int qty = supplyList.quantity != null ? supplyList.quantity : 1;
               totalNeeded += numStudents * qty;
+
+              // Find best matching inventory item for this supply list and update its predicted quantity
+              Inventory bestMatch = inventoryCollection.find(eq("internalID", supplyList.invIDs[0])).first();
+              if (bestMatch != null) {
+                bestMatch.predictedQuantity = totalNeeded;
+              }
             }
           }
         }
