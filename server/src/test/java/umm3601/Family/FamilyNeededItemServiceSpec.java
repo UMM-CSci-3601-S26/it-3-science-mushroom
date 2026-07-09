@@ -108,6 +108,27 @@ class FamilyNeededItemServiceSpec {
   }
 
   @Test
+  void recordNeededButNotAcquiredItemsFallsBackToSectionTitleAndItemDescription() {
+    Family family = buildFamilyWithChecklist();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    Family.ChecklistItem item = buildItem(
+      "item-1",
+      null,
+      false,
+      "not_available_didnt_receive");
+    section.printableTitle = null;
+    item.itemDescription = "Wide-ruled notebook";
+    section.items.add(item);
+
+    List<FamilyNeededItemService.NeededItem> neededItems =
+      familyNeededItemService.recordNeededButNotAcquiredItems(family);
+
+    assertEquals(1, neededItems.size());
+    assertEquals("Sam", neededItems.get(0).getSectionTitle());
+    assertEquals("Wide-ruled notebook", neededItems.get(0).getLabel());
+  }
+
+  @Test
   void recordNeededButNotAcquiredItemsIgnoresOtherNotGivenReasons() {
     Family family = buildFamilyWithChecklist();
     family.checklist.sections.get(0).items.add(buildItem(
