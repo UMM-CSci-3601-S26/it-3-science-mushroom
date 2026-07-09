@@ -1,0 +1,79 @@
+<div class="guardian-link-dialog app-dialog-shell">
+  <div class="app-dialog-header">
+    <div>
+      <h2 class="app-dialog-title">Link Guardian</h2>
+      <p class="app-dialog-subtitle">
+        Choose a family and the guardian account to connect.
+      </p>
+    </div>
+  </div>
+
+  <mat-dialog-content class="guardian-link-content app-stack-md">
+    <mat-form-field appearance="outline">
+      <mat-label>Family Account</mat-label>
+      <input
+        matInput
+        [ngModel]="familySearch"
+        (ngModelChange)="onFamilySearchChange($event)"
+        [matAutocomplete]="familyAuto"
+        placeholder="Family..."
+        data-cy="family-search">
+    </mat-form-field>
+
+    <mat-autocomplete #familyAuto="matAutocomplete" (optionSelected)="selectFamily($event.option.value)">
+      @for (family of filteredFamilies(); track family._id) {
+        <mat-option [value]="family.guardianName">
+          {{ family.guardianName }}
+        </mat-option>
+      }
+    </mat-autocomplete>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Guardian Account</mat-label>
+      <input
+        matInput
+        [ngModel]="guardianSearch"
+        (ngModelChange)="onGuardianSearchChange($event)"
+        [matAutocomplete]="guardianAuto"
+        placeholder="Guardian..."
+        data-cy="guardian-search">
+    </mat-form-field>
+
+    <mat-autocomplete #guardianAuto="matAutocomplete" (optionSelected)="selectGuardian($event.option.value)">
+      @for (guardian of filteredGuardian(); track guardian._id) {
+        <mat-option [value]="guardian.username">
+          <div class="guardian-option">
+            <strong>{{ guardian.fullName }}</strong>
+            <span>{{ guardian.username }}</span>
+            @if (guardian.email) {
+              <small>{{ guardian.email }}</small>
+            }
+          </div>
+        </mat-option>
+      }
+    </mat-autocomplete>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="guardian-link-actions">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <div class="guardian-link-primary-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="!canUnlinkGuardianAccount()"
+        (click)="unlinkGuardianAccount()"
+        data-cy="guardian-unlink-button">
+        Unlink
+      </button>
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        [disabled]="!canLinkGuardianAccount()"
+        (click)="linkGuardianAccount()"
+        data-cy="guardian-link-button">
+        Link
+      </button>
+    </div>
+  </mat-dialog-actions>
+</div>

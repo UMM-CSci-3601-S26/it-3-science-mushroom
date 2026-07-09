@@ -1,0 +1,40 @@
+.guardian-link-dialog {
+  min-width: min(520px, 100%);
+}
+
+.guardian-link-content {
+  padding: var(--app-space-xs) 0 0;
+}
+
+.guardian-link-content mat-form-field {
+  width: 100%;
+}
+
+.guardian-option {
+  display: grid;
+  gap: 2px;
+  line-height: 1.25;
+}
+
+.guardian-option span,
+.guardian-option small {
+  color: var(--app-text-muted);
+}
+
+.guardian-link-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--app-space-sm);
+  padding: 0;
+}
+
+.guardian-link-primary-actions {
+  display: flex;
+  gap: var(--app-space-sm);
+}
+
+.guardian-link-actions button {
+  min-width: auto;
+  padding: 0 14px;
+}

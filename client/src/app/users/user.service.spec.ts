@@ -38,6 +38,14 @@ describe('UserService', () => {
     req.flush([]);
   });
 
+  it('should fetch guardian users from the guardian accounts endpoint', () => {
+    service.getGuardianUsers().subscribe();
+
+    const req = httpTestingController.expectOne(`${environment.apiUrl}users/guardian-accounts`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
   it('should POST new users', () => {
     const payload = {
       username: 'newuser',

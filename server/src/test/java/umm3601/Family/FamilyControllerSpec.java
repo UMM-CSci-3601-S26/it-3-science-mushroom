@@ -1461,6 +1461,10 @@ class FamilyControllerSpec {
     return invokePrivate("displayNameForUser", new Class<?>[] {Users.class}, user);
   }
 
+  private String invokeNormalizeToken(String value) throws Exception {
+    return invokePrivate("normalizeToken", new Class<?>[] {String.class}, (Object) value);
+  }
+
   private Family invokeRequireFamily(String id) throws Exception {
     return invokePrivate("requireFamily", new Class<?>[] {String.class}, id);
   }

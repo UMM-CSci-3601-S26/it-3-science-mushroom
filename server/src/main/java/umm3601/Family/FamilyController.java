@@ -40,6 +40,7 @@ import io.javalin.http.HttpStatus;
 // Misc Imports
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
+import umm3601.Auth.Role;
 import umm3601.Auth.Route;
 import umm3601.Common.AuthContext;
 import umm3601.Inventory.Inventory;
@@ -75,6 +76,7 @@ public class FamilyController {
   private static final String API_FAMILY_HELP_SESSION_SAVE_ALL = "/api/family/{id}/help-session/save-all";
   private static final String API_FAMILY_HELP_SESSION_CLEAR = "/api/family/{id}/help-session/clear";
   private static final String API_FAMILY_HELP_SESSION_REVERT = "/api/family/{id}/help-session/revert";
+  private static final String API_FAMILY_GUARDIAN_LINK = "/api/family/{id}/guardian-link";
   private static final String STATUS_HELPED = "helped";
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
@@ -874,13 +876,90 @@ public class FamilyController {
         totalStudents = totalStudents + 1;
       }
     }
-
     // Compile results into map to return as JSOn
     Map<String, Object> result = new HashMap<>();
     result.put("studentsPerSchool", studentsPerSchool);
     result.put("studentsPerGrade", studentsPerGrade);
     result.put("totalFamilies", families.size());
     result.put("totalStudents", totalStudents);
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.PATCH, path = API_FAMILY_GUARDIAN_LINK)
+  @RequirePermission("link-guardian")
+  public void linkGuardian(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id was not a legal Mongo Object.");
+    }
+
+    Family family = familyCollection.find(eq("_id", familyId)).first();
+    if (family == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+    if (hasText(family.ownerUserId)) {
+      throw new BadRequestResponse("Family already has a linked guardian account");
+    }
+
+    FamilyGuardianLinkRequest request = ctx.bodyAsClass(FamilyGuardianLinkRequest.class);
+    if (request == null || !hasText(request.getGuardianUserId())) {
+      throw new BadRequestResponse("guardianUserId is required");
+    }
+
+    ObjectId guardianUserId;
+    try {
+      guardianUserId = new ObjectId(request.getGuardianUserId());
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested guardian user id was not a legal Mongo Object ID");
+    }
+
+    Users guardian = usersCollection.find(eq("_id", guardianUserId)).first();
+    if (guardian == null) {
+      throw new NotFoundResponse("The requested guardian user was not found");
+    }
+    if (guardian.systemRole != Role.GUARDIAN) {
+      throw new BadRequestResponse("Linked user must be a guardian account");
+    }
+
+    Family alreadyLinkedFamily = familyCollection.find(eq("ownerUserId", request.getGuardianUserId())).first();
+    if (alreadyLinkedFamily != null) {
+      throw new BadRequestResponse("Guardian account is already linked to a family");
+    }
+
+    familyCollection.updateOne(eq("_id", familyId), Updates.set("ownerUserId", request.getGuardianUserId()));
+    Family result = familyCollection.find(eq("_id", familyId)).first();
+
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.DELETE, path = API_FAMILY_GUARDIAN_LINK)
+  @RequirePermission("link-guardian")
+  public void unlinkGuardian(Context ctx) {
+    String id = ctx.pathParam("id");
+
+    ObjectId familyId;
+
+    try {
+      familyId = new ObjectId(id);
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested family id was not a legal Mongo Object.");
+    }
+
+    Family family = familyCollection.find(eq("_id", familyId)).first();
+    if (family == null) {
+      throw new NotFoundResponse("The requested family was not found");
+    }
+
+    familyCollection.updateOne(eq("_id", familyId), unset("ownerUserId"));
+    Family result = familyCollection.find(eq("_id", familyId)).first();
 
     ctx.json(result);
     ctx.status(HttpStatus.OK);
@@ -983,6 +1062,16 @@ public class FamilyController {
   private Family.FamilyChecklist generateChecklistSnapshot(Family family) {
     Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(family);
     return normalizeChecklist(checklist, family.guardianName, family.students);
+  }
+
+  public Family.FamilyChecklist generateCurrentFamilyChecklist(Family family) {
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(family);
+    checklist.snapshot = false;
+    return normalizeChecklist(
+      checklist,
+      family == null ? null : family.guardianName,
+      family == null ? null : family.students
+    );
   }
 
   private void releaseInventory(String internalId, int amount) {
@@ -1189,6 +1278,60 @@ public class FamilyController {
      new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
   }
 
+  private boolean nameEquivalent(String left, String right) {
+    String leftToken = normalizeToken(left);
+    String rightToken = normalizeToken(right);
+    String strictLeftToken = normalizeTokenWithoutPluralFold(left);
+    String strictRightToken = normalizeTokenWithoutPluralFold(right);
+    return leftToken.equals(rightToken)
+      || strictLeftToken.equals(acronymToken(right))
+      || strictRightToken.equals(acronymToken(left));
+  }
+
+  private String normalizeToken(String value) {
+    String normalized = normalizeTokenWithoutPluralFold(value);
+    if (normalized.endsWith("s") && normalized.length() > 1) {
+      return normalized.substring(0, normalized.length() - 1);
+    }
+    return normalized;
+  }
+
+  private String normalizeTokenWithoutPluralFold(String value) {
+    if (value == null) {
+      return "";
+    }
+    return value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
+  }
+
+  private List<String> tokenParts(String value) {
+    if (value == null) {
+      return List.of();
+    }
+    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
+    List<String> tokens = new ArrayList<>();
+    for (String part : parts) {
+      String normalized = normalizeToken(part);
+      if (!normalized.isBlank()) {
+        tokens.add(normalized);
+      }
+    }
+    return tokens;
+  }
+
+  private String acronymToken(String value) {
+    if (value == null) {
+      return "";
+    }
+    String[] parts = value.trim().toLowerCase(Locale.US).split("[^a-z0-9]+");
+    StringBuilder acronym = new StringBuilder();
+    for (String part : parts) {
+      if (!part.isBlank()) {
+        acronym.append(part.charAt(0));
+      }
+    }
+    return acronym.length() > 1 ? acronym.toString() : "";
+  }
+
   private boolean hasText(String value) {
     return value != null && !value.isBlank();
   }
@@ -1247,22 +1390,6 @@ public class FamilyController {
 
     if (normalizedChecklist.sections == null) {
       normalizedChecklist.sections = new ArrayList<>();
-    }
-
-    if (normalizedChecklist.sections.isEmpty() && students != null) {
-      int studentIndex = 1;
-      for (Family.StudentInfo student : students) {
-        Family.ChecklistSection section = new Family.ChecklistSection();
-        section.id = "student-" + studentIndex;
-        String studentName = student != null && student.name != null && !student.name.isBlank()
-          ? student.name
-          : "Student " + studentIndex;
-        section.title = studentName;
-        section.printableTitle = studentName;
-        section.items = new ArrayList<>();
-        normalizedChecklist.sections.add(section);
-        studentIndex++;
-      }
     }
 
     int sectionIndex = 1;

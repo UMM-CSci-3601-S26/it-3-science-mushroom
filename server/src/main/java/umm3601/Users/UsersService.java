@@ -35,6 +35,10 @@ public class UsersService {
     return repository.findManagedUsers();
   }
 
+  public List<Users> getGuardianUsers() {
+    return repository.findGuardianUsers();
+  }
+
   public Users findByUsername(String username) {
     return repository.findByUsername(username);
   }
