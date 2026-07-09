@@ -84,12 +84,18 @@
                   <mat-label>Early Morning</mat-label>
                   <input matInput formControlName="earlyMorning" placeholder="e.g. 8:00–9:00 AM">
                   <mat-error *ngIf="timeAvailabilityForm.get('earlyMorning')?.hasError('required')">Required</mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('earlyMorning')?.hasError('timeMeridiem')">Include AM or PM</mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('earlyMorning')?.hasError('timeSlot')">Use a time like 8:00-9:00 AM</mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('earlyMorning')?.hasError('timeOrder')">End time must be after start time</mat-error>
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
                   <mat-label>Late Morning</mat-label>
                   <input matInput formControlName="lateMorning" placeholder="e.g. 9:00–10:00 AM">
                   <mat-error *ngIf="timeAvailabilityForm.get('lateMorning')?.hasError('required')">Required</mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('lateMorning')?.hasError('timeMeridiem')">Include AM or PM</mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('lateMorning')?.hasError('timeSlot')">Use a time like 9:00-10:00 AM</mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('lateMorning')?.hasError('timeOrder')">End time must be after start time</mat-error>
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
@@ -97,6 +103,12 @@
                   <input matInput formControlName="earlyAfternoon" placeholder="e.g. 12:00–1:00 PM">
                   <mat-error
                     *ngIf="timeAvailabilityForm.get('earlyAfternoon')?.hasError('required')">Required</mat-error>
+                  <mat-error
+                    *ngIf="timeAvailabilityForm.get('earlyAfternoon')?.hasError('timeMeridiem')">Include AM or PM</mat-error>
+                  <mat-error
+                    *ngIf="timeAvailabilityForm.get('earlyAfternoon')?.hasError('timeSlot')">Use a time like 12:00-1:00 PM</mat-error>
+                  <mat-error
+                    *ngIf="timeAvailabilityForm.get('earlyAfternoon')?.hasError('timeOrder')">End time must be after start time</mat-error>
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
@@ -104,6 +116,12 @@
                   <input matInput formControlName="lateAfternoon" placeholder="e.g. 1:00–2:00 PM">
                   <mat-error
                     *ngIf="timeAvailabilityForm.get('lateAfternoon')?.hasError('required')">Required</mat-error>
+                  <mat-error
+                    *ngIf="timeAvailabilityForm.get('lateAfternoon')?.hasError('timeMeridiem')">Include AM or PM</mat-error>
+                  <mat-error
+                    *ngIf="timeAvailabilityForm.get('lateAfternoon')?.hasError('timeSlot')">Use a time like 1:00-2:00 PM</mat-error>
+                  <mat-error
+                    *ngIf="timeAvailabilityForm.get('lateAfternoon')?.hasError('timeOrder')">End time must be after start time</mat-error>
                 </mat-form-field>
 
                 @if (canEditTimeAvailability) {

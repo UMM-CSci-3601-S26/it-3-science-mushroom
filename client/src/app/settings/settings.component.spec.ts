@@ -51,10 +51,10 @@ describe('SettingsComponent', () => {
   const mockSettings: AppSettings = {
     schools: [],
     timeAvailability: {
-      earlyMorning: 'early morning',
-      lateMorning: 'late morning',
-      earlyAfternoon: 'early afternoon',
-      lateAfternoon: 'late afternoon',
+      earlyMorning: '8:00-9:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '12:00-1:00 PM',
+      lateAfternoon: '1:00-2:00 PM',
     },
     supplyOrder: [],
     availableSpots: 5,
@@ -476,6 +476,36 @@ describe('SettingsComponent', () => {
 
     component.saveTimeAvailability();
 
+    expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
+  });
+
+  it('saveTimeAvailability rejects invalid time slot text', () => {
+    settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
+    component.timeAvailabilityForm.setValue({
+      earlyMorning: 'banana',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '12:00-1:00 PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
+
+    component.saveTimeAvailability();
+
+    expect(component.timeAvailabilityForm.get('earlyMorning')?.hasError('timeMeridiem')).toBeTrue();
+    expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
+  });
+
+  it('saveTimeAvailability rejects a time slot that ends before it starts', () => {
+    settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
+    component.timeAvailabilityForm.setValue({
+      earlyMorning: '9:00-8:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '12:00-1:00 PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
+
+    component.saveTimeAvailability();
+
+    expect(component.timeAvailabilityForm.get('earlyMorning')?.hasError('timeOrder')).toBeTrue();
     expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
   });
 

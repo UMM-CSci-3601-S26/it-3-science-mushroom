@@ -1,6 +1,15 @@
 // Angular and Material Imports
 import { Component, OnInit, inject, viewChild, signal, effect, computed } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
@@ -65,6 +74,8 @@ import { DialogService } from '../shared/dialog/dialog.service';
   ]
 })
 export class SettingsComponent implements OnInit {
+  private static readonly timeSlotSeparator = /\s*[-\u2013\u2014]\s*/;
+
   // Services & Components
   private settingsService = inject(SettingsService);
   private termsService = inject(TermsService);
@@ -234,10 +245,10 @@ export class SettingsComponent implements OnInit {
 
   // Form for setting clock-time labels for each availability slot
   timeAvailabilityForm = new FormGroup({
-    earlyMorning: new FormControl('', Validators.required),
-    lateMorning: new FormControl('', Validators.required),
-    earlyAfternoon: new FormControl('', Validators.required),
-    lateAfternoon: new FormControl('', Validators.required),
+    earlyMorning: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    lateMorning: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    earlyAfternoon: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    lateAfternoon: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
   });
 
   availableSpotsForm = new FormGroup({
@@ -713,5 +724,62 @@ export class SettingsComponent implements OnInit {
         error: () => this.snackBar.open('Failed to save barcode print settings', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  private static timeSlotValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = `${control.value ?? ''}`.trim();
+      if (!value) {
+        return null;
+      }
+
+      const rangeParts = value.split(SettingsComponent.timeSlotSeparator, 2);
+      const endMeridiem = rangeParts.length === 2
+        ? SettingsComponent.extractMeridiem(rangeParts[1])
+        : undefined;
+      const startMeridiem = SettingsComponent.extractMeridiem(rangeParts[0]) ?? endMeridiem;
+      const resolvedEndMeridiem = endMeridiem ?? startMeridiem;
+
+      const start = SettingsComponent.parseTimeSlotPart(rangeParts[0], startMeridiem);
+      if (start === undefined) {
+        return startMeridiem ? { timeSlot: true } : { timeMeridiem: true };
+      }
+
+      if (rangeParts.length === 1) {
+        return null;
+      }
+
+      const end = SettingsComponent.parseTimeSlotPart(rangeParts[1], resolvedEndMeridiem);
+      if (end === undefined) {
+        return resolvedEndMeridiem ? { timeSlot: true } : { timeMeridiem: true };
+      }
+
+      return end > start ? null : { timeOrder: true };
+    };
+  }
+
+  private static extractMeridiem(timeText: string): 'AM' | 'PM' | undefined {
+    const matches = timeText.match(/\b(AM|PM)\b/gi);
+    return matches?.at(-1)?.toUpperCase() as 'AM' | 'PM' | undefined;
+  }
+
+  private static parseTimeSlotPart(timeText: string, meridiem: 'AM' | 'PM' | undefined): number | undefined {
+    if (!meridiem) {
+      return undefined;
+    }
+
+    const cleanedTime = timeText.replace(/\b(AM|PM)\b/gi, '').trim();
+    const match = cleanedTime.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) {
+      return undefined;
+    }
+
+    const hour = Number(match[1]);
+    const minute = Number(match[2]);
+    if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+      return undefined;
+    }
+
+    return ((hour % 12) + (meridiem === 'PM' ? 12 : 0)) * 60 + minute;
   }
 }

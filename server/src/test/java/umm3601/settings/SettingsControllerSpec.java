@@ -4,6 +4,7 @@ package umm3601.Settings;
 // Static Imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static com.mongodb.client.model.Filters.eq;
@@ -284,7 +285,7 @@ class SettingsControllerSpec {
   }
 
   @Test
-  void updateTimeAvailabilityWithNullFields() {
+  void updateTimeAvailabilityRejectsNullFields() {
     Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
     labels.earlyMorning = null;
     labels.lateMorning = null;
@@ -292,8 +293,40 @@ class SettingsControllerSpec {
     labels.lateAfternoon = null;
     when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
 
-    settingsController.updateTimeAvailability(ctx);
-    verify(ctx).status(HttpStatus.OK);
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning must be a valid time slot.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityRejectsInvalidTimeSlot() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "banana";
+    labels.lateMorning = "9:00-10:00 AM";
+    labels.earlyAfternoon = "12:00-1:00 PM";
+    labels.lateAfternoon = "2:00-3:00 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning must include AM or PM.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityRejectsEndBeforeStart() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "9:00-8:00 AM";
+    labels.lateMorning = "9:00-10:00 AM";
+    labels.earlyAfternoon = "12:00-1:00 PM";
+    labels.lateAfternoon = "2:00-3:00 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning end time must be after the start time.", exception.getMessage());
   }
 
   @Test
