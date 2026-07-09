@@ -71,6 +71,15 @@ class FamilySchedulingServiceSpec {
   }
 
   @Test
+  void schedulingAlgorithmAllowsMissingSettingsWhenThereAreNoFamilies() {
+    ArrayList<Family> families = new ArrayList<>();
+
+    ArrayList<Family> scheduledFamilies = familySchedulingService.schedulingAlgorithm(families, null);
+
+    assertEquals(List.of(), scheduledFamilies);
+  }
+
+  @Test
   void schedulingAlgorithmInfersMeridiemFromAvailabilityWindow() {
     ArrayList<Family> families = new ArrayList<>(List.of(
       familyForScheduling("Morning Family", true, false, false, false, 2),

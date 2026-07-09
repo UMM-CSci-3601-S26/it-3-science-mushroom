@@ -300,6 +300,53 @@ class SettingsControllerSpec {
   }
 
   @Test
+  void updateTimeAvailabilityRejectsMissingBody() {
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(null);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("Request body must include time availability labels.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityRejectsBlankFields() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.earlyMorning = " ";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning must be a valid time slot.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityAcceptsSingleStartTimeLabels() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "8:00 AM";
+    labels.lateMorning = "10:00 AM";
+    labels.earlyAfternoon = "1:00 PM";
+    labels.lateAfternoon = "3:00 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    settingsController.updateTimeAvailability(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateTimeAvailabilityAcceptsRangeWhenOnlyStartHasMeridiem() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.earlyMorning = "8:00 AM-9:00";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    settingsController.updateTimeAvailability(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
   void updateTimeAvailabilityRejectsInvalidTimeSlot() {
     Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
     labels.earlyMorning = "banana";
@@ -327,6 +374,15 @@ class SettingsControllerSpec {
       () -> settingsController.updateTimeAvailability(ctx));
 
     assertEquals("earlyMorning end time must be after the start time.", exception.getMessage());
+  }
+
+  private Settings.TimeAvailabilityLabels validTimeAvailabilityLabels() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "8:00-9:00 AM";
+    labels.lateMorning = "9:00-10:00 AM";
+    labels.earlyAfternoon = "12:00-1:00 PM";
+    labels.lateAfternoon = "2:00-3:00 PM";
+    return labels;
   }
 
   @Test
