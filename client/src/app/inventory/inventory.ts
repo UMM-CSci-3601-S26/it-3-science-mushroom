@@ -11,6 +11,7 @@ export interface Inventory {
   material:string;
   description?: string;
   quantity: number;
+  reservedQuantity?: number;
   maxQuantity: number;
   minQuantity: number;
   stockState: string;

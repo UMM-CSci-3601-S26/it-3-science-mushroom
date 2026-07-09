@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 // Org Imports
@@ -47,7 +46,6 @@ import umm3601.Auth.Route;
 import umm3601.Common.AuthContext;
 import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
-import umm3601.SupplyList.SupplyList;
 import umm3601.Users.Users;
 
 /* FamilyController Contains the Following:
@@ -86,12 +84,6 @@ public class FamilyController {
   private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
   private static final String REASON_SUBSTITUTED = "substituted";
-  private static final int EXACT_ITEM_MATCH_SCORE = 100;
-  private static final int SEARCHABLE_ITEM_MATCH_SCORE = 75;
-  private static final int PARTIAL_ITEM_MATCH_SCORE = 50;
-  private static final int REQUIRED_PARTIAL_ITEM_TOKEN_LENGTH = 4;
-  private static final int REQUIRED_ATTRIBUTE_MATCH_SCORE = 5;
-  private static final int OPTIONAL_ATTRIBUTE_MATCH_SCORE = 3;
 
   // Regex
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -107,24 +99,55 @@ public class FamilyController {
 
   // Database Collection
   private final JacksonMongoCollection<Family> familyCollection;
-  private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
   private final JacksonMongoCollection<Users> usersCollection;
   private final FamilyChecklistGenerator checklistGenerator;
+  private final InventoryReservationService inventoryReservationService;
+  private final InventoryMatcher inventoryMatcher;
+  private final FamilyChecklistService familyChecklistService;
 
 
   // Database Constructor
   public FamilyController(MongoDatabase database) {
+    this(database, new InventoryMatcher(database));
+  }
+
+  public FamilyController(MongoDatabase database, InventoryMatcher inventoryMatcher) {
+    this(
+      database,
+      new InventoryReservationService(database, inventoryMatcher),
+      inventoryMatcher,
+      new FamilyChecklistService(database, inventoryMatcher)
+    );
+  }
+
+  public FamilyController(
+      MongoDatabase database,
+      InventoryReservationService inventoryReservationService,
+      InventoryMatcher inventoryMatcher
+  ) {
+    this(
+      database,
+      inventoryReservationService,
+      inventoryMatcher,
+      new FamilyChecklistService(database, inventoryMatcher)
+    );
+  }
+
+  public FamilyController(
+      MongoDatabase database,
+      InventoryReservationService inventoryReservationService,
+      InventoryMatcher inventoryMatcher,
+      FamilyChecklistService familyChecklistService
+  ) {
+    this.inventoryReservationService = inventoryReservationService;
+    this.inventoryMatcher = inventoryMatcher;
+    this.familyChecklistService = familyChecklistService;
     familyCollection = JacksonMongoCollection.builder().build(
         database,
         "family",
         Family.class,
-        UuidRepresentation.STANDARD);
-    supplyListCollection = JacksonMongoCollection.builder().build(
-        database,
-        "supplylist",
-        SupplyList.class,
         UuidRepresentation.STANDARD);
     inventoryCollection = JacksonMongoCollection.builder().build(
         database,
@@ -216,6 +239,7 @@ public class FamilyController {
 
     if (existingFamily == null) {
       familyCollection.insertOne(family);
+      rebuildInventoryReservation();
       return;
     }
 
@@ -224,6 +248,7 @@ public class FamilyController {
     family.status = determineStatus(existingFamily);
     family.deleteRequest = existingFamily.deleteRequest;
     familyCollection.replaceOne(eq("_id", new ObjectId(existingFamily._id)), family);
+    rebuildInventoryReservation();
   }
 
   /**
@@ -407,6 +432,7 @@ public class FamilyController {
     normalizeFamilyForPersistence(newFamily, null);
     newFamily.profileComplete = true;
     familyCollection.insertOne(newFamily);
+    rebuildInventoryReservation();
 
     ctx.json(Map.of("id", newFamily._id));
     ctx.status(HttpStatus.CREATED);
@@ -479,6 +505,7 @@ public class FamilyController {
     );
 
     familyCollection.updateOne(eq("_id", familyId), update);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
@@ -516,6 +543,7 @@ public class FamilyController {
           + id
           + "; perhaps illegal Family ID or an ID for a Family not in the system?");
     }
+    rebuildInventoryReservation();
     ctx.status(HttpStatus.OK);
   }
 
@@ -656,6 +684,7 @@ public class FamilyController {
       .append("status", normalizedStatus));
 
     familyCollection.updateOne(eq("_id", familyId), update);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
@@ -764,6 +793,7 @@ public class FamilyController {
       family.checklist.snapshot = false;
     }
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
@@ -795,10 +825,27 @@ public class FamilyController {
     family.helped = true;
     family.checklist.snapshot = false;
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
     ctx.status(HttpStatus.OK);
+  }
+
+  private void releaseChecklistReservations(Family.FamilyChecklist checklist) {
+    if (checklist == null || checklist.sections == null) {
+      return;
+    }
+
+    for (Family.ChecklistSection section : checklist.sections) {
+      if (section.saved || section.items == null) {
+        continue;
+      }
+
+      for (Family.ChecklistItem item : section.items) {
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
+      }
+    }
   }
 
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_CLEAR)
@@ -807,10 +854,13 @@ public class FamilyController {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
 
+    releaseChecklistReservations(family.checklist);
+
     family.checklist = null;
     family.status = STATUS_NOT_HELPED;
     family.helped = false;
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
@@ -832,6 +882,7 @@ public class FamilyController {
     family.status = STATUS_BEING_HELPED;
     family.helped = false;
     persistFamilyChecklistAndStatus(family);
+    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
     ctx.json(result);
@@ -1057,24 +1108,7 @@ public class FamilyController {
   }
 
   private Family.FamilyChecklist generateChecklistSnapshot(Family family) {
-    Family.FamilyChecklist checklist = new Family.FamilyChecklist();
-    checklist.templateId = "family-help-session-v1";
-    checklist.printableTitle = family.guardianName + " Checklist";
-    checklist.snapshot = true;
-    checklist.sections = new ArrayList<>();
-
-    int studentIndex = 1;
-    for (Family.StudentInfo student : family.students) {
-      Family.ChecklistSection section = new Family.ChecklistSection();
-      section.id = "student-" + studentIndex;
-      section.title = hasText(student.name) ? student.name : "Student " + studentIndex;
-      section.printableTitle = section.title;
-      section.saved = false;
-      section.items = buildChecklistItemsForStudent(student, section.id);
-      checklist.sections.add(section);
-      studentIndex++;
-    }
-
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(family);
     return normalizeChecklist(checklist, family.guardianName, family.students);
   }
 
@@ -1232,81 +1266,27 @@ public class FamilyController {
     boolean itemMatch = supplyList.item.stream().anyMatch(item -> nameEquivalent(item, inventory.item));
     if (!itemMatch) {
       return false;
+  private void releaseInventory(String internalId, int amount) {
+    if (!hasText(internalId)) {
+      return;
     }
 
-    if (!matchesAttribute(supplyList.brand, inventory.brand)) {
-      return false;
-    }
-    if (!matchesColorAttribute(supplyList.color, inventory.color)) {
-      return false;
-    }
-    if (!matchesAttribute(supplyList.size, inventory.size)) {
-      return false;
-    }
-    if (!matchesAttribute(supplyList.type, inventory.type)) {
-      return false;
-    }
-    if (!matchesAttribute(supplyList.material, inventory.material)) {
-      return false;
-    }
-    if (supplyList.packageSize != null && supplyList.packageSize > 0 && inventory.packageSize > 0
-      && !Objects.equals(supplyList.packageSize, inventory.packageSize)) {
-      return false;
+    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    if (inventory == null) {
+      throw new NotFoundResponse("No item found for internalID: " + internalId);
     }
 
-    return true;
+    int quantityToRelease = amount <= 0 ? 1 : amount;
+    int newReservedQuantity = Math.max(0, inventory.reservedQuantity - quantityToRelease);
+
+    inventoryCollection.updateOne(eq("_id", new ObjectId(inventory._id)),
+    Updates.set("reservedQuantity", newReservedQuantity));
+
+    inventory.reservedQuantity = newReservedQuantity;
   }
 
-  private int inventorySpecificityScore(Inventory inventory) {
-    int score = 0;
-    if (hasValue(inventory.brand)) {
-      score++;
-    }
-    if (hasValue(inventory.color)) {
-      score++;
-    }
-    if (hasValue(inventory.size)) {
-      score++;
-    }
-    if (hasValue(inventory.type)) {
-      score++;
-    }
-    if (hasValue(inventory.material)) {
-      score++;
-    }
-    if (inventory.packageSize > 1) {
-      score++;
-    }
-    return score;
-  }
-
-  private boolean matchesAttribute(SupplyList.AttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return true;
-    }
-    if (hasText(options.allOf) && !nameEquivalent(options.allOf, inventoryValue)) {
-      return false;
-    }
-    if (options.anyOf != null && !options.anyOf.isEmpty()) {
-      return options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-    }
-    return true;
-  }
-
-  private boolean matchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return true;
-    }
-    if (options.allOf != null && !options.allOf.isEmpty()) {
-      boolean allOfMatch = options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-      if (!allOfMatch) {
-        return false;
-      }
-    }
-    if (options.anyOf != null && !options.anyOf.isEmpty()) {
-      return options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-    }
-    return true;
+  private void rebuildInventoryReservation() {
+    inventoryReservationService.rebuildInventoryReservation();
   }
 
   private void persistFamilyChecklistAndStatus(Family family) {
@@ -1371,18 +1351,27 @@ public class FamilyController {
     for (Family.ChecklistItem item : section.items) {
       validateChecklistItemForSave(item);
 
-      if (item.selected) {
-        consumeInventory(item.matchedInventoryId, item.requestedQuantity);
-      } else if (hasText(item.substituteBarcode)) {
-        Inventory substituteInventory = findInventoryByBarcode(item.substituteBarcode);
+      if (hasText(item.substituteBarcode)) {
+        Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
         if (substituteInventory == null) {
           throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
         }
+
+        if (inventoryMatcher.unreservedQuantity(substituteInventory) < item.requestedQuantity) {
+          throw new BadRequestResponse("Not enough unreserved stock available for substitute item.");
+        }
+
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
         consumeInventory(substituteInventory.internalID, item.requestedQuantity);
         item.substituteInventoryId = substituteInventory.internalID;
         item.substituteItem = substituteInventory.item;
         item.substituteDescription = substituteInventory.description;
         item.notPickedUpReason = REASON_SUBSTITUTED;
+      } else if (item.selected) {
+        consumeInventory(item.matchedInventoryId, item.requestedQuantity);
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
+      } else {
+        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
       }
     }
   }
@@ -1390,29 +1379,29 @@ public class FamilyController {
   private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
     for (Family.ChecklistSection section : checklist.sections) {
       for (Family.ChecklistItem item : section.items) {
-        if (item.selected) {
-          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
-        } else if (hasText(item.substituteInventoryId)) {
+        if (hasText(item.substituteInventoryId)) {
           restoreInventory(item.substituteInventoryId, item.requestedQuantity);
         } else if (hasText(item.substituteBarcode)) {
-          Inventory substituteInventory = findInventoryByBarcode(item.substituteBarcode);
+          Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
           if (substituteInventory == null) {
             throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
           }
           restoreInventory(substituteInventory.internalID, item.requestedQuantity);
           item.substituteInventoryId = substituteInventory.internalID;
+        } else if (item.selected) {
+          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
         }
       }
     }
   }
 
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
-    if (item.selected && !item.available) {
+    boolean hasSubstitution = hasText(item.substituteBarcode);
+    if (item.selected && !item.available && !hasSubstitution) {
       throw new BadRequestResponse("Unavailable items cannot be saved as selected.");
     }
 
     if (!item.selected) {
-      boolean hasSubstitution = hasText(item.substituteBarcode);
       boolean hasReason = hasText(item.notPickedUpReason);
 
       if (!item.available && !hasReason && !hasSubstitution) {
@@ -1447,20 +1436,6 @@ public class FamilyController {
       .toLowerCase(Locale.US)
       .replace("'", "")
       .replaceAll("[\\s-]+", "_");
-  }
-
-  private Inventory findInventoryByBarcode(String barcode) {
-    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
-    for (Inventory inventory : inventories) {
-      if (nameEquivalent(inventory.internalBarcode, barcode)) {
-        return inventory;
-      }
-      if (inventory.externalBarcode != null && inventory.externalBarcode.stream()
-        .anyMatch(code -> nameEquivalent(code, barcode))) {
-        return inventory;
-      }
-    }
-    return null;
   }
 
   private void consumeInventory(String internalId, int amount) {
@@ -1551,10 +1526,6 @@ public class FamilyController {
 
   private boolean hasText(String value) {
     return value != null && !value.isBlank();
-  }
-
-  private boolean hasValue(String value) {
-    return hasText(value) && !"n/a".equalsIgnoreCase(value.trim());
   }
 
   private void normalizeFamilyForPersistence(Family family, Family existingFamily) {
