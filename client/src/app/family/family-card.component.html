@@ -41,8 +41,8 @@
         <div class="family-compact-grid">
           <div class="family-info-item">
             <div>
-              <div class="family-info-label">Time Slot</div>
-              <div>{{ family().timeSlot || 'To be assigned' }}</div>
+              <div class="family-info-label">Schedule Window</div>
+              <div>{{ scheduleWindow() }}</div>
             </div>
           </div>
           <div class="family-info-item">
@@ -116,8 +116,8 @@
           <div class="family-info-item">
             <mat-icon>event</mat-icon>
             <div>
-              <div class="family-info-label">Time Slot</div>
-              <div class="family-card-timeSlot">{{ family().timeSlot || 'To be assigned' }}</div>
+              <div class="family-info-label">Schedule Window</div>
+              <div class="family-card-timeSlot">{{ scheduleWindow() }}</div>
             </div>
           </div>
           <div class="family-info-item">

@@ -108,7 +108,7 @@ export class SettingsComponent implements OnInit {
   }
 
   get canScheduleFamilies(): boolean {
-    return this.authService.hasPermission('schedule_families');
+    return this.authService.isAdmin() && this.authService.hasPermission('schedule_families');
   }
 
   get canEditDriveDay(): boolean {
@@ -676,8 +676,17 @@ export class SettingsComponent implements OnInit {
       next: () => {
         this.familyService.scheduleFamilies().subscribe({
           next: () => {
-            this.router.navigate(['/family-schedule']);
-            this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
+            this.router.navigate(['/family-schedule'])
+              .then(navigated => {
+                if (navigated) {
+                  this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
+                } else {
+                  this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
+                }
+              })
+              .catch(() => {
+                this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
+              });
           },
           error: (err) => {
             const lowCapacityMessage = 'Not all families were able to be sorted, your event capacity may be too low';

@@ -12,11 +12,13 @@ import java.util.regex.Pattern;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
 import umm3601.Settings.Settings;
+import umm3601.Family.Family.AvailabilityOptions;
 
 public class FamilySchedulingService {
   private static final int SCHEDULE_BLOCK_MINUTES = 15;
   private static final int LARGE_FAMILY_CHILDREN_THRESHOLD = 3;
   private static final int SCHEDULE_MERIDIEM_SUFFIX_LENGTH = 3;
+  private static final int DEFAULT_SCHEDULE_WINDOW_MINUTES = 60;
   private static final DateTimeFormatter SCHEDULE_TIME_FORMATTER =
       DateTimeFormatter.ofPattern("h:mm a", Locale.US);
 
@@ -28,31 +30,33 @@ public class FamilySchedulingService {
       ArrayList<Family> families,
       Settings.TimeAvailabilityLabels currentSettings
   ) {
-    families.sort(Comparator.comparingInt(f -> f.timeAvailability.countTrue()));
+    families.sort(Comparator.comparingInt(f -> availability(f).countTrue()));
 
     if (currentSettings == null) {
       currentSettings = new Settings.TimeAvailabilityLabels();
     }
 
-    ScheduleWindow earlyMorning = new ScheduleWindow(subdivideTimeSlot(currentSettings.earlyMorning));
-    ScheduleWindow lateMorning = new ScheduleWindow(subdivideTimeSlot(currentSettings.lateMorning));
-    ScheduleWindow earlyAfternoon = new ScheduleWindow(subdivideTimeSlot(currentSettings.earlyAfternoon));
-    ScheduleWindow lateAfternoon = new ScheduleWindow(subdivideTimeSlot(currentSettings.lateAfternoon));
+    ScheduleWindow earlyMorning = new ScheduleWindow(subdivideTimeSlot(currentSettings.earlyMorning, "AM"));
+    ScheduleWindow lateMorning = new ScheduleWindow(subdivideTimeSlot(currentSettings.lateMorning, "AM"));
+    ScheduleWindow earlyAfternoon = new ScheduleWindow(subdivideTimeSlot(currentSettings.earlyAfternoon, "PM"));
+    ScheduleWindow lateAfternoon = new ScheduleWindow(subdivideTimeSlot(currentSettings.lateAfternoon, "PM"));
 
     for (Family family : families) {
-      if (family.timeAvailability.earlyMorning && assignFamilyToScheduleWindow(family, earlyMorning)) {
+      AvailabilityOptions familyAvailability = availability(family);
+
+      if (familyAvailability.earlyMorning && assignFamilyToScheduleWindow(family, earlyMorning)) {
         continue;
       }
 
-      if (family.timeAvailability.lateMorning && assignFamilyToScheduleWindow(family, lateMorning)) {
+      if (familyAvailability.lateMorning && assignFamilyToScheduleWindow(family, lateMorning)) {
         continue;
       }
 
-      if (family.timeAvailability.earlyAfternoon && assignFamilyToScheduleWindow(family, earlyAfternoon)) {
+      if (familyAvailability.earlyAfternoon && assignFamilyToScheduleWindow(family, earlyAfternoon)) {
         continue;
       }
 
-      if (family.timeAvailability.lateAfternoon && assignFamilyToScheduleWindow(family, lateAfternoon)) {
+      if (familyAvailability.lateAfternoon && assignFamilyToScheduleWindow(family, lateAfternoon)) {
         continue;
       }
 
@@ -62,25 +66,30 @@ public class FamilySchedulingService {
   }
 
   List<String> subdivideTimeSlot(String timeSlot) {
+    return subdivideTimeSlot(timeSlot, null);
+  }
+
+  private List<String> subdivideTimeSlot(String timeSlot, String fallbackMeridiem) {
     if (timeSlot == null || timeSlot.isBlank()) {
       return List.of();
     }
 
     String normalized = timeSlot.trim();
-    String[] rangeParts = normalized.split("\\s*-\\s*", 2);
+    String[] rangeParts = normalized.split("\\s*[-\u2013\u2014]\\s*", 2);
 
-    if (rangeParts.length != 2) {
-      throw new BadRequestResponse("Time slot must be a range like 8:00-9:00 AM");
-    }
-
-    String endMeridiem = meridiem(rangeParts[1]);
+    String endMeridiem = rangeParts.length == 2 ? meridiem(rangeParts[1]) : null;
     String startMeridiem = meridiem(rangeParts[0]);
     if (startMeridiem == null) {
-      startMeridiem = endMeridiem;
+      startMeridiem = endMeridiem == null ? fallbackMeridiem : endMeridiem;
+    }
+    if (endMeridiem == null) {
+      endMeridiem = startMeridiem;
     }
 
     LocalTime start = parseScheduleTime(rangeParts[0], startMeridiem);
-    LocalTime end = parseScheduleTime(rangeParts[1], endMeridiem);
+    LocalTime end = rangeParts.length == 2
+        ? parseScheduleTime(rangeParts[1], endMeridiem)
+        : start.plusMinutes(DEFAULT_SCHEDULE_WINDOW_MINUTES);
 
     if (!end.isAfter(start)) {
       throw new BadRequestResponse("Time slot end must be after the start time");
@@ -100,6 +109,10 @@ public class FamilySchedulingService {
     }
 
     return blocks;
+  }
+
+  private AvailabilityOptions availability(Family family) {
+    return family.timeAvailability == null ? new AvailabilityOptions() : family.timeAvailability;
   }
 
   private LocalTime parseScheduleTime(String timeText, String meridiem) {

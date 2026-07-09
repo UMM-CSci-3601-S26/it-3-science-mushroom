@@ -9,6 +9,18 @@
   background: var(--app-surface);
 }
 
+.schedule-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-sm);
+}
+
+.schedule-actions a,
+.schedule-actions button {
+  min-height: 40px;
+}
+
 .schedule-list {
   display: grid;
   gap: var(--app-space-sm);
@@ -64,6 +76,12 @@
 }
 
 @media (max-width: 599px) {
+  .schedule-actions {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
   .schedule-row,
   .schedule-family {
     align-items: flex-start;

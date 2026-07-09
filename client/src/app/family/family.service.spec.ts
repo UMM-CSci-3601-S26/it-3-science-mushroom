@@ -888,5 +888,21 @@ describe('FamilyService', () => {
       // Simulate a successful response
       req.flush(mockResponse);
     });
+
+    it('should clear scheduled times and return updated families', () => {
+      const mockResponse: Family[] = testFamilies.map(family => ({
+        ...family,
+        timeSlot: ''
+      }));
+
+      familyService.clearScheduledTimes().subscribe((families) => {
+        expect(families).toEqual(mockResponse);
+      });
+
+      const req = httpTestingController.expectOne(`${familyService.familyUrl}/schedule/clear`);
+      expect(req.request.method).toBe('POST');
+
+      req.flush(mockResponse);
+    });
   });
 });

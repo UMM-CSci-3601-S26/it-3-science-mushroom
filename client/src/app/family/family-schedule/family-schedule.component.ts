@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { catchError, finalize, of } from 'rxjs';
 
 import { Family } from '../family';
 import { FamilyService } from '../family.service';
@@ -15,19 +17,19 @@ import { FamilyService } from '../family.service';
   styleUrls: ['./family-schedule.component.scss'],
   imports: [
     CommonModule,
+    RouterLink,
+    MatButtonModule,
     MatCardModule,
-    MatIconModule
+    MatIconModule,
+    MatSnackBarModule
   ]
 })
 export class FamilyScheduleComponent {
   private familyService = inject(FamilyService);
+  private snackBar = inject(MatSnackBar);
 
-  families = toSignal(
-    this.familyService.getFamilies().pipe(
-      catchError(() => of<Family[]>([]))
-    ),
-    { initialValue: [] }
-  );
+  families = signal<Family[]>([]);
+  isClearingScheduledTimes = signal(false);
 
   scheduledFamilies = computed(() =>
     [...this.families()].sort((left, right) =>
@@ -35,6 +37,33 @@ export class FamilyScheduleComponent {
         || this.compareGuardianNames(left.guardianName, right.guardianName)
     )
   );
+
+  hasScheduledTimes = computed(() =>
+    this.families().some(family => this.isScheduled(family.timeSlot))
+  );
+
+  constructor() {
+    this.loadFamilies();
+  }
+
+  clearScheduledTimes(): void {
+    if (!this.hasScheduledTimes() || this.isClearingScheduledTimes()) {
+      return;
+    }
+
+    this.isClearingScheduledTimes.set(true);
+    this.familyService.clearScheduledTimes().pipe(
+      finalize(() => this.isClearingScheduledTimes.set(false))
+    ).subscribe({
+      next: families => {
+        this.families.set(families);
+        this.snackBar.open('Scheduled times cleared', 'OK', { duration: 2000 });
+      },
+      error: () => {
+        this.snackBar.open('Failed to clear scheduled times', 'OK', { duration: 3000 });
+      }
+    });
+  }
 
   private compareGuardianNames(leftName: string, rightName: string): number {
     const left = this.nameParts(leftName);
@@ -53,6 +82,29 @@ export class FamilyScheduleComponent {
       last: parts.at(-1) ?? '',
       full: name.trim()
     };
+  }
+
+  scheduleWindow(family: Family): string {
+    const timeSlot = family.timeSlot?.trim();
+    return timeSlot ? timeSlot : 'To be assigned';
+  }
+
+  private loadFamilies(): void {
+    this.familyService.getFamilies().pipe(
+      catchError(() => {
+        this.snackBar.open('Failed to load family schedule', 'OK', { duration: 3000 });
+        return of<Family[]>([]);
+      })
+    ).subscribe(families => this.families.set(families));
+  }
+
+  private isScheduled(timeSlot: string | undefined): boolean {
+    if (!timeSlot) {
+      return false;
+    }
+
+    const normalized = timeSlot.trim().toLowerCase();
+    return normalized !== '' && normalized !== 'tbd' && !normalized.includes('assigned');
   }
 
   private timeSlotSortValue(timeSlot: string | undefined): number {

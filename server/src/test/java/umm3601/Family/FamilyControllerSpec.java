@@ -270,6 +270,21 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void canClearScheduledTimes() {
+    familyController.clearScheduledTimes(ctx);
+
+    verify(ctx).json(familyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    List<Document> families = db.getCollection("family")
+      .find()
+      .into(new ArrayList<>());
+
+    assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
+    assertTrue(families.stream().allMatch(family -> "".equals(family.getString("timeSlot"))));
+  }
+
+  @Test
   void canGetFamilyWithString() {
     Map<String, List<String>> queryParams = new HashMap<>();
     queryParams.put(FamilyController.FAMILY_KEY, List.of("John"));

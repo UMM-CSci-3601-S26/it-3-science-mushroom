@@ -187,7 +187,15 @@ export class FamilyService {
   * Calls the backend to schedule families based on families and available spots
   */
   scheduleFamilies(): Observable<Family[]> {
-    return this.httpClient.post<Family[]>(`${this.familyUrl}/schedule`, {});
+    return this.httpClient.post<Family[]>(`${this.familyUrl}/schedule`, {}).pipe(
+      tap(families => this.family.set(families))
+    );
+  }
+
+  clearScheduledTimes(): Observable<Family[]> {
+    return this.httpClient.post<Family[]>(`${this.familyUrl}/schedule/clear`, {}).pipe(
+      tap(families => this.family.set(families))
+    );
   }
 
   /**

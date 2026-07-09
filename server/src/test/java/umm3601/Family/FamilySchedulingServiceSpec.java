@@ -47,6 +47,46 @@ class FamilySchedulingServiceSpec {
   }
 
   @Test
+  void subdivideTimeSlotHandlesEnDashRange() {
+    List<String> blocks = familySchedulingService.subdivideTimeSlot("8:00\u20139:00 AM");
+
+    assertEquals(List.of(
+      "8:00-8:15 AM",
+      "8:15-8:30 AM",
+      "8:30-8:45 AM",
+      "8:45-9:00 AM"), blocks);
+  }
+
+  @Test
+  void schedulingAlgorithmTreatsSingleSettingTimeAsOneHourWindow() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Family One", true, false, false, false, 2)));
+
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
+    currentSettings.earlyMorning = "8:00 AM";
+
+    familySchedulingService.schedulingAlgorithm(families, currentSettings);
+
+    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
+  }
+
+  @Test
+  void schedulingAlgorithmInfersMeridiemFromAvailabilityWindow() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Morning Family", true, false, false, false, 2),
+      familyForScheduling("Afternoon Family", false, false, true, false, 2)));
+
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
+    currentSettings.earlyMorning = "8:00-9:00";
+    currentSettings.earlyAfternoon = "1:00-2:00";
+
+    familySchedulingService.schedulingAlgorithm(families, currentSettings);
+
+    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
+    assertEquals("1:00-1:15 PM", families.get(1).timeSlot);
+  }
+
+  @Test
   void schedulingAlgorithmAssignsFamiliesToFifteenMinuteBlocks() {
     ArrayList<Family> families = new ArrayList<>(List.of(
       familyForScheduling("Jane Doe", true, true, true, true, 2),

@@ -99,6 +99,7 @@ describe('SettingsComponent', () => {
     });
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy.navigate.and.returnValue(Promise.resolve(true));
 
 
     // Default: return empty settings and the three mock terms

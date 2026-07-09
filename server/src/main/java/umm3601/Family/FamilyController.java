@@ -61,6 +61,7 @@ public class FamilyController {
   // API Endpoints
   private static final String API_FAMILY = "/api/family";
   private static final String API_SCHEDULE_FAMILIES = "/api/family/schedule";
+  private static final String API_CLEAR_SCHEDULED_TIMES = "/api/family/schedule/clear";
   private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
   private static final String API_FAMILY_EXPORT = "/api/family/export";
@@ -280,7 +281,8 @@ public class FamilyController {
         .find(filter)
         .into(new ArrayList<>()); //loading families
 
-    familySchedulingService.schedulingAlgorithm(families, settings.timeAvailability); // scheduling families
+    Settings.TimeAvailabilityLabels timeAvailability = settings == null ? null : settings.timeAvailability;
+    familySchedulingService.schedulingAlgorithm(families, timeAvailability); // scheduling families
 
     List<WriteModel<Family>> updates = new ArrayList<>();
 
@@ -294,6 +296,19 @@ public class FamilyController {
     }
 
     familyCollection.bulkWrite(updates);
+
+    ctx.json(families);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.POST, path = API_CLEAR_SCHEDULED_TIMES)
+  @RequirePermission("schedule_families")
+  public void clearScheduledTimes(Context ctx) {
+    familyCollection.updateMany(new Document(), Updates.set("timeSlot", ""));
+
+    ArrayList<Family> families = familyCollection
+        .find()
+        .into(new ArrayList<>());
 
     ctx.json(families);
     ctx.status(HttpStatus.OK);

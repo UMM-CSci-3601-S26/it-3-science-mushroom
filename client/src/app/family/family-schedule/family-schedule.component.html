@@ -2,7 +2,26 @@
   <header class="app-page-header">
     <div>
       <h1 id="family-schedule-heading" class="app-page-title">Family Schedule</h1>
-      <p class="app-page-subtitle">Families ordered by their scheduled time slot.</p>
+      <p class="app-page-subtitle">Families ordered by their scheduled 15-minute window.</p>
+    </div>
+    <div class="schedule-actions" aria-label="Schedule actions">
+      <a mat-stroked-button routerLink="/settings" [queryParams]="{ tab: 'available-spots' }">
+        <mat-icon>settings</mat-icon>
+        <span>Save &amp; Schedule</span>
+      </a>
+      <a mat-stroked-button routerLink="/settings" [queryParams]="{ tab: 'time-availability' }">
+        <mat-icon>schedule</mat-icon>
+        <span>Time Windows</span>
+      </a>
+      <button
+        mat-raised-button
+        color="warn"
+        type="button"
+        [disabled]="!hasScheduledTimes() || isClearingScheduledTimes()"
+        (click)="clearScheduledTimes()">
+        <mat-icon>event_busy</mat-icon>
+        <span>Clear Times</span>
+      </button>
     </div>
   </header>
 
@@ -14,7 +33,7 @@
             <div class="schedule-row">
               <div class="schedule-time">
                 <mat-icon>schedule</mat-icon>
-                <span>{{ family.timeSlot || 'To be assigned' }}</span>
+                <span>{{ scheduleWindow(family) }}</span>
               </div>
               <div class="schedule-family">
                 <strong>{{ family.guardianName }}</strong>
