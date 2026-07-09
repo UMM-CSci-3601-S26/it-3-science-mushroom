@@ -885,8 +885,11 @@ describe('FamilyService', () => {
       const req = httpTestingController.expectOne(`${familyService.familyUrl}/schedule`);
       expect(req.request.method).toBe('POST');
 
-      // Simulate a successful response
       req.flush(mockResponse);
+
+      const reloadReq = httpTestingController.expectOne(familyService.familyUrl);
+      expect(reloadReq.request.method).toBe('GET');
+      reloadReq.flush(mockResponse);
     });
 
     it('should clear scheduled times and return updated families', () => {
@@ -903,6 +906,10 @@ describe('FamilyService', () => {
       expect(req.request.method).toBe('POST');
 
       req.flush(mockResponse);
+
+      const reloadReq = httpTestingController.expectOne(familyService.familyUrl);
+      expect(reloadReq.request.method).toBe('GET');
+      reloadReq.flush(mockResponse);
     });
   });
 });
