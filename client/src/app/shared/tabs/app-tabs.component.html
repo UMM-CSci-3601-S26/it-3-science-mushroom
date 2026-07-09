@@ -1,0 +1,7 @@
+<mat-tab-group class="app-tabs">
+  @for (tab of tabs ?? []; track tab) {
+    <mat-tab [label]="tab.label">
+      <ng-container [ngTemplateOutlet]="tab.content"></ng-container>
+    </mat-tab>
+  }
+</mat-tab-group>
