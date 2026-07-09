@@ -122,6 +122,20 @@ class UsersControllerSpec {
   }
 
   @Test
+  void getGuardianAccountsReturnsOnlyGuardianUsers() {
+    usersController.getGuardianAccounts(ctx);
+
+    verify(ctx).json(objectCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    List<UsersController.UserAdminView> users = (List<UsersController.UserAdminView>) objectCaptor.getValue();
+    assertEquals(1, users.size());
+    assertEquals("guardian.user", users.get(0).username);
+    assertEquals("GUARDIAN", users.get(0).systemRole);
+    assertNull(users.get(0).jobRole);
+  }
+
+  @Test
   void createUserCreatesVolunteerWithNormalizedFields() {
     UsersController.UserUpsertRequest request = new UsersController.UserUpsertRequest();
     request.username = "  case.worker  ";

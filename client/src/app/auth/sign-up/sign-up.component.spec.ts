@@ -6,19 +6,15 @@ import { Observable, of, throwError } from 'rxjs';
 
 import { SignUpComponent } from './sign-up.component';
 import { AuthService } from '../auth-service';
-import { FamilyPortalService } from '../../family/family-portal/family-portal.service';
 
 describe('SignUpComponent', () => {
   let component: SignUpComponent;
   let fixture: ComponentFixture<SignUpComponent>;
   let authServiceMock: jasmine.SpyObj<Pick<AuthService, 'signup' | 'isGuardian'>>;
-  let familyPortalServiceMock: jasmine.SpyObj<Pick<FamilyPortalService, 'getSummary'>>;
 
   beforeEach(waitForAsync(() => {
     authServiceMock = jasmine.createSpyObj('AuthService', ['signup', 'isGuardian']);
-    familyPortalServiceMock = jasmine.createSpyObj('FamilyPortalService', ['getSummary']);
     authServiceMock.isGuardian.and.returnValue(false);
-    familyPortalServiceMock.getSummary.and.returnValue(of({ profileComplete: false, family: null }));
 
     TestBed.configureTestingModule({
       imports: [SignUpComponent],
@@ -27,7 +23,6 @@ describe('SignUpComponent', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: AuthService, useValue: authServiceMock },
-        { provide: FamilyPortalService, useValue: familyPortalServiceMock },
       ],
     }).compileComponents();
   }));
@@ -185,37 +180,14 @@ describe('SignUpComponent', () => {
       );
     });
 
-    it('should navigate guardian user to /family-portal when profile is complete', () => {
+    it('should navigate guardian user to /family-portal', () => {
       authServiceMock.signup.and.returnValue(of('GUARDIAN'));
-      familyPortalServiceMock.getSummary.and.returnValue(of({ profileComplete: true, family: null }));
       setGuardianFormValues();
 
       component.onSubmit();
 
       const routerSpy = component.router as unknown as jasmine.SpyObj<Router>;
       expect(routerSpy.navigate).toHaveBeenCalledWith(['/family-portal']);
-    });
-
-    it('should navigate guardian user to /family-portal/form when profile is incomplete', () => {
-      authServiceMock.signup.and.returnValue(of('GUARDIAN'));
-      familyPortalServiceMock.getSummary.and.returnValue(of({ profileComplete: false, family: null }));
-      setGuardianFormValues();
-
-      component.onSubmit();
-
-      const routerSpy = component.router as unknown as jasmine.SpyObj<Router>;
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/family-portal/form']);
-    });
-
-    it('should fall back to /family-portal/form when the summary request fails', () => {
-      authServiceMock.signup.and.returnValue(of('GUARDIAN'));
-      familyPortalServiceMock.getSummary.and.returnValue(throwError(() => new Error('summary failed')));
-      setGuardianFormValues();
-
-      component.onSubmit();
-
-      const routerSpy = component.router as unknown as jasmine.SpyObj<Router>;
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/family-portal/form']);
     });
   });
 });

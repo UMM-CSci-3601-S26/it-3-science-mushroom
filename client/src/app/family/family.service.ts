@@ -188,6 +188,22 @@ export class FamilyService {
   }
 
   /**
+   * Request to link/unlink a guardian account to a family
+   * @param familyId Id of family being linked/unlinked
+   * @param guardianUserId Id of guardian account to attach to family
+   */
+
+  linkGuardianAccount(familyId: string, guardianUserId: string): Observable<Family> {
+    return this.httpClient.patch<Family>(`${this.familyUrl}/${familyId}/guardian-link`,
+      { guardianUserId }).pipe(tap(() => this.loadFamilies()));
+  }
+
+  unlinkGuardianAccount(familyId: string): Observable<Family> {
+    return this.httpClient.delete<Family>(`${this.familyUrl}/${familyId}/guardian-link`)
+      .pipe(tap(() => this.loadFamilies()));
+  }
+
+  /**
   * Calls the backend to schedule families based on families and available spots
   */
   scheduleFamilies(): Observable<Family[]> {
@@ -578,4 +594,5 @@ export class FamilyService {
   private downloadPdfToClient(filename: string, doc: jsPDFWithAutoTable) {
     doc.save(filename);
   }
+
 }
