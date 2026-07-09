@@ -948,9 +948,31 @@ describe('SettingsComponent', () => {
     expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
 
     expect(snackBarSpy.open).toHaveBeenCalledWith(
-      'Your time windows do not have enough 15-minute blocks for every family',
+      'Not enough schedule capacity. Add more 15-minute blocks in Settings > Time Availability, then try scheduling again.',
       'OK',
-      { duration: 3000 }
+      { duration: 5000 }
+    );
+  }));
+
+  it('Should call scheduleFamilies and show invalid time range error snackBar', fakeAsync(() => {
+    familyServiceSpy.scheduleFamilies.and.returnValue(
+      throwError(() => ({
+        error: {
+          title: 'Time slot contains an invalid time'
+        }
+      }))
+    );
+
+    component.scheduleFamilies();
+    tick();
+    tick();
+
+    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'The saved Time Availability ranges are invalid. Use ranges like 8:00-9:00 AM, save them, then schedule again.',
+      'OK',
+      { duration: 5000 }
     );
   }));
 
@@ -967,7 +989,11 @@ describe('SettingsComponent', () => {
 
     expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
 
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to schedule families', 'OK', { duration: 3000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'Unable to schedule families right now. Check the saved Time Availability ranges and try again.',
+      'OK',
+      { duration: 5000 }
+    );
   }));
 
   it('saves the barcode print warning limit setting', () => {

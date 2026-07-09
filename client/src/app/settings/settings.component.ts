@@ -696,19 +696,47 @@ export class SettingsComponent implements OnInit {
           });
       },
       error: (err) => {
-        const lowCapacityMessage = 'Not all families were able to be sorted, your event capacity may be too low';
-        const errorText = [
-          typeof err?.error === 'string' ? err.error : JSON.stringify(err?.error ?? {}),
-          err?.message ?? ''
-        ].join(' ');
-
-        if (err?.status === 404 || errorText.includes(lowCapacityMessage)) {
-          this.snackBar.open('Your time windows do not have enough 15-minute blocks for every family', 'OK', {duration: 3000});
-        } else {
-          this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
-        }
+        this.snackBar.open(this.scheduleFailureMessage(err), 'OK', { duration: 5000 });
       }
     });
+  }
+
+  private scheduleFailureMessage(err: unknown): string {
+    const errorText = this.scheduleErrorText(err);
+
+    if (this.isLowCapacityScheduleError(err, errorText)) {
+      return 'Not enough schedule capacity. Add more 15-minute blocks in Settings > Time Availability, then try scheduling again.';
+    }
+
+    if (this.isInvalidTimeSlotScheduleError(errorText)) {
+      return 'The saved Time Availability ranges are invalid. Use ranges like 8:00-9:00 AM, save them, then schedule again.';
+    }
+
+    return 'Unable to schedule families right now. Check the saved Time Availability ranges and try again.';
+  }
+
+  private scheduleErrorText(err: unknown): string {
+    const httpError = err as {
+      error?: unknown;
+      message?: string;
+    };
+
+    return [
+      typeof httpError?.error === 'string' ? httpError.error : JSON.stringify(httpError?.error ?? {}),
+      httpError?.message ?? ''
+    ].join(' ');
+  }
+
+  private isLowCapacityScheduleError(err: unknown, errorText: string): boolean {
+    const httpError = err as { status?: number };
+    return httpError?.status === 404
+      || errorText.includes('Not all families were able to be sorted, your event capacity may be too low');
+  }
+
+  private isInvalidTimeSlotScheduleError(errorText: string): boolean {
+    return errorText.includes('Time slot must include AM or PM')
+      || errorText.includes('Time slot contains an invalid time')
+      || errorText.includes('Time slot end must be after the start time');
   }
 
   saveBarcodePrintSettings(): void {
