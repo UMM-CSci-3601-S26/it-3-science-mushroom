@@ -27,6 +27,7 @@ import umm3601.Common.AuthContext;
 public class UsersController {
   private static final String API_USERS = "/api/users";
   private static final String API_USERS_BY_ID = "/api/users/{id}";
+  private static final String API_USERS_GUARDIAN_ACCOUNTS = "/api/users/guardian-accounts";
 
   private final UsersService service;
   private final UsersPolicy policy;
@@ -54,6 +55,18 @@ public class UsersController {
         .map(UserAdminView::from)
         .toList();
     ctx.json(users);
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.GET, path = API_USERS_GUARDIAN_ACCOUNTS)
+  @RequireRole(Role.ADMIN)
+  public void getGuardianAccounts(Context ctx) {
+    policy.authorizeManage(AuthContext.from(ctx));
+
+    List<UserAdminView> guardians = service.getGuardianUsers().stream()
+        .map(UserAdminView::from)
+        .toList();
+    ctx.json(guardians);
     ctx.status(HttpStatus.OK);
   }
 

@@ -23,6 +23,7 @@ import { DialogService } from '../../../shared/dialog/dialog.service';
 // Family Imports
 import { Family } from '../../family';
 import { FamilyService } from '../../family.service';
+import { GuardianLinkDialogComponent } from '../link-family/guardian-link-dialog.component';
 
 // Settings Imports
 import { SettingsService } from '../../../settings/settings.service';
@@ -30,6 +31,7 @@ import { SchoolInfo, TimeAvailabilityLabels } from '../../../settings/settings';
 
 // Auth Imports
 import { AuthService } from '../../../auth/auth-service';
+import { MatDialog, MatDialogActions } from "@angular/material/dialog";
 
 /**
  * EditFamilyComponent is responsible for displaying a form to edit an existing family's information, including guardian details and student details.
@@ -56,7 +58,8 @@ import { AuthService } from '../../../auth/auth-service';
     MatRadioButton,
     MatRadioGroup,
     CommonModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatDialogActions,
   ],
   templateUrl: './edit-family.component.html',
   styleUrl: './edit-family.component.scss',
@@ -70,6 +73,7 @@ export class EditFamilyComponent implements OnInit {
   private dialogService = inject(DialogService);
   private settingsService = inject(SettingsService);
   private authService = inject(AuthService);
+  private dialog = inject(MatDialog);
 
   error = signal({ help: '', httpResponse: '', message: '' });
 
@@ -329,6 +333,14 @@ export class EditFamilyComponent implements OnInit {
       }
     }
     return 'Unknown error. Please check your form input.';
+  }
+
+  openGuardianLinkDialog() {
+    this.dialog.open(GuardianLinkDialogComponent, {
+      width: '520px',
+      autoFocus: false,
+      data: { family: this.family() }
+    })
   }
 
   // Student error message helper method
