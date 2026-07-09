@@ -1469,6 +1469,34 @@ class FamilyControllerSpec {
   }
 
   @Test
+  public void subdivideTimeSlotCreatesFifteenMinuteBlocks() throws Exception {
+    List<String> blocks = invokePrivate(
+      "subdivideTimeSlot",
+      new Class<?>[] {String.class},
+      "8:00-9:00 AM");
+
+    assertEquals(List.of(
+      "8:00-8:15 AM",
+      "8:15-8:30 AM",
+      "8:30-8:45 AM",
+      "8:45-9:00 AM"), blocks);
+  }
+
+  @Test
+  public void subdivideTimeSlotHandlesPmRangeWhenOnlyTheEndHasMeridiem() throws Exception {
+    List<String> blocks = invokePrivate(
+      "subdivideTimeSlot",
+      new Class<?>[] {String.class},
+      "1:00-2:00 PM");
+
+    assertEquals(List.of(
+      "1:00-1:15 PM",
+      "1:15-1:30 PM",
+      "1:30-1:45 PM",
+      "1:45-2:00 PM"), blocks);
+  }
+
+  @Test
   public void familySchedulingTest() {
     Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
 

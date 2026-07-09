@@ -9,6 +9,9 @@ import static com.mongodb.client.model.Updates.unset;
 
 // Java Imports
 import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -78,6 +81,10 @@ public class FamilyController {
   private static final String STATUS_HELPED = "helped";
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
+  private static final int SCHEDULE_BLOCK_MINUTES = 15;
+  private static final int SCHEDULE_MERIDIEM_SUFFIX_LENGTH = 3;
+  private static final DateTimeFormatter SCHEDULE_TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("h:mm a", Locale.US);
   private static final String REASON_AVAILABLE_DIDNT_NEED = "available_didnt_need";
   private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
@@ -245,6 +252,91 @@ public class FamilyController {
     family.deleteRequest = existingFamily.deleteRequest;
     familyCollection.replaceOne(eq("_id", new ObjectId(existingFamily._id)), family);
     rebuildInventoryReservation();
+  }
+
+  private List<String> subdivideTimeSlot(String timeSlot) {
+    if (timeSlot == null || timeSlot.isBlank()) {
+      return List.of();
+    }
+
+    String normalized = timeSlot.trim()
+        .replace('–', '-')
+        .replace('—', '-');
+    String[] rangeParts = normalized.split("\\s*-\\s*", 2);
+
+    if (rangeParts.length != 2) {
+      throw new BadRequestResponse("Time slot must be a range like 8:00-9:00 AM");
+    }
+
+    String endMeridiem = meridiem(rangeParts[1]);
+    String startMeridiem = meridiem(rangeParts[0]);
+    if (startMeridiem == null) {
+      startMeridiem = endMeridiem;
+    }
+
+    LocalTime start = parseScheduleTime(rangeParts[0], startMeridiem);
+    LocalTime end = parseScheduleTime(rangeParts[1], endMeridiem);
+
+    if (!end.isAfter(start)) {
+      throw new BadRequestResponse("Time slot end must be after the start time");
+    }
+
+    List<String> blocks = new ArrayList<>();
+    LocalTime currentStart = start;
+
+    while (currentStart.isBefore(end)) {
+      LocalTime currentEnd = currentStart.plusMinutes(SCHEDULE_BLOCK_MINUTES);
+      if (currentEnd.isAfter(end)) {
+        break;
+      }
+
+      blocks.add(formatScheduleBlock(currentStart, currentEnd));
+      currentStart = currentEnd;
+    }
+
+    return blocks;
+  }
+
+  private LocalTime parseScheduleTime(String timeText, String meridiem) {
+    if (meridiem == null) {
+      throw new BadRequestResponse("Time slot must include AM or PM");
+    }
+
+    String cleanedTime = timeText
+        .replaceAll("(?i)\\b(AM|PM)\\b", "")
+        .trim();
+
+    try {
+      return LocalTime.parse(cleanedTime + " " + meridiem, SCHEDULE_TIME_FORMATTER);
+    } catch (DateTimeParseException exception) {
+      throw new BadRequestResponse("Time slot contains an invalid time");
+    }
+  }
+
+  private String meridiem(String timeText) {
+    java.util.regex.Matcher matcher = Pattern.compile("(?i)\\b(AM|PM)\\b").matcher(timeText);
+    String result = null;
+    while (matcher.find()) {
+      result = matcher.group(1).toUpperCase(Locale.US);
+    }
+    return result;
+  }
+
+  private String formatScheduleBlock(LocalTime start, LocalTime end) {
+    String startText = start.format(SCHEDULE_TIME_FORMATTER);
+    String endText = end.format(SCHEDULE_TIME_FORMATTER);
+    String startMeridiem = startText.substring(startText.length() - 2);
+    String endMeridiem = endText.substring(endText.length() - 2);
+
+    if (startMeridiem.equals(endMeridiem)) {
+      return startText.substring(0, startText.length() - SCHEDULE_MERIDIEM_SUFFIX_LENGTH)
+          + "-"
+          + endText.substring(0, endText.length() - SCHEDULE_MERIDIEM_SUFFIX_LENGTH)
+          + " "
+          + endMeridiem;
+    }
+
+    return startText + "-" + endText;
   }
 
   /**
