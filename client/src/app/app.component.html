@@ -141,7 +141,7 @@
     }
   </mat-menu>
 
-  <mat-menu #accountMenu="matMenu">
+  <mat-menu #accountMenu="matMenu" class="account-menu">
       <button type="button" mat-menu-item [matMenuTriggerFor]="accountDetailsMenu">
         <mat-icon>badge</mat-icon>
         <span>View Account</span>
@@ -151,7 +151,7 @@
         <div class="appearance-menu-title">Appearance</div>
         <mat-slide-toggle
           [checked]="posterStyleEnabled"
-          (change)="setPosterStyle($event.checked)">
+          (change)="togglePosterStyle()">
           {{ posterStyleEnabled ? 'Retro theme' : 'Calm theme' }}
         </mat-slide-toggle>
       </div>

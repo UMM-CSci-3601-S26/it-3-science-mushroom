@@ -603,6 +603,30 @@ body {
     -1px 0 0 color-mix(in srgb, var(--decor-outline, var(--app-primary)) 28%, transparent);
 }
 
+.account-menu.mat-mdc-menu-panel {
+  max-width: min(92vw, 360px);
+  min-width: min(92vw, 280px);
+  overflow-x: hidden;
+  width: max-content;
+}
+
+.account-menu .mat-mdc-menu-content {
+  overflow-x: hidden;
+}
+
+.account-menu .mat-mdc-menu-item {
+  height: auto;
+  min-height: 48px;
+  white-space: normal;
+  width: 100%;
+}
+
+.account-menu .mat-mdc-menu-item-text,
+.account-menu .mat-mdc-menu-item span {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 // Shared interaction motion gives the rest of the app the same responsive feel
 // as Point of Sale without changing layout or application behavior.
 .mat-mdc-button,
