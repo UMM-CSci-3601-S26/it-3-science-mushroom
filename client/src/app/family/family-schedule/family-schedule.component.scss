@@ -1,0 +1,76 @@
+.family-schedule-page {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.schedule-card {
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+}
+
+.schedule-list {
+  display: grid;
+  gap: var(--app-space-sm);
+}
+
+.schedule-row {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+  gap: var(--app-space-md);
+  padding: var(--app-space-sm) 0;
+  border-bottom: 1px solid var(--app-divider-color);
+}
+
+.schedule-row:last-child {
+  border-bottom: 0;
+}
+
+.schedule-time,
+.schedule-family {
+  align-items: center;
+  display: flex;
+  gap: var(--app-space-sm);
+  min-width: 0;
+}
+
+.schedule-time {
+  color: var(--app-primary);
+  font-weight: 700;
+}
+
+.schedule-time mat-icon {
+  flex: 0 0 auto;
+}
+
+.schedule-family {
+  justify-content: space-between;
+}
+
+.schedule-family strong,
+.schedule-family span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.schedule-family span,
+.empty-state {
+  color: var(--app-text-muted);
+}
+
+.empty-state {
+  margin: 0;
+}
+
+@media (max-width: 599px) {
+  .schedule-row,
+  .schedule-family {
+    align-items: flex-start;
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-family {
+    flex-direction: column;
+  }
+}
