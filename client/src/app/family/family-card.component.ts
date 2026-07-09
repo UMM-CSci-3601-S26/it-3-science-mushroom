@@ -1,11 +1,13 @@
 // Angular Imports
 import { CommonModule } from '@angular/common';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { Component, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { MatTooltip } from '@angular/material/tooltip';
 
@@ -25,6 +27,7 @@ import { AuthService } from '../auth/auth-service';
     MatDividerModule,
     CommonModule,
     MatIconModule,
+    MatSnackBarModule,
     RouterLink,
     MatTooltip
   ]
@@ -37,6 +40,8 @@ export class FamilyCardComponent {
   showRequestDeleteAction = input(true);
   requestDelete = output<void>();
   authService = inject(AuthService);
+  private clipboard = inject(Clipboard);
+  private snackBar = inject(MatSnackBar);
 
   get canRequestDelete(): boolean {
     return this.authService.hasPermission('request_family_delete');
@@ -64,6 +69,18 @@ export class FamilyCardComponent {
 
   onRequestDelete(): void {
     this.requestDelete.emit();
+  }
+
+  copyContactValue(value: string, label: 'Address' | 'Email'): void {
+    if (!value?.trim()) {
+      return;
+    }
+
+    if (this.clipboard.copy(value)) {
+      this.snackBar.open(`${label} copied.`, 'Close', { duration: 2000 });
+    } else {
+      this.snackBar.open(`Unable to copy ${label.toLowerCase()}.`, 'Close', { duration: 3000 });
+    }
   }
 
   /**

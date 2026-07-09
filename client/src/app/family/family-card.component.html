@@ -1,4 +1,3 @@
-<!-- Family Card -->
 @if (family()) {
   <mat-card
     class="family-card"
@@ -6,136 +5,154 @@
       'family-card-linked': hasLinkedGuardianAccount,
       'family-card-manual': !hasLinkedGuardianAccount,
       'family-card-compact': compact()
-    }"
-  >
+    }">
 
-    <!-- Header with Guardian Name -->
     <mat-card-header class="family-card-header">
-      <mat-card-title class="family-card-guardianName">{{ family().guardianName }}</mat-card-title>
-      <mat-card-subtitle class="family-card-email">{{ family().email }}</mat-card-subtitle>
-      @if (compact()) {
-        <div class="family-card-compact-meta">
-          <span class="family-card-compact-chip">{{ family().students?.length || 0 }} students</span>
-          <span class="family-card-compact-chip">{{ family().timeSlot || 'to be assigned' }}</span>
-        </div>
+      <div class="family-heading">
+        <mat-card-title class="family-card-guardianName">{{ family().guardianName }}</mat-card-title>
+        <mat-card-subtitle>{{ family().students?.length || 0 }} student{{ (family().students?.length || 0) === 1 ? '' : 's' }}</mat-card-subtitle>
+      </div>
+
+      @if (canEditFamily()) {
+        <button type="button" mat-icon-button class="edit-family-button" matTooltip="Edit family"
+          [routerLink]="['/family', family()._id]" data-test="editFamilyButton" aria-label="Edit family">
+          <mat-icon>edit</mat-icon>
+        </button>
       }
-
-
-    <!-- Edit Family Button -->
-    @if (canEditFamily()) {
-      <button mat-fab class="edit-family-fab" matTooltip="Edit Family" matTooltipPosition="left" [routerLink]="['/family', family()._id]" data-test="editFamilyButton">
-        <mat-icon class="md-24" aria-label="Edit Family">edit</mat-icon>
-      </button>
-    }
-
-    @if (!compact()) {
-      <br>
-    }
     </mat-card-header>
 
     <mat-card-content>
       <div
-        class="guardian-link-status"
+        class="guardian-link-status app-badge"
         [ngClass]="{
           'guardian-link-status-linked': hasLinkedGuardianAccount,
           'guardian-link-status-manual': !hasLinkedGuardianAccount
         }"
-        data-test="guardianLinkStatus"
-      >
+        data-test="guardianLinkStatus">
         <mat-icon>{{ hasLinkedGuardianAccount ? 'verified_user' : 'person_off' }}</mat-icon>
         <span>{{ guardianLinkStatusLabel }}</span>
       </div>
 
       @if (compact()) {
+        <div class="compact-student-summary">
+          <div class="family-info-label">Students</div>
+          <div>{{ studentNames }}</div>
+        </div>
         <div class="family-compact-grid">
-          <div class="family-compact-item">
-            <div class="family-compact-label">Students</div>
-            <div class="family-compact-value">{{ studentNames }}</div>
-          </div>
-          <div class="family-compact-item">
-            <div class="family-compact-label">Address</div>
-            <div class="family-compact-value">{{ family().address }}</div>
-          </div>
-          <div class="family-compact-item">
-            <div class="family-compact-label">Available Times</div>
-            <div class="family-compact-value">{{ getAvailableTimes() }}</div>
-          </div>
-          <div class="family-compact-item">
-            <div class="family-compact-label">Email</div>
-            <div class="family-compact-value">
-              <a class="family-card-email" href="mailto:{{family().email}}">{{ family().email }}</a>
+          <div class="family-info-item">
+            <div>
+              <div class="family-info-label">Time Slot</div>
+              <div>{{ family().timeSlot || 'To be assigned' }}</div>
             </div>
           </div>
+          <div class="family-info-item">
+            <div>
+              <div class="family-info-label">Available Times</div>
+              <div>{{ getAvailableTimes() }}</div>
+            </div>
+          </div>
+          <button type="button" class="family-info-item copy-info-button"
+            (click)="copyContactValue(family().address, 'Address')" matTooltip="Copy address">
+            <mat-icon>home</mat-icon>
+            <div>
+              <div class="family-info-label">Address</div>
+              <div class="family-card-address">{{ family().address }}</div>
+            </div>
+            <mat-icon class="copy-icon">content_copy</mat-icon>
+          </button>
+          <button type="button" class="family-info-item copy-info-button"
+            (click)="copyContactValue(family().email, 'Email')" matTooltip="Copy email">
+            <mat-icon>mail</mat-icon>
+            <div>
+              <div class="family-info-label">Email</div>
+              <div class="family-card-email">{{ family().email }}</div>
+            </div>
+            <mat-icon class="copy-icon">content_copy</mat-icon>
+          </button>
         </div>
       } @else {
-        <mat-list>
-          <!-- Students Section -->
-          <mat-list-item>
-            <mat-icon matListItemIcon>people</mat-icon>
-            <p matListItemTitle>Students</p>
-          </mat-list-item>
-
-          <!-- Student List -->
-          <mat-list dense class="student-list">
+        <section class="student-section" aria-label="Students">
+          <h3>Students</h3>
+          <div class="student-card-grid">
             @for (student of family().students ?? []; track student.name) {
-              <mat-list-item class="student-item">
-                <mat-icon matListItemIcon class="student-icon">person</mat-icon>
-                <p matListItemTitle>{{ student.name }}</p>
-                <p matListItemLine>{{ student.schoolAbbreviation }} - Grade {{ student.grade }}</p>
-                <p matListItemLine>Teacher: {{ student.teacher || 'N/A' }}</p>
-              </mat-list-item>
+              <article class="student-card student-item">
+                <div class="student-card-header">
+                  <mat-icon>person</mat-icon>
+                  <strong>{{ student.name }}</strong>
+                </div>
+                <dl class="student-details">
+                  <div>
+                    <dt>School</dt>
+                    <dd>{{ student.schoolAbbreviation || student.school || 'N/A' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Grade</dt>
+                    <dd>{{ student.grade || 'N/A' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Teacher</dt>
+                    <dd>{{ student.teacher || 'N/A' }}</dd>
+                  </div>
+                </dl>
+                <div class="student-needs">
+                  @if (student.backpack) {
+                    <span class="app-badge app-badge-primary">Backpack needed</span>
+                  }
+                  @if (student.headphones) {
+                    <span class="app-badge app-badge-tertiary">Headphones needed</span>
+                  }
+                  @if (!student.backpack && !student.headphones) {
+                    <span class="student-needs-none">No special supply needs</span>
+                  }
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-students">No students listed.</p>
             }
-          </mat-list>
+          </div>
+        </section>
 
-          <mat-divider [inset]="true"></mat-divider>
-
-          <!-- Address Section -->
-          <mat-list-item>
-            <mat-icon matListItemIcon>home</mat-icon>
-            <p matListItemTitle>Address</p>
-            <p matListItemLine class="family-card-address">{{ family().address }}</p>
-          </mat-list-item>
-
-          <mat-divider [inset]="true"></mat-divider>
-
-          <!-- Time Slot Section -->
-          <mat-list-item>
-            <mat-icon matListItemIcon>schedule</mat-icon>
-            <p matListItemTitle>Time Slot</p>
-            <p matListItemLine class="family-card-timeSlot">{{ family().timeSlot || 'to be assigned' }}</p>
-          </mat-list-item>
-
-          <!-- Available Times Section -->
-          <mat-list-item>
-            <mat-icon matListItemIcon>schedule</mat-icon>
-            <p matListItemTitle>Available Times</p>
-            <p matListItemLine class="family-card-timeAvailability">{{ getAvailableTimes() }}</p>
-          </mat-list-item>
-
-          <mat-divider [inset]="true"></mat-divider>
-
-          <!-- Email Section -->
-          <mat-list-item>
-            <a href="mailto:{{family().email}}"  matListItemIcon><mat-icon>mail</mat-icon></a>
-            <p matListItemTitle>Email</p>
-            <a matListItemLine class="family-card-email" href="mailto:{{family().email}}">{{family().email}}</a>
-            <a href="mailto:{{family().email}}" matListItemMeta mat-icon-button><mat-icon>open_in_new</mat-icon></a>
-          </mat-list-item>
-
-        </mat-list>
+        <section class="family-info-grid" aria-label="Family details">
+          <div class="family-info-item">
+            <mat-icon>event</mat-icon>
+            <div>
+              <div class="family-info-label">Time Slot</div>
+              <div class="family-card-timeSlot">{{ family().timeSlot || 'To be assigned' }}</div>
+            </div>
+          </div>
+          <div class="family-info-item">
+            <mat-icon>schedule</mat-icon>
+            <div>
+              <div class="family-info-label">Available Times</div>
+              <div class="family-card-timeAvailability">{{ getAvailableTimes() }}</div>
+            </div>
+          </div>
+          <button type="button" class="family-info-item copy-info-button"
+            (click)="copyContactValue(family().address, 'Address')" matTooltip="Copy address">
+            <mat-icon>home</mat-icon>
+            <div>
+              <div class="family-info-label">Address</div>
+              <div class="family-card-address">{{ family().address }}</div>
+            </div>
+            <mat-icon class="copy-icon">content_copy</mat-icon>
+          </button>
+          <button type="button" class="family-info-item copy-info-button family-email-item"
+            (click)="copyContactValue(family().email, 'Email')" matTooltip="Copy email">
+            <mat-icon>mail</mat-icon>
+            <div>
+              <div class="family-info-label">Email</div>
+              <div class="family-card-email">{{ family().email }}</div>
+            </div>
+            <mat-icon class="copy-icon">content_copy</mat-icon>
+          </button>
+        </section>
       }
     </mat-card-content>
 
-    <!-- Request Delete Button -->
     @if (showRequestDeleteAction() && canRequestDelete) {
       <mat-card-actions class="family-card-actions">
-        <button
-          mat-stroked-button
-          color="warn"
-          [disabled]="hasPendingDeleteRequest"
-          (click)="onRequestDelete()"
-          data-test="requestDeleteButton"
-        >
+        <button type="button" mat-stroked-button color="warn" [disabled]="hasPendingDeleteRequest"
+          (click)="onRequestDelete()" data-test="requestDeleteButton">
           {{ hasPendingDeleteRequest ? 'Delete Requested' : 'Request Delete' }}
         </button>
       </mat-card-actions>

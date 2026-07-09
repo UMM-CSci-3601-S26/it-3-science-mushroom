@@ -20,14 +20,17 @@ describe('Home', () => {
 
     component = fixture.componentInstance; // BannerComponent test instance
 
-    // query for the link (<a> tag) by CSS element selector
-    de = fixture.debugElement.query(By.css('.home-card'));
+    fixture.detectChanges();
+
+    // query for the main hero section by CSS element selector
+    de = fixture.debugElement.query(By.css('.home-hero'));
     el = de.nativeElement;
   });
 
-  it('It has the basic home page text', () => {
-    fixture.detectChanges();
-    expect(el.textContent).toContain('Welcome to the home page! In the future, information about the site, how it works, and how to use it will be placed here. For now, feel free to access the additional pages via the side navigation on the left!');
+  it('It renders mission-focused mock content', () => {
+    expect(el.textContent).toContain('Ready 4 Learning');
+    expect(fixture.nativeElement.textContent).toContain('Mock Supply Donation');
+    expect(fixture.nativeElement.textContent).toContain('Impact at a Glance');
     expect(component).toBeTruthy();
   });
 

@@ -13,6 +13,7 @@
   - [Technical Documents](#technical-documents)
     - [Deployment Document](#deployment-document)
     - [Development Document](#development-document)
+    - [Frontend Style Guide](#frontend-style-guide)
     - [Family Module Document](#family-module-document)
     - [Authorization Document](#authorization-document)
   - [To-Do List](#to-do-list)
@@ -20,9 +21,11 @@
   - [Contributors](#contributors)
 
 ## Project Description
+
 The Ready4Learning interface is a system designed to improve the ease of management and quality of life for the staff, volunteers, and family participating in the drive hosted by the Office of Community Engagement (OoCE) here at the University of Minnesota Morris.
 
 ## Project Features
+
 - Users and Login
   - A login system ensures only the individuals with proper access can utilize parts of the interface.
   - Families can log in and edit their information at any time, such as changing availability or adding a student. Families are also able to see information pertaining to them posted by staff.
@@ -67,6 +70,11 @@ A document that explains how to set-up and manage a DigitalOcean Droplet of the 
 ### [Development Document](DEVELOPMENT.md)
 
 A document that describes the development set-up process.
+
+### [Frontend Style Guide](client/docs/FRONTEND_STYLE_GUIDE.md)
+
+Rules and examples for Angular Material, theme variables, global layout primitives, component styling, responsive behavior, and frontend testing.
+See also the [Frontend Style Visual Reference PDF](output/pdf/r4l-frontend-style-reference.pdf).
 
 ### [Family Module Document](server/FAMILY_MODULE_REFERENCE.md)
 

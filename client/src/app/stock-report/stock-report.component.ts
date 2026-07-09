@@ -171,8 +171,8 @@ export class StockReportComponent {
   /**
    * Group inventory items by their "Item" field.
    * Each group becomes a StockNode with the item name as the "item" field, and its children are the inventory items with that name.
-   * Each inventory item is represented as a StockNode with the description as the "description" field.
-   * Its children are the quantity, max quantity, and min quantity as StockNodes with their respective labels.
+   * Each inventory item is represented as one leaf row. Keeping quantity data
+   * in that row removes the previous second expansion step.
    * @param items A list of inventory items to group
    * @returns An array of StockNodes grouped by item name
    */
@@ -191,12 +191,7 @@ export class StockReportComponent {
     return Array.from(groupedByItem.entries()).map(([itemName, itemGroup]) => ({
       item: itemName,
       children: itemGroup.map(inventoryItem => ({
-        description: inventoryItem.description,
-        children: [
-          { quantity: inventoryItem.quantity, label: '- Current Quantity' },
-          { maxQuantity: inventoryItem.maxQuantity, label: '- Max Quantity' },
-          { minQuantity: inventoryItem.minQuantity, label: '- Min Quantity' },
-        ]
+        description: `${inventoryItem.description} - ${inventoryItem.quantity} on hand (min ${inventoryItem.minQuantity}, max ${inventoryItem.maxQuantity})`
       })).sort((a, b) => a.description!.localeCompare(b.description!)) // Sort descriptions alphabetically
     })).sort((a, b) => a.item!.localeCompare(b.item!)); // Sort items alphabetically by item name
   }
@@ -205,25 +200,69 @@ export class StockReportComponent {
   // Each stock state gets its own, grouped by item name
   stockedItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Stocked') ?? [];
+      ?.filter(item => this.isStockState(item, 'stocked')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
   outOfStockItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Out of Stock') ?? [];
+      ?.filter(item => this.isStockState(item, 'out of stock')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
   underStockedItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Understocked') ?? [];
+      ?.filter(item => this.isStockState(item, 'understocked')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
   overStockedItems = computed(() => {
     const filtered = this.inventory()
-      ?.filter(item => item.stockState === 'Overstocked') ?? [];
+      ?.filter(item => this.isStockState(item, 'overstocked')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
+
+  stockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'stocked')).length ?? 0
+  );
+
+  outOfStockItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'out of stock')).length ?? 0
+  );
+
+  underStockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'understocked')).length ?? 0
+  );
+
+  overStockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'overstocked')).length ?? 0
+  );
+
+  unitsNeeded = computed(() =>
+    this.inventory()?.reduce((total, item) => {
+      if (!this.isStockState(item, 'understocked') && !this.isStockState(item, 'out of stock')) {
+        return total;
+      }
+      return total + Math.max(0, item.minQuantity - item.quantity);
+    }, 0) ?? 0
+  );
+
+  overflowUnits = computed(() =>
+    this.inventory()?.reduce((total, item) => {
+      if (!this.isStockState(item, 'overstocked')) {
+        return total;
+      }
+      return total + Math.max(0, item.quantity - item.maxQuantity);
+    }, 0) ?? 0
+  );
+
+  private isStockState(item: Inventory, expected: 'stocked' | 'out of stock' | 'understocked' | 'overstocked'): boolean {
+    const normalized = item.stockState
+      .trim()
+      .toLowerCase()
+      .replace(/-/g, ' ')
+      .replace(/\s+/g, ' ');
+    const compact = normalized.replace(/\s/g, '');
+    return compact === expected.replace(/\s/g, '');
+  }
 }

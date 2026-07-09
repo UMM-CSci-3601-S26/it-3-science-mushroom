@@ -1,11 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
 
 import { Family, FamilyChecklist } from '../family/family';
 import { FamilyService } from '../family/family.service';
+import { Inventory } from '../inventory/inventory';
 import { InventoryService } from '../inventory/inventory.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
 
 describe('PointOfSaleSessionDialogComponent', () => {
@@ -14,6 +17,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
   let familyService: jasmine.SpyObj<FamilyService>;
   let inventoryService: jasmine.SpyObj<InventoryService>;
   let dialogRef: jasmine.SpyObj<MatDialogRef<PointOfSaleSessionDialogComponent>>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   const checklist: FamilyChecklist = {
     templateId: 'family-1-session',
@@ -29,7 +33,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
           {
             id: 'student-1-item-1',
             label: 'Pencil',
-            selected: true,
+            selected: false,
             available: true,
             matchedInventoryId: 'INV-1',
             matchedInventoryItem: 'Yellow Pencil',
@@ -48,7 +52,11 @@ describe('PointOfSaleSessionDialogComponent', () => {
             label: 'Markers',
             selected: false,
             available: false,
-            requestedQuantity: 1
+            requestedQuantity: 1,
+            substituteBarcode: 'ITEM-00002',
+            substituteInventoryId: 'INV-2',
+            substituteItem: 'Marker',
+            substituteDescription: 'Black Marker'
           }
         ]
       }
@@ -85,19 +93,108 @@ describe('PointOfSaleSessionDialogComponent', () => {
       'saveFamilyHelpSessionAll'
     ]);
     inventoryService = jasmine.createSpyObj<InventoryService>('InventoryService', ['lookUpByBarcode']);
+    const inventoryItems: Inventory[] = [
+      {
+        internalID: 'INV-2',
+        internalBarcode: 'ITEM-00002',
+        item: 'Marker',
+        brand: 'Expo',
+        size: '',
+        color: 'Black',
+        type: '',
+        material: '',
+        description: 'Black Marker',
+        quantity: 4,
+        reservedQuantity: 1,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-2']
+      },
+      {
+        internalID: 'INV-3',
+        internalBarcode: 'ITEM-00003',
+        item: 'Marker',
+        brand: 'Crayola',
+        size: '',
+        color: 'Blue',
+        type: '',
+        material: '',
+        description: 'Blue Marker',
+        quantity: 3,
+        reservedQuantity: 3,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-3']
+      },
+      {
+        internalID: 'INV-4',
+        internalBarcode: 'ITEM-00004',
+        item: 'Binder',
+        brand: '',
+        size: '',
+        color: '',
+        type: '',
+        material: '',
+        description: 'Wide Ruled Notebook',
+        quantity: 5,
+        reservedQuantity: 0,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-4']
+      },
+      {
+        internalID: 'INV-5',
+        internalBarcode: 'ITEM-00005',
+        item: 'Marker Set',
+        brand: '',
+        size: '',
+        color: '',
+        type: '',
+        material: '',
+        description: 'Washable Marker Set',
+        quantity: 5,
+        reservedQuantity: 0,
+        maxQuantity: 10,
+        minQuantity: 0,
+        stockState: 'Stocked',
+        notes: '',
+        externalBarcode: ['UPC-5']
+      }
+    ];
+    Object.defineProperty(inventoryService, 'inventory', { value: signal(inventoryItems) });
     dialogRef = jasmine.createSpyObj<MatDialogRef<PointOfSaleSessionDialogComponent>>('MatDialogRef', ['close']);
+    dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
 
     familyService.startFamilyHelpSession.and.returnValue(of(family));
     familyService.clearFamilyHelpSession.and.returnValue(of(family));
     familyService.updateFamilyChecklist.and.returnValue(of(family));
     familyService.saveFamilyHelpSessionAll.and.returnValue(of(family));
-    checklist.sections[0].items[0].selected = true;
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+    checklist.sections[0].items[0].selected = false;
     checklist.sections[0].items[0].notPickedUpReason = undefined;
     checklist.sections[0].items[0].substituteBarcode = undefined;
     checklist.sections[0].items[0].substituteInventoryId = undefined;
     checklist.sections[0].items[0].substituteItem = undefined;
     checklist.sections[0].items[0].substituteDescription = undefined;
     checklist.sections[0].items[1].notPickedUpReason = undefined;
+    checklist.sections[0].items[1].substituteBarcode = undefined;
+    checklist.sections[0].items[1].substituteInventoryId = undefined;
+    checklist.sections[0].items[1].substituteItem = undefined;
+    checklist.sections[0].items[1].substituteDescription = undefined;
+    checklist.sections[0].items[2].selected = false;
+    checklist.sections[0].items[2].notPickedUpReason = undefined;
+    checklist.sections[0].items[2].substituteBarcode = 'ITEM-00002';
+    checklist.sections[0].items[2].substituteInventoryId = 'INV-2';
+    checklist.sections[0].items[2].substituteItem = 'Marker';
+    checklist.sections[0].items[2].substituteDescription = 'Black Marker';
     inventoryService.lookUpByBarcode.and.returnValue(of({
       internalID: 'INV-2',
       internalBarcode: 'ITEM-00002',
@@ -109,6 +206,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
       material: '',
       description: 'Black Marker',
       quantity: 4,
+      reservedQuantity: 1,
       maxQuantity: 10,
       minQuantity: 0,
       stockState: 'Stocked',
@@ -121,6 +219,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
       providers: [
         { provide: FamilyService, useValue: familyService },
         { provide: InventoryService, useValue: inventoryService },
+        { provide: DialogService, useValue: dialogService },
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { family } }
       ]
@@ -209,6 +308,38 @@ describe('PointOfSaleSessionDialogComponent', () => {
     })).toBeFalse();
   });
 
+  it('labels substitute matches as suggestions until they are selected', () => {
+    expect(component.substituteMatchLabel({
+      ...checklist.sections[0].items[0],
+      selected: false,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Suggested substitute');
+    expect(component.substituteMatchLabel({
+      ...checklist.sections[0].items[0],
+      selected: true,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Replacing with');
+  });
+
+  it('labels selected substituted items separately from normal availability', () => {
+    expect(component.itemStatusLabel({
+      ...checklist.sections[0].items[0],
+      selected: true,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Substituted');
+    expect(component.itemStatusLabel({
+      ...checklist.sections[0].items[0],
+      selected: false,
+      substituteBarcode: 'UPC-2'
+    })).toBe('Available');
+    expect(component.itemStatusLabel({
+      ...checklist.sections[0].items[0],
+      available: false,
+      selected: false,
+      substituteBarcode: undefined
+    })).toBe('Needs review');
+  });
+
   it('saves the current checklist as a draft when closing', () => {
     component.closeAndSaveDraft();
 
@@ -247,16 +378,22 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('clears a session when the user confirms the x action', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-
     component.clearSessionAndClose();
 
+    expect(dialogService.openDialog).toHaveBeenCalledWith({
+      title: 'Clear Session',
+      message: 'Clear this help session and discard the current checklist snapshot?',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Clear Session'
+    }, '520px', '230px');
     expect(familyService.clearFamilyHelpSession).toHaveBeenCalledWith('family-1');
     expect(dialogRef.close).toHaveBeenCalledWith({ cleared: true });
   });
 
   it('does not clear a session when the user cancels the x action', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
 
     component.clearSessionAndClose();
 
@@ -273,7 +410,6 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('shows a useful error when clearing a session fails', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     familyService.clearFamilyHelpSession.and.returnValue(throwError(() => new Error('clear failed')));
 
     component.clearSessionAndClose();
@@ -283,11 +419,17 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('saves a completed session when the user confirms', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+    checklist.sections[0].items[0].selected = true;
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
 
+    expect(dialogService.openDialog).toHaveBeenCalledWith({
+      title: 'Complete Family Session',
+      message: 'Are you sure you are done helping this family? This will remove selected item quantities from inventory.',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Complete'
+    }, '560px', '230px');
     expect(familyService.saveFamilyHelpSessionAll).toHaveBeenCalledWith('family-1', jasmine.any(Object));
     expect(dialogRef.close).toHaveBeenCalledWith({ completed: true });
   });
@@ -304,7 +446,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     fixture.detectChanges();
 
     const errorText = fixture.nativeElement.querySelector('.session-error')?.textContent;
-    const reasonSelect = fixture.nativeElement.querySelector('.reason-field select');
+    const reasonSelect = fixture.nativeElement.querySelector('.reason-field mat-select');
 
     expect(errorText).toContain('Choose why');
     expect(reasonSelect).not.toBeNull();
@@ -321,7 +463,10 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('does not save a completed session when the user cancels', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
+    checklist.sections[0].items[0].selected = true;
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
@@ -340,8 +485,8 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('shows a useful error when saving a completed session fails', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     familyService.saveFamilyHelpSessionAll.and.returnValue(throwError(() => new Error('save failed')));
+    checklist.sections[0].items[0].selected = true;
     checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
 
     component.saveCompletedSession();
@@ -356,7 +501,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     component.applySubstituteBarcode(item, 'UPC-2');
 
     expect(inventoryService.lookUpByBarcode).toHaveBeenCalledWith('UPC-2');
-    expect(item.selected).toBeFalse();
+    expect(item.selected).toBeTrue();
     expect(item.substituteBarcode).toBe('UPC-2');
     expect(item.substituteInventoryId).toBe('INV-2');
     expect(item.substituteItem).toBe('Marker');
@@ -365,7 +510,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
   });
 
   it('handles substitution scanner toggles, blank scans, and lookup failures', () => {
-    const item = checklist.sections[0].items[0];
+    const item = checklist.sections[0].items[2];
     inventoryService.lookUpByBarcode.and.returnValue(throwError(() => new Error('missing')));
 
     component.toggleSubstitutionScanner(item);
@@ -378,6 +523,115 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
     component.applySubstituteBarcode(item, 'UPC-MISSING');
     expect(component.substituteErrorMessage).toContain('UPC-MISSING');
+  });
+
+  it('keeps suggested items eligible for substitution after clearing the current substitute', () => {
+    const item = checklist.sections[0].items[2];
+
+    expect(component.canSubstitute(item)).toBeTrue();
+
+    component.clearSubstitution(item);
+
+    expect(component.hasSubstitute(item)).toBeFalse();
+    expect(component.canSubstitute(item)).toBeTrue();
+  });
+
+  it('opens the substitution workflow for items without a suggestion', () => {
+    const item = checklist.sections[0].items[1];
+
+    component.toggleSubstitutionPanel(item);
+
+    expect(component.canSubstitute(item)).toBeTrue();
+    expect(component.substitutionOptionsFor(item)).toEqual([]);
+    expect(component.activeSubstitutionItemId).toBe(item.id);
+  });
+
+  it('allows matched inventory items to be substituted', () => {
+    const item = checklist.sections[0].items[0];
+
+    component.toggleSubstitutionPanel(item);
+
+    expect(component.canSubstitute(item)).toBeTrue();
+    expect(component.activeSubstitutionItemId).toBe(item.id);
+  });
+
+  it('removes substitution access after an item is confirmed selected', () => {
+    const item = checklist.sections[0].items[0];
+
+    component.toggleSubstitutionPanel(item);
+    component.substituteErrorMessage = 'Scan failed';
+
+    expect(component.activeSubstitutionItemId).toBe(item.id);
+
+    component.setItemSelected(item, true);
+
+    expect(component.canSubstitute(item)).toBeFalse();
+    expect(component.activeSubstitutionItemId).toBe('');
+    expect(component.substituteErrorMessage).toBe('');
+  });
+
+  it('lists related substitution options from unreserved inventory', () => {
+    const item = checklist.sections[0].items[2];
+
+    const options = component.substitutionOptionsFor(item);
+
+    expect(options.map(option => option.internalID)).toEqual(['INV-2', 'INV-5']);
+    expect(component.unreservedQuantity(options[0])).toBe(3);
+  });
+
+  it('keeps substitution matching related but allows partial item tokens', () => {
+    const options = component.substitutionOptionsFor({
+      id: 'manual-marker-item',
+      label: 'Markers',
+      selected: false,
+      available: true,
+      requestedQuantity: 1
+    });
+
+    expect(options.map(option => option.internalID)).toEqual(['INV-2', 'INV-5']);
+  });
+
+  it('ignores quantity and size-only token matches in substitution options', () => {
+    const options = component.substitutionOptionsFor({
+      id: 'manual-tissue-item',
+      label: '1 Pack of Tissues',
+      selected: false,
+      available: false,
+      requestedQuantity: 1
+    });
+
+    expect(options.map(option => option.internalID)).not.toContain('INV-4');
+    expect(options).toEqual([]);
+  });
+
+  it('filters substitution options by description search', () => {
+    const item = checklist.sections[0].items[2];
+    component.setSubstitutionDescriptionSearch(item, {
+      target: { value: 'blue' }
+    } as unknown as Event);
+
+    expect(component.substitutionDescriptionSearchFor(item)).toBe('blue');
+    expect(component.substitutionOptionsFor(item)).toEqual([]);
+
+    component.setSubstitutionDescriptionSearch(item, {
+      target: { value: 'black' }
+    } as unknown as Event);
+
+    expect(component.substitutionOptionsFor(item).map(option => option.internalID)).toEqual(['INV-2']);
+  });
+
+  it('applies a substitute from the suggestions list', () => {
+    const item = checklist.sections[0].items[2];
+    component.clearSubstitution(item);
+
+    component.applySubstituteOption(item, component.substitutionOptionsFor(item)[0]);
+
+    expect(item.selected).toBeTrue();
+    expect(item.substituteBarcode).toBe('ITEM-00002');
+    expect(item.substituteInventoryId).toBe('INV-2');
+    expect(item.substituteItem).toBe('Marker');
+    expect(item.substituteDescription).toBe('Black Marker');
+    expect(item.notPickedUpReason).toBe('substituted');
   });
 
   it('clears substitution data when a substituted item is selected again', () => {

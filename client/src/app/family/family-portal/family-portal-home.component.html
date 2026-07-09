@@ -43,7 +43,9 @@
         </mat-card-header>
         <mat-card-content>
           <div class="portal-info-value">{{ assignedTimeSlot }}</div>
-          <div class="portal-status-chip">{{ summary?.timeSlotStatus || 'pending' }}</div>
+          <div class="portal-status-chip app-badge app-badge-accent">
+            {{ summary?.timeSlotStatus || 'pending' }}
+          </div>
         </mat-card-content>
       </mat-card>
     </section>
@@ -66,7 +68,7 @@
                     <li>
                       <span>{{ item.label || item.itemDescription || 'Checklist item' }}</span>
                       @if (item.requestedQuantity) {
-                        <span class="quantity-chip">x{{ item.requestedQuantity }}</span>
+                        <span class="quantity-chip app-badge app-badge-primary">x{{ item.requestedQuantity }}</span>
                       }
                     </li>
                   }

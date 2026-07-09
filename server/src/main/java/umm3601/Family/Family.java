@@ -99,7 +99,7 @@ public class Family {
   public static class ChecklistItem {
     public String id;
     public String label;
-    public boolean selected = true;
+    public boolean selected = false;
     public boolean available = true;
     public String itemDescription;
     public String supplyListId;

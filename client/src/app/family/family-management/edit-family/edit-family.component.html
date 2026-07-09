@@ -1,15 +1,16 @@
 <div class="flex-row">
   <div class="flex-1">
-    <form [formGroup]="editFamilyForm" (ngSubmit)="submitForm();">
+    <form class="family-form app-form-stack" [formGroup]="editFamilyForm" (ngSubmit)="submitForm();">
       <mat-card class="edit-family-card">
         <!-- Edit Family Form Title -->
         <mat-card-header>
           <mat-card-title class="edit-family-title">Edit Family</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div class="flex-col">
+          <div class="app-form-stack">
+            <div class="app-field-grid">
             <!-- Guardian First Name -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Guardian First Name</mat-label>
               <input matInput formControlName="guardianFirstName"
                 required>
@@ -21,7 +22,7 @@
             </mat-form-field>
 
             <!-- Guardian Last Name -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Guardian Last Name</mat-label>
               <input matInput formControlName="guardianLastName"
                 required>
@@ -33,7 +34,7 @@
             </mat-form-field>
 
             <!-- Email -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Email</mat-label>
               <input matInput type="email"
                 formControlName="email" required [ngModel]="family().email">
@@ -45,7 +46,7 @@
             </mat-form-field>
 
             <!-- Address -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Address</mat-label>
               <input matInput type="text"
                 formControlName="address" required [ngModel]="family().address">
@@ -57,39 +58,58 @@
             </mat-form-field>
 
             <!-- Accommodations -->
-            <mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Accommodations</mat-label>
               <input matInput type="text"
                 formControlName="accommodations" [ngModel]="family().accommodations">
             </mat-form-field>
-
-            <!-- Time Availability -->
-            <h3>Available Times</h3>
-            <div formGroupName="timeAvailability">
-              <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox" [ngModel]="family().timeAvailability?.earlyMorning">
-                {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)
-              </mat-checkbox><br>
-              <mat-checkbox formControlName="lateMorning" data-test="lateMorningCheckbox" [ngModel]="family().timeAvailability?.lateMorning">
-                {{ timeAvailabilityLabels.lateMorning }} (Late Morning)
-              </mat-checkbox><br>
-              <mat-checkbox formControlName="earlyAfternoon" data-test="earlyAfternoonCheckbox" [ngModel]="family().timeAvailability?.earlyAfternoon">
-                {{ timeAvailabilityLabels.earlyAfternoon }} (Early Afternoon)
-              </mat-checkbox><br>
-              <mat-checkbox formControlName="lateAfternoon" data-test="lateAfternoonCheckbox" [ngModel]="family().timeAvailability?.lateAfternoon">
-                {{ timeAvailabilityLabels.lateAfternoon }} (Late Afternoon)
-              </mat-checkbox>
             </div>
 
-            <h3>Students</h3>
+            <!-- Time Availability -->
+            <section class="family-form-section">
+              <h3>Available Times</h3>
+              <div class="availability-grid" formGroupName="timeAvailability">
+                <mat-checkbox formControlName="earlyMorning" data-test="earlyMorningCheckbox" [ngModel]="family().timeAvailability?.earlyMorning">
+                  {{ timeAvailabilityLabels.earlyMorning }} (Early Morning)
+                </mat-checkbox>
+                <mat-checkbox formControlName="lateMorning" data-test="lateMorningCheckbox" [ngModel]="family().timeAvailability?.lateMorning">
+                  {{ timeAvailabilityLabels.lateMorning }} (Late Morning)
+                </mat-checkbox>
+                <mat-checkbox formControlName="earlyAfternoon" data-test="earlyAfternoonCheckbox" [ngModel]="family().timeAvailability?.earlyAfternoon">
+                  {{ timeAvailabilityLabels.earlyAfternoon }} (Early Afternoon)
+                </mat-checkbox>
+                <mat-checkbox formControlName="lateAfternoon" data-test="lateAfternoonCheckbox" [ngModel]="family().timeAvailability?.lateAfternoon">
+                  {{ timeAvailabilityLabels.lateAfternoon }} (Late Afternoon)
+                </mat-checkbox>
+              </div>
+            </section>
+
+            <div class="section-heading">
+              <div>
+                <h3>Students</h3>
+                <p>Update school and supply information for each student in the family.</p>
+              </div>
+              <button mat-flat-button color="primary" type="button" (click)="addStudent()">
+                <mat-icon>person_add</mat-icon>
+                Add Student
+              </button>
+            </div>
 
             <!-- Student Form Array -->
-            <div formArrayName="students">
+            <div class="student-list" formArrayName="students">
               @for (student of students.controls; track $index; let i = $index) {
-                <div [formGroupName]="i" class="student-row">
-                  <div class="student-fields">
+                <section [formGroupName]="i" class="student-form-section">
+                  <div class="student-form-header">
+                    <h4>Student {{ i + 1 }}</h4>
+                    <button mat-stroked-button color="warn" class="remove-student-button" type="button" (click)="removeStudent(i)">
+                      <mat-icon>person_remove</mat-icon>
+                      Remove Student
+                    </button>
+                  </div>
+                  <div class="student-fields app-field-grid">
 
                     <!-- Student Name -->
-                    <mat-form-field>
+                    <mat-form-field appearance="outline">
                       <mat-label>Name</mat-label>
                       <input matInput formControlName="name" required [ngModel]="family().students[i]?.name">
                       @if (studentControlHasError(i, 'name')) {
@@ -100,7 +120,7 @@
                     </mat-form-field>
 
                     <!-- Student Grade -->
-                    <mat-form-field>
+                    <mat-form-field appearance="outline">
                       <mat-label>Grade</mat-label>
                       <mat-select formControlName="grade" required [ngModel]="family().students[i]?.grade">
                         <mat-option *ngFor="let g of grades" [value]="g">{{ g }}</mat-option>
@@ -113,7 +133,7 @@
                     </mat-form-field>
 
                     <!-- Student School -->
-                    <mat-form-field class="student-school">
+                    <mat-form-field appearance="outline" class="student-school">
                       <mat-label>School</mat-label>
                       <mat-select formControlName="school" required [ngModel]="family().students[i]?.schoolAbbreviation">
                         <mat-option *ngFor="let s of schools" [value]="s.abbreviation">
@@ -128,20 +148,15 @@
                     </mat-form-field>
 
                     <!-- Student Teacher -->
-                    <mat-form-field>
+                    <mat-form-field appearance="outline">
                       <mat-label>Teacher</mat-label>
                       <input matInput formControlName="teacher" [ngModel]="family().students[i]?.teacher">
                     </mat-form-field>
 
-                    <!-- Remove Student Button -->
-                    <button mat-flat-button color="accent" class="remove-student-button" type="button" (click)="removeStudent(i)">
-                      Remove Student
-                    </button>
-
                     <!-- Backpack and Headphones Radio Buttons -->
                     <div class="radio-group">
                       <div class="radio-section">
-                        <h4 style="font-size: 15px;">Backpack Needed?</h4>
+                        <h4 class="student-needs-heading">Backpack Needed?</h4>
                         <mat-radio-group formControlName="backpack" [ngModel]="family().students[i]?.backpack">
                           <mat-radio-button [value]="true">Yes</mat-radio-button>
                           <mat-radio-button [value]="false">No</mat-radio-button>
@@ -149,7 +164,7 @@
                       </div>
 
                       <div class="radio-section">
-                        <h4 style="font-size: 15px;">Headphones Needed?</h4>
+                        <h4 class="student-needs-heading">Headphones Needed?</h4>
                         <mat-radio-group formControlName="headphones" [ngModel]="family().students[i]?.headphones">
                           <mat-radio-button [value]="true">Yes</mat-radio-button>
                           <mat-radio-button [value]="false">No</mat-radio-button>
@@ -157,16 +172,13 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </section>
               }
             </div>
-
-    <!-- Add Student Button -->
-    <button mat-flat-button color="primary" class="add-student-button" type="button" (click)="addStudent()">Add Student</button>
           </div>
 
         </mat-card-content>
-        <mat-card-actions align="end">
+        <mat-card-actions class="app-action-row app-action-row-end" align="end">
           <!-- Back Button -->
           <button
             mat-button
@@ -175,18 +187,17 @@
             data-test="BackFamilyButton"
             routerLink="/family"
             >
-            BACK
+            Back
           </button>
           <!-- Save Button -->
           <button
             mat-button
-            type="button"
             color="primary"
             [disabled]="!editFamilyForm.valid"
             type="submit"
             data-test="confirmEditFamilyButton"
             >
-            SAVE
+            Save
           </button>
         </mat-card-actions>
       </mat-card>

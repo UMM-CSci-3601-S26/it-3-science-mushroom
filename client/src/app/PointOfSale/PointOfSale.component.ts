@@ -15,6 +15,7 @@ import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged,
 
 import { Family } from '../family/family';
 import { FamilyService } from '../family/family.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { PointOfSaleFamilyCardComponent } from './point-of-sale-family-card.component';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
 
@@ -40,6 +41,7 @@ import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialo
 })
 export class PointOfSaleComponent implements OnInit {
   private familyService = inject(FamilyService);
+  private dialogService = inject(DialogService);
   private dialog = inject(MatDialog);
   private destroyRef = inject(DestroyRef);
   private familyRefresh = new Subject<number>();
@@ -128,21 +130,32 @@ export class PointOfSaleComponent implements OnInit {
     if (!family._id) {
       return;
     }
-    if (!window.confirm('Revert this completed session? This will restore the removed inventory and reopen the session.')) {
-      return;
-    }
+    const dialogRef = this.dialogService.openDialog({
+      title: 'Revert Completed Session',
+      message: 'Revert this completed session? This will restore the removed inventory and reopen the session.',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Revert'
+    });
 
-    this.loadingFamilies = true;
-    this.familyLoadError = '';
-    this.familyService.revertCompletedFamilyHelpSession(family._id).pipe(
+    dialogRef.afterClosed().pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: () => this.familyRefresh.next(Date.now()),
-      error: (err) => {
-        console.error('Failed to revert completed session', err);
-        this.loadingFamilies = false;
-        this.familyLoadError = 'Unable to revert that completed session.';
+    ).subscribe(confirmed => {
+      if (!confirmed) {
+        return;
       }
+
+      this.loadingFamilies = true;
+      this.familyLoadError = '';
+      this.familyService.revertCompletedFamilyHelpSession(family._id!).pipe(
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe({
+        next: () => this.familyRefresh.next(Date.now()),
+        error: (err) => {
+          console.error('Failed to revert completed session', err);
+          this.loadingFamilies = false;
+          this.familyLoadError = 'Unable to revert that completed session.';
+        }
+      });
     });
   }
 }

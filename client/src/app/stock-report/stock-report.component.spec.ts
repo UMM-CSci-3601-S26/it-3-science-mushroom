@@ -89,8 +89,8 @@ describe('StockReportComponent', () => {
       expect(stockedItems.length).toBe(1);
       expect(stockedItems[0].item).toEqual('Shirt');
       expect(stockedItems[0].children?.length).toBe(1);
-      expect(stockedItems[0].children?.[0].description).toEqual('Stocked Shirt');
-      expect(stockedItems[0].children?.[0].children?.length).toBe(3);
+      expect(stockedItems[0].children?.[0].description).toContain('Stocked Shirt - 10 on hand');
+      expect(stockedItems[0].children?.[0].children).toBeUndefined();
     });
 
     it('should properly compute out of stock items', () => {
@@ -98,8 +98,8 @@ describe('StockReportComponent', () => {
       expect(outOfStockItems.length).toBe(1);
       expect(outOfStockItems[0].item).toEqual('Pants');
       expect(outOfStockItems[0].children?.length).toBe(1);
-      expect(outOfStockItems[0].children?.[0].description).toEqual('Out of Stock Pants');
-      expect(outOfStockItems[0].children?.[0].children?.length).toBe(3);
+      expect(outOfStockItems[0].children?.[0].description).toContain('Out of Stock Pants - 0 on hand');
+      expect(outOfStockItems[0].children?.[0].children).toBeUndefined();
     });
 
     it('should properly compute overstocked items', () => {
@@ -107,8 +107,8 @@ describe('StockReportComponent', () => {
       expect(overStockedItems.length).toBe(1);
       expect(overStockedItems[0].item).toEqual('Shirt');
       expect(overStockedItems[0].children?.length).toBe(1);
-      expect(overStockedItems[0].children?.[0].description).toEqual('Overstocked Shirt');
-      expect(overStockedItems[0].children?.[0].children?.length).toBe(3);
+      expect(overStockedItems[0].children?.[0].description).toContain('Overstocked Shirt - 12 on hand');
+      expect(overStockedItems[0].children?.[0].children).toBeUndefined();
     });
 
     it('should properly compute understocked items', () => {
@@ -116,8 +116,17 @@ describe('StockReportComponent', () => {
       expect(underStockedItems.length).toBe(1);
       expect(underStockedItems[0].item).toEqual('Pants');
       expect(underStockedItems[0].children?.length).toBe(1);
-      expect(underStockedItems[0].children?.[0].description).toEqual('Understocked Pants');
-      expect(underStockedItems[0].children?.[0].children?.length).toBe(3);
+      expect(underStockedItems[0].children?.[0].description).toContain('Understocked Pants - 5 on hand');
+      expect(underStockedItems[0].children?.[0].children).toBeUndefined();
+    });
+
+    it('should compute quick stock summary totals', () => {
+      expect(component.stockedItemCount()).toBe(1);
+      expect(component.outOfStockItemCount()).toBe(1);
+      expect(component.underStockedItemCount()).toBe(1);
+      expect(component.overStockedItemCount()).toBe(1);
+      expect(component.unitsNeeded()).toBe(9);
+      expect(component.overflowUnits()).toBe(2);
     });
   });
 

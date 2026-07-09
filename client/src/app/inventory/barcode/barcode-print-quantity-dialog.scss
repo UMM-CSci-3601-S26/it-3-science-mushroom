@@ -1,24 +1,19 @@
 :host {
   display: block;
   box-sizing: border-box;
-  background: var(--barcode-dialog-bg);
-  color: var(--barcode-text);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--app-primary) 14%, var(--app-surface)) 0%,
+      var(--app-surface) 42%,
+      color-mix(in srgb, var(--app-accent) 12%, var(--app-surface)) 100%);
+  color: var(--app-text);
   padding: 0 0 18px;
-
-  --barcode-dialog-bg: linear-gradient(135deg, #dbeafe 0%, #f8fbff 42%, #e0f2fe 100%);
-  --barcode-panel-bg: rgba(255, 255, 255, 0.42);
-  --barcode-panel-border: #cbd5e1;
-  --barcode-card-bg: #ffffff;
-  --barcode-card-border: #d1d5db;
-  --barcode-card-hover: #ebf1f7;
-  --barcode-text: #111827;
-  --barcode-muted-text: #4b5563;
 }
 
 h2[mat-dialog-title] {
   margin: 0;
   padding: 18px 32px 8px;
-  color: var(--barcode-text);
+  color: var(--app-text);
   background: transparent;
 }
 
@@ -26,28 +21,28 @@ h2[mat-dialog-title] {
   box-sizing: border-box;
   margin: 0 32px;
   padding: 18px;
-  border: 1px solid var(--barcode-panel-border);
-  border-radius: 12px;
-  background: var(--barcode-panel-bg);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: color-mix(in srgb, var(--app-surface) 78%, transparent);
 }
 
 .barcode-quantity-content {
   box-sizing: border-box;
   width: 100%;
   padding: 0;
-  color: var(--barcode-text);
+  color: var(--app-text);
 }
 
 .barcode-quantity-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 0.5rem;
+  gap: var(--app-space-sm);
   max-height: clamp(220px, 48vh, 460px);
   overflow-y: auto;
   padding: 0.5rem;
-  border: 1px solid var(--barcode-panel-border);
-  border-radius: 12px;
-  background: var(--barcode-panel-bg);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: color-mix(in srgb, var(--app-surface) 78%, transparent);
 }
 
 .barcode-quantity-row {
@@ -58,13 +53,13 @@ h2[mat-dialog-title] {
   box-sizing: border-box;
   min-height: 92px;
   padding: 0.75rem;
-  border: 1px solid var(--barcode-card-border);
-  border-radius: 10px;
-  background: var(--barcode-card-bg);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
 }
 
 .barcode-quantity-row:hover {
-  background: var(--barcode-card-hover);
+  background: var(--app-surface-muted);
 }
 
 .barcode-quantity-info {
@@ -75,7 +70,7 @@ h2[mat-dialog-title] {
 
 .barcode-quantity-name {
   overflow: hidden;
-  color: var(--barcode-text);
+  color: var(--app-text);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -83,7 +78,7 @@ h2[mat-dialog-title] {
 
 .barcode-quantity-details {
   overflow: hidden;
-  color: var(--barcode-muted-text);
+  color: var(--app-text-muted);
   font-size: 0.875rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -96,24 +91,11 @@ h2[mat-dialog-title] {
 .barcode-quantity-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--app-space-sm);
   padding: 0;
   margin: 0.75rem 0 0;
 }
 
 .barcode-quantity-actions button {
   min-width: 88px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :host {
-    --barcode-dialog-bg: linear-gradient(135deg, #0b1220 0%, #111827 46%, #13204a 100%);
-    --barcode-panel-bg: rgba(31, 41, 55, 0.36);
-    --barcode-panel-border: #4b5563;
-    --barcode-card-bg: #1f2937;
-    --barcode-card-border: #374151;
-    --barcode-card-hover: #253244;
-    --barcode-text: #f9fafb;
-    --barcode-muted-text: #d1d5db;
-  }
 }

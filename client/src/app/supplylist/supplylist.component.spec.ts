@@ -8,13 +8,20 @@ import { SupplyListService } from './supplylist.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../auth/auth-service';
+import { DialogService } from '../shared/dialog/dialog.service';
 
 describe('SupplyList Table', () => {
   let supplylistTable: SupplyListComponent;
   let fixture: ComponentFixture<SupplyListComponent>
   let supplylistService: SupplyListService;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   beforeEach(() => {
+    dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
+
     TestBed.configureTestingModule({
       imports: [SupplyListComponent],
       providers: [
@@ -22,6 +29,7 @@ describe('SupplyList Table', () => {
         provideHttpClientTesting(),
         { provide: SupplyListService, useClass: MockSupplyListService },
         { provide: AuthService, useValue: { hasPermission: () => true } }, // Tests have permission to run
+        { provide: DialogService, useValue: dialogService },
         provideRouter([])
       ],
     });
@@ -263,13 +271,18 @@ describe('SupplyList Table', () => {
       };
       supplylistTable.dataSource.data = [itemWithId];
 
-      spyOn(window, 'confirm').and.returnValue(true);
       const deleteSpy = spyOn(supplylistService, 'deleteSupplyList').and.returnValue(of(undefined));
 
       supplylistTable.confirmDelete('delete-me');
       tick(300);
       fixture.detectChanges();
 
+      expect(dialogService.openDialog).toHaveBeenCalledWith({
+        title: 'Delete Item',
+        message: 'Are you sure you want to delete this item?',
+        buttonOne: 'Cancel',
+        buttonTwo: 'Delete'
+      });
       expect(deleteSpy).toHaveBeenCalledWith('delete-me');
       expect(supplylistTable.dataSource.data.find(i => i._id === 'delete-me')).toBeUndefined();
     }));
@@ -285,7 +298,9 @@ describe('SupplyList Table', () => {
       };
       supplylistTable.dataSource.data = [itemWithId];
 
-      spyOn(window, 'confirm').and.returnValue(false);
+      dialogService.openDialog.and.returnValue({
+        afterClosed: () => of(false)
+      } as never);
       const deleteSpy = spyOn(supplylistService, 'deleteSupplyList').and.returnValue(of(undefined));
 
       supplylistTable.confirmDelete('keep-me');
@@ -296,12 +311,12 @@ describe('SupplyList Table', () => {
     }));
 
     it('does nothing when id is undefined', fakeAsync(() => {
-      spyOn(window, 'confirm').and.returnValue(true);
       const deleteSpy = spyOn(supplylistService, 'deleteSupplyList').and.returnValue(of(undefined));
 
       supplylistTable.confirmDelete(undefined);
       tick();
 
+      expect(dialogService.openDialog).not.toHaveBeenCalled();
       expect(deleteSpy).not.toHaveBeenCalled();
     }));
 
@@ -316,7 +331,6 @@ describe('SupplyList Table', () => {
       };
       supplylistTable.dataSource.data = [itemWithId];
 
-      spyOn(window, 'confirm').and.returnValue(true);
       spyOn(supplylistService, 'deleteSupplyList').and.returnValue(
         new Observable(o => o.error({ status: 500, message: 'Server error' }))
       );

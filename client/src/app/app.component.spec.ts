@@ -44,6 +44,10 @@ describe('AppComponent', () => {
   }
 
   beforeEach(waitForAsync(() => {
+    // Clear any persisted theme mode and classes before each test to ensure a consistent starting state.
+    localStorage.removeItem('r4l-theme-mode');
+    document.documentElement.classList.remove('app-theme-dark', 'app-theme-light');
+
     authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', [
       'logout',
       'syncAccessProfile',
@@ -90,6 +94,10 @@ describe('AppComponent', () => {
 
   afterEach(() => {
     httpTestingController.verify();
+
+    // Clear any persisted theme mode and classes after each test to prevent side effects on other tests.
+    localStorage.removeItem('r4l-theme-mode');
+    document.documentElement.classList.remove('app-theme-dark', 'app-theme-light');
   });
 
   it('should create the app', () => {
@@ -110,6 +118,32 @@ describe('AppComponent', () => {
     fixture.detectChanges();
 
     expect(authServiceSpy.syncAccessProfile).toHaveBeenCalled();
+  });
+
+  it('should apply the saved app theme class on init', () => {
+    localStorage.setItem('r4l-theme-mode', 'dark');
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    fixture.detectChanges();
+
+    expect(app.isDarkMode).toBeTrue();
+    expect(document.documentElement.classList).toContain('app-theme-dark');
+    expect(document.documentElement.classList).not.toContain('app-theme-light');
+  });
+
+  it('should toggle the forced app theme class', () => {
+    localStorage.setItem('r4l-theme-mode', 'light');
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    fixture.detectChanges();
+    app.toggleTheme();
+
+    expect(app.isDarkMode).toBeTrue();
+    expect(document.documentElement.classList).toContain('app-theme-dark');
+    expect(document.documentElement.classList).not.toContain('app-theme-light');
+    expect(localStorage.getItem('r4l-theme-mode')).toBe('dark');
   });
 
   it('should load pending delete request count for admins', () => {

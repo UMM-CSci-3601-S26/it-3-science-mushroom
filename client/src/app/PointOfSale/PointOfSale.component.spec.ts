@@ -8,6 +8,7 @@ import { Subject, of, throwError } from 'rxjs';
 
 import { Family } from '../family/family';
 import { FamilyService } from '../family/family.service';
+import { DialogService } from '../shared/dialog/dialog.service';
 import { PointOfSaleComponent } from './PointOfSale.component';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
 
@@ -16,6 +17,7 @@ describe('PointOfSaleComponent', () => {
   let component: PointOfSaleComponent;
   let familyService: jasmine.SpyObj<FamilyService>;
   let dialog: jasmine.SpyObj<MatDialog>;
+  let dialogService: jasmine.SpyObj<DialogService>;
 
   const family: Family = {
     _id: 'family-1',
@@ -43,9 +45,13 @@ describe('PointOfSaleComponent', () => {
       'revertCompletedFamilyHelpSession'
     ]);
     dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
 
     familyService.getFamilies.and.returnValue(of([family]));
     familyService.revertCompletedFamilyHelpSession.and.returnValue(of(family));
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(true)
+    } as never);
 
     await TestBed.configureTestingModule({
       imports: [PointOfSaleComponent, NoopAnimationsModule],
@@ -54,7 +60,8 @@ describe('PointOfSaleComponent', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: FamilyService, useValue: familyService },
-        { provide: MatDialog, useValue: dialog }
+        { provide: MatDialog, useValue: dialog },
+        { provide: DialogService, useValue: dialogService }
       ]
     }).compileComponents();
 
@@ -151,19 +158,25 @@ describe('PointOfSaleComponent', () => {
   });
 
   it('skips revert when the family has no id or the user cancels', () => {
-    const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
+    dialogService.openDialog.and.returnValue({
+      afterClosed: () => of(false)
+    } as never);
     startComponent();
 
     component.revertCompletedFamilySession({ ...family, _id: undefined });
-    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(dialogService.openDialog).not.toHaveBeenCalled();
 
     component.revertCompletedFamilySession(family);
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(dialogService.openDialog).toHaveBeenCalledWith({
+      title: 'Revert Completed Session',
+      message: 'Revert this completed session? This will restore the removed inventory and reopen the session.',
+      buttonOne: 'Cancel',
+      buttonTwo: 'Revert'
+    });
     expect(familyService.revertCompletedFamilyHelpSession).not.toHaveBeenCalled();
   });
 
   it('refreshes families after a completed session is reverted', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     startComponent();
     familyService.getFamilies.calls.reset();
 
@@ -178,7 +191,6 @@ describe('PointOfSaleComponent', () => {
   });
 
   it('shows an error when reverting a completed session fails', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
     familyService.revertCompletedFamilyHelpSession.and.returnValue(throwError(() => new Error('revert failed')));
     startComponent();
 
