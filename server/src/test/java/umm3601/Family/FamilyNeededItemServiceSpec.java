@@ -93,6 +93,21 @@ class FamilyNeededItemServiceSpec {
   }
 
   @Test
+  void recordNeededButNotAcquiredItemsIncludesItemNotAvailableReason() {
+    Family family = buildFamilyWithChecklist();
+    family.checklist.sections.get(0).items.add(buildItem(
+      "item-1",
+      "Crayons",
+      false,
+      "item_not_avaliable"));
+
+    List<FamilyNeededItemService.NeededItem> neededItems =
+      familyNeededItemService.recordNeededButNotAcquiredItems(family);
+
+    assertEquals(1, neededItems.size());
+  }
+
+  @Test
   void recordNeededButNotAcquiredItemsIgnoresOtherNotGivenReasons() {
     Family family = buildFamilyWithChecklist();
     family.checklist.sections.get(0).items.add(buildItem(

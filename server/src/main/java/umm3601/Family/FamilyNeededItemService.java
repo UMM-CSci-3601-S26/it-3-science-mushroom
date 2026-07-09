@@ -16,6 +16,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 
 public class FamilyNeededItemService {
+  private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
+  private static final String REASON_ITEM_NOT_AVAILABLE = "item_not_available";
   private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
   private final JacksonMongoCollection<NeededItemLog> neededItemLogCollection;
 
@@ -74,9 +76,16 @@ public class FamilyNeededItemService {
   }
 
   private boolean isNeededButNotAcquired(Family.ChecklistItem item) {
+    String reason = normalizeReason(item != null ? item.notPickedUpReason : null);
     return item != null
       && !item.selected
-      && REASON_NOT_AVAILABLE_DIDNT_RECEIVE.equals(normalizeReason(item.notPickedUpReason));
+      && isNeededButNotAcquiredReason(reason);
+  }
+
+  private boolean isNeededButNotAcquiredReason(String reason) {
+    return REASON_ITEM_NOT_AVALIABLE.equals(reason)
+      || REASON_ITEM_NOT_AVAILABLE.equals(reason)
+      || REASON_NOT_AVAILABLE_DIDNT_RECEIVE.equals(reason);
   }
 
   private String normalizeReason(String reason) {
