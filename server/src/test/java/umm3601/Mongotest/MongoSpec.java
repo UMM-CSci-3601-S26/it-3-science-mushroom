@@ -1,5 +1,5 @@
 // Packages
-package umm3601.mongotest;
+package umm3601.Mongotest;
 
 // Static Imports
 import static com.mongodb.client.model.Filters.gt;
