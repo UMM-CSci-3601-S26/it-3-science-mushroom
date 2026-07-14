@@ -51,6 +51,12 @@ public class UsersRepository {
         .into(new ArrayList<>());
   }
 
+  public List<Users> findGuardianUsers() {
+    return users.find(eq("systemRole", Role.GUARDIAN))
+        .sort(ascending("fullName", "username"))
+        .into(new ArrayList<>());
+  }
+
   public Users findByUsername(String username) {
     return users.find(eq("username", username)).first();
   }
