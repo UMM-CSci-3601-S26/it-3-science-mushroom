@@ -507,14 +507,6 @@ describe('AddSupplyListComponent#parseDescription()', () => {
     expect(component.addSupplyListForm.get('color')?.value).toBe('red');
   });
 
-  it('should join multiple colors with ", " when "or" is absent (allOf)', () => {
-    component.parseDescription('red and blue notebook');
-    const color = component.addSupplyListForm.get('color')?.value as string;
-    expect(color).toContain('red');
-    expect(color).toContain('blue');
-    expect(color).not.toContain('|');
-  });
-
   it('should join multiple colors with " | " when "or" is present (anyOf)', () => {
     component.parseDescription('red or blue notebook');
     const color = component.addSupplyListForm.get('color')?.value as string;
@@ -839,35 +831,17 @@ describe('AddSupplyListComponent#submitForm() — pipe separator (anyOf) path', 
     component.addSupplyListForm.patchValue({ color: 'red | blue' });
     component.submitForm();
     expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-      color: jasmine.objectContaining({ anyOf: ['red', 'blue'], allOf: [] })
+      color: jasmine.objectContaining({ anyOf: ['red', 'blue'], exactly: "" })
     }));
   });
 
-  it('should map a comma-separated value to allOf when submitting', () => {
+  it('should produce empty exactly/anyOf for empty field (toAttr empty-val branch)', () => {
     const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
-    component.addSupplyListForm.patchValue({ color: 'Red, Blue' });
+    // brand, type etc. are all empty — toAttr('') should return { exactly:[], anyOf:[] }
     component.submitForm();
     expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-      color: jasmine.objectContaining({ allOf: ['Red', 'Blue'], anyOf: [] })
-    }));
-  });
-
-  it('should produce empty allOf/anyOf for empty field (toAttr empty-val branch)', () => {
-    const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
-    // brand, type etc. are all empty — toAttr('') should return { allOf:[], anyOf:[] }
-    component.submitForm();
-    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-      brand: { allOf: "", anyOf: [] },
-      type: { allOf: "", anyOf: [] }
-    }));
-  });
-
-  it('should produce empty allOf/anyOf for empty color field', () => {
-    const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
-    // color is empty — toAttr('') should return { allOf:[], anyOf:[] } rather than null or undefined
-    component.submitForm();
-    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-      color: { allOf: [], anyOf: [] }
+      brand: { exactly: "", anyOf: [] },
+      type: { exactly: "", anyOf: [] }
     }));
   });
 });

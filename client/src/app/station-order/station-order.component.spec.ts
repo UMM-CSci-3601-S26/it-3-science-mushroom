@@ -80,14 +80,16 @@ describe('StationOrderComponent', () => {
           "grade": "2nd Grade",
           "teacher": "N/A",
           "item": ["Pencil"],
-          "brand": { allOf: "Ticonderoga", anyOf: []},
-          "color": { allOf: ["Yellow"], anyOf: []},
-          "size": { allOf: "#2", anyOf: []},
-          "type": { allOf: "Unsharpened", anyOf: []},
-          "material": { allOf: "N/A", anyOf: []},
+          "brand": { exactly: "Ticonderoga", anyOf: []},
+          "color": { exactly: "Yellow", anyOf: []},
+          "size": { exactly: "#2", anyOf: []},
+          "type": { exactly: "Unsharpened", anyOf: []},
+          "material": { exactly: "N/A", anyOf: []},
           "packageSize": 1,
           "quantity": 12,
-          "notes": "N/A"
+          "notes": "N/A",
+          "supplyID": "N/A",
+          "invIDs": []
         },
         {
           "_id": '2',
@@ -96,14 +98,16 @@ describe('StationOrderComponent', () => {
           "grade": "2nd Grade",
           "teacher": "N/A",
           "item": ["Folder"],
-          "brand": { allOf: "N/A", anyOf: []},
-          "color": { allOf: ["Green"], anyOf: []},
-          "size": { allOf: "N/A", anyOf: []},
-          "type": { allOf: "2 Prong", anyOf: []},
-          "material": { allOf: "Plastic", anyOf: []},
+          "brand": { exactly: "N/A", anyOf: []},
+          "color": { exactly: "Green", anyOf: []},
+          "size": { exactly: "N/A", anyOf: []},
+          "type": { exactly: "2 Prong", anyOf: []},
+          "material": { exactly: "Plastic", anyOf: []},
           "packageSize": 1,
           "quantity": 2,
-          "notes": "N/A"
+          "notes": "N/A",
+          "supplyID": "N/A",
+          "invIDs": []
         },
         {
           "_id": '1',
@@ -112,14 +116,16 @@ describe('StationOrderComponent', () => {
           "school": "St. Mary's",
           "grade": "2nd Grade",
           "item": ["Pencil Box"],
-          "brand": { allOf: "N/A", anyOf: []},
-          "color": { allOf: ["N/A"], anyOf: []},
-          "size": { allOf: "8\" x 5\"", anyOf: []},
-          "type": { allOf: "N/A", anyOf: []},
-          "material": { allOf: "Plastic", anyOf: []},
+          "brand": { exactly: "N/A", anyOf: []},
+          "color": { exactly: "N/A", anyOf: []},
+          "size": { exactly: "8\" x 5\"", anyOf: []},
+          "type": { exactly: "N/A", anyOf: []},
+          "material": { exactly: "Plastic", anyOf: []},
           "packageSize": 1,
           "quantity": 1,
-          "notes": "N/A"
+          "notes": "N/A",
+          "supplyID": "N/A",
+          "invIDs": []
         },
       ];
 
