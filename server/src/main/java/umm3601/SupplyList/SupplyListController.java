@@ -35,7 +35,6 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
-//import umm3601.Inventory.Inventory;
 
 /**
  * API controller for school supply-list items.
