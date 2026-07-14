@@ -131,7 +131,7 @@ public class SupplyListControllerSpec {
           .append("exactly", "Ticonderoga")
           .append("anyOf", new ArrayList<>()))
         .append("color", new Document()
-          .append("exactly", Arrays.asList("yellow"))
+          .append("exactly", "yellow")
           .append("anyOf", new ArrayList<>()))
         .append("packageSize", 1)
         .append("size", new Document()
@@ -155,7 +155,7 @@ public class SupplyListControllerSpec {
           .append("exactly", "Pink Pearl")
           .append("anyOf", new ArrayList<>()))
         .append("color", new Document()
-          .append("exactly", Arrays.asList("pink"))
+          .append("exactly", "pink")
           .append("anyOf", new ArrayList<>()))
         .append("packageSize", 1)
         .append("size", new Document()
@@ -179,7 +179,7 @@ public class SupplyListControllerSpec {
           .append("exactly", "Five Star")
           .append("anyOf", new ArrayList<>()))
         .append("color", new Document()
-          .append("exactly", Arrays.asList("blue"))
+          .append("exactly", "blue")
           .append("anyOf", new ArrayList<>()))
         .append("packageSize", 1)
         .append("size", new Document()
@@ -204,7 +204,7 @@ public class SupplyListControllerSpec {
         .append("exactly", "JanSport")
         .append("anyOf", new ArrayList<>()))
       .append("color", new Document()
-        .append("exactly", Arrays.asList("black"))
+        .append("exactly", "black")
         .append("anyOf", new ArrayList<>()))
       .append("packageSize", 1)
       .append("size", new Document()
@@ -539,7 +539,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Marker"],
           "brand": {"exactly": "", "anyOf": ["Crayola"]},
-          "color": {"exactly": [], "anyOf": ["red"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
           "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
@@ -570,7 +570,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Marker"],
           "brand": {"exactly": "", "anyOf": ["Crayola"]},
-          "color": {"exactly": [], "anyOf": ["red"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
           "size": {"exactly": "N/A", "anyOf": []},
           "quantity": -5,
@@ -604,7 +604,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Marker"],
           "brand": {"exactly": "", "anyOf": ["Crayola"]},
-          "color": {"exactly": [], "anyOf": ["red"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 0,
           "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
@@ -641,7 +641,7 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "brand": {"exactly": "", "anyOf": ["Crayola"]},
-          "color": {"exactly": [], "anyOf": ["red"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
           "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
@@ -673,7 +673,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Marker"],
           "brand": {"exactly": "", "anyOf": ["Crayola"]},
-          "color": {"exactly": [], "anyOf": ["red"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
           "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
@@ -710,7 +710,7 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "item": ["Marker"],
           "brand": {"exactly": "", "anyOf": ["Crayola"]},
-          "color": {"exactly": [], "anyOf": ["red"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
           "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
@@ -840,7 +840,7 @@ public class SupplyListControllerSpec {
               .append("exactly", "Westcott")
               .append("anyOf", new ArrayList<>()))
             .append("color", new Document()
-              .append("exactly", Arrays.asList("clear"))
+              .append("exactly", "clear")
               .append("anyOf", new ArrayList<>()))
             .append("packageSize", 1)
             .append("size", new Document()
@@ -878,7 +878,7 @@ public class SupplyListControllerSpec {
                 .append("exactly", "Fiskars")
                 .append("anyOf", new ArrayList<>()))
             .append("color", new Document()
-                .append("exactly", Arrays.asList("orange"))
+                .append("exactly", "orange")
                 .append("anyOf", new ArrayList<>()))
             .append("packageSize", 1)
             .append("size", new Document()
@@ -928,7 +928,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["red"], "anyOf": []},
+          "color": {"exactly": "red", "anyOf": []},
           "packageSize": 1,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 3,
@@ -958,7 +958,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["black"], "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
@@ -996,7 +996,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["black"], "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
@@ -1034,7 +1034,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["black"], "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": null,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": null,
@@ -1065,7 +1065,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["black"], "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 0,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
@@ -1103,7 +1103,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["black"], "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 0,
@@ -1140,7 +1140,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["black"], "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
@@ -1173,7 +1173,7 @@ public class SupplyListControllerSpec {
           "grade": "PreK",
           "item": ["Backpack"],
           "brand": {"exactly": "JanSport", "anyOf": []},
-          "color": {"exactly": ["black"], "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
           "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
@@ -1206,7 +1206,7 @@ public class SupplyListControllerSpec {
           "grade": "5th grade",
           "item": ["Backpack"],
           "brand": {"exactly": "Nike", "anyOf": []},
-          "color": {"exactly": ["blue"], "anyOf": []},
+          "color": {"exactly": "blue", "anyOf": []},
           "packageSize": 2,
           "size": {"exactly": "Large", "anyOf": []},
           "quantity": 5,

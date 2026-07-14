@@ -77,13 +77,13 @@ class InventoryMatcherSpec {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Notebook");
     supplyList.brand = new SupplyList.AttributeOptions();
-    supplyList.brand.allOf = "Five Star";
-    supplyList.color = new SupplyList.ColorAttributeOptions();
+    supplyList.brand.exactly = "Five Star";
+    supplyList.color = new SupplyList.AttributeOptions();
     supplyList.color.anyOf = List.of("Blue", "Black");
     supplyList.size = new SupplyList.AttributeOptions();
     supplyList.size.anyOf = List.of("Wide");
     supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Ruled";
+    supplyList.type.exactly = "Ruled";
     supplyList.material = new SupplyList.AttributeOptions();
     supplyList.material.anyOf = List.of("Paper");
     supplyList.packageSize = 1;
@@ -173,7 +173,7 @@ class InventoryMatcherSpec {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Eraser");
     supplyList.size = new SupplyList.AttributeOptions();
-    supplyList.size.allOf = "Large";
+    supplyList.size.exactly = "Large";
 
     Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
 
@@ -192,7 +192,7 @@ class InventoryMatcherSpec {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Eraser");
     supplyList.size = new SupplyList.AttributeOptions();
-    supplyList.size.allOf = "Large";
+    supplyList.size.exactly = "Large";
 
     Inventory strictMatch = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
     Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(supplyList, 1);
@@ -212,7 +212,7 @@ class InventoryMatcherSpec {
     SupplyList supplyList = new SupplyList();
     supplyList.item = List.of("Notebook");
     supplyList.type = new SupplyList.AttributeOptions();
-    supplyList.type.allOf = "Composition";
+    supplyList.type.exactly = "Composition";
 
     Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(supplyList, 1);
 
@@ -259,7 +259,7 @@ class InventoryMatcherSpec {
     supplyList.item = List.of("Marker");
     supplyList.brand = new SupplyList.AttributeOptions();
     supplyList.brand.anyOf = List.of("Crayola");
-    supplyList.color = new SupplyList.ColorAttributeOptions();
+    supplyList.color = new SupplyList.AttributeOptions();
     supplyList.color.anyOf = List.of("Blue");
     supplyList.type = new SupplyList.AttributeOptions();
     supplyList.type.anyOf = List.of("Washable");
@@ -310,7 +310,7 @@ class InventoryMatcherSpec {
     SupplyList mismatchedBrand = new SupplyList();
     mismatchedBrand.item = List.of("Notebook");
     mismatchedBrand.brand = new SupplyList.AttributeOptions();
-    mismatchedBrand.brand.allOf = "Other";
+    mismatchedBrand.brand.exactly = "Other";
     assertFalse(inventoryMatcher.inventoryMatchesSupplyList(inventory, mismatchedBrand));
 
     SupplyList mismatchedPackage = new SupplyList();
@@ -320,40 +320,40 @@ class InventoryMatcherSpec {
 
     SupplyList mismatchedColor = new SupplyList();
     mismatchedColor.item = List.of("Notebook");
-    mismatchedColor.color = new SupplyList.ColorAttributeOptions();
-    mismatchedColor.color.allOf = List.of("Red");
+    mismatchedColor.color = new SupplyList.AttributeOptions();
+    mismatchedColor.color.exactly = "Red";
     assertFalse(inventoryMatcher.inventoryMatchesSupplyList(inventory, mismatchedColor));
 
     SupplyList mismatchedSize = new SupplyList();
     mismatchedSize.item = List.of("Notebook");
     mismatchedSize.size = new SupplyList.AttributeOptions();
-    mismatchedSize.size.allOf = "Narrow";
+    mismatchedSize.size.exactly = "Narrow";
     assertFalse(inventoryMatcher.inventoryMatchesSupplyList(inventory, mismatchedSize));
 
     SupplyList mismatchedType = new SupplyList();
     mismatchedType.item = List.of("Notebook");
     mismatchedType.type = new SupplyList.AttributeOptions();
-    mismatchedType.type.allOf = "Composition";
+    mismatchedType.type.exactly = "Composition";
     assertFalse(inventoryMatcher.inventoryMatchesSupplyList(inventory, mismatchedType));
 
     SupplyList mismatchedMaterial = new SupplyList();
     mismatchedMaterial.item = List.of("Notebook");
     mismatchedMaterial.material = new SupplyList.AttributeOptions();
-    mismatchedMaterial.material.allOf = "Plastic";
+    mismatchedMaterial.material.exactly = "Plastic";
     assertFalse(inventoryMatcher.inventoryMatchesSupplyList(inventory, mismatchedMaterial));
 
     SupplyList exactMatch = new SupplyList();
     exactMatch.item = List.of("Notebook");
     exactMatch.brand = new SupplyList.AttributeOptions();
-    exactMatch.brand.allOf = "Acme";
-    exactMatch.color = new SupplyList.ColorAttributeOptions();
-    exactMatch.color.allOf = List.of("Blue");
+    exactMatch.brand.exactly = "Acme";
+    exactMatch.color = new SupplyList.AttributeOptions();
+    exactMatch.color.exactly = "Blue";
     exactMatch.size = new SupplyList.AttributeOptions();
-    exactMatch.size.allOf = "Wide";
+    exactMatch.size.exactly = "Wide";
     exactMatch.type = new SupplyList.AttributeOptions();
-    exactMatch.type.allOf = "Ruled";
+    exactMatch.type.exactly = "Ruled";
     exactMatch.material = new SupplyList.AttributeOptions();
-    exactMatch.material.allOf = "Paper";
+    exactMatch.material.exactly = "Paper";
     exactMatch.packageSize = 2;
     assertTrue(inventoryMatcher.inventoryMatchesSupplyList(inventory, exactMatch));
   }
@@ -367,18 +367,18 @@ class InventoryMatcherSpec {
     assertTrue(invokeMatchesAttribute(anyOf, "Blue"));
     assertFalse(invokeMatchesAttribute(anyOf, "Red"));
 
-    SupplyList.AttributeOptions allOfMismatch = new SupplyList.AttributeOptions();
-    allOfMismatch.allOf = "Wide";
-    assertFalse(invokeMatchesAttribute(allOfMismatch, "Narrow"));
+    SupplyList.AttributeOptions exactlyMismatch = new SupplyList.AttributeOptions();
+    exactlyMismatch.exactly = "Wide";
+    assertFalse(invokeMatchesAttribute(exactlyMismatch, "Narrow"));
 
-    SupplyList.ColorAttributeOptions colorAllOf = new SupplyList.ColorAttributeOptions();
-    colorAllOf.allOf = List.of("Blue");
-    assertFalse(invokeMatchesColorAttribute(colorAllOf, "Red"));
+    SupplyList.AttributeOptions colorAllOf = new SupplyList.AttributeOptions();
+    colorAllOf.exactly = "Blue";
+    assertFalse(invokeMatchesAttribute(colorAllOf, "Red"));
 
-    SupplyList.ColorAttributeOptions colorAnyOf = new SupplyList.ColorAttributeOptions();
+    SupplyList.AttributeOptions colorAnyOf = new SupplyList.AttributeOptions();
     colorAnyOf.anyOf = List.of("Black", "Red");
-    assertTrue(invokeMatchesColorAttribute(colorAnyOf, "Red"));
-    assertFalse(invokeMatchesColorAttribute(colorAnyOf, "Green"));
+    assertTrue(invokeMatchesAttribute(colorAnyOf, "Red"));
+    assertFalse(invokeMatchesAttribute(colorAnyOf, "Green"));
   }
 
   @Test
@@ -419,11 +419,11 @@ class InventoryMatcherSpec {
     assertEquals(0, inventoryMatcher.itemSimilarityScore(inventory, shortPartialItemSupplyList));
 
     SupplyList.AttributeOptions requiredBrand = new SupplyList.AttributeOptions();
-    requiredBrand.allOf = "Ticonderoga";
+    requiredBrand.exactly = "Ticonderoga";
     assertEquals(5, inventoryMatcher.attributeSimilarityScore(requiredBrand, inventory.brand));
 
     SupplyList.AttributeOptions requiredBrandMiss = new SupplyList.AttributeOptions();
-    requiredBrandMiss.allOf = "Crayola";
+    requiredBrandMiss.exactly = "Crayola";
     assertEquals(0, inventoryMatcher.attributeSimilarityScore(requiredBrandMiss, inventory.brand));
 
     SupplyList.AttributeOptions optionalBrand = new SupplyList.AttributeOptions();
@@ -431,28 +431,28 @@ class InventoryMatcherSpec {
     assertEquals(3, inventoryMatcher.attributeSimilarityScore(optionalBrand, inventory.brand));
 
     SupplyList.AttributeOptions missingBrand = new SupplyList.AttributeOptions();
-    missingBrand.allOf = "";
+    missingBrand.exactly = "";
     missingBrand.anyOf = List.of("Crayola");
     assertEquals(0, inventoryMatcher.attributeSimilarityScore(missingBrand, inventory.brand));
     assertEquals(0, inventoryMatcher.attributeSimilarityScore(null, inventory.brand));
 
-    SupplyList.ColorAttributeOptions requiredColor = new SupplyList.ColorAttributeOptions();
-    requiredColor.allOf = List.of("Yellow");
-    assertEquals(5, inventoryMatcher.colorSimilarityScore(requiredColor, inventory.color));
+    SupplyList.AttributeOptions requiredColor = new SupplyList.AttributeOptions();
+    requiredColor.exactly = "Yellow";
+    assertEquals(5, inventoryMatcher.attributeSimilarityScore(requiredColor, inventory.color));
 
-    SupplyList.ColorAttributeOptions requiredColorMiss = new SupplyList.ColorAttributeOptions();
-    requiredColorMiss.allOf = List.of("Blue");
-    assertEquals(0, inventoryMatcher.colorSimilarityScore(requiredColorMiss, inventory.color));
+    SupplyList.AttributeOptions requiredColorMiss = new SupplyList.AttributeOptions();
+    requiredColorMiss.exactly = "Blue";
+    assertEquals(0, inventoryMatcher.attributeSimilarityScore(requiredColorMiss, inventory.color));
 
-    SupplyList.ColorAttributeOptions optionalColor = new SupplyList.ColorAttributeOptions();
+    SupplyList.AttributeOptions optionalColor = new SupplyList.AttributeOptions();
     optionalColor.anyOf = List.of("Blue", "Yellow");
-    assertEquals(3, inventoryMatcher.colorSimilarityScore(optionalColor, inventory.color));
+    assertEquals(3, inventoryMatcher.attributeSimilarityScore(optionalColor, inventory.color));
 
-    SupplyList.ColorAttributeOptions missingColor = new SupplyList.ColorAttributeOptions();
-    missingColor.allOf = List.of("Blue");
+    SupplyList.AttributeOptions missingColor = new SupplyList.AttributeOptions();
+    missingColor.exactly = "Blue";
     missingColor.anyOf = List.of("Red");
-    assertEquals(0, inventoryMatcher.colorSimilarityScore(missingColor, inventory.color));
-    assertEquals(0, inventoryMatcher.colorSimilarityScore(null, inventory.color));
+    assertEquals(0, inventoryMatcher.attributeSimilarityScore(missingColor, inventory.color));
+    assertEquals(0, inventoryMatcher.attributeSimilarityScore(null, inventory.color));
   }
 
   @Test
@@ -485,12 +485,6 @@ class InventoryMatcherSpec {
   private boolean invokeMatchesAttribute(SupplyList.AttributeOptions options, String inventoryValue) throws Exception {
     return invokePrivate("matchesAttribute",
       new Class<?>[] {SupplyList.AttributeOptions.class, String.class}, options, inventoryValue);
-  }
-
-  private boolean invokeMatchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue)
-      throws Exception {
-    return invokePrivate("matchesColorAttribute",
-      new Class<?>[] {SupplyList.ColorAttributeOptions.class, String.class}, options, inventoryValue);
   }
 
   private String invokeNormalizeToken(String value) throws Exception {
