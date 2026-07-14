@@ -48,6 +48,7 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import io.javalin.validation.ValidationException;
+import umm3601.Inventory.Inventory;
 
 /**
  * Tests for the SupplyListController using a real MongoDB "test" database.
@@ -1232,5 +1233,39 @@ public class SupplyListControllerSpec {
     verify(ctx).json(supplylistCaptor.capture());
     assertEquals("CHS", supplylistCaptor.getValue().school);
     assertEquals("5th grade", supplylistCaptor.getValue().grade);
+  }
+
+  @Test
+  void generateNextIdReturnsFirstWhenCollectionEmpty() {
+    db.getCollection("supplylist").drop();
+
+    supplylistController.generateNextID(ctx);
+
+    verify(ctx).json("Supply-00001");
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void generateNextIdReturnsNextSequentialId() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertOne(new Document()
+        .append("supplyID", "Supply-00009"));
+
+    supplylistController.generateNextID(ctx);
+
+    verify(ctx).json("Supply-00010");
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void generateNextIdReturnsFirstWhenHighestIdIsMalformed() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertOne(new Document()
+        .append("supplyID", "Supply-ABC"));
+
+    supplylistController.generateNextID(ctx);
+
+    verify(ctx).json("Supply-00001");
+    verify(ctx).status(HttpStatus.OK);
   }
 }
