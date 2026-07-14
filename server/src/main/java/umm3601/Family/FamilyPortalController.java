@@ -135,7 +135,7 @@ public class FamilyPortalController {
     Family family = familyController.getByOwnerUserId(authContext.userId());
     requireCompletedProfile(family);
 
-    ctx.json(family.checklist);
+    ctx.json(familyController.generateCurrentFamilyChecklist(family));
     ctx.status(HttpStatus.OK);
   }
 

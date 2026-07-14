@@ -28,6 +28,7 @@ import { Family, SelectOption } from './family';
 import { FamilyCardComponent } from './family-card.component';
 import { FamilyService } from './family.service';
 import { DashboardStats } from '../family/family';
+import { GuardianLinkDialogComponent } from './family-management/link-family/guardian-link-dialog.component';
 
 // Auth Imports
 import { AuthService } from '../auth/auth-service';
@@ -73,7 +74,7 @@ import { DeleteFamilyRequestDialogComponent, DeleteFamilyRequestDialogResult } f
     MatDialogModule,
     MatSnackBarModule,
     MatPaginatorModule,
-    MatPaginator
+    MatPaginator,
   ],
 })
 
@@ -223,6 +224,8 @@ export class FamilyListComponent {
    * The serverFilteredFamilies signal listens to changes in guardianName$ and makes a request to the server to fetch families that match the current guardian name filter.
    */
   private guardianName$ = toObservable(this.guardianName);
+  private familyRefresh = signal(0);
+  private familyRefresh$ = toObservable(this.familyRefresh);
 
   /**
    * serverFilteredFamilies is a signal that holds the list of families fetched from the server based on the current guardianName filter.
@@ -233,6 +236,7 @@ export class FamilyListComponent {
     toSignal(
       combineLatest([
         this.guardianName$,
+        this.familyRefresh$,
       ]).pipe(
         switchMap(([ guardianName ]) =>
           this.familyService.getFamilies({
@@ -275,6 +279,19 @@ export class FamilyListComponent {
       return
     }
     this.showOptionsMenu.update(value => !value);
+  }
+
+  openGuardianLinkDialog() {
+    const dialogRef = this.dialog.open(GuardianLinkDialogComponent, {
+      width: '520px',
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe(linkChanged => {
+      if (linkChanged) {
+        this.familyRefresh.update(value => value + 1);
+      }
+    });
   }
 
   downloadCSV() {

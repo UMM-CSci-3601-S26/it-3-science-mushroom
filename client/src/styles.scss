@@ -258,6 +258,108 @@ $r4l-warn-palette: (
   ),
 );
 
+// Poster-inspired theme pulled from the Fall 2026 Ready 4 Learning artwork.
+// The 500 values are the extracted source colors; surrounding tones give
+// Angular Material predictable hover, focus, and disabled-state colors.
+$r4l-poster-pink-palette: (
+  50: #fce7f2,
+  100: #f8cfe6,
+  200: #f1a0cc,
+  300: #eb70b3,
+  400: #e85ca3,
+  500: #e43894,
+  600: #cd3285,
+  700: #b62d76,
+  800: #9f2768,
+  900: #74204e,
+  A100: #ffd3ec,
+  A200: #ff93cf,
+  A400: #e43894,
+  A700: #9f2768,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #000000,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #ffffff,
+  ),
+);
+
+$r4l-poster-purple-palette: (
+  50: #eee8f4,
+  100: #ded1e8,
+  200: #bda3d1,
+  300: #9c75ba,
+  400: #8153a8,
+  500: #642e8c,
+  600: #5a297e,
+  700: #502570,
+  800: #462062,
+  900: #35184a,
+  A100: #e5c9ff,
+  A200: #c88cff,
+  A400: #8f4bd1,
+  A700: #642e8c,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #ffffff,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #ffffff,
+    A700: #ffffff,
+  ),
+);
+
+$r4l-poster-yellow-palette: (
+  50: #fffde6,
+  100: #fffacc,
+  200: #fff699,
+  300: #fdf066,
+  400: #fced33,
+  500: #fbeb04,
+  600: #e2d404,
+  700: #c9bc03,
+  800: #afa503,
+  900: #807802,
+  A100: #fffbbf,
+  A200: #fff77a,
+  A400: #fbeb04,
+  A700: #afa503,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #000000,
+    600: #000000,
+    700: #000000,
+    800: #000000,
+    900: #ffffff,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #000000,
+  ),
+);
+
 // THEME DEFINITIONS
 // Light and dark themes use the same brand family so the app feels consistent
 // while still choosing lighter hues for dark mode readability.
@@ -268,6 +370,14 @@ $light-warn: mat.m2-define-palette($r4l-warn-palette, 500, 300, 700);
 $dark-primary: mat.m2-define-palette($r4l-blue-palette, 300, 100, 700);
 $dark-accent: mat.m2-define-palette($r4l-gold-palette, 300, 100, 700);
 $dark-warn: mat.m2-define-palette($r4l-warn-palette, 300, 100, 700);
+
+$poster-primary: mat.m2-define-palette($r4l-poster-pink-palette, 500, 100, 700);
+$poster-accent: mat.m2-define-palette($r4l-poster-yellow-palette, 500, 100, 700);
+$poster-warn: mat.m2-define-palette($r4l-poster-purple-palette, 500, 300, 700);
+
+$poster-dark-primary: mat.m2-define-palette($r4l-poster-pink-palette, 300, 100, 700);
+$poster-dark-accent: mat.m2-define-palette($r4l-poster-yellow-palette, 300, 100, 700);
+$poster-dark-warn: mat.m2-define-palette($r4l-poster-purple-palette, 300, 100, 700);
 
 // Angular Material M2 only has primary/accent/warn theme slots. Success is
 // defined as a custom palette for app-specific classes and CSS variables.
@@ -297,6 +407,22 @@ $dark-theme: mat.m2-define-dark-theme((
     primary: $dark-primary,
     accent: $dark-accent,
     warn: $dark-warn
+  ),
+));
+
+$poster-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $poster-primary,
+    accent: $poster-accent,
+    warn: $poster-warn
+  ),
+));
+
+$poster-dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $poster-dark-primary,
+    accent: $poster-dark-accent,
+    warn: $poster-dark-warn
   ),
 ));
 
@@ -357,6 +483,11 @@ body {
   color-scheme: light;
   @include mat.all-component-colors($light-theme);
   @include app-theming($light-theme);
+
+  --app-page-bg:
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--app-accent) 13%, transparent), transparent 19rem),
+    radial-gradient(circle at 100% 12%, color-mix(in srgb, var(--app-success) 10%, transparent), transparent 20rem),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, var(--app-primary) 5%, var(--app-bg)) 100%);
 }
 
 :root.app-theme-dark {
@@ -364,6 +495,53 @@ body {
   color-scheme: dark;
   @include mat.all-component-colors($dark-theme);
   @include app-theming($dark-theme);
+
+  --app-page-bg:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--app-accent) 13%, transparent), transparent 20rem),
+    radial-gradient(circle at 100% 14%, color-mix(in srgb, var(--app-success) 12%, transparent), transparent 22rem),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, var(--app-primary) 7%, var(--app-bg)) 100%);
+}
+
+:root.app-theme-r4l-poster {
+  @include app-color-tokens($poster-theme);
+  color-scheme: light;
+  @include mat.all-component-colors($poster-theme);
+  @include app-theming($poster-theme);
+
+  --app-success: #1ea16d;
+  --app-on-success: #000000;
+  --app-tertiary: #642e8c;
+  --app-on-tertiary: #ffffff;
+  --app-page-bg:
+    radial-gradient(circle at 9% 1rem, color-mix(in srgb, #fbeb04 22%, transparent), transparent 18rem),
+    radial-gradient(circle at 96% 5rem, color-mix(in srgb, #1ea16d 16%, transparent), transparent 19rem),
+    linear-gradient(145deg, color-mix(in srgb, #e43894 9%, var(--app-bg)), transparent 42%),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, #642e8c 7%, var(--app-bg)));
+  --decor-bolt: #fbeb04;
+  --decor-squiggle: #e43894;
+  --decor-dot: #1ea16d;
+  --decor-outline: #642e8c;
+}
+
+:root.app-theme-r4l-poster-dark {
+  @include app-color-tokens($poster-dark-theme);
+  color-scheme: dark;
+  @include mat.all-component-colors($poster-dark-theme);
+  @include app-theming($poster-dark-theme);
+
+  --app-success: #1ea16d;
+  --app-on-success: #000000;
+  --app-tertiary: #642e8c;
+  --app-on-tertiary: #ffffff;
+  --app-page-bg:
+    radial-gradient(circle at 9% 1rem, color-mix(in srgb, #fbeb04 12%, transparent), transparent 18rem),
+    radial-gradient(circle at 96% 5rem, color-mix(in srgb, #1ea16d 14%, transparent), transparent 19rem),
+    linear-gradient(145deg, color-mix(in srgb, #e43894 11%, var(--app-bg)), transparent 42%),
+    linear-gradient(180deg, var(--app-bg), color-mix(in srgb, #642e8c 14%, var(--app-bg)));
+  --decor-bolt: #fbeb04;
+  --decor-squiggle: #ff72b5;
+  --decor-dot: #1ea16d;
+  --decor-outline: #c88cff;
 }
 
 // APP BACKGROUNDS
@@ -405,6 +583,24 @@ body {
 
 .mat-mdc-icon-button {
   border-radius: 50%;
+}
+
+:root.app-theme-r4l-poster .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-icon {
+  filter:
+    drop-shadow(1px 0 0 color-mix(in srgb, var(--decor-outline, var(--app-primary)) 34%, transparent))
+    drop-shadow(0 1px 0 color-mix(in srgb, var(--decor-bolt, var(--app-accent)) 26%, transparent));
+}
+
+:root.app-theme-r4l-poster .mat-mdc-icon-button .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-mdc-icon-button .mat-icon,
+:root.app-theme-r4l-poster .mat-mdc-button .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-mdc-button .mat-icon,
+:root.app-theme-r4l-poster .mat-mdc-menu-item .mat-icon,
+:root.app-theme-r4l-poster-dark .mat-mdc-menu-item .mat-icon {
+  text-shadow:
+    1px 1px 0 color-mix(in srgb, var(--decor-bolt, var(--app-accent)) 36%, transparent),
+    -1px 0 0 color-mix(in srgb, var(--decor-outline, var(--app-primary)) 28%, transparent);
 }
 
 // Shared interaction motion gives the rest of the app the same responsive feel

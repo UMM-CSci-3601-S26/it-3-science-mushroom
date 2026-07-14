@@ -216,13 +216,14 @@ public class FamilyPortalControllerSpec {
   void getPortalChecklistReturnsChecklistForCompletedProfile() {
     Family family = validFamily();
     family.profileComplete = true;
-    family.checklist = new Family.FamilyChecklist();
+    Family.FamilyChecklist currentChecklist = new Family.FamilyChecklist();
 
     when(familyController.getByOwnerUserId(GUARDIAN_ID)).thenReturn(family);
+    when(familyController.generateCurrentFamilyChecklist(family)).thenReturn(currentChecklist);
 
     portalController.getPortalChecklist(ctx);
 
-    verify(ctx).json(family.checklist);
+    verify(ctx).json(currentChecklist);
     verify(ctx).status(HttpStatus.OK);
   }
 

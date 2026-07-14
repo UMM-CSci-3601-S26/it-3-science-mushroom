@@ -91,6 +91,13 @@ public class UsersServiceSpec {
       "testuser2@example.com",
       Role.ADMIN,
       null);
+    usersService.createUser(
+      "guardianuser",
+      "hash3",
+      "Guardian User",
+      "guardian@example.com",
+      Role.GUARDIAN,
+      null);
   }
 
   @Test
@@ -106,6 +113,15 @@ public class UsersServiceSpec {
   void findByUsernameReturnsNullIfNotFound() {
     Users user = usersService.findByUsername("nonexistent");
     assertEquals(null, user);
+  }
+
+  @Test
+  void getGuardianUsersReturnsOnlyGuardians() {
+    var guardians = usersService.getGuardianUsers();
+
+    assertEquals(1, guardians.size());
+    assertEquals("guardianuser", guardians.get(0).username);
+    assertEquals(Role.GUARDIAN, guardians.get(0).systemRole);
   }
 
   @Test
