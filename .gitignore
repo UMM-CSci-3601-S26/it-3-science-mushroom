@@ -167,8 +167,6 @@ $RECYCLE.BIN/
 .caddy
 .env
 
-database/update-scripts/**
-
 
 # We ignore node files at the top level to prevent committing
 # them when accidentally created by running npm commands at the root
