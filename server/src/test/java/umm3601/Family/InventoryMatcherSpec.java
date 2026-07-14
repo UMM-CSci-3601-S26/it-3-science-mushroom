@@ -239,6 +239,59 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestInventoryMatchRequiresRequestedDescriptorsAndPackageSize() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Marker", "Thin washable marker", 5, 0, "THIN-MARKER")
+        .append("brand", "Crayola")
+        .append("color", "Blue")
+        .append("type", "Washable")
+        .append("material", "Plastic")
+        .append("packageSize", 8),
+      inventoryDoc("Marker", "Wide permanent marker", 5, 0, "WIDE-MARKER")
+        .append("brand", "Expo")
+        .append("color", "Black")
+        .append("type", "Permanent")
+        .append("material", "Metal")
+        .append("packageSize", 12)));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Marker");
+    supplyList.brand = new SupplyList.AttributeOptions();
+    supplyList.brand.anyOf = List.of("Crayola");
+    supplyList.color = new SupplyList.ColorAttributeOptions();
+    supplyList.color.anyOf = List.of("Blue");
+    supplyList.type = new SupplyList.AttributeOptions();
+    supplyList.type.anyOf = List.of("Washable");
+    supplyList.material = new SupplyList.AttributeOptions();
+    supplyList.material.anyOf = List.of("Plastic");
+    supplyList.packageSize = 8;
+
+    Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, 1);
+
+    assertNotNull(match);
+    assertEquals("THIN-MARKER", match.internalID);
+
+    supplyList.packageSize = 24;
+    assertNull(inventoryMatcher.findBestInventoryMatch(supplyList, 1));
+  }
+
+  @Test
+  void packageSizeSimilarityScoreCoversMatchAndMismatchBranches() {
+    SupplyList supplyList = new SupplyList();
+    supplyList.packageSize = 8;
+
+    Inventory matchingInventory = new Inventory();
+    matchingInventory.packageSize = 8;
+
+    Inventory mismatchingInventory = new Inventory();
+    mismatchingInventory.packageSize = 12;
+
+    assertEquals(5, inventoryMatcher.packageSizeSimilarityScore(supplyList, matchingInventory));
+    assertEquals(0, inventoryMatcher.packageSizeSimilarityScore(supplyList, mismatchingInventory));
+  }
+
+  @Test
   void inventoryMatchCoversNegativeBranches() {
     SupplyList emptyItems = new SupplyList();
     emptyItems.item = null;
