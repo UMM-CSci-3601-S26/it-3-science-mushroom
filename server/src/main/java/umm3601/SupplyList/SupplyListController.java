@@ -251,12 +251,9 @@ public class SupplyListController {
     }
   }
 
-  private String formatSupplyID(int n) {
+  private String formatID(int n) {
     return String.format("Supply-%05d", n);
   }
-  // private String formatRequestID(int n) {
-  //   return String.format("Request-%05d", n);
-  // }
 
   /**
    * Scans supply list to find the next available ID number for supplyID
@@ -277,19 +274,21 @@ public class SupplyListController {
    * @return The generated ID
    */
   private String generateNextID() {
-  SupplyList last = supplyListCollection.find(new Document("supplyID", new Document("$exists", true)))
-    .sort(Sorts.descending("supplyID"))
-    .first();
-    String prefix = "Supply-";
-    int next = 1;
-    if (last != null && last.supplyID != null && last.supplyID.startsWith(prefix)) {
-      try {
-        next = Integer.parseInt(last.supplyID.substring(prefix.length())) + 1;
-      } catch (NumberFormatException e) {
-        // return 1 if not right format
-      }
-    }
-    return String.format("Supply-%05d", next);
+  // SupplyList last = supplyListCollection.find(new Document("supplyID", new Document("$exists", true)))
+  //   .sort(Sorts.descending("supplyID"))
+  //   .first();
+  //   String prefix = "Supply-";
+  //   int next = 1;
+  //   if (last != null && last.supplyID != null && last.supplyID.startsWith(prefix)) {
+  //     try {
+  //       next = Integer.parseInt(last.supplyID.substring(prefix.length())) + 1;
+  //     } catch (NumberFormatException e) {
+  //       // return 1 if not right format
+  //     }
+  //   }
+  //   return String.format("Supply-%05d", next);
+
+    return formatID(getNextSequence());
   }
 
   // Endpoint to generate the next ID
@@ -318,6 +317,7 @@ public class SupplyListController {
     .check(s -> s.quantity == null || s.quantity > 0, "quantity must be null or a positive integer")
     .get();
 
+    newSupplyList.supplyID = generateNextID();
     supplyListCollection.insertOne(newSupplyList);
     ctx.status(HttpStatus.CREATED);
   }
