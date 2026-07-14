@@ -48,7 +48,6 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import io.javalin.validation.ValidationException;
-import umm3601.Inventory.Inventory;
 
 /**
  * Tests for the SupplyListController using a real MongoDB "test" database.
