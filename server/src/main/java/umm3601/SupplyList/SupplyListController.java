@@ -35,7 +35,7 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
-import umm3601.Inventory.Inventory;
+//import umm3601.Inventory.Inventory;
 
 /**
  * API controller for school supply-list items.
@@ -254,9 +254,9 @@ public class SupplyListController {
   private String formatSupplyID(int n) {
     return String.format("Supply-%05d", n);
   }
-  private String formatRequestID(int n) {
-    return String.format("Request-%05d", n);
-  }
+  // private String formatRequestID(int n) {
+  //   return String.format("Request-%05d", n);
+  // }
 
   /**
    * Scans supply list to find the next available ID number for supplyID
