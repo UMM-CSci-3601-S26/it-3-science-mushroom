@@ -482,6 +482,16 @@ describe('AddSupplyListComponent#parseDescription()', () => {
     expect(component.addSupplyListForm.get('packageSize')?.value).toBe('12');
   });
 
+  it('should parse packageSize from a "container of N" pattern', () => {
+    component.parseDescription('container of 24 pencils');
+    expect(component.addSupplyListForm.get('packageSize')?.value).toBe('24');
+  });
+
+  it('should parse packageSize from a "bag of N" pattern', () => {
+    component.parseDescription('bag of 30 erasers');
+    expect(component.addSupplyListForm.get('packageSize')?.value).toBe('30');
+  });
+
   it('should match an item by exact term', () => {
     component.parseDescription('notebook');
     expect(component.addSupplyListForm.get('item')?.value).toBe('notebook');
@@ -513,6 +523,18 @@ describe('AddSupplyListComponent#parseDescription()', () => {
     expect(color).toContain('red');
     expect(color).toContain('blue');
     expect(color).toContain('|');
+  });
+
+  it('should not infer container words as size when not present in terms', () => {
+    component.parseDescription('2 boxes of 24 count crayons');
+    expect(component.addSupplyListForm.get('size')?.value || '').toBe('');
+    expect(component.addSupplyListForm.get('quantity')?.value).toBe('2');
+    expect(component.addSupplyListForm.get('packageSize')?.value).toBe('24');
+  });
+
+  it('should not infer free-form size adjectives when they are not present in terms', () => {
+    component.parseDescription('large crayons');
+    expect(component.addSupplyListForm.get('size')?.value || '').toBe('');
   });
 
   it('should parse a parenthetical note into the notes field', () => {

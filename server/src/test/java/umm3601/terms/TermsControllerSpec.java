@@ -139,6 +139,30 @@ class TermsControllerSpec {
   }
 
   @Test
+  void getTermsFiltersOverlappingHashNumberMarkersFromType() {
+    DistinctIterable<String> empty = makeIterable(new ArrayList<>());
+    DistinctIterable<String> sizeFromInventory = makeIterable(Arrays.asList("#2"));
+    DistinctIterable<String> typeFromInventory = makeIterable(Arrays.asList("#2", "Sharpened"));
+
+    when(supplyListCollection.distinct(any(String.class), eq(String.class))).thenReturn(empty);
+    when(inventoryCollection.distinct(any(String.class), eq(String.class))).thenReturn(empty);
+
+    when(inventoryCollection.distinct(eq("size"), eq(String.class))).thenReturn(sizeFromInventory);
+    when(inventoryCollection.distinct(eq("type"), eq(String.class))).thenReturn(typeFromInventory);
+
+    doAnswer(inv -> {
+      Terms terms = inv.getArgument(0);
+      assertEquals(List.of("#2"), terms.size);
+      assertEquals(List.of("Sharpened"), terms.type);
+      return null;
+    }).when(ctx).json(any(Terms.class));
+
+    controller.getTerms(ctx);
+    verify(ctx).json(any(Terms.class));
+    verify(ctx).status(eq(HttpStatus.OK));
+  }
+
+  @Test
   void singularizeHandlesBasicCases() {
     assertEquals("box", controller.singularize("boxes"));
     assertEquals("battery", controller.singularize("batteries"));

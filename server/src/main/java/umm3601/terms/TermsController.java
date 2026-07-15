@@ -84,8 +84,39 @@ public class TermsController {
       distinctStrings(inventoryCollection, "material")
     );
 
+    terms.type = removeOverlappingSizeMarkers(terms.type, terms.size);
+
     ctx.json(terms);
     ctx.status(HttpStatus.OK);
+  }
+
+  /**
+   * Removes terms like "#2" from type when they also exist in size.
+   * These tokens are pencil-size markers and should not be suggested as type.
+   */
+  private List<String> removeOverlappingSizeMarkers(List<String> typeTerms, List<String> sizeTerms) {
+    TreeSet<String> sizeMarkers = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    for (String size : sizeTerms) {
+      if (isHashNumberMarker(size)) {
+        sizeMarkers.add(size.trim());
+      }
+    }
+
+    List<String> filtered = new ArrayList<>();
+    for (String type : typeTerms) {
+      if (!(isHashNumberMarker(type) && sizeMarkers.contains(type.trim()))) {
+        filtered.add(type);
+      }
+    }
+    return filtered;
+  }
+
+  /** Matches tokens like #2, #2b, #10. */
+  private boolean isHashNumberMarker(String value) {
+    if (value == null) {
+      return false;
+    }
+    return value.trim().matches("(?i)^#[0-9]+[a-z]?$");
   }
 
   /**
@@ -122,8 +153,12 @@ public class TermsController {
       // batteries -> battery
       return word.substring(0, word.length() - 3) + "y";
     } else if (lower.endsWith("es") && lower.length() > 2) {
-      // boxes -> box, matches -> match
-      return word.substring(0, word.length() - 2);
+      if (word.contains("Headphones") || word.contains("Shoes")) {
+        return word;
+      } else {
+        // boxes -> box, matches -> match
+        return word.substring(0, word.length() - 2);
+      }
     } else if (lower.endsWith("s") && lower.length() > 1 && !lower.endsWith("ss")) {
       // pens -> pen, but not 'glass' -> 'glas'
       return word.substring(0, word.length() - 1);
