@@ -55,11 +55,14 @@
                 }
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="form-field-wide">
-                <mat-label>Any Accommodations Needed?</mat-label>
-                <input matInput formControlName="accommodations">
-              </mat-form-field>
-            </div>
+              <div class="form-field-wide">
+                <h5>Spanish Help Needed?</h5>
+                <mat-radio-group formControlName="needSpanishHelp">
+                  <mat-radio-button [value]="true">Yes</mat-radio-button>
+                  <mat-radio-button [value]="false">No</mat-radio-button>
+                </mat-radio-group>
+              </div>
+              </div>
           </section>
 
           <section class="form-section">

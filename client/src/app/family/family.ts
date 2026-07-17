@@ -60,6 +60,7 @@ export interface Family {
   email: string;
   address: string;
   accommodations: string;
+  needSpanishHelp: boolean;
   timeSlot: string;
   timeAvailability?: AvailabilityOptions;
   helped?: boolean;

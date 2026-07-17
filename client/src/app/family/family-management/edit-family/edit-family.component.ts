@@ -181,6 +181,7 @@ export class EditFamilyComponent implements OnInit {
     ])),
 
     accommodations: new FormControl<string>(''),
+    needSpanishHelp: new FormControl<boolean>(undefined),
 
     timeSlot: new FormControl('TBD', Validators.compose([
     ])),
@@ -394,6 +395,7 @@ export class EditFamilyComponent implements OnInit {
       email: rawForm.email ?? undefined,
       address: rawForm.address ?? undefined,
       accommodations: rawForm.accommodations ?? undefined,
+      needSpanishHelp: rawForm.needSpanishHelp ?? false,
       timeSlot: rawForm.timeSlot ?? undefined,
       timeAvailability: {
         earlyMorning: rawForm.timeAvailability?.earlyMorning ?? false,
