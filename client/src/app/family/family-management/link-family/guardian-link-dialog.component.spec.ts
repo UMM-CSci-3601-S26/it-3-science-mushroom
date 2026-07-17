@@ -24,6 +24,7 @@ describe('GuardianLinkDialogComponent', () => {
     email: 'taylor@example.com',
     address: '123 Main St',
     accommodations: '',
+    needSpanishHelp: false,
     timeSlot: '',
     students: []
   };

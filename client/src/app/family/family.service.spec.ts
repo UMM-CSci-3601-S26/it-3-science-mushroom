@@ -20,6 +20,7 @@ describe('FamilyService', () => {
       email: 'jjohnson@email.com',
       address: '713 Broadway',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: '8:00-9:00',
       timeAvailability: {
         earlyMorning: false,
@@ -46,6 +47,7 @@ describe('FamilyService', () => {
       email: 'janedoe@email.com',
       address: '123 Street',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: '10:00-11:00',
       timeAvailability: {
         earlyMorning: false,
@@ -81,6 +83,7 @@ describe('FamilyService', () => {
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: '1:00-2:00',
       timeAvailability: {
         earlyMorning: false,
@@ -501,6 +504,7 @@ describe('FamilyService', () => {
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -514,6 +518,7 @@ describe('FamilyService', () => {
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 12:00',
           timeAvailability: {
             earlyMorning: false,
@@ -527,6 +532,7 @@ describe('FamilyService', () => {
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -552,6 +558,7 @@ describe('FamilyService', () => {
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -565,6 +572,7 @@ describe('FamilyService', () => {
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeAvailability: {
             earlyMorning: false,
             lateMorning: true,
@@ -578,6 +586,7 @@ describe('FamilyService', () => {
           email: 'night@gmail.com',
           address: '789 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeAvailability: {
             earlyMorning: false,
             lateMorning: true,
@@ -608,6 +617,7 @@ describe('FamilyService', () => {
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -621,6 +631,7 @@ describe('FamilyService', () => {
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 12:00',
           timeAvailability: {
             earlyMorning: false,
@@ -634,6 +645,7 @@ describe('FamilyService', () => {
           email: 'night@gmail.com',
           address: '789 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 11:00',
           timeAvailability: {
             earlyMorning: false,
@@ -659,6 +671,7 @@ describe('FamilyService', () => {
           email: 'jack@gmail.com',
           address: '123 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 10:00',
           timeAvailability: {
             earlyMorning: false,
@@ -672,6 +685,7 @@ describe('FamilyService', () => {
           email: 'dawn@gmail.com',
           address: '456 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 12:00',
           timeAvailability: {
             earlyMorning: false,
@@ -685,6 +699,7 @@ describe('FamilyService', () => {
           email: 'night@gmail.com',
           address: '789 anywhere St.',
           accommodations: 'None',
+          needSpanishHelp: false,
           timeSlot: '9:00 - 11:00',
           timeAvailability: {
             earlyMorning: false,

@@ -69,6 +69,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     email: 'test@example.com',
     address: '123 Test Street',
     accommodations: 'None',
+    needSpanishHelp: false,
     timeSlot: '9:00-10:00',
     students: [
       {

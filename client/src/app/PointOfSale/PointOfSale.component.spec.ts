@@ -25,6 +25,7 @@ describe('PointOfSaleComponent', () => {
     email: 'jane@example.com',
     address: '123 Main St',
     accommodations: 'None',
+    needSpanishHelp: false,
     timeSlot: '9:00-10:00',
     students: [
       {
