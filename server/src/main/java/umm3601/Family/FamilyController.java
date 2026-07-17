@@ -442,6 +442,7 @@ public class FamilyController {
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
       .append("accommodations", updatedFamily.accommodations)
+      .append("needSpanishHelp", updatedFamily.needSpanishHelp)
       .append("timeSlot", updatedFamily.timeSlot)
       .append("timeAvailability", new Document()
         .append("earlyMorning", updatedFamily.timeAvailability.earlyMorning)
