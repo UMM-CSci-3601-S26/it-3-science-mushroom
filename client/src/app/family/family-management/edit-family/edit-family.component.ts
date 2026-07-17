@@ -151,7 +151,8 @@ export class EditFamilyComponent implements OnInit {
 
   /**
    * editFamilyForm is a FormGroup that defines the structure and validation rules for the edit family form.
-   * It includes form controls for guardian first name, last name, email, address, accommodations, time slot, time availability checkboxes, and a FormArray for students.
+   * It includes form controls for guardian first name, last name, email, address, accommodations, needSpanishHelp,
+   * time slot, time availability checkboxes, and a FormArray for students.
    * Each form control has appropriate validators to ensure the input is valid before submission.
    * The students FormArray allows dynamic addition and removal of student form groups, each containing controls for student name, grade, school, teacher, backpack, and headphones.
    * The form is used to capture the user's input when editing a family's information and is submitted to the server for updating the family data.
@@ -213,6 +214,7 @@ export class EditFamilyComponent implements OnInit {
     this.editFamilyForm.patchValue({
       guardianFirstName: firstName,
       guardianLastName: lastName,
+      accommodations: family.accommodations ?? '',
     });
   });
 
