@@ -11,7 +11,12 @@
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: minmax(8rem, 10rem) minmax(0, 1fr);
+  grid-template-columns:
+    minmax(
+      var(--app-data-grid-label-column-min-width, 8rem),
+      var(--app-data-grid-label-column-width, 10rem)
+    )
+    minmax(0, 1fr);
   overflow-x: auto;
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-sm);
@@ -38,15 +43,16 @@
 }
 
 .schedule-header {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-auto-columns: var(--app-data-grid-cell-width, 10rem);
+  grid-auto-flow: column;
   gap: var(--app-space-sm);
   min-width: max-content;
 }
 
 .schedule-column {
-  min-width: 8rem;
-  max-width: 12rem;
+  box-sizing: border-box;
+  width: 100%;
   padding: var(--app-space-xs) var(--app-space-sm);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-sm);
@@ -70,16 +76,17 @@
 }
 
 .schedule-row-cells {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-auto-columns: var(--app-data-grid-cell-width, 10rem);
+  grid-auto-flow: column;
   gap: var(--app-space-sm);
   min-width: max-content;
   padding: var(--app-space-sm);
 }
 
 .schedule-cell {
-  min-width: 8rem;
-  max-width: 12rem;
+  box-sizing: border-box;
+  width: 100%;
   min-height: 2.5rem;
   border: 1px dashed var(--app-border);
   border-radius: var(--app-radius-sm);
@@ -167,13 +174,13 @@
 
   .schedule-header {
     align-items: stretch;
-    flex-direction: column;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
     min-width: 0;
   }
 
   .schedule-column {
-    max-width: none;
-    min-width: 0;
+    width: 100%;
   }
 
   .schedule-row-time {
@@ -181,13 +188,13 @@
   }
 
   .schedule-row-cells {
-    flex-direction: column;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
     min-width: 0;
   }
 
   .schedule-cell {
-    max-width: none;
-    min-width: 0;
+    width: 100%;
   }
 
   .schedule-row,
