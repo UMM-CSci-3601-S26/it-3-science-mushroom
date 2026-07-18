@@ -327,9 +327,9 @@ export class FamilyScheduleComponent {
   }
 
   private assignmentForCell(
-      family: Family,
-      row: string,
-      column: ScheduleColumn
+    family: Family,
+    row: string,
+    column: ScheduleColumn
   ): ScheduleAssignment | undefined {
     const assignments = this.scheduleAssignments(family);
 

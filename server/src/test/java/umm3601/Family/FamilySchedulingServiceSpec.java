@@ -80,6 +80,19 @@ class FamilySchedulingServiceSpec {
   }
 
   @Test
+  void schedulingAlgorithmThrowsWhenAFamilyHasNoAvailability() {
+    Family family = new Family();
+    family.guardianName = null;
+    family.timeAvailability = null;
+    family.students = null;
+
+    ArrayList<Family> families = new ArrayList<>(List.of(family));
+
+    assertThrows(NotFoundResponse.class,
+      () -> familySchedulingService.schedulingAlgorithm(families, defaultTimeAvailability()));
+  }
+
+  @Test
   void schedulingAlgorithmInfersMeridiemFromAvailabilityWindow() {
     ArrayList<Family> families = new ArrayList<>(List.of(
       familyForScheduling("Morning Family", true, false, false, false, 2),

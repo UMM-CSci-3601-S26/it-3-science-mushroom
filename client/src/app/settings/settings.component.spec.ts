@@ -148,6 +148,30 @@ describe('SettingsComponent', () => {
 
   // ---- loadDriveOrder ----
 
+  it('loads optional schedule column and drive day settings into the forms', () => {
+    settingsServiceSpy.getSettings.and.returnValue(of({
+      ...mockSettings,
+      defaultScheduleColumns: {
+        englishFamilies: 4,
+        spanishFamilies: 2,
+      },
+      driveDay: {
+        date: '2026-08-15',
+      },
+      barcodePrintWarningLimit: undefined,
+    }));
+
+    component.ngOnInit();
+
+    expect(component.timeAvailabilityForm.value.englishFamilies).toBe(4);
+    expect(component.timeAvailabilityForm.value.spanishFamilies).toBe(2);
+    expect(component.driveDayForm.value).toEqual({
+      date: '2026-08-15',
+      location: '',
+    });
+    expect(component.barcodePrintForm.value.barcodePrintWarningLimit).toBe(25);
+  });
+
   it('populates unstagedTerms with all terms when no saved order exists', () => {
     // All three terms are unsorted/unstaged by default (no supplyOrder saved)
     expect(component.unstagedTerms).toEqual(['folder', 'notebook', 'pencil']); // alphabetical
@@ -527,6 +551,36 @@ describe('SettingsComponent', () => {
     expect(snackBarSpy.open).toHaveBeenCalledWith('Default schedule columns saved', 'OK', { duration: 2000 });
   });
 
+  it('saveDefaultColumns uses fallback values when the column controls have no values', () => {
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(of(undefined));
+    const englishFamiliesControl = component.timeAvailabilityForm.get('englishFamilies');
+    const spanishFamiliesControl = component.timeAvailabilityForm.get('spanishFamilies');
+
+    englishFamiliesControl?.clearValidators();
+    spanishFamiliesControl?.clearValidators();
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: null,
+      spanishFamilies: null,
+    });
+    englishFamiliesControl?.updateValueAndValidity();
+    spanishFamiliesControl?.updateValueAndValidity();
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).toHaveBeenCalledWith({
+      englishFamilies: 1,
+      spanishFamilies: 0,
+    });
+  });
+
+  it('saveDefaultColumns does nothing without edit time availability permission', () => {
+    authServiceSpy.hasPermission.and.callFake(permission => permission !== 'edit_time_availability');
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).not.toHaveBeenCalled();
+  });
+
   it('saveDefaultColumns does nothing when a column count is invalid', () => {
     component.timeAvailabilityForm.patchValue({
       englishFamilies: 0,
@@ -536,6 +590,29 @@ describe('SettingsComponent', () => {
     component.saveDefaultColumns();
 
     expect(settingsServiceSpy.updateDefaultScheduleColumns).not.toHaveBeenCalled();
+  });
+
+  it('saveDefaultColumns does nothing when the Spanish column count is invalid', () => {
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 1,
+      spanishFamilies: -1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).not.toHaveBeenCalled();
+  });
+
+  it('saveDefaultColumns shows a failure snack bar when the save fails', () => {
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(throwError(() => new Error('fail')));
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 2,
+      spanishFamilies: 1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to save default schedule columns', 'OK', { duration: 3000 });
   });
 
   it('Should call updateAvailableSpots and show success snack bar', () => {
