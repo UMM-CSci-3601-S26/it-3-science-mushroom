@@ -6,6 +6,41 @@
   box-sizing: border-box;
 }
 
+.input-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: repeat(6, auto);
+  align-items: start;
+  column-gap: var(--app-space-lg);
+  row-gap: var(--app-space-md);
+}
+
+.input-stack > .settings-form-stack,
+.default-column-stack {
+  display: grid;
+  grid-row: 1 / span 6;
+  grid-template-rows: subgrid;
+  max-width: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.default-column-stack {
+  align-items: stretch;
+}
+
+.save-button,
+.default-column-footer {
+  grid-row: 6;
+  align-self: end;
+  justify-content: flex-start;
+}
+
+.input-stack mat-form-field,
+.default-column-stack mat-form-field {
+  width: 100%;
+}
+
 .settings-card {
   border-color: color-mix(in srgb, var(--app-primary) 24%, var(--app-border));
   min-width: 0;
@@ -110,6 +145,11 @@ mat-paginator {
 
 .save-button {
   margin-bottom: var(--app-space-md);
+}
+
+.input-stack .save-button,
+.default-column-footer {
+  margin-bottom: 0;
 }
 
 .available-spots-form {
@@ -297,9 +337,25 @@ mat-paginator {
     padding-left: 0;
   }
 
+  .input-stack {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
   .settings-form-stack,
   .available-spots-form {
     max-width: none;
+  }
+
+  .input-stack > .settings-form-stack,
+  .default-column-stack {
+    grid-row: auto;
+    grid-template-rows: none;
+  }
+
+  .input-stack .save-button,
+  .default-column-footer {
+    grid-row: auto;
   }
 
   .drive-order-columns {

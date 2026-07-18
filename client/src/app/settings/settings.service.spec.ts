@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { environment } from '../../environments/environment';
-import { AppSettings, SupplyItemOrder } from './settings';
+import { AppSettings, DefaultScheduleColumns, SupplyItemOrder } from './settings';
 import { SettingsService } from './settings.service';
 
 describe('SettingsService', () => {
@@ -20,6 +20,10 @@ describe('SettingsService', () => {
       lateMorning: '10:00 AM',
       earlyAfternoon: '12:00 PM',
       lateAfternoon: '2:00 PM',
+    },
+    defaultScheduleColumns: {
+      englishFamilies: 3,
+      spanishFamilies: 1,
     },
     supplyOrder: [
       { itemTerm: 'notebook', status: 'staged' },
@@ -131,6 +135,22 @@ describe('SettingsService', () => {
       const req = httpTestingController.expectOne(`${settingsUrl}/timeAvailability`);
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(labels);
+      req.flush(null);
+    });
+  });
+
+  describe('updateDefaultScheduleColumns()', () => {
+    it('sends PATCH to /api/settings/defaultScheduleColumns with column counts body', () => {
+      const defaultScheduleColumns: DefaultScheduleColumns = {
+        englishFamilies: 3,
+        spanishFamilies: 1,
+      };
+
+      service.updateDefaultScheduleColumns(defaultScheduleColumns).subscribe();
+
+      const req = httpTestingController.expectOne(`${settingsUrl}/defaultScheduleColumns`);
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual(defaultScheduleColumns);
       req.flush(null);
     });
   });

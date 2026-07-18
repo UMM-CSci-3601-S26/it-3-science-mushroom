@@ -28,6 +28,11 @@ public class SettingSpec {
     labels.lateAfternoon = "3:00 PM - 5:00 PM";
     settings.timeAvailability = labels;
 
+    Settings.DefaultScheduleColumns defaultScheduleColumns = new Settings.DefaultScheduleColumns();
+    defaultScheduleColumns.englishFamilies = 3;
+    defaultScheduleColumns.spanishFamilies = 1;
+    settings.defaultScheduleColumns = defaultScheduleColumns;
+
     assertEquals("app-settings", settings._id);
     assertEquals(1, settings.schools.size());
     assertEquals("Morris Area High School", settings.schools.get(0).name);
@@ -36,6 +41,8 @@ public class SettingSpec {
     assertEquals("10:30 AM - 12:30 AM", settings.timeAvailability.lateMorning);
     assertEquals("1:00 PM - 3:00 PM", settings.timeAvailability.earlyAfternoon);
     assertEquals("3:00 PM - 5:00 PM", settings.timeAvailability.lateAfternoon);
+    assertEquals(3, settings.defaultScheduleColumns.englishFamilies);
+    assertEquals(1, settings.defaultScheduleColumns.spanishFamilies);
     assertEquals(DEFAULT_BARCODE_PRINT_WARNING_LIMIT, settings.barcodePrintWarningLimit);
   }
 

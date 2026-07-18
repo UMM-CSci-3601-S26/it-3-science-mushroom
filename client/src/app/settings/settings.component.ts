@@ -33,7 +33,13 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 // Settings Service and Type Imports
 import { SettingsService } from './settings.service';
-import { SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels, DriveDay } from './settings';
+import {
+  DefaultScheduleColumns,
+  DriveDay,
+  SchoolInfo,
+  SupplyItemOrder,
+  TimeAvailabilityLabels
+} from './settings';
 
 // Family Imports
 import { FamilyService } from '../family/family.service';
@@ -249,6 +255,8 @@ export class SettingsComponent implements OnInit {
     lateMorning: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
     earlyAfternoon: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
     lateAfternoon: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    englishFamilies: new FormControl<number>(1, [Validators.required, Validators.min(1)]),
+    spanishFamilies: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
   });
 
   availableSpotsForm = new FormGroup({
@@ -292,6 +300,10 @@ export class SettingsComponent implements OnInit {
       this.schools = settings.schools ?? [];
       if (settings.timeAvailability) {
         this.timeAvailabilityForm.patchValue(settings.timeAvailability);
+      }
+
+      if (settings.defaultScheduleColumns) {
+        this.timeAvailabilityForm.patchValue(settings.defaultScheduleColumns);
       }
 
       this.availableSpotsForm.patchValue({ availableSpots: settings.availableSpots});
@@ -459,13 +471,45 @@ export class SettingsComponent implements OnInit {
     }
 
     if (this.timeAvailabilityForm.valid) {
+      const timeAvailability: TimeAvailabilityLabels = {
+        earlyMorning: this.timeAvailabilityForm.value.earlyMorning ?? '',
+        lateMorning: this.timeAvailabilityForm.value.lateMorning ?? '',
+        earlyAfternoon: this.timeAvailabilityForm.value.earlyAfternoon ?? '',
+        lateAfternoon: this.timeAvailabilityForm.value.lateAfternoon ?? ''
+      };
+
       this.settingsService.updateTimeAvailability(
-        this.timeAvailabilityForm.value as TimeAvailabilityLabels
+        timeAvailability
       ).subscribe({
         next: () => this.snackBar.open('Time availability saved', 'OK', { duration: 2000 }),
         error: () => this.snackBar.open('Failed to save time availability', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  saveDefaultColumns(): void {
+    if (!this.canEditTimeAvailability) {
+      return;
+    }
+
+    const englishFamiliesControl = this.timeAvailabilityForm.get('englishFamilies');
+    const spanishFamiliesControl = this.timeAvailabilityForm.get('spanishFamilies');
+
+    if (englishFamiliesControl?.invalid || spanishFamiliesControl?.invalid) {
+      englishFamiliesControl?.markAsTouched();
+      spanishFamiliesControl?.markAsTouched();
+      return;
+    }
+
+    const defaultScheduleColumns: DefaultScheduleColumns = {
+      englishFamilies: this.timeAvailabilityForm.value.englishFamilies ?? 1,
+      spanishFamilies: this.timeAvailabilityForm.value.spanishFamilies ?? 0
+    };
+
+    this.settingsService.updateDefaultScheduleColumns(defaultScheduleColumns).subscribe({
+      next: () => this.snackBar.open('Default schedule columns saved', 'OK', { duration: 2000 }),
+      error: () => this.snackBar.open('Failed to save default schedule columns', 'OK', { duration: 3000 })
+    });
   }
 
   saveDriveDay(): void {

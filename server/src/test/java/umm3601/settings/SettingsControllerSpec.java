@@ -212,6 +212,9 @@ class SettingsControllerSpec {
     assertEquals(SettingsController.SETTINGS_ID, returned._id);
     assertNotNull(returned.schools);
     assertNotNull(returned.timeAvailability);
+    assertNotNull(returned.defaultScheduleColumns);
+    assertEquals(1, returned.defaultScheduleColumns.englishFamilies);
+    assertEquals(0, returned.defaultScheduleColumns.spanishFamilies);
     assertEquals(25, returned.barcodePrintWarningLimit);
   }
 
@@ -374,6 +377,54 @@ class SettingsControllerSpec {
       () -> settingsController.updateTimeAvailability(ctx));
 
     assertEquals("earlyMorning end time must be after the start time.", exception.getMessage());
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsReturnsOK() {
+    Settings.DefaultScheduleColumns columns = new Settings.DefaultScheduleColumns();
+    columns.englishFamilies = 3;
+    columns.spanishFamilies = 1;
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(columns);
+
+    settingsController.updateDefaultScheduleColumns(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsRejectsMissingBody() {
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(null);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateDefaultScheduleColumns(ctx));
+
+    assertEquals("Request body must include default schedule columns.", exception.getMessage());
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsRejectsInvalidEnglishCount() {
+    Settings.DefaultScheduleColumns columns = new Settings.DefaultScheduleColumns();
+    columns.englishFamilies = 0;
+    columns.spanishFamilies = 1;
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(columns);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateDefaultScheduleColumns(ctx));
+
+    assertEquals("englishFamilies must be at least 1.", exception.getMessage());
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsRejectsInvalidSpanishCount() {
+    Settings.DefaultScheduleColumns columns = new Settings.DefaultScheduleColumns();
+    columns.englishFamilies = 1;
+    columns.spanishFamilies = -1;
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(columns);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateDefaultScheduleColumns(ctx));
+
+    assertEquals("spanishFamilies must be at least 0.", exception.getMessage());
   }
 
   private Settings.TimeAvailabilityLabels validTimeAvailabilityLabels() {

@@ -29,6 +29,9 @@ public class Settings {
   // Time labels for each availability slot (operator-configurable)
   public TimeAvailabilityLabels timeAvailability;
 
+  // Default number of schedule columns created for each family schedule type
+  public DefaultScheduleColumns defaultScheduleColumns;
+
   // Ordered list of supply item statuses used to sort/filter checklists on drive day
   public List<SupplyItemOrder> supplyOrder;
 
@@ -50,6 +53,11 @@ public class Settings {
     public String lateMorning;
     public String earlyAfternoon;
     public String lateAfternoon;
+  }
+
+  public static class DefaultScheduleColumns {
+    public int englishFamilies;
+    public int spanishFamilies;
   }
 
   /**

@@ -69,17 +69,17 @@
           </div>
         </mat-tab>
 
-        <!-- ── Time Availability Tab ── -->
+        <!-- ── Family Schedule Tab ── -->
         <mat-tab label="Time Availability">
           <div class="tab-content">
-            <p class="tab-description">
-              Set the clock-time range for each availability slot. These labels are shown on the family
-              registration form so families know what time they are selecting.
-            </p>
-
             <form [formGroup]="timeAvailabilityForm" (ngSubmit)="saveTimeAvailability()">
+            <div class="input-stack">
               <div class="settings-form-stack app-form-stack">
-
+                <p class="tab-description">
+                  Choose the clock-time ranges families can select when they share their availability.
+                  These ranges also become the schedule rows used when families are automatically assigned
+                  to appointment blocks.
+                </p>
                 <mat-form-field appearance="outline">
                   <mat-label>Early Morning</mat-label>
                   <input matInput formControlName="earlyMorning" placeholder="e.g. 8:00–9:00 AM">
@@ -125,14 +125,57 @@
                 </mat-form-field>
 
                 @if (canEditTimeAvailability) {
-                <div class="save-button app-action-row">
-                  <button mat-raised-button color="primary" type="submit" [disabled]="!timeAvailabilityForm.valid">
-                    Save Time Availability
-                  </button>
-                </div>
+                  <div class="save-button app-action-row">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="!timeAvailabilityForm.valid">
+                      Save Time Availability
+                    </button>
+                  </div>
                 }
-
               </div>
+
+              <div class="default-column-stack">
+                <p class="tab-description">
+                  Set the default columns created for a new family schedule. English-speaking columns handle
+                  standard appointments, while Spanish-speaking columns reserve capacity for families marked
+                  as needing Spanish support.
+                </p>
+                <mat-form-field appearance="outline">
+                  <mat-label>English Speaking Columns</mat-label>
+                  <input matInput type="number" min="1" step="1" formControlName="englishFamilies" placeholder="Enter Amount...">
+                  <mat-error *ngIf="timeAvailabilityForm.get('englishFamilies')?.hasError('required')">
+                    Required
+                  </mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('englishFamilies')?.hasError('min')">
+                    Enter at least 1 English-speaking column
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Spanish Speaking Columns</mat-label>
+                  <input matInput type="number" min="0" step="1" formControlName="spanishFamilies" placeholder="Enter Amount...">
+                  <mat-error *ngIf="timeAvailabilityForm.get('spanishFamilies')?.hasError('required')">
+                    Required
+                  </mat-error>
+                  <mat-error *ngIf="timeAvailabilityForm.get('spanishFamilies')?.hasError('min')">
+                    Enter at least 0 Spanish-speaking columns
+                  </mat-error>
+                </mat-form-field>
+
+                @if (canEditTimeAvailability) {
+                  <div class="default-column-footer app-action-row">
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      type="button"
+                      (click)="saveDefaultColumns()"
+                      [disabled]="timeAvailabilityForm.get('englishFamilies')?.invalid
+                        || timeAvailabilityForm.get('spanishFamilies')?.invalid">
+                      Save Default Columns
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
             </form>
           </div>
         </mat-tab>

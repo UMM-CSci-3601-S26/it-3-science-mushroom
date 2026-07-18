@@ -66,6 +66,7 @@ describe('SettingsComponent', () => {
       'getSettings',
       'updateSchools',
       'updateTimeAvailability',
+      'updateDefaultScheduleColumns',
       'updateSupplyOrder',
       'updateAvailableSpots',
       'scheduleFamilies',
@@ -106,6 +107,7 @@ describe('SettingsComponent', () => {
     settingsServiceSpy.getSettings.and.returnValue(of(mockSettings));
     termsServiceSpy.getTerms.and.returnValue(of(mockTerms));
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(of(undefined));
     authServiceSpy.hasPermission.and.returnValue(true);
     authServiceSpy.isAdmin.and.returnValue(true);
     inventoryServiceSpy.getInventory.and.returnValue(of([]));
@@ -433,7 +435,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability calls updateTimeAvailability and shows success snack bar', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: '8:00 AM',
       lateMorning: '10:00 AM',
       earlyAfternoon: '12:00 PM',
@@ -453,7 +455,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability shows error snack bar on failure', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(throwError(() => new Error('fail')));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: '8:00 AM',
       lateMorning: '10:00 AM',
       earlyAfternoon: '12:00 PM',
@@ -467,7 +469,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability does nothing when form is invalid', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: '',
       lateMorning: '',
       earlyAfternoon: '',
@@ -481,7 +483,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability rejects invalid time slot text', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: 'banana',
       lateMorning: '9:00-10:00 AM',
       earlyAfternoon: '12:00-1:00 PM',
@@ -496,7 +498,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability rejects a time slot that ends before it starts', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: '9:00-8:00 AM',
       lateMorning: '9:00-10:00 AM',
       earlyAfternoon: '12:00-1:00 PM',
@@ -507,6 +509,33 @@ describe('SettingsComponent', () => {
 
     expect(component.timeAvailabilityForm.get('earlyMorning')?.hasError('timeOrder')).toBeTrue();
     expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
+  });
+
+  it('saveDefaultColumns calls updateDefaultScheduleColumns and shows success snack bar', () => {
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(of(undefined));
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 3,
+      spanishFamilies: 1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).toHaveBeenCalledWith({
+      englishFamilies: 3,
+      spanishFamilies: 1,
+    });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Default schedule columns saved', 'OK', { duration: 2000 });
+  });
+
+  it('saveDefaultColumns does nothing when a column count is invalid', () => {
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 0,
+      spanishFamilies: 1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).not.toHaveBeenCalled();
   });
 
   it('Should call updateAvailableSpots and show success snack bar', () => {

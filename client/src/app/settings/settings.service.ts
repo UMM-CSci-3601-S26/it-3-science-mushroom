@@ -7,7 +7,14 @@ import { Observable } from 'rxjs';
 
 // Environment and Settings Interface Imports
 import { environment } from '../../environments/environment';
-import { AppSettings, SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels, DriveDay } from './settings';
+import {
+  AppSettings,
+  DefaultScheduleColumns,
+  DriveDay,
+  SchoolInfo,
+  SupplyItemOrder,
+  TimeAvailabilityLabels
+} from './settings';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +37,11 @@ export class SettingsService {
   // Replaces the time availability labels. Only touches the timeAvailability field.
   updateTimeAvailability(labels: TimeAvailabilityLabels): Observable<void> {
     return this.httpClient.patch<void>(`${this.settingsUrl}/timeAvailability`, labels);
+  }
+
+  // Replaces the default schedule column counts.
+  updateDefaultScheduleColumns(defaultScheduleColumns: DefaultScheduleColumns): Observable<void> {
+    return this.httpClient.patch<void>(`${this.settingsUrl}/defaultScheduleColumns`, defaultScheduleColumns);
   }
 
   // Replaces the full supply order list. Only touches the supplyOrder field.
