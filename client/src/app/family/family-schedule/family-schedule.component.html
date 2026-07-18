@@ -30,24 +30,21 @@
 
   <mat-card class="schedule-card">
     <mat-card-content>
-      @if (scheduledFamilies().length) {
-        <div class="schedule-list">
-          @for (family of scheduledFamilies(); track family._id ?? family.guardianName) {
-            <div class="schedule-row">
-              <div class="schedule-time">
-                <mat-icon>schedule</mat-icon>
-                <span>{{ scheduleWindow(family) }}</span>
-              </div>
-              <div class="schedule-family">
-                <strong>{{ family.guardianName }}</strong>
-                <span>{{ family.students.length }} student{{ family.students.length === 1 ? '' : 's' }}</span>
-              </div>
+      <div class="schedule-grid">
+        <div class="schedule-header-time">Time</div>
+        <div class="schedule-header">
+        @for (column of scheduledColumns(); track column.id) {
+            <div class="schedule-column">
+              <span> {{ column.label }} - {{ column.type }}</span>
             </div>
           }
         </div>
-      } @else {
-        <p class="empty-state">No families are scheduled yet.</p>
-      }
-    </mat-card-content>
-  </mat-card>
-</section>
+        @for (row of scheduleTimeRows(); track row) {
+          <div class="schedule-row-time">{{ row }}</div>
+          <div class="schedule-row-cells">
+            @for (column of scheduledColumns(); track column.id) {
+              <div class="schedule-cell" [attr.aria-label]="row + ' ' + column.label"></div>
+            }
+          </div>
+        }
+      </div>

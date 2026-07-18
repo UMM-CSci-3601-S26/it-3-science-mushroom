@@ -10,6 +10,25 @@ import { AuthService } from '../../auth/auth-service';
 
 import { Family } from '../family';
 import { FamilyService } from '../family.service';
+import { SettingsService } from '../../settings/settings.service';
+import { TimeAvailabilityLabels } from '../../settings/settings';
+// language is to initialize a language type that is expandable for other language needs
+type ScheduleColumnType = 'English' | 'Spanish';
+
+// Data structure for expandable columns
+interface ScheduleColumn {
+  id: number;
+  label: string;
+  type: ScheduleColumnType;
+  order: number;
+}
+
+const DEFAULT_TIME_AVAILABILITY_LABELS: TimeAvailabilityLabels = {
+  earlyMorning: '8:00-9:00 AM',
+  lateMorning: '9:00-10:00 AM',
+  earlyAfternoon: '12:00-1:00 PM',
+  lateAfternoon: '1:00-2:00 PM'
+};
 
 @Component({
   selector: 'app-family-schedule',
@@ -29,9 +48,14 @@ export class FamilyScheduleComponent {
   private familyService = inject(FamilyService);
   private snackBar = inject(MatSnackBar);
   private authService = inject(AuthService);
-
+  private settingService = inject(SettingsService);
 
   families = signal<Family[]>([]);
+  scheduleColumns = signal<ScheduleColumn[]>([
+    { id: 1, label: 'Slot 1', type: 'English', order: 1 },
+    { id: 2, label: 'Slot 2', type: 'Spanish', order: 2 }
+  ]);
+  timeAvailabilityLabels = signal<TimeAvailabilityLabels>(DEFAULT_TIME_AVAILABILITY_LABELS);
   isClearingScheduledTimes = signal(false);
 
   scheduledFamilies = computed(() =>
@@ -41,12 +65,55 @@ export class FamilyScheduleComponent {
     )
   );
 
+  scheduledColumns = computed(() =>
+    [...this.scheduleColumns()].sort((left, right) => left.order - right.order)
+  );
+
+  spanishScheduleColumns = computed(() =>
+    this.scheduleColumns().filter(column => column.type === 'Spanish')
+  );
+
+  englishScheduleColumns = computed(() =>
+    this.scheduleColumns().filter(column => column.type === 'English')
+  );
+
+  scheduleTimeRows = computed(() => {
+    const labels = this.timeAvailabilityLabels();
+    const rows = [
+      this.subdivideTimeSlot(labels.earlyMorning, 'AM'),
+      this.subdivideTimeSlot(labels.lateMorning, 'AM'),
+      this.subdivideTimeSlot(labels.earlyAfternoon, 'PM'),
+      this.subdivideTimeSlot(labels.lateAfternoon, 'PM')
+    ].flat();
+
+    return [...new Set(rows)].sort((left, right) =>
+      this.timeSlotSortValue(left) - this.timeSlotSortValue(right)
+    );
+  });
+
+  needSpanishHelpFamilies = computed(() =>
+    this.families().filter(family => this.needsSpanishHelp(family))
+  );
+
+  noSpanishHelpFamilies = computed(() =>
+    this.families().filter(family => !this.needsSpanishHelp(family))
+  );
+
   hasScheduledTimes = computed(() =>
     this.families().some(family => this.isScheduled(family.timeSlot))
   );
 
   constructor() {
     this.loadFamilies();
+    this.loadSettings();
+  }
+
+  needsSpanishHelp(family: Family): boolean {
+    return family.needSpanishHelp;
+  }
+
+  checkColumnType(column: ScheduleColumn): ScheduleColumnType {
+    return column.type;
   }
 
   clearScheduledTimes(): void {
@@ -163,6 +230,19 @@ export class FamilyScheduleComponent {
     ).subscribe(families => this.families.set(families));
   }
 
+  private loadSettings(): void {
+    this.settingService.getSettings().pipe(
+      catchError(() => {
+        this.snackBar.open('Failed to load time windows', 'OK', { duration: 3000 });
+        return of(undefined);
+      })
+    ).subscribe(settings => {
+      if (settings?.timeAvailability) {
+        this.timeAvailabilityLabels.set(settings.timeAvailability);
+      }
+    });
+  }
+
   private isScheduled(timeSlot: string | undefined): boolean {
     if (!timeSlot) {
       return false;
@@ -199,5 +279,76 @@ export class FamilyScheduleComponent {
 
   private rangeMeridiem(timeSlot: string): 'AM' | 'PM' | undefined {
     return timeSlot.match(/\b(AM|PM)\b/g)?.at(-1) as 'AM' | 'PM' | undefined;
+  }
+
+  private subdivideTimeSlot(timeSlot: string | undefined, fallbackMeridiem: 'AM' | 'PM'): string[] {
+    if (!timeSlot?.trim()) {
+      return [];
+    }
+
+    const normalizedTimeSlot = timeSlot.trim().replace(/\u2013|\u2014/g, '-');
+    const rangeParts = normalizedTimeSlot.split(/\s*-\s*/, 2);
+    const endMeridiem = rangeParts[1] ? this.rangeMeridiem(rangeParts[1]) : undefined;
+    const startMeridiem = this.rangeMeridiem(rangeParts[0]) ?? endMeridiem ?? fallbackMeridiem;
+
+    const start = this.parseScheduleTime(rangeParts[0], startMeridiem);
+    const end = rangeParts[1]
+      ? this.parseScheduleTime(rangeParts[1], endMeridiem ?? startMeridiem)
+      : start + 60;
+
+    if (end <= start) {
+      return [];
+    }
+
+    const rows: string[] = [];
+    for (let current = start; current + 15 <= end; current += 15) {
+      rows.push(this.formatScheduleBlock(current, current + 15));
+    }
+
+    return rows;
+  }
+
+  private parseScheduleTime(timeText: string, meridiem: 'AM' | 'PM'): number {
+    const cleanedTime = timeText.replace(/\b(AM|PM)\b/gi, '').trim();
+    const match = cleanedTime.match(/^(\d{1,2})(?::(\d{2}))?$/);
+    if (!match) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
+    let hour = Number(match[1]);
+    const minute = Number(match[2] ?? 0);
+
+    if (meridiem === 'PM' && hour < 12) {
+      hour += 12;
+    }
+    if (meridiem === 'AM' && hour === 12) {
+      hour = 0;
+    }
+
+    return hour * 60 + minute;
+  }
+
+  private formatScheduleBlock(startMinutes: number, endMinutes: number): string {
+    const start = this.formatScheduleTime(startMinutes);
+    const end = this.formatScheduleTime(endMinutes);
+
+    if (start.meridiem === end.meridiem) {
+      return `${start.time}-${end.time} ${end.meridiem}`;
+    }
+
+    return `${start.time} ${start.meridiem}-${end.time} ${end.meridiem}`;
+  }
+
+  private formatScheduleTime(totalMinutes: number): { time: string; meridiem: 'AM' | 'PM' } {
+    const normalizedMinutes = totalMinutes % (24 * 60);
+    const hour24 = Math.floor(normalizedMinutes / 60);
+    const minute = normalizedMinutes % 60;
+    const meridiem = hour24 >= 12 ? 'PM' : 'AM';
+    const hour12 = hour24 % 12 || 12;
+
+    return {
+      time: `${hour12}:${minute.toString().padStart(2, '0')}`,
+      meridiem
+    };
   }
 }
