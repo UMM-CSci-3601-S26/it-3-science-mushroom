@@ -11,7 +11,7 @@ import { AuthService } from '../../auth/auth-service';
 import { Family } from '../family';
 import { FamilyService } from '../family.service';
 import { SettingsService } from '../../settings/settings.service';
-import { TimeAvailabilityLabels } from '../../settings/settings';
+import { DefaultScheduleColumns, TimeAvailabilityLabels } from '../../settings/settings';
 // language is to initialize a language type that is expandable for other language needs
 type ScheduleColumnType = 'English' | 'Spanish';
 
@@ -29,6 +29,11 @@ const DEFAULT_TIME_AVAILABILITY_LABELS: TimeAvailabilityLabels = {
   earlyAfternoon: '12:00-1:00 PM',
   lateAfternoon: '1:00-2:00 PM'
 };
+
+const DEFAULT_SCHEDULE_COLUMNS: DefaultScheduleColumns = {
+  englishFamilies: 1,
+  spanishFamilies: 0
+}
 
 @Component({
   selector: 'app-family-schedule',
@@ -51,10 +56,7 @@ export class FamilyScheduleComponent {
   private settingService = inject(SettingsService);
 
   families = signal<Family[]>([]);
-  scheduleColumns = signal<ScheduleColumn[]>([
-    { id: 1, label: 'Slot 1', type: 'English', order: 1 },
-    { id: 2, label: 'Slot 2', type: 'Spanish', order: 2 }
-  ]);
+  scheduleColumns = signal<ScheduleColumn[]>(this.buildScheduleColumns(DEFAULT_SCHEDULE_COLUMNS));
   timeAvailabilityLabels = signal<TimeAvailabilityLabels>(DEFAULT_TIME_AVAILABILITY_LABELS);
   isClearingScheduledTimes = signal(false);
 
@@ -159,6 +161,36 @@ export class FamilyScheduleComponent {
     });
   }
 
+  private buildScheduleColumns(defaultColumns: DefaultScheduleColumns): ScheduleColumn[] {
+    const columns: ScheduleColumn[] = [];
+    let nextId = 1;
+
+    const englishCount = Math.max(1, defaultColumns.englishFamilies ?? 1);
+    const spanishCount = Math.max(0, defaultColumns.spanishFamilies ?? 0);
+
+    for (let index = 0; index < englishCount; index++) {
+      columns.push({
+        id: nextId,
+        label: `Slot ${nextId}`,
+        type: `English`,
+        order: nextId
+      });
+      nextId++;
+    }
+
+    for (let index = 0; index < spanishCount; index++) {
+      columns.push({
+        id: nextId,
+        label: `Slot ${nextId}`,
+        type: `Spanish`,
+        order: nextId
+      });
+      nextId++;
+    }
+
+    return columns;
+  }
+
   private scheduleFailureMessage(err: unknown): string {
     const errorText = this.scheduleErrorText(err);
 
@@ -239,6 +271,9 @@ export class FamilyScheduleComponent {
     ).subscribe(settings => {
       if (settings?.timeAvailability) {
         this.timeAvailabilityLabels.set(settings.timeAvailability);
+      }
+      if(settings?.defaultScheduleColumns) {
+        this.scheduleColumns.set(this.buildScheduleColumns(settings.defaultScheduleColumns));
       }
     });
   }
