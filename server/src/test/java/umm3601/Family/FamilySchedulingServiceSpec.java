@@ -91,8 +91,8 @@ class FamilySchedulingServiceSpec {
 
     familySchedulingService.schedulingAlgorithm(families, currentSettings);
 
-    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
-    assertEquals("1:00-1:15 PM", families.get(1).timeSlot);
+    assertEquals("8:00-8:15 AM", familyNamed(families, "Morning Family").timeSlot);
+    assertEquals("1:00-1:15 PM", familyNamed(families, "Afternoon Family").timeSlot);
   }
 
   @Test
@@ -197,12 +197,15 @@ class FamilySchedulingServiceSpec {
         defaultTimeAvailability(),
         defaultScheduleColumns(1, 1));
 
-    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
-    assertEquals("Spanish", families.get(0).scheduleAssignment.columnType);
-    assertEquals(1, families.get(0).scheduleAssignment.columnIndex);
-    assertEquals("8:00-8:15 AM", families.get(1).timeSlot);
-    assertEquals("English", families.get(1).scheduleAssignment.columnType);
-    assertEquals(1, families.get(1).scheduleAssignment.columnIndex);
+    Family spanishFamily = familyNamed(families, "Spanish Family");
+    Family englishFamily = familyNamed(families, "English Family");
+
+    assertEquals("8:00-8:15 AM", spanishFamily.timeSlot);
+    assertEquals("Spanish", spanishFamily.scheduleAssignment.columnType);
+    assertEquals(1, spanishFamily.scheduleAssignment.columnIndex);
+    assertEquals("8:00-8:15 AM", englishFamily.timeSlot);
+    assertEquals("English", englishFamily.scheduleAssignment.columnType);
+    assertEquals(1, englishFamily.scheduleAssignment.columnIndex);
   }
 
   @Test
@@ -221,11 +224,41 @@ class FamilySchedulingServiceSpec {
         currentSettings,
         defaultScheduleColumns(1, 0));
 
-    assertEquals("8:30-8:45 AM", families.get(0).timeSlot);
-    assertEquals("8:45-9:15 AM", families.get(1).timeSlot);
-    assertEquals("9:15-9:30 AM", families.get(2).timeSlot);
-    assertEquals(1, families.get(1).scheduleAssignment.columnIndex);
-    assertEquals(1, families.get(2).scheduleAssignment.columnIndex);
+    Family largeEarlyFamily = familyNamed(families, "Large Early Family");
+    Family earlyFamily = familyNamed(families, "Early Family");
+    Family lateFamily = familyNamed(families, "Late Family");
+
+    assertEquals("8:30-9:00 AM", largeEarlyFamily.timeSlot);
+    assertEquals("9:00-9:15 AM", earlyFamily.timeSlot);
+    assertEquals("9:15-9:30 AM", lateFamily.timeSlot);
+    assertEquals(1, largeEarlyFamily.scheduleAssignments.get(0).columnIndex);
+    assertEquals(1, largeEarlyFamily.scheduleAssignments.get(1).columnIndex);
+    assertEquals(1, earlyFamily.scheduleAssignment.columnIndex);
+    assertEquals(1, lateFamily.scheduleAssignment.columnIndex);
+  }
+
+  @Test
+  void schedulingAlgorithmUsesSupportColumnsForLargeFamiliesWhenColumnsAreOpen() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Large Family", true, false, false, false, 4),
+      familyForScheduling("Small Family", true, false, false, false, 2)));
+
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
+    currentSettings.earlyMorning = "8:00-9:00 AM";
+
+    familySchedulingService.schedulingAlgorithm(
+        families,
+        currentSettings,
+        defaultScheduleColumns(2, 0));
+
+    Family largeFamily = familyNamed(families, "Large Family");
+    Family smallFamily = familyNamed(families, "Small Family");
+
+    assertEquals("8:00-8:15 AM", largeFamily.timeSlot);
+    assertEquals(2, largeFamily.scheduleAssignments.size());
+    assertEquals(1, largeFamily.scheduleAssignments.get(0).columnIndex);
+    assertEquals(2, largeFamily.scheduleAssignments.get(1).columnIndex);
+    assertEquals("8:15-8:30 AM", smallFamily.timeSlot);
   }
 
   private Settings.TimeAvailabilityLabels defaultTimeAvailability() {
@@ -274,6 +307,13 @@ class FamilySchedulingServiceSpec {
     defaultScheduleColumns.englishFamilies = englishFamilies;
     defaultScheduleColumns.spanishFamilies = spanishFamilies;
     return defaultScheduleColumns;
+  }
+
+  private Family familyNamed(ArrayList<Family> families, String guardianName) {
+    return families.stream()
+        .filter(family -> guardianName.equals(family.guardianName))
+        .findFirst()
+        .orElseThrow();
   }
 
   private StudentInfo studentInfo(String name, String grade) {

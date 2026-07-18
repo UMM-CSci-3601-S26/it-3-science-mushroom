@@ -29,6 +29,11 @@ public class FamilySchedulingService {
   private static final int DEFAULT_SCHEDULE_WINDOW_MINUTES = 60;
   private static final int DEFAULT_ENGLISH_COLUMN_COUNT = 1;
   private static final int DEFAULT_SPANISH_COLUMN_COUNT = 0;
+  private static final int EARLY_MORNING_AVAILABILITY_ORDER = 0;
+  private static final int LATE_MORNING_AVAILABILITY_ORDER = 1;
+  private static final int EARLY_AFTERNOON_AVAILABILITY_ORDER = 2;
+  private static final int LATE_AFTERNOON_AVAILABILITY_ORDER = 3;
+  private static final int NO_AVAILABILITY_ORDER = 4;
   private static final String ENGLISH_COLUMN_TYPE = "English";
   private static final String SPANISH_COLUMN_TYPE = "Spanish";
   private static final DateTimeFormatter SCHEDULE_TIME_FORMATTER =
@@ -50,7 +55,11 @@ public class FamilySchedulingService {
       Settings.TimeAvailabilityLabels currentSettings,
       Settings.DefaultScheduleColumns defaultScheduleColumns
   ) {
-    families.sort(Comparator.comparingInt(f -> availability(f).countTrue()));
+    families.sort(Comparator
+        .comparingInt((Family family) -> availability(family).countTrue())
+        .thenComparing(Comparator.comparingInt(this::studentCount).reversed())
+        .thenComparingInt(this::earliestAvailabilityOrder)
+        .thenComparing(family -> family.guardianName == null ? "" : family.guardianName));
 
     if (currentSettings == null) {
       currentSettings = new Settings.TimeAvailabilityLabels();
@@ -195,21 +204,22 @@ public class FamilySchedulingService {
   }
 
   private boolean assignFamilyToScheduleWindow(Family family, ScheduleWindow window) {
-    int neededBlocks = requiredScheduleBlocks(family);
+    int neededVolunteerCells = requiredScheduleBlocks(family);
     String columnType = familyLanguageNeeds(family);
-    SchedulePlacement placement = window.findAvailablePlacement(columnType, neededBlocks);
+    SchedulePlacement placement = window.findAvailablePlacement(columnType, neededVolunteerCells);
 
     if (placement == null) {
       return false;
     }
 
-    window.reservePlacement(columnType, placement, neededBlocks);
+    window.reservePlacement(columnType, placement);
 
-    family.scheduleAssignment = new Family.ScheduleAssignment();
-    family.timeSlot = combineScheduleBlocks(window.slots, placement.rowIndex, neededBlocks);
-    family.scheduleAssignment.timeSlot = family.timeSlot;
-    family.scheduleAssignment.columnType = columnType;
-    family.scheduleAssignment.columnIndex = placement.columnIndex;
+    family.timeSlot = combineScheduleBlocks(
+        window.slots,
+        placement.firstRowIndex(),
+        placement.rowSpan());
+    family.scheduleAssignments = scheduleAssignments(window.slots, columnType, placement);
+    family.scheduleAssignment = family.scheduleAssignments.get(0);
     return true;
   }
 
@@ -231,7 +241,7 @@ public class FamilySchedulingService {
   }
 
   private int requiredScheduleBlocks(Family family) {
-    int studentCount = family.students == null ? 0 : family.students.size();
+    int studentCount = studentCount(family);
 
     if (studentCount > EXTRA_LARGE_FAMILY_CHILDREN_THRESHOLD) {
       return EXTRA_LARGE_FAMILY_SCHEDULE_BLOCKS;
@@ -242,6 +252,47 @@ public class FamilySchedulingService {
     }
 
     return STANDARD_FAMILY_SCHEDULE_BLOCKS;
+  }
+
+  private List<Family.ScheduleAssignment> scheduleAssignments(
+      List<String> slots,
+      String columnType,
+      SchedulePlacement placement
+  ) {
+    List<Family.ScheduleAssignment> scheduleAssignments = new ArrayList<>();
+
+    for (SchedulePlacementCell cell : placement.cells) {
+      Family.ScheduleAssignment assignment = new Family.ScheduleAssignment();
+      assignment.timeSlot = slots.get(cell.rowIndex);
+      assignment.columnType = columnType;
+      assignment.columnIndex = cell.columnIndex;
+      scheduleAssignments.add(assignment);
+    }
+
+    return scheduleAssignments;
+  }
+
+  private int studentCount(Family family) {
+    return family.students == null ? 0 : family.students.size();
+  }
+
+  private int earliestAvailabilityOrder(Family family) {
+    AvailabilityOptions familyAvailability = availability(family);
+
+    if (familyAvailability.earlyMorning) {
+      return EARLY_MORNING_AVAILABILITY_ORDER;
+    }
+    if (familyAvailability.lateMorning) {
+      return LATE_MORNING_AVAILABILITY_ORDER;
+    }
+    if (familyAvailability.earlyAfternoon) {
+      return EARLY_AFTERNOON_AVAILABILITY_ORDER;
+    }
+    if (familyAvailability.lateAfternoon) {
+      return LATE_AFTERNOON_AVAILABILITY_ORDER;
+    }
+
+    return NO_AVAILABILITY_ORDER;
   }
 
   private String combineScheduleBlocks(List<String> slots, int startIndex, int neededBlocks) {
@@ -263,10 +314,35 @@ public class FamilySchedulingService {
   }
 
   private static class SchedulePlacement {
+    private final List<SchedulePlacementCell> cells;
+
+    SchedulePlacement(List<SchedulePlacementCell> cells) {
+      this.cells = cells;
+    }
+
+    private int firstRowIndex() {
+      return cells.stream()
+          .mapToInt(cell -> cell.rowIndex)
+          .min()
+          .orElse(0);
+    }
+
+    private int rowSpan() {
+      int firstRowIndex = firstRowIndex();
+      int lastRowIndex = cells.stream()
+          .mapToInt(cell -> cell.rowIndex)
+          .max()
+          .orElse(firstRowIndex);
+
+      return lastRowIndex - firstRowIndex + 1;
+    }
+  }
+
+  private static class SchedulePlacementCell {
     private final int rowIndex;
     private final int columnIndex;
 
-    SchedulePlacement(int rowIndex, int columnIndex) {
+    SchedulePlacementCell(int rowIndex, int columnIndex) {
       this.rowIndex = rowIndex;
       this.columnIndex = columnIndex;
     }
@@ -281,12 +357,12 @@ public class FamilySchedulingService {
       this.scheduleOccupancy = scheduleOccupancy;
     }
 
-    private SchedulePlacement findAvailablePlacement(String columnType, int neededBlocks) {
-      return scheduleOccupancy.findAvailablePlacement(slots, columnType, neededBlocks);
+    private SchedulePlacement findAvailablePlacement(String columnType, int neededVolunteerCells) {
+      return scheduleOccupancy.findAvailablePlacement(slots, columnType, neededVolunteerCells);
     }
 
-    private void reservePlacement(String columnType, SchedulePlacement placement, int neededBlocks) {
-      scheduleOccupancy.reservePlacement(slots, columnType, placement, neededBlocks);
+    private void reservePlacement(String columnType, SchedulePlacement placement) {
+      scheduleOccupancy.reservePlacement(slots, columnType, placement);
     }
   }
 
@@ -303,13 +379,21 @@ public class FamilySchedulingService {
       this.spanishOccupiedColumns = new HashMap<>();
     }
 
-    private SchedulePlacement findAvailablePlacement(List<String> slots, String columnType, int neededBlocks) {
+    private SchedulePlacement findAvailablePlacement(List<String> slots, String columnType, int neededVolunteerCells) {
       int columnCount = columnCount(columnType);
 
-      for (int rowIndex = 0; rowIndex + neededBlocks <= slots.size(); rowIndex++) {
-        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-          if (isColumnOpenForBlocks(slots, columnType, rowIndex, columnIndex, neededBlocks)) {
-            return new SchedulePlacement(rowIndex, columnIndex);
+      for (int startRowIndex = 0; startRowIndex < slots.size(); startRowIndex++) {
+        List<SchedulePlacementCell> cells = new ArrayList<>();
+
+        for (int rowIndex = startRowIndex; rowIndex < slots.size(); rowIndex++) {
+          for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+            if (isColumnOpen(slots.get(rowIndex), columnType, columnIndex)) {
+              cells.add(new SchedulePlacementCell(rowIndex, columnIndex));
+
+              if (cells.size() == neededVolunteerCells) {
+                return new SchedulePlacement(cells);
+              }
+            }
           }
         }
       }
@@ -320,34 +404,19 @@ public class FamilySchedulingService {
     private void reservePlacement(
         List<String> slots,
         String columnType,
-        SchedulePlacement placement,
-        int neededBlocks
+        SchedulePlacement placement
     ) {
       Map<String, Set<Integer>> occupiedColumns = occupiedColumns(columnType);
 
-      for (int rowIndex = placement.rowIndex; rowIndex < placement.rowIndex + neededBlocks; rowIndex++) {
+      for (SchedulePlacementCell cell : placement.cells) {
         occupiedColumns
-            .computeIfAbsent(slots.get(rowIndex), ignored -> new HashSet<>())
-            .add(placement.columnIndex);
+            .computeIfAbsent(slots.get(cell.rowIndex), ignored -> new HashSet<>())
+            .add(cell.columnIndex);
       }
     }
 
-    private boolean isColumnOpenForBlocks(
-        List<String> slots,
-        String columnType,
-        int startRowIndex,
-        int columnIndex,
-        int neededBlocks
-    ) {
-      Map<String, Set<Integer>> occupiedColumns = occupiedColumns(columnType);
-
-      for (int rowIndex = startRowIndex; rowIndex < startRowIndex + neededBlocks; rowIndex++) {
-        if (occupiedColumns.getOrDefault(slots.get(rowIndex), Set.of()).contains(columnIndex)) {
-          return false;
-        }
-      }
-
-      return true;
+    private boolean isColumnOpen(String slot, String columnType, int columnIndex) {
+      return !occupiedColumns(columnType).getOrDefault(slot, Set.of()).contains(columnIndex);
     }
 
     private int columnCount(String columnType) {

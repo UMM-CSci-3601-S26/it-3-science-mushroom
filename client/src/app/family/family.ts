@@ -71,6 +71,7 @@ export interface Family {
   needSpanishHelp: boolean;
   timeSlot: string;
   scheduleAssignment?: ScheduleAssignment;
+  scheduleAssignments?: ScheduleAssignment[];
   timeAvailability?: AvailabilityOptions;
   helped?: boolean;
   status?: string;

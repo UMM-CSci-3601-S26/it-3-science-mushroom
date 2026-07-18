@@ -23,6 +23,7 @@ public class Family {
   public boolean profileComplete;
   public String timeSlot;
   public ScheduleAssignment scheduleAssignment;
+  public List<ScheduleAssignment> scheduleAssignments;
   public String accommodations;
   public boolean needSpanishHelp;
   public boolean helped;

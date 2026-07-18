@@ -47,11 +47,13 @@
                 class="schedule-cell"
                 [class.schedule-cell-occupied]="familiesForCell(row, column).length > 0"
                 [class.schedule-cell-extension]="cellHasExtension(row, column)"
+                [class.schedule-cell-support]="cellHasSupportColumn(row, column)"
                 [attr.aria-label]="row + ' ' + column.label">
                 @for (family of familiesForCell(row, column); track family._id ?? family.guardianName) {
                   <div
                     class="schedule-cell-family"
-                    [class.schedule-cell-family-extension]="isFamilyExtensionRow(family, row)">
+                    [class.schedule-cell-family-extension]="isFamilyExtensionRow(family, row, column)"
+                    [class.schedule-cell-family-support]="isFamilySupportCell(family, row, column)">
                     <strong>{{ family.guardianName }}</strong>
                     <span>{{ family.students?.length ?? 0 }} students</span>
                   </div>

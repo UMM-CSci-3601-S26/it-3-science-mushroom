@@ -104,6 +104,11 @@
   background: color-mix(in srgb, var(--app-primary) 12%, var(--app-surface));
 }
 
+.schedule-cell-support {
+  border-color: var(--app-warning);
+  background: color-mix(in srgb, var(--app-warning) 14%, var(--app-surface));
+}
+
 .schedule-cell-family {
   display: grid;
   gap: 0.125rem;
@@ -116,6 +121,11 @@
 .schedule-cell-family-extension {
   border-left: 4px solid var(--app-primary);
   background: color-mix(in srgb, var(--app-primary) 18%, var(--app-surface));
+}
+
+.schedule-cell-family-support {
+  border-left: 4px solid var(--app-warning);
+  background: color-mix(in srgb, var(--app-warning) 20%, var(--app-surface));
 }
 
 .schedule-cell-family strong,

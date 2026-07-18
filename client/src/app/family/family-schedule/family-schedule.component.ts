@@ -8,7 +8,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, finalize, of } from 'rxjs';
 import { AuthService } from '../../auth/auth-service';
 
-import { Family, ScheduleColumnType } from '../family';
+import { Family, ScheduleAssignment, ScheduleColumnType } from '../family';
 import { FamilyService } from '../family.service';
 import { SettingsService } from '../../settings/settings.service';
 import { DefaultScheduleColumns, TimeAvailabilityLabels } from '../../settings/settings';
@@ -118,25 +118,41 @@ export class FamilyScheduleComponent {
 
   familiesForCell(row: string, column: ScheduleColumn): Family[] {
     return this.families().filter(family =>
-      family.scheduleAssignment?.columnType === column.type
-      && family.scheduleAssignment.columnIndex === column.columnIndex
-      && this.scheduleAssignmentCoversRow(family.scheduleAssignment.timeSlot, row)
+      this.assignmentForCell(family, row, column) !== undefined
     );
   }
 
   cellHasExtension(row: string, column: ScheduleColumn): boolean {
-    return this.familiesForCell(row, column).some(family => this.isFamilyExtensionRow(family, row));
+    return this.familiesForCell(row, column).some(family => this.isFamilyExtensionRow(family, row, column));
   }
 
-  isFamilyExtensionRow(family: Family, row: string): boolean {
-    const assignmentRange = this.timeSlotRange(family.scheduleAssignment?.timeSlot);
+  cellHasSupportColumn(row: string, column: ScheduleColumn): boolean {
+    return this.familiesForCell(row, column).some(family => this.isFamilySupportCell(family, row, column));
+  }
+
+  isFamilyExtensionRow(family: Family, row: string, column: ScheduleColumn): boolean {
+    const assignment = this.assignmentForCell(family, row, column);
+    const familyRange = this.timeSlotRange(family.timeSlot);
     const rowRange = this.timeSlotRange(row);
 
-    if (!assignmentRange || !rowRange) {
+    if (!assignment || !familyRange || !rowRange) {
       return false;
     }
 
-    return rowRange.start > assignmentRange.start;
+    return rowRange.start > familyRange.start;
+  }
+
+  isFamilySupportCell(family: Family, row: string, column: ScheduleColumn): boolean {
+    const assignment = this.assignmentForCell(family, row, column);
+    const primaryAssignment = this.scheduleAssignments(family)[0];
+
+    if (!assignment || !primaryAssignment) {
+      return false;
+    }
+
+    return assignment.timeSlot !== primaryAssignment.timeSlot
+      || assignment.columnType !== primaryAssignment.columnType
+      || assignment.columnIndex !== primaryAssignment.columnIndex;
   }
 
   clearScheduledTimes(): void {
@@ -308,6 +324,47 @@ export class FamilyScheduleComponent {
 
     const normalized = timeSlot.trim().toLowerCase();
     return normalized !== '' && normalized !== 'tbd' && !normalized.includes('assigned');
+  }
+
+  private assignmentForCell(
+      family: Family,
+      row: string,
+      column: ScheduleColumn
+  ): ScheduleAssignment | undefined {
+    const assignments = this.scheduleAssignments(family);
+
+    if (assignments.length > 1 || family.scheduleAssignments?.length) {
+      return assignments.find(assignment =>
+        assignment.columnType === column.type
+        && assignment.columnIndex === column.columnIndex
+        && this.scheduleAssignmentStartsInRow(assignment.timeSlot, row)
+      );
+    }
+
+    return assignments.find(assignment =>
+      assignment.columnType === column.type
+      && assignment.columnIndex === column.columnIndex
+      && this.scheduleAssignmentCoversRow(assignment.timeSlot, row)
+    );
+  }
+
+  private scheduleAssignments(family: Family): ScheduleAssignment[] {
+    if (family.scheduleAssignments?.length) {
+      return family.scheduleAssignments;
+    }
+
+    return family.scheduleAssignment ? [family.scheduleAssignment] : [];
+  }
+
+  private scheduleAssignmentStartsInRow(scheduleAssignmentTimeSlot: string | undefined, row: string): boolean {
+    const assignmentRange = this.timeSlotRange(scheduleAssignmentTimeSlot);
+    const rowRange = this.timeSlotRange(row);
+
+    if (!assignmentRange || !rowRange) {
+      return false;
+    }
+
+    return assignmentRange.start === rowRange.start;
   }
 
   private scheduleAssignmentCoversRow(scheduleAssignmentTimeSlot: string | undefined, row: string): boolean {

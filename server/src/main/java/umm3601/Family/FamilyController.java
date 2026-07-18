@@ -299,7 +299,8 @@ public class FamilyController {
                 Filters.eq("_id", new ObjectId(fam._id)),
                 Updates.combine(
                     Updates.set("timeSlot", fam.timeSlot),
-                    Updates.set("scheduleAssignment", scheduleAssignmentDocument(fam.scheduleAssignment)))
+                    Updates.set("scheduleAssignment", scheduleAssignmentDocument(fam.scheduleAssignment)),
+                    Updates.set("scheduleAssignments", scheduleAssignmentDocuments(fam.scheduleAssignments)))
             )
         );
     }
@@ -321,6 +322,16 @@ public class FamilyController {
         .append("columnIndex", scheduleAssignment.columnIndex);
   }
 
+  private List<Document> scheduleAssignmentDocuments(List<Family.ScheduleAssignment> scheduleAssignments) {
+    if (scheduleAssignments == null) {
+      return List.of();
+    }
+
+    return scheduleAssignments.stream()
+        .map(this::scheduleAssignmentDocument)
+        .toList();
+  }
+
   @Route(method = HttpMethod.POST, path = API_CLEAR_SCHEDULED_TIMES)
   @RequirePermission("schedule_families")
   public void clearScheduledTimes(Context ctx) {
@@ -328,7 +339,8 @@ public class FamilyController {
         new Document(),
         Updates.combine(
             Updates.set("timeSlot", ""),
-            unset("scheduleAssignment")));
+            unset("scheduleAssignment"),
+            unset("scheduleAssignments")));
 
     ArrayList<Family> families = familyCollection
         .find()
