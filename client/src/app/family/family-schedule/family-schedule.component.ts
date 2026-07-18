@@ -8,18 +8,16 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, finalize, of } from 'rxjs';
 import { AuthService } from '../../auth/auth-service';
 
-import { Family } from '../family';
+import { Family, ScheduleColumnType } from '../family';
 import { FamilyService } from '../family.service';
 import { SettingsService } from '../../settings/settings.service';
 import { DefaultScheduleColumns, TimeAvailabilityLabels } from '../../settings/settings';
-// language is to initialize a language type that is expandable for other language needs
-type ScheduleColumnType = 'English' | 'Spanish';
-
 // Data structure for expandable columns
 interface ScheduleColumn {
   id: number;
   label: string;
   type: ScheduleColumnType;
+  columnIndex: number;
   order: number;
 }
 
@@ -33,7 +31,7 @@ const DEFAULT_TIME_AVAILABILITY_LABELS: TimeAvailabilityLabels = {
 const DEFAULT_SCHEDULE_COLUMNS: DefaultScheduleColumns = {
   englishFamilies: 1,
   spanishFamilies: 0
-}
+};
 
 @Component({
   selector: 'app-family-schedule',
@@ -118,6 +116,29 @@ export class FamilyScheduleComponent {
     return column.type;
   }
 
+  familiesForCell(row: string, column: ScheduleColumn): Family[] {
+    return this.families().filter(family =>
+      family.scheduleAssignment?.columnType === column.type
+      && family.scheduleAssignment.columnIndex === column.columnIndex
+      && this.scheduleAssignmentCoversRow(family.scheduleAssignment.timeSlot, row)
+    );
+  }
+
+  cellHasExtension(row: string, column: ScheduleColumn): boolean {
+    return this.familiesForCell(row, column).some(family => this.isFamilyExtensionRow(family, row));
+  }
+
+  isFamilyExtensionRow(family: Family, row: string): boolean {
+    const assignmentRange = this.timeSlotRange(family.scheduleAssignment?.timeSlot);
+    const rowRange = this.timeSlotRange(row);
+
+    if (!assignmentRange || !rowRange) {
+      return false;
+    }
+
+    return rowRange.start > assignmentRange.start;
+  }
+
   clearScheduledTimes(): void {
     if (!this.hasScheduledTimes() || this.isClearingScheduledTimes()) {
       return;
@@ -173,6 +194,7 @@ export class FamilyScheduleComponent {
         id: nextId,
         label: `Slot ${nextId}`,
         type: `English`,
+        columnIndex: index + 1,
         order: nextId
       });
       nextId++;
@@ -183,6 +205,7 @@ export class FamilyScheduleComponent {
         id: nextId,
         label: `Slot ${nextId}`,
         type: `Spanish`,
+        columnIndex: index + 1,
         order: nextId
       });
       nextId++;
@@ -285,6 +308,50 @@ export class FamilyScheduleComponent {
 
     const normalized = timeSlot.trim().toLowerCase();
     return normalized !== '' && normalized !== 'tbd' && !normalized.includes('assigned');
+  }
+
+  private scheduleAssignmentCoversRow(scheduleAssignmentTimeSlot: string | undefined, row: string): boolean {
+    if (!scheduleAssignmentTimeSlot) {
+      return false;
+    }
+
+    const assignmentRange = this.timeSlotRange(scheduleAssignmentTimeSlot);
+    const rowRange = this.timeSlotRange(row);
+
+    if (!assignmentRange || !rowRange) {
+      return false;
+    }
+
+    return rowRange.start >= assignmentRange.start && rowRange.start < assignmentRange.end;
+  }
+
+  private timeSlotRange(timeSlot: string | undefined): { start: number; end: number } | undefined {
+    if (!timeSlot) {
+      return undefined;
+    }
+
+    const normalizedTimeSlot = timeSlot.trim().toUpperCase().replace(/\u2013|\u2014/g, '-');
+    const rangeParts = normalizedTimeSlot.split(/\s*-\s*/, 2);
+
+    if (rangeParts.length < 2) {
+      return undefined;
+    }
+
+    const endMeridiem = this.rangeMeridiem(rangeParts[1]);
+    const startMeridiem = this.rangeMeridiem(rangeParts[0]) ?? endMeridiem;
+
+    if (!startMeridiem || !endMeridiem) {
+      return undefined;
+    }
+
+    const start = this.parseScheduleTime(rangeParts[0], startMeridiem);
+    const end = this.parseScheduleTime(rangeParts[1], endMeridiem);
+
+    if (start === Number.MAX_SAFE_INTEGER || end === Number.MAX_SAFE_INTEGER || end <= start) {
+      return undefined;
+    }
+
+    return { start, end };
   }
 
   private timeSlotSortValue(timeSlot: string | undefined): number {

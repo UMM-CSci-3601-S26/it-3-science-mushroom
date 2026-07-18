@@ -167,6 +167,67 @@ class FamilySchedulingServiceSpec {
     assertEquals("8:45-9:00 AM", families.get(1).timeSlot);
   }
 
+  @Test
+  void schedulingAlgorithmAssignsFamiliesToOpenColumnsInTheSameTimeBlock() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Family One", true, false, false, false, 2),
+      familyForScheduling("Family Two", true, false, false, false, 2)));
+
+    familySchedulingService.schedulingAlgorithm(
+        families,
+        defaultTimeAvailability(),
+        defaultScheduleColumns(2, 0));
+
+    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
+    assertEquals("English", families.get(0).scheduleAssignment.columnType);
+    assertEquals(1, families.get(0).scheduleAssignment.columnIndex);
+    assertEquals("8:00-8:15 AM", families.get(1).timeSlot);
+    assertEquals("English", families.get(1).scheduleAssignment.columnType);
+    assertEquals(2, families.get(1).scheduleAssignment.columnIndex);
+  }
+
+  @Test
+  void schedulingAlgorithmAssignsSpanishFamiliesToSpanishColumns() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Spanish Family", true, false, false, false, 2, true),
+      familyForScheduling("English Family", true, false, false, false, 2)));
+
+    familySchedulingService.schedulingAlgorithm(
+        families,
+        defaultTimeAvailability(),
+        defaultScheduleColumns(1, 1));
+
+    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
+    assertEquals("Spanish", families.get(0).scheduleAssignment.columnType);
+    assertEquals(1, families.get(0).scheduleAssignment.columnIndex);
+    assertEquals("8:00-8:15 AM", families.get(1).timeSlot);
+    assertEquals("English", families.get(1).scheduleAssignment.columnType);
+    assertEquals(1, families.get(1).scheduleAssignment.columnIndex);
+  }
+
+  @Test
+  void schedulingAlgorithmDoesNotDoubleBookAColumnWhenAvailabilityWindowsOverlap() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Early Family", true, false, false, false, 2),
+      familyForScheduling("Large Early Family", true, false, false, false, 4),
+      familyForScheduling("Late Family", false, true, false, false, 2)));
+
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
+    currentSettings.earlyMorning = "8:30-9:30 AM";
+    currentSettings.lateMorning = "9:00-10:00 AM";
+
+    familySchedulingService.schedulingAlgorithm(
+        families,
+        currentSettings,
+        defaultScheduleColumns(1, 0));
+
+    assertEquals("8:30-8:45 AM", families.get(0).timeSlot);
+    assertEquals("8:45-9:15 AM", families.get(1).timeSlot);
+    assertEquals("9:15-9:30 AM", families.get(2).timeSlot);
+    assertEquals(1, families.get(1).scheduleAssignment.columnIndex);
+    assertEquals(1, families.get(2).scheduleAssignment.columnIndex);
+  }
+
   private Settings.TimeAvailabilityLabels defaultTimeAvailability() {
     Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
     currentSettings.earlyMorning = "8:00-9:00 AM";
@@ -178,6 +239,19 @@ class FamilySchedulingServiceSpec {
 
   private Family familyForScheduling(String guardianName, boolean earlyMorning,
       boolean lateMorning, boolean earlyAfternoon, boolean lateAfternoon, int studentCount) {
+    return familyForScheduling(
+        guardianName,
+        earlyMorning,
+        lateMorning,
+        earlyAfternoon,
+        lateAfternoon,
+        studentCount,
+        false);
+  }
+
+  private Family familyForScheduling(String guardianName, boolean earlyMorning,
+      boolean lateMorning, boolean earlyAfternoon, boolean lateAfternoon, int studentCount,
+      boolean needSpanishHelp) {
     AvailabilityOptions availability = new AvailabilityOptions();
     availability.earlyMorning = earlyMorning;
     availability.lateMorning = lateMorning;
@@ -187,11 +261,19 @@ class FamilySchedulingServiceSpec {
     Family family = new Family();
     family.guardianName = guardianName;
     family.timeAvailability = availability;
+    family.needSpanishHelp = needSpanishHelp;
     family.students = new ArrayList<>();
     for (int i = 0; i < studentCount; i++) {
       family.students.add(studentInfo("Student " + i, "4"));
     }
     return family;
+  }
+
+  private Settings.DefaultScheduleColumns defaultScheduleColumns(int englishFamilies, int spanishFamilies) {
+    Settings.DefaultScheduleColumns defaultScheduleColumns = new Settings.DefaultScheduleColumns();
+    defaultScheduleColumns.englishFamilies = englishFamilies;
+    defaultScheduleColumns.spanishFamilies = spanishFamilies;
+    return defaultScheduleColumns;
   }
 
   private StudentInfo studentInfo(String name, String grade) {

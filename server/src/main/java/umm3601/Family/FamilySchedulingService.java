@@ -5,8 +5,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import io.javalin.http.BadRequestResponse;
@@ -23,6 +27,10 @@ public class FamilySchedulingService {
   private static final int EXTRA_LARGE_FAMILY_CHILDREN_THRESHOLD = 6;
   private static final int SCHEDULE_MERIDIEM_SUFFIX_LENGTH = 3;
   private static final int DEFAULT_SCHEDULE_WINDOW_MINUTES = 60;
+  private static final int DEFAULT_ENGLISH_COLUMN_COUNT = 1;
+  private static final int DEFAULT_SPANISH_COLUMN_COUNT = 0;
+  private static final String ENGLISH_COLUMN_TYPE = "English";
+  private static final String SPANISH_COLUMN_TYPE = "Spanish";
   private static final DateTimeFormatter SCHEDULE_TIME_FORMATTER =
       DateTimeFormatter.ofPattern("h:mm a", Locale.US);
 
@@ -34,16 +42,37 @@ public class FamilySchedulingService {
       ArrayList<Family> families,
       Settings.TimeAvailabilityLabels currentSettings
   ) {
+    return schedulingAlgorithm(families, currentSettings, null);
+  }
+
+  public ArrayList<Family> schedulingAlgorithm(
+      ArrayList<Family> families,
+      Settings.TimeAvailabilityLabels currentSettings,
+      Settings.DefaultScheduleColumns defaultScheduleColumns
+  ) {
     families.sort(Comparator.comparingInt(f -> availability(f).countTrue()));
 
     if (currentSettings == null) {
       currentSettings = new Settings.TimeAvailabilityLabels();
     }
 
-    ScheduleWindow earlyMorning = new ScheduleWindow(subdivideTimeSlot(currentSettings.earlyMorning, "AM"));
-    ScheduleWindow lateMorning = new ScheduleWindow(subdivideTimeSlot(currentSettings.lateMorning, "AM"));
-    ScheduleWindow earlyAfternoon = new ScheduleWindow(subdivideTimeSlot(currentSettings.earlyAfternoon, "PM"));
-    ScheduleWindow lateAfternoon = new ScheduleWindow(subdivideTimeSlot(currentSettings.lateAfternoon, "PM"));
+    ScheduleColumnCounts columnCounts = scheduleColumnCounts(defaultScheduleColumns);
+    ScheduleOccupancy scheduleOccupancy = new ScheduleOccupancy(
+        columnCounts.englishColumnCount,
+        columnCounts.spanishColumnCount);
+
+    ScheduleWindow earlyMorning = new ScheduleWindow(
+        subdivideTimeSlot(currentSettings.earlyMorning, "AM"),
+        scheduleOccupancy);
+    ScheduleWindow lateMorning = new ScheduleWindow(
+        subdivideTimeSlot(currentSettings.lateMorning, "AM"),
+        scheduleOccupancy);
+    ScheduleWindow earlyAfternoon = new ScheduleWindow(
+        subdivideTimeSlot(currentSettings.earlyAfternoon, "PM"),
+        scheduleOccupancy);
+    ScheduleWindow lateAfternoon = new ScheduleWindow(
+        subdivideTimeSlot(currentSettings.lateAfternoon, "PM"),
+        scheduleOccupancy);
 
     for (Family family : families) {
       AvailabilityOptions familyAvailability = availability(family);
@@ -160,17 +189,45 @@ public class FamilySchedulingService {
 
     return startText + "-" + endText;
   }
+  // Return the current family language needs based on the boolean type.
+  private String familyLanguageNeeds(Family family) {
+    return family.needSpanishHelp ? SPANISH_COLUMN_TYPE : ENGLISH_COLUMN_TYPE;
+  }
 
   private boolean assignFamilyToScheduleWindow(Family family, ScheduleWindow window) {
     int neededBlocks = requiredScheduleBlocks(family);
+    String columnType = familyLanguageNeeds(family);
+    SchedulePlacement placement = window.findAvailablePlacement(columnType, neededBlocks);
 
-    if (window.nextSlotIndex + neededBlocks > window.slots.size()) {
+    if (placement == null) {
       return false;
     }
 
-    family.timeSlot = combineScheduleBlocks(window.slots, window.nextSlotIndex, neededBlocks);
-    window.nextSlotIndex += neededBlocks;
+    window.reservePlacement(columnType, placement, neededBlocks);
+
+    family.scheduleAssignment = new Family.ScheduleAssignment();
+    family.timeSlot = combineScheduleBlocks(window.slots, placement.rowIndex, neededBlocks);
+    family.scheduleAssignment.timeSlot = family.timeSlot;
+    family.scheduleAssignment.columnType = columnType;
+    family.scheduleAssignment.columnIndex = placement.columnIndex;
     return true;
+  }
+
+  private ScheduleColumnCounts scheduleColumnCounts(Settings.DefaultScheduleColumns defaultScheduleColumns) {
+    ScheduleColumnCounts columnCounts = new ScheduleColumnCounts();
+    columnCounts.englishColumnCount = DEFAULT_ENGLISH_COLUMN_COUNT;
+    columnCounts.spanishColumnCount = DEFAULT_SPANISH_COLUMN_COUNT;
+
+    if (defaultScheduleColumns != null) {
+      columnCounts.englishColumnCount = Math.max(
+          DEFAULT_ENGLISH_COLUMN_COUNT,
+          defaultScheduleColumns.englishFamilies);
+      columnCounts.spanishColumnCount = Math.max(
+          DEFAULT_SPANISH_COLUMN_COUNT,
+          defaultScheduleColumns.spanishFamilies);
+    }
+
+    return columnCounts;
   }
 
   private int requiredScheduleBlocks(Family family) {
@@ -200,13 +257,105 @@ public class FamilySchedulingService {
     return start + "-" + end;
   }
 
+  private static final class ScheduleColumnCounts {
+    private int englishColumnCount;
+    private int spanishColumnCount;
+  }
+
+  private static class SchedulePlacement {
+    private final int rowIndex;
+    private final int columnIndex;
+
+    SchedulePlacement(int rowIndex, int columnIndex) {
+      this.rowIndex = rowIndex;
+      this.columnIndex = columnIndex;
+    }
+  }
+
   private static class ScheduleWindow {
     private final List<String> slots;
-    private int nextSlotIndex;
+    private final ScheduleOccupancy scheduleOccupancy;
 
-    ScheduleWindow(List<String> slots) {
+    ScheduleWindow(List<String> slots, ScheduleOccupancy scheduleOccupancy) {
       this.slots = slots;
-      this.nextSlotIndex = 0;
+      this.scheduleOccupancy = scheduleOccupancy;
+    }
+
+    private SchedulePlacement findAvailablePlacement(String columnType, int neededBlocks) {
+      return scheduleOccupancy.findAvailablePlacement(slots, columnType, neededBlocks);
+    }
+
+    private void reservePlacement(String columnType, SchedulePlacement placement, int neededBlocks) {
+      scheduleOccupancy.reservePlacement(slots, columnType, placement, neededBlocks);
+    }
+  }
+
+  private static class ScheduleOccupancy {
+    private final int englishColumnCount;
+    private final int spanishColumnCount;
+    private final Map<String, Set<Integer>> englishOccupiedColumns;
+    private final Map<String, Set<Integer>> spanishOccupiedColumns;
+
+    ScheduleOccupancy(int englishColumnCount, int spanishColumnCount) {
+      this.englishColumnCount = englishColumnCount;
+      this.spanishColumnCount = spanishColumnCount;
+      this.englishOccupiedColumns = new HashMap<>();
+      this.spanishOccupiedColumns = new HashMap<>();
+    }
+
+    private SchedulePlacement findAvailablePlacement(List<String> slots, String columnType, int neededBlocks) {
+      int columnCount = columnCount(columnType);
+
+      for (int rowIndex = 0; rowIndex + neededBlocks <= slots.size(); rowIndex++) {
+        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+          if (isColumnOpenForBlocks(slots, columnType, rowIndex, columnIndex, neededBlocks)) {
+            return new SchedulePlacement(rowIndex, columnIndex);
+          }
+        }
+      }
+
+      return null;
+    }
+
+    private void reservePlacement(
+        List<String> slots,
+        String columnType,
+        SchedulePlacement placement,
+        int neededBlocks
+    ) {
+      Map<String, Set<Integer>> occupiedColumns = occupiedColumns(columnType);
+
+      for (int rowIndex = placement.rowIndex; rowIndex < placement.rowIndex + neededBlocks; rowIndex++) {
+        occupiedColumns
+            .computeIfAbsent(slots.get(rowIndex), ignored -> new HashSet<>())
+            .add(placement.columnIndex);
+      }
+    }
+
+    private boolean isColumnOpenForBlocks(
+        List<String> slots,
+        String columnType,
+        int startRowIndex,
+        int columnIndex,
+        int neededBlocks
+    ) {
+      Map<String, Set<Integer>> occupiedColumns = occupiedColumns(columnType);
+
+      for (int rowIndex = startRowIndex; rowIndex < startRowIndex + neededBlocks; rowIndex++) {
+        if (occupiedColumns.getOrDefault(slots.get(rowIndex), Set.of()).contains(columnIndex)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    private int columnCount(String columnType) {
+      return SPANISH_COLUMN_TYPE.equals(columnType) ? spanishColumnCount : englishColumnCount;
+    }
+
+    private Map<String, Set<Integer>> occupiedColumns(String columnType) {
+      return SPANISH_COLUMN_TYPE.equals(columnType) ? spanishOccupiedColumns : englishOccupiedColumns;
     }
   }
 }

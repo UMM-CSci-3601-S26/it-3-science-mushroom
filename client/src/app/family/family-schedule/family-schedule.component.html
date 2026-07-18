@@ -33,9 +33,9 @@
       <div class="schedule-grid">
         <div class="schedule-header-time">Time</div>
         <div class="schedule-header">
-        @for (column of scheduledColumns(); track column.id) {
+          @for (column of scheduledColumns(); track column.id) {
             <div class="schedule-column">
-              <span> {{ column.label }} - {{ column.type }}</span>
+              <span>{{ column.label }} - {{ column.type }}</span>
             </div>
           }
         </div>
@@ -43,8 +43,24 @@
           <div class="schedule-row-time">{{ row }}</div>
           <div class="schedule-row-cells">
             @for (column of scheduledColumns(); track column.id) {
-              <div class="schedule-cell" [attr.aria-label]="row + ' ' + column.label"></div>
+              <div
+                class="schedule-cell"
+                [class.schedule-cell-occupied]="familiesForCell(row, column).length > 0"
+                [class.schedule-cell-extension]="cellHasExtension(row, column)"
+                [attr.aria-label]="row + ' ' + column.label">
+                @for (family of familiesForCell(row, column); track family._id ?? family.guardianName) {
+                  <div
+                    class="schedule-cell-family"
+                    [class.schedule-cell-family-extension]="isFamilyExtensionRow(family, row)">
+                    <strong>{{ family.guardianName }}</strong>
+                    <span>{{ family.students?.length ?? 0 }} students</span>
+                  </div>
+                }
+              </div>
             }
           </div>
         }
       </div>
+    </mat-card-content>
+  </mat-card>
+</section>

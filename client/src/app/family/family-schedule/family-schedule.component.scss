@@ -88,9 +88,45 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 2.5rem;
+  padding: var(--app-space-xs);
   border: 1px dashed var(--app-border);
   border-radius: var(--app-radius-sm);
   background: var(--app-surface);
+}
+
+.schedule-cell-occupied {
+  border-style: solid;
+  background: var(--app-surface-muted);
+}
+
+.schedule-cell-extension {
+  border-color: var(--app-primary);
+  background: color-mix(in srgb, var(--app-primary) 12%, var(--app-surface));
+}
+
+.schedule-cell-family {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+  padding: var(--app-space-xs);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface);
+}
+
+.schedule-cell-family-extension {
+  border-left: 4px solid var(--app-primary);
+  background: color-mix(in srgb, var(--app-primary) 18%, var(--app-surface));
+}
+
+.schedule-cell-family strong,
+.schedule-cell-family span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.schedule-cell-family span {
+  color: var(--app-text-muted);
+  font-size: 0.875rem;
 }
 
 .schedule-actions {

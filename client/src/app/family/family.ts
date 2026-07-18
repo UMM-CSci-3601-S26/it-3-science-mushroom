@@ -51,6 +51,14 @@ export interface FamilyChecklist {
   sections: ChecklistSection[];
 }
 
+export type ScheduleColumnType = 'English' | 'Spanish';
+
+export interface ScheduleAssignment {
+  timeSlot: string;
+  columnType: ScheduleColumnType;
+  columnIndex: number;
+}
+
 // main family interface, which includes general family information and an array of students in the family
 export interface Family {
   _id?: string;
@@ -62,6 +70,7 @@ export interface Family {
   accommodations: string;
   needSpanishHelp: boolean;
   timeSlot: string;
+  scheduleAssignment?: ScheduleAssignment;
   timeAvailability?: AvailabilityOptions;
   helped?: boolean;
   status?: string;

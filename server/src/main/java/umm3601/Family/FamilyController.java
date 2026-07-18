@@ -284,7 +284,12 @@ public class FamilyController {
         .into(new ArrayList<>()); //loading families
 
     Settings.TimeAvailabilityLabels timeAvailability = settings == null ? null : settings.timeAvailability;
-    familySchedulingService.schedulingAlgorithm(families, timeAvailability); // scheduling families
+    Settings.DefaultScheduleColumns defaultScheduleColumns =
+        settings == null ? null : settings.defaultScheduleColumns;
+    familySchedulingService.schedulingAlgorithm(
+        families,
+        timeAvailability,
+        defaultScheduleColumns); // scheduling families
 
     List<WriteModel<Family>> updates = new ArrayList<>();
 
@@ -292,7 +297,9 @@ public class FamilyController {
         updates.add(
             new UpdateOneModel<>(
                 Filters.eq("_id", new ObjectId(fam._id)),
-                Updates.set("timeSlot", fam.timeSlot)
+                Updates.combine(
+                    Updates.set("timeSlot", fam.timeSlot),
+                    Updates.set("scheduleAssignment", scheduleAssignmentDocument(fam.scheduleAssignment)))
             )
         );
     }
@@ -303,10 +310,25 @@ public class FamilyController {
     ctx.status(HttpStatus.OK);
   }
 
+  private Document scheduleAssignmentDocument(Family.ScheduleAssignment scheduleAssignment) {
+    if (scheduleAssignment == null) {
+      return null;
+    }
+
+    return new Document()
+        .append("timeSlot", scheduleAssignment.timeSlot)
+        .append("columnType", scheduleAssignment.columnType)
+        .append("columnIndex", scheduleAssignment.columnIndex);
+  }
+
   @Route(method = HttpMethod.POST, path = API_CLEAR_SCHEDULED_TIMES)
   @RequirePermission("schedule_families")
   public void clearScheduledTimes(Context ctx) {
-    familyCollection.updateMany(new Document(), Updates.set("timeSlot", ""));
+    familyCollection.updateMany(
+        new Document(),
+        Updates.combine(
+            Updates.set("timeSlot", ""),
+            unset("scheduleAssignment")));
 
     ArrayList<Family> families = familyCollection
         .find()
