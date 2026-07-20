@@ -144,6 +144,7 @@ describe('Edit family page', () => {
         email: 'jane@email.com',
         address: '467 8th Street NE',
         accommodations: 'None',
+        needSpanishHelp: false,
         timeSlot: 'TBD',
         timeAvailability: {
           earlyMorning: false,
@@ -180,6 +181,7 @@ describe('Edit family page', () => {
         email: '',
         address: '467 8th Street NE',
         accommodations: '',
+        needSpanishHelp: false,
         timeSlot: '',
         timeAvailability: {
           earlyMorning: null,

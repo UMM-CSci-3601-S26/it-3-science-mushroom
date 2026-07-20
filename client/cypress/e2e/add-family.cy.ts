@@ -146,6 +146,7 @@ describe('Add family page', () => {
         guardianName: 'Test Family',
         address: '123 Street',
         accommodations: 'None',
+        needSpanishHelp: false,
         timeSlot: 'TBD',
         timeAvailability: {
           earlyMorning: false,

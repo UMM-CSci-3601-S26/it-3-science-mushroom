@@ -38,6 +38,7 @@ describe('Guardian account linking flow', () => {
       email: 'guardian.link@example.com',
       address: '123 Link Street',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: 'TBD',
       timeAvailability: {
         earlyMorning: true,
