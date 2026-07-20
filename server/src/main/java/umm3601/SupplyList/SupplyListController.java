@@ -35,6 +35,9 @@ import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
 
+// Misc Imports
+import umm3601.Inventory.Inventory;
+
 /**
  * API controller for school supply-list items.
  *
@@ -63,12 +66,20 @@ public class SupplyListController {
   static final String SORT_ORDER_KEY = "sortorder";
 
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
+  private final JacksonMongoCollection<Inventory> inventoryCollection;
 
   public SupplyListController(MongoDatabase database) {
     supplyListCollection = JacksonMongoCollection.builder().build(
       database,
       "supplylist",
       SupplyList.class,
+      UuidRepresentation.STANDARD
+    );
+
+    inventoryCollection = JacksonMongoCollection.builder().build(
+      database,
+      "inventory",
+      Inventory.class,
       UuidRepresentation.STANDARD
     );
   }
@@ -302,5 +313,66 @@ public class SupplyListController {
       throw new BadRequestResponse("The requested supply list id wasn't a legal Mongo Object ID.");
     }
   }
+
+  /**
+   * calculatePercentageFilled calculates the percentage of the supply list item that is filled
+   * @param supplyList The supply list item to calculate the percentage for
+   */
+  private void calculatePercentageFilled(SupplyList supplyList) {
+    if (supplyList == null) {
+      return;
+    }
+
+    int totalQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
+    int requestedQuantity = 0;
+
+    if (supplyList.invIDs != null && !supplyList.invIDs.isEmpty()) {
+      for (String invID : supplyList.invIDs) {
+        Inventory inventory = inventoryCollection.find(eq("internalID", invID)).first();
+        if (inventory != null) {
+          requestedQuantity += inventory.quantity;
+        }
+      }
+    } else {
+      supplyList.percentageFilled = -1; // Indicates that the supply list item has no associated inventory items
+      return;
+    }
+
+    int percentageFilled = totalQuantity > 0 ? ((int) requestedQuantity / totalQuantity) * 100 : 0;
+    supplyList.percentageFilled = percentageFilled;
+  }
+
+  /**
+   * Calculates calculatedMinQuantity for a given inventory item based on given supply list item
+   * @param supplyList The supply list item to use to calculate the calculatedMinQuantity for the inventory item.
+   * @note This is purely for determining an estimate of the absolute minimum number of units to fulfill all of the supply lists linked to that inventory item
+   * It is not a guarantee that the supply lists will be fulfilled, as there may be other supply lists that are not linked to this inventory item that also require the same item.
+   * Additionally, it has no influence on actual quantity nor is it influnced by actual quantity
+   * Finally, it references the first linked inventory item ONLY
+   */
+  private void calculateMinQuantity(SupplyList supplyList) {
+    if (supplyList == null) {
+      return;
+    }
+
+    if (supplyList.invIDs != null && !supplyList.invIDs.isEmpty()) {
+      String firstInvID = supplyList.invIDs.get(0);
+      Inventory inventory = inventoryCollection.find(eq("internalID", firstInvID)).first();
+      if (inventory != null) {
+        int totalQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
+        int requestedQuantity = inventory.quantity;
+        int calculatedMinQuantity = totalQuantity - requestedQuantity;
+        inventory.calculatedMinQuantity = calculatedMinQuantity > 0 ? calculatedMinQuantity : 0;
+
+        int requestedQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
+        int calculatedMinQuantity = inventory.calculatedMinQuantity + requestedQuantity;
+        inventory.calculatedMinQuantity = calculatedMinQuantity > 0 ? calculatedMinQuantity : 0;
+      } else {
+        inventory.calculatedMinQuantity = -1; // Indicates no linked supply list items, so no minimum quantity can be calculated
+      }
+    }
+
+  }
+
 
 }
