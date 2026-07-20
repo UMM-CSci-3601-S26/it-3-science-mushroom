@@ -39,6 +39,7 @@ public class SupplyList {
   public String notes;
   public String supplyID; // ID of the supply item in the supply collection
   public String[] invIDs; // Array of inventory IDs associated with this supply list item
+  public Integer percentageFilled; // Percentage of the supply list item that has been filled
 
   public static class AttributeOptions {
     public String exactly;
