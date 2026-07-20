@@ -23,6 +23,7 @@ const updated = supplyList.map((entry) => ({
   notes: entry.notes,
   supplyID: entry.supplyID,
   invIDs: entry.invIDs,
+  percentageFilled: entry.percentageFilled,
 }));
 
 fs.writeFileSync(filePath, JSON.stringify(updated, null, 2) + '\n');
