@@ -17,6 +17,7 @@ type SupplyListFilters = {
   quantity?: number;
   notes?: string;
   supplyID?: string;
+  percentageFilled?: number;
 };
 
 @Injectable({

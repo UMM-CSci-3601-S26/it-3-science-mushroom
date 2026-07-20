@@ -24,7 +24,8 @@ describe('SupplyListService', () => {
       quantity: 0,
       notes: "N/A",
       supplyID: "",
-      invIDs: []
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '2',
@@ -42,7 +43,8 @@ describe('SupplyListService', () => {
       quantity: 0,
       notes: "N/A",
       supplyID: "",
-      invIDs: []
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '3',
@@ -60,7 +62,8 @@ describe('SupplyListService', () => {
       quantity: 0,
       notes: "N/A",
       supplyID: "",
-      invIDs: []
+      invIDs: [],
+      percentageFilled: 0
     }
   ];
 

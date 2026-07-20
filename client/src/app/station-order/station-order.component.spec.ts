@@ -89,7 +89,8 @@ describe('StationOrderComponent', () => {
           "quantity": 12,
           "notes": "N/A",
           "supplyID": "N/A",
-          "invIDs": []
+          "invIDs": [],
+          "percentageFilled": 0
         },
         {
           "_id": '2',
@@ -107,7 +108,8 @@ describe('StationOrderComponent', () => {
           "quantity": 2,
           "notes": "N/A",
           "supplyID": "N/A",
-          "invIDs": []
+          "invIDs": [],
+          "percentageFilled": 0
         },
         {
           "_id": '1',
@@ -125,7 +127,8 @@ describe('StationOrderComponent', () => {
           "quantity": 1,
           "notes": "N/A",
           "supplyID": "N/A",
-          "invIDs": []
+          "invIDs": [],
+          "percentageFilled": 0
         },
       ];
 

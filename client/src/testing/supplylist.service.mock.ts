@@ -26,7 +26,8 @@ export class MockSupplyListService implements Pick<SupplyListService, 'getSupply
       quantity: 0,
       notes: "N/A",
       supplyID: "N/A",
-      invIDs: []
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '2',
@@ -44,7 +45,8 @@ export class MockSupplyListService implements Pick<SupplyListService, 'getSupply
       quantity: 0,
       notes: "N/A",
       supplyID: "N/A",
-      invIDs: []
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '3',
@@ -62,7 +64,8 @@ export class MockSupplyListService implements Pick<SupplyListService, 'getSupply
       quantity: 0,
       notes: "N/A",
       supplyID: "N/A",
-      invIDs: []
+      invIDs: [],
+      percentageFilled: 0
     }
   ];
 

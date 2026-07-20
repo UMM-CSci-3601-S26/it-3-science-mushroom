@@ -246,7 +246,8 @@ describe('SupplyList Table', () => {
         quantity: 0,
         notes: '',
         supplyID: '',
-        invIDs: []
+        invIDs: [],
+        percentageFilled: 0
       }
     ]));
 
@@ -269,7 +270,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Eraser'], brand: { exactly: '', anyOf: [] },
         color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
-        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: [], percentageFilled: 0
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -296,7 +297,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Ruler'], brand: { exactly: '', anyOf: [] },
         color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
-        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: [], percentageFilled: 0
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -329,7 +330,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Tape'], brand: { exactly: '', anyOf: [] },
         color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
-        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: [], percentageFilled: 0
       };
       supplylistTable.dataSource.data = [itemWithId];
 
@@ -354,7 +355,7 @@ describe('SupplyList Table', () => {
         teacher: '',
         school: 'MHS', grade: 'PreK', item: ['Marker'], brand: { exactly: '', anyOf: [] },
         color: { exactly: '', anyOf: [] }, size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
-        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: []
+        material: { exactly: '', anyOf: [] }, packageSize: 1, quantity: 1, notes: '', supplyID: '', invIDs: [], percentageFilled: 0
       };
       supplylistTable.startEdit(item);
       expect(supplylistTable.editingItemId).toBe('edit-id');
@@ -377,7 +378,8 @@ describe('SupplyList Table', () => {
         quantity: 2,
         notes: '',
         supplyID: '',
-        invIDs: []
+        invIDs: [],
+        percentageFilled: 0
       };
       supplylistTable.startEdit(item);
       // Mutating the original should not affect the backup
@@ -407,7 +409,8 @@ describe('SupplyList Table', () => {
         quantity: 1,
         notes: '',
         supplyID: '',
-        invIDs: []
+        invIDs: [],
+        percentageFilled: 0
       };
       supplylistTable.dataSource.data = [item];
       supplylistTable.startEdit(item);
@@ -432,7 +435,8 @@ describe('SupplyList Table', () => {
         quantity: 3,
         notes: '',
         supplyID: '',
-        invIDs: []
+        invIDs: [],
+        percentageFilled: 0
       };
       supplylistTable.dataSource.data = [{ ...item }];
       supplylistTable.startEdit(supplylistTable.dataSource.data[0]);
@@ -460,7 +464,8 @@ describe('SupplyList Table', () => {
         quantity: 2,
         notes: '',
         supplyID: '',
-        invIDs: []
+        invIDs: [],
+        percentageFilled: 0
       };
       const saveSpy = spyOn(supplylistService, 'editSupplyList').and.returnValue(of(undefined));
 
@@ -489,7 +494,8 @@ describe('SupplyList Table', () => {
         quantity: 1,
         notes: '',
         supplyID: '',
-        invIDs: []
+        invIDs: [],
+        percentageFilled: 0
       };
       const saveSpy = spyOn(supplylistService, 'editSupplyList').and.returnValue(of(undefined));
 
@@ -516,7 +522,8 @@ describe('SupplyList Table', () => {
         quantity: 1,
         notes: '',
         supplyID: '',
-        invIDs: []
+        invIDs: [],
+        percentageFilled: 0
       };
       spyOn(supplylistService, 'editSupplyList').and.returnValue(
         new Observable(o => o.error({ status: 422, message: 'Unprocessable' }))
@@ -597,7 +604,7 @@ describe('SupplyListComponent#toLabel()', () => {
     _id: '', academicYear: '', teacher: '', school: 'MHS', grade: 'K', item: ['crayon'],
     brand: { exactly: '', anyOf: [] }, color: { exactly: '', anyOf: [] },
     size: { exactly: '', anyOf: [] }, type: { exactly: '', anyOf: [] },
-    material: { exactly: '', anyOf: [] }, packageSize: 0, quantity: 1, notes: '', supplyID: '', invIDs: []
+    material: { exactly: '', anyOf: [] }, packageSize: 0, quantity: 1, notes: '', supplyID: '', invIDs: [], percentageFilled: 0
   };
 
   beforeEach(() => {
