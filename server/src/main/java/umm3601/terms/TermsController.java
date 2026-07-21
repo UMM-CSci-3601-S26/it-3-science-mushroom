@@ -153,7 +153,8 @@ public class TermsController {
       // batteries -> battery
       return word.substring(0, word.length() - 3) + "y";
     } else if (lower.endsWith("es") && lower.length() > 2) {
-      if (word.contains("Headphones") || word.contains("Shoes") || word.contains("headphones") || word.contains("shoes")) {
+      if (word.contains("Headphones") || word.contains("Shoes") ||
+      word.contains("headphones") || word.contains("shoes")) {
         return word;
       } else {
         // boxes -> box, matches -> match
