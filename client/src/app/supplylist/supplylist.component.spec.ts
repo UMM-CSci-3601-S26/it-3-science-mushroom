@@ -631,7 +631,7 @@ describe('SupplyListComponent#toLabel()', () => {
   }));
 
   it('should include brand exactly values in the label', () => {
-    const label = supplylistTable.toLabel({ ...base, brand: { exactly: ['Crayola'], anyOf: [] } } as unknown as SupplyList);
+    const label = supplylistTable.toLabel({ ...base, brand: { exactly: 'Crayola', anyOf: [] } } as SupplyList);
     expect(label).toContain('Crayola');
   });
 
