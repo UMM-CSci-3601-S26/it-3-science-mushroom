@@ -273,20 +273,6 @@ public class SupplyListController {
    * @return The generated ID
    */
   private String generateNextID() {
-  // SupplyList last = supplyListCollection.find(new Document("supplyID", new Document("$exists", true)))
-  //   .sort(Sorts.descending("supplyID"))
-  //   .first();
-  //   String prefix = "Supply-";
-  //   int next = 1;
-  //   if (last != null && last.supplyID != null && last.supplyID.startsWith(prefix)) {
-  //     try {
-  //       next = Integer.parseInt(last.supplyID.substring(prefix.length())) + 1;
-  //     } catch (NumberFormatException e) {
-  //       // return 1 if not right format
-  //     }
-  //   }
-  //   return String.format("Supply-%05d", next);
-
     return formatID(getNextSequence());
   }
 
