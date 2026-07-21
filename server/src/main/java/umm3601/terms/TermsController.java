@@ -55,31 +55,31 @@ public class TermsController {
     );
 
     terms.brand = merge(
-      distinctStrings(supplyListCollection, "brand.allOf"),
+      distinctStrings(supplyListCollection, "brand.exactly"),
       distinctStrings(supplyListCollection, "brand.anyOf"),
       distinctStrings(inventoryCollection, "brand")
     );
 
     terms.color = merge(
-      distinctStrings(supplyListCollection, "color.allOf"),
+      distinctStrings(supplyListCollection, "color.exactly"),
       distinctStrings(supplyListCollection, "color.anyOf"),
       distinctStrings(inventoryCollection, "color")
     );
 
     terms.size = merge(
-      distinctStrings(supplyListCollection, "size.allOf"),
+      distinctStrings(supplyListCollection, "size.exactly"),
       distinctStrings(supplyListCollection, "size.anyOf"),
       distinctStrings(inventoryCollection, "size")
     );
 
     terms.type = merge(
-      distinctStrings(supplyListCollection, "type.allOf"),
+      distinctStrings(supplyListCollection, "type.exactly"),
       distinctStrings(supplyListCollection, "type.anyOf"),
       distinctStrings(inventoryCollection, "type")
     );
 
     terms.material = merge(
-      distinctStrings(supplyListCollection, "material.allOf"),
+      distinctStrings(supplyListCollection, "material.exactly"),
       distinctStrings(supplyListCollection, "material.anyOf"),
       distinctStrings(inventoryCollection, "material")
     );
@@ -153,7 +153,7 @@ public class TermsController {
       // batteries -> battery
       return word.substring(0, word.length() - 3) + "y";
     } else if (lower.endsWith("es") && lower.length() > 2) {
-      if (word.contains("Headphones") || word.contains("Shoes")) {
+      if (word.contains("Headphones") || word.contains("Shoes") || word.contains("headphones") || word.contains("shoes")) {
         return word;
       } else {
         // boxes -> box, matches -> match

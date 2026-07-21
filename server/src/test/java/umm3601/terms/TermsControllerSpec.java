@@ -80,15 +80,15 @@ class TermsControllerSpec {
     DistinctIterable<String> invMat = makeIterable(Arrays.asList("Metal"));
 
     when(supplyListCollection.distinct(eq("item"), eq(String.class))).thenReturn(slItem);
-    when(supplyListCollection.distinct(eq("brand.allOf"), eq(String.class))).thenReturn(slBrandA);
+    when(supplyListCollection.distinct(eq("brand.exactly"), eq(String.class))).thenReturn(slBrandA);
     when(supplyListCollection.distinct(eq("brand.anyOf"), eq(String.class))).thenReturn(slBrandO);
-    when(supplyListCollection.distinct(eq("color.allOf"), eq(String.class))).thenReturn(slColorA);
+    when(supplyListCollection.distinct(eq("color.exactly"), eq(String.class))).thenReturn(slColorA);
     when(supplyListCollection.distinct(eq("color.anyOf"), eq(String.class))).thenReturn(slColorO);
-    when(supplyListCollection.distinct(eq("size.allOf"), eq(String.class))).thenReturn(slSizeA);
+    when(supplyListCollection.distinct(eq("size.exactly"), eq(String.class))).thenReturn(slSizeA);
     when(supplyListCollection.distinct(eq("size.anyOf"), eq(String.class))).thenReturn(slSizeO);
-    when(supplyListCollection.distinct(eq("type.allOf"), eq(String.class))).thenReturn(slTypeA);
+    when(supplyListCollection.distinct(eq("type.exactly"), eq(String.class))).thenReturn(slTypeA);
     when(supplyListCollection.distinct(eq("type.anyOf"), eq(String.class))).thenReturn(slTypeO);
-    when(supplyListCollection.distinct(eq("material.allOf"), eq(String.class))).thenReturn(slMatA);
+    when(supplyListCollection.distinct(eq("material.exactly"), eq(String.class))).thenReturn(slMatA);
     when(supplyListCollection.distinct(eq("material.anyOf"), eq(String.class))).thenReturn(slMatO);
 
     when(inventoryCollection.distinct(eq("item"), eq(String.class))).thenReturn(invItem);
