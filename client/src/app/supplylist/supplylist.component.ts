@@ -236,9 +236,7 @@ export class SupplyListComponent {
   /** Builds a compact human-readable label for an item, mirroring the server-side toString(). */
   toLabel(s: SupplyList): string {
     const attrStr = (a: AttributeOptions | undefined) => {
-      const exactly = a?.exactly;
-      const exactlyArr = Array.isArray(exactly) ? exactly : (exactly ? [exactly] : []);
-      return [...exactlyArr, ...(a?.anyOf ?? [])].filter(v => v && v !== 'N/A').join('/');
+      return [a?.exactly, ...(a?.anyOf ?? [])].filter(v => v && v !== 'N/A').join('/');
     };
     const parts: string[] = [];
     const qty = s.quantity > 0 ? s.quantity : null;

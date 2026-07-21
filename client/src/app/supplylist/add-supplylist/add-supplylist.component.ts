@@ -394,7 +394,7 @@ export class AddSupplyListComponent implements OnInit {
       if (val.includes('|')) {
         return { exactly: '', anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
       }
-      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean).join(', '), anyOf: [] };
+      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean)[0] ?? '', anyOf: [] };
     };
 
     // Color keeps exactly/anyOf as string arrays.
@@ -405,7 +405,7 @@ export class AddSupplyListComponent implements OnInit {
       if (val.includes('|')) {
         return { exactly: "", anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
       }
-      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean).join(', '), anyOf: [] };
+      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean)[0] ?? '', anyOf: [] };
     };
 
     const formData: Partial<import('../supplylist').SupplyList> = {

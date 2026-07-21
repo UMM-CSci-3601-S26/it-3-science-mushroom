@@ -857,6 +857,15 @@ describe('AddSupplyListComponent#submitForm() — pipe separator (anyOf) path', 
     }));
   });
 
+  it('should keep only the first token for comma-separated exact input', () => {
+    const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
+    component.addSupplyListForm.patchValue({ brand: 'red, blue' });
+    component.submitForm();
+    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      brand: jasmine.objectContaining({ exactly: 'red', anyOf: [] })
+    }));
+  });
+
   it('should produce empty exactly/anyOf for empty field (toAttr empty-val branch)', () => {
     const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
     // brand, type etc. are all empty — toAttr('') should return { exactly:[], anyOf:[] }
