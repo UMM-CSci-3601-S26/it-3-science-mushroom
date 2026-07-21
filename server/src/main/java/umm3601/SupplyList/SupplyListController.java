@@ -260,10 +260,9 @@ public class SupplyListController {
    */
   private int getNextSequence() {
     SupplyList maxIdItem = supplyListCollection
-    .find(Filters.and(
-      Filters.exists("supplyID", true), Filters.ne("supplyID", null)))
-      .sort(Sorts.descending("supplyID")).first();
-
+      .find(Filters.regex(ID_KEY, "^Supply-\\\\d{5}$"))
+      .sort(Sorts.descending(ID_KEY))
+      .first();
     int idNum = extractNumber(maxIdItem != null ? maxIdItem.supplyID : null);
     return idNum + 1;
   }
