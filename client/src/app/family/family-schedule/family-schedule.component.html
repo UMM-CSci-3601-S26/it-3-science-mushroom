@@ -39,29 +39,43 @@
             </div>
           }
         </div>
-        @for (row of scheduleTimeRows(); track row) {
-          <div class="schedule-row-time">{{ row }}</div>
-          <div class="schedule-row-cells">
-            @for (column of scheduledColumns(); track column.id) {
+        <div class="schedule-body">
+          <div class="schedule-time-rows" [style.grid-template-rows]="scheduleBoardRows()">
+            @for (row of scheduleTimeRows(); track row) {
+              <div class="schedule-row-time">{{ row }}</div>
+            }
+          </div>
+          <div
+            class="schedule-board"
+            [style.grid-template-columns]="scheduleBoardColumns()"
+            [style.grid-template-rows]="scheduleBoardRows()">
+            @for (row of scheduleTimeRows(); track row; let rowIndex = $index) {
+              @for (column of scheduledColumns(); track column.id; let columnIndex = $index) {
+                <div
+                  class="schedule-cell"
+                  [style.grid-row]="rowIndex + 1"
+                  [style.grid-column]="columnIndex + 1"
+                  [attr.aria-label]="row + ' ' + column.label">
+                </div>
+              }
+            }
+            @for (block of scheduleDisplayBlocks(); track block.id) {
               <div
-                class="schedule-cell"
-                [class.schedule-cell-occupied]="familiesForCell(row, column).length > 0"
-                [class.schedule-cell-extension]="cellHasExtension(row, column)"
-                [class.schedule-cell-support]="cellHasSupportColumn(row, column)"
-                [attr.aria-label]="row + ' ' + column.label">
-                @for (family of familiesForCell(row, column); track family._id ?? family.guardianName) {
-                  <div
-                    class="schedule-cell-family"
-                    [class.schedule-cell-family-extension]="isFamilyExtensionRow(family, row, column)"
-                    [class.schedule-cell-family-support]="isFamilySupportCell(family, row, column)">
-                    <strong>{{ family.guardianName }}</strong>
-                    <span>{{ family.students?.length ?? 0 }} students</span>
-                  </div>
+                class="schedule-family-block"
+                [class.schedule-family-block-extended]="block.isExtended"
+                [class.schedule-family-block-continuation]="block.isContinuation"
+                [style.grid-row]="block.rowStart + ' / span ' + block.rowSpan"
+                [style.grid-column]="block.columnStart + ' / span ' + block.columnSpan"
+                [attr.aria-label]="block.family.guardianName + ' scheduled for ' + block.scheduleWindow"
+                [attr.aria-hidden]="block.showFamilyDetails ? null : 'true'">
+                @if (block.showFamilyDetails) {
+                  <strong>{{ block.family.guardianName }}</strong>
+                  <span>{{ block.family.students?.length ?? 0 }} students</span>
                 }
               </div>
             }
           </div>
-        }
+        </div>
       </div>
     </mat-card-content>
   </mat-card>

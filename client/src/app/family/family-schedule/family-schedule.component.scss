@@ -10,6 +10,8 @@
 }
 
 .schedule-grid {
+  --schedule-row-height: 4.5rem;
+
   display: grid;
   grid-template-columns:
     minmax(
@@ -36,9 +38,7 @@
 }
 
 .schedule-header-time,
-.schedule-header,
-.schedule-row-time,
-.schedule-row-cells {
+.schedule-header {
   border-bottom: 1px solid var(--app-border);
 }
 
@@ -65,76 +65,91 @@
   display: block;
 }
 
+.schedule-body {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns:
+    minmax(
+      var(--app-data-grid-label-column-min-width, 8rem),
+      var(--app-data-grid-label-column-width, 10rem)
+    )
+    minmax(0, 1fr);
+}
+
+.schedule-time-rows {
+  display: grid;
+  row-gap: 0;
+  padding: var(--app-space-sm) 0;
+  border-right: 1px solid var(--app-border);
+}
+
 .schedule-row-time {
   display: flex;
   align-items: center;
-  min-height: 3.5rem;
+  min-height: 0;
   padding: var(--app-space-sm);
-  border-right: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--app-border);
   color: var(--app-primary);
   font-weight: 700;
 }
 
-.schedule-row-cells {
+.schedule-row-time:last-child {
+  border-bottom: 0;
+}
+
+.schedule-board {
   display: grid;
-  grid-auto-columns: var(--app-data-grid-cell-width, 10rem);
-  grid-auto-flow: column;
-  gap: var(--app-space-sm);
+  column-gap: var(--app-space-sm);
+  row-gap: 0;
   min-width: max-content;
   padding: var(--app-space-sm);
 }
 
 .schedule-cell {
+  align-self: center;
   box-sizing: border-box;
+  height: calc(100% - var(--app-space-md));
   width: 100%;
-  min-height: 2.5rem;
-  padding: var(--app-space-xs);
+  min-height: 0;
   border: 1px dashed var(--app-border);
   border-radius: var(--app-radius-sm);
   background: var(--app-surface);
 }
 
-.schedule-cell-occupied {
-  border-style: solid;
-  background: var(--app-surface-muted);
+.schedule-family-block {
+  align-content: center;
+  align-self: center;
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.125rem;
+  height: calc(100% - var(--app-space-md));
+  min-width: 0;
+  margin: 0 var(--app-space-xs);
+  padding: var(--app-space-xs);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface);
+  z-index: 1;
 }
 
-.schedule-cell-extension {
+.schedule-family-block-extended {
   border-color: var(--app-primary);
+  box-shadow: inset 4px 0 0 var(--app-primary);
   background: color-mix(in srgb, var(--app-primary) 12%, var(--app-surface));
 }
 
-.schedule-cell-support {
-  border-color: var(--app-warning);
-  background: color-mix(in srgb, var(--app-warning) 14%, var(--app-surface));
+.schedule-family-block-continuation {
+  border-style: dashed;
+  box-shadow: none;
 }
 
-.schedule-cell-family {
-  display: grid;
-  gap: 0.125rem;
-  min-width: 0;
-  padding: var(--app-space-xs);
-  border-radius: var(--app-radius-sm);
-  background: var(--app-surface);
-}
-
-.schedule-cell-family-extension {
-  border-left: 4px solid var(--app-primary);
-  background: color-mix(in srgb, var(--app-primary) 18%, var(--app-surface));
-}
-
-.schedule-cell-family-support {
-  border-left: 4px solid var(--app-warning);
-  background: color-mix(in srgb, var(--app-warning) 20%, var(--app-surface));
-}
-
-.schedule-cell-family strong,
-.schedule-cell-family span {
+.schedule-family-block strong,
+.schedule-family-block span {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.schedule-cell-family span {
+.schedule-family-block span {
   color: var(--app-text-muted);
   font-size: 0.875rem;
 }
@@ -210,33 +225,39 @@
   }
 
   .schedule-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      minmax(
+        var(--app-data-grid-label-column-min-width, 8rem),
+        var(--app-data-grid-label-column-width, 10rem)
+      )
+      minmax(0, 1fr);
   }
 
   .schedule-header-time {
-    border-right: 0;
     border-bottom: 1px solid var(--app-border);
   }
 
   .schedule-header {
-    align-items: stretch;
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    min-width: 0;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--app-data-grid-cell-width, 10rem);
+    min-width: max-content;
   }
 
   .schedule-column {
     width: 100%;
   }
 
-  .schedule-row-time {
-    border-right: 0;
+  .schedule-body {
+    grid-template-columns:
+      minmax(
+        var(--app-data-grid-label-column-min-width, 8rem),
+        var(--app-data-grid-label-column-width, 10rem)
+      )
+      minmax(0, 1fr);
   }
 
-  .schedule-row-cells {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    min-width: 0;
+  .schedule-time-rows {
+    border-right: 1px solid var(--app-border);
   }
 
   .schedule-cell {

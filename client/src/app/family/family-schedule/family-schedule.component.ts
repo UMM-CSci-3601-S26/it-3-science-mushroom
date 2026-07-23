@@ -21,6 +21,24 @@ interface ScheduleColumn {
   order: number;
 }
 
+interface ScheduleGridCell {
+  rowIndex: number;
+  columnIndex: number;
+}
+
+interface ScheduleDisplayBlock {
+  id: string;
+  family: Family;
+  rowStart: number;
+  rowSpan: number;
+  columnStart: number;
+  columnSpan: number;
+  scheduleWindow: string;
+  isExtended: boolean;
+  isContinuation: boolean;
+  showFamilyDetails: boolean;
+}
+
 const DEFAULT_TIME_AVAILABILITY_LABELS: TimeAvailabilityLabels = {
   earlyMorning: '8:00-9:00 AM',
   lateMorning: '9:00-10:00 AM',
@@ -91,6 +109,30 @@ export class FamilyScheduleComponent {
     );
   });
 
+  scheduleBoardColumns = computed(() =>
+    `repeat(${Math.max(this.scheduledColumns().length, 1)}, var(--app-data-grid-cell-width, 10rem))`
+  );
+
+  scheduleBoardRows = computed(() =>
+    `repeat(${Math.max(this.scheduleTimeRows().length, 1)}, var(--schedule-row-height))`
+  );
+
+  scheduleDisplayBlocks = computed(() => {
+    const rows = this.scheduleTimeRows();
+    const columns = this.scheduledColumns();
+    const rowStartIndexes = this.scheduleRowStartIndexes(rows);
+
+    return this.scheduledFamilies()
+      .flatMap((family, familyIndex) =>
+        this.displayBlocksForFamily(family, familyIndex, rows, rowStartIndexes, columns)
+      )
+      .sort((left, right) =>
+        left.rowStart - right.rowStart
+          || left.columnStart - right.columnStart
+          || this.compareGuardianNames(left.family.guardianName, right.family.guardianName)
+      );
+  });
+
   needSpanishHelpFamilies = computed(() =>
     this.families().filter(family => this.needsSpanishHelp(family))
   );
@@ -114,45 +156,6 @@ export class FamilyScheduleComponent {
 
   checkColumnType(column: ScheduleColumn): ScheduleColumnType {
     return column.type;
-  }
-
-  familiesForCell(row: string, column: ScheduleColumn): Family[] {
-    return this.families().filter(family =>
-      this.assignmentForCell(family, row, column) !== undefined
-    );
-  }
-
-  cellHasExtension(row: string, column: ScheduleColumn): boolean {
-    return this.familiesForCell(row, column).some(family => this.isFamilyExtensionRow(family, row, column));
-  }
-
-  cellHasSupportColumn(row: string, column: ScheduleColumn): boolean {
-    return this.familiesForCell(row, column).some(family => this.isFamilySupportCell(family, row, column));
-  }
-
-  isFamilyExtensionRow(family: Family, row: string, column: ScheduleColumn): boolean {
-    const assignment = this.assignmentForCell(family, row, column);
-    const familyRange = this.timeSlotRange(family.timeSlot);
-    const rowRange = this.timeSlotRange(row);
-
-    if (!assignment || !familyRange || !rowRange) {
-      return false;
-    }
-
-    return rowRange.start > familyRange.start;
-  }
-
-  isFamilySupportCell(family: Family, row: string, column: ScheduleColumn): boolean {
-    const assignment = this.assignmentForCell(family, row, column);
-    const primaryAssignment = this.scheduleAssignments(family)[0];
-
-    if (!assignment || !primaryAssignment) {
-      return false;
-    }
-
-    return assignment.timeSlot !== primaryAssignment.timeSlot
-      || assignment.columnType !== primaryAssignment.columnType
-      || assignment.columnIndex !== primaryAssignment.columnIndex;
   }
 
   clearScheduledTimes(): void {
@@ -292,6 +295,186 @@ export class FamilyScheduleComponent {
     return timeSlot ? timeSlot : 'To be assigned';
   }
 
+  private displayBlocksForFamily(
+    family: Family,
+    familyIndex: number,
+    rows: string[],
+    rowStartIndexes: Map<number, number>,
+    columns: ScheduleColumn[]
+  ): ScheduleDisplayBlock[] {
+    const cells = this.scheduleCellsForFamily(family, rows, rowStartIndexes, columns);
+
+    if (cells.length === 0) {
+      return [];
+    }
+
+    const baseId = this.scheduleBlockId(family, familyIndex);
+
+    if (this.cellsFormRectangle(cells)) {
+      return [this.displayBlockFromCells(family, cells, baseId, true, cells.length > 1)];
+    }
+
+    return this.displayLineSegmentBlocksForFamily(family, cells, baseId);
+  }
+
+  private scheduleCellsForFamily(
+    family: Family,
+    rows: string[],
+    rowStartIndexes: Map<number, number>,
+    columns: ScheduleColumn[]
+  ): ScheduleGridCell[] {
+    const assignments = this.scheduleAssignments(family);
+    const cells: ScheduleGridCell[] = [];
+    const seenCells = new Set<string>();
+    const hasSavedAssignments = (family.scheduleAssignments?.length ?? 0) > 0 || assignments.length > 1;
+
+    for (const assignment of assignments) {
+      const columnIndex = this.columnIndexForAssignment(assignment, columns);
+
+      if (columnIndex < 0) {
+        continue;
+      }
+
+      const rowIndexes = hasSavedAssignments
+        ? this.rowIndexesForAssignmentStart(assignment.timeSlot, rowStartIndexes)
+        : this.coveredRowIndexes(family.timeSlot || assignment.timeSlot, rows);
+
+      for (const rowIndex of rowIndexes) {
+        const cellKey = `${rowIndex}:${columnIndex}`;
+        if (seenCells.has(cellKey)) {
+          continue;
+        }
+
+        seenCells.add(cellKey);
+        cells.push({ rowIndex, columnIndex });
+      }
+    }
+
+    return cells.sort((left, right) =>
+      left.rowIndex - right.rowIndex || left.columnIndex - right.columnIndex
+    );
+  }
+
+  private displayLineSegmentBlocksForFamily(
+    family: Family,
+    cells: ScheduleGridCell[],
+    baseId: string
+  ): ScheduleDisplayBlock[] {
+    const segments: ScheduleGridCell[][] = [];
+
+    for (const cell of cells) {
+      const currentSegment = segments.at(-1);
+      const previousCell = currentSegment?.at(-1);
+
+      if (previousCell
+        && previousCell.rowIndex === cell.rowIndex
+        && previousCell.columnIndex + 1 === cell.columnIndex) {
+        currentSegment?.push(cell);
+      } else {
+        segments.push([cell]);
+      }
+    }
+
+    return segments.map((segment, segmentIndex) =>
+      this.displayBlockFromCells(
+        family,
+        segment,
+        `${baseId}-${segmentIndex}`,
+        segmentIndex === 0,
+        cells.length > 1)
+    );
+  }
+
+  private displayBlockFromCells(
+    family: Family,
+    cells: ScheduleGridCell[],
+    id: string,
+    showFamilyDetails: boolean,
+    isExtended: boolean
+  ): ScheduleDisplayBlock {
+    const rowIndexes = cells.map(cell => cell.rowIndex);
+    const columnIndexes = cells.map(cell => cell.columnIndex);
+    const minRow = Math.min(...rowIndexes);
+    const maxRow = Math.max(...rowIndexes);
+    const minColumn = Math.min(...columnIndexes);
+    const maxColumn = Math.max(...columnIndexes);
+
+    return {
+      id,
+      family,
+      rowStart: minRow + 1,
+      rowSpan: maxRow - minRow + 1,
+      columnStart: minColumn + 1,
+      columnSpan: maxColumn - minColumn + 1,
+      scheduleWindow: this.scheduleWindow(family),
+      isExtended,
+      isContinuation: !showFamilyDetails,
+      showFamilyDetails
+    };
+  }
+
+  private cellsFormRectangle(cells: ScheduleGridCell[]): boolean {
+    const rowIndexes = cells.map(cell => cell.rowIndex);
+    const columnIndexes = cells.map(cell => cell.columnIndex);
+    const rowSpan = Math.max(...rowIndexes) - Math.min(...rowIndexes) + 1;
+    const columnSpan = Math.max(...columnIndexes) - Math.min(...columnIndexes) + 1;
+
+    return rowSpan * columnSpan === cells.length;
+  }
+
+  private scheduleBlockId(family: Family, familyIndex: number): string {
+    return family._id ?? `${family.guardianName}-${family.email}-${familyIndex}`;
+  }
+
+  private scheduleRowStartIndexes(rows: string[]): Map<number, number> {
+    const indexes = new Map<number, number>();
+
+    rows.forEach((row, index) => {
+      const range = this.timeSlotRange(row);
+      if (range) {
+        indexes.set(range.start, index);
+      }
+    });
+
+    return indexes;
+  }
+
+  private columnIndexForAssignment(assignment: ScheduleAssignment, columns: ScheduleColumn[]): number {
+    return columns.findIndex(column =>
+      column.type === assignment.columnType
+        && column.columnIndex === assignment.columnIndex
+    );
+  }
+
+  private rowIndexesForAssignmentStart(
+    timeSlot: string | undefined,
+    rowStartIndexes: Map<number, number>
+  ): number[] {
+    const range = this.timeSlotRange(timeSlot);
+
+    if (!range) {
+      return [];
+    }
+
+    const rowIndex = rowStartIndexes.get(range.start);
+    return rowIndex === undefined ? [] : [rowIndex];
+  }
+
+  private coveredRowIndexes(timeSlot: string | undefined, rows: string[]): number[] {
+    const assignmentRange = this.timeSlotRange(timeSlot);
+
+    if (!assignmentRange) {
+      return [];
+    }
+
+    return rows
+      .map((row, index) => ({ range: this.timeSlotRange(row), index }))
+      .filter(row => row.range
+        && row.range.start >= assignmentRange.start
+        && row.range.start < assignmentRange.end)
+      .map(row => row.index);
+  }
+
   private loadFamilies(): void {
     this.familyService.getFamilies().pipe(
       catchError(() => {
@@ -326,60 +509,12 @@ export class FamilyScheduleComponent {
     return normalized !== '' && normalized !== 'tbd' && !normalized.includes('assigned');
   }
 
-  private assignmentForCell(
-    family: Family,
-    row: string,
-    column: ScheduleColumn
-  ): ScheduleAssignment | undefined {
-    const assignments = this.scheduleAssignments(family);
-
-    if (assignments.length > 1 || family.scheduleAssignments?.length) {
-      return assignments.find(assignment =>
-        assignment.columnType === column.type
-        && assignment.columnIndex === column.columnIndex
-        && this.scheduleAssignmentStartsInRow(assignment.timeSlot, row)
-      );
-    }
-
-    return assignments.find(assignment =>
-      assignment.columnType === column.type
-      && assignment.columnIndex === column.columnIndex
-      && this.scheduleAssignmentCoversRow(assignment.timeSlot, row)
-    );
-  }
-
   private scheduleAssignments(family: Family): ScheduleAssignment[] {
     if (family.scheduleAssignments?.length) {
       return family.scheduleAssignments;
     }
 
     return family.scheduleAssignment ? [family.scheduleAssignment] : [];
-  }
-
-  private scheduleAssignmentStartsInRow(scheduleAssignmentTimeSlot: string | undefined, row: string): boolean {
-    const assignmentRange = this.timeSlotRange(scheduleAssignmentTimeSlot);
-    const rowRange = this.timeSlotRange(row);
-
-    if (!assignmentRange || !rowRange) {
-      return false;
-    }
-
-    return assignmentRange.start === rowRange.start;
-  }
-
-  private scheduleAssignmentCoversRow(scheduleAssignmentTimeSlot: string | undefined, row: string): boolean {
-    if (!scheduleAssignmentTimeSlot) {
-      return false;
-    }
-
-    const assignmentRange = this.timeSlotRange(scheduleAssignmentTimeSlot);
-    const rowRange = this.timeSlotRange(row);
-
-    if (!assignmentRange || !rowRange) {
-      return false;
-    }
-
-    return rowRange.start >= assignmentRange.start && rowRange.start < assignmentRange.end;
   }
 
   private timeSlotRange(timeSlot: string | undefined): { start: number; end: number } | undefined {
