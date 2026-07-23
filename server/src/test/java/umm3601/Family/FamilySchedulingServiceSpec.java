@@ -274,6 +274,32 @@ class FamilySchedulingServiceSpec {
     assertEquals("8:15-8:30 AM", smallFamily.timeSlot);
   }
 
+  @Test
+  void schedulingAlgorithmKeepsExtendedFamiliesInTheSameColumnAcrossTimeSlots() {
+    ArrayList<Family> families = new ArrayList<>(List.of(
+      familyForScheduling("Early Block One", true, false, false, false, 2),
+      familyForScheduling("Early Block Two", true, false, false, false, 2),
+      familyForScheduling("Large Flexible Family", true, true, false, false, 4)));
+
+    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
+    currentSettings.earlyMorning = "8:00-9:00 AM";
+    currentSettings.lateMorning = "10:00-11:00 AM";
+
+    familySchedulingService.schedulingAlgorithm(
+        families,
+        currentSettings,
+        defaultScheduleColumns(3, 0));
+
+    Family largeFlexibleFamily = familyNamed(families, "Large Flexible Family");
+
+    assertEquals("8:00-8:30 AM", largeFlexibleFamily.timeSlot);
+    assertEquals(2, largeFlexibleFamily.scheduleAssignments.size());
+    assertEquals("8:00-8:15 AM", largeFlexibleFamily.scheduleAssignments.get(0).timeSlot);
+    assertEquals("8:15-8:30 AM", largeFlexibleFamily.scheduleAssignments.get(1).timeSlot);
+    assertEquals(3, largeFlexibleFamily.scheduleAssignments.get(0).columnIndex);
+    assertEquals(3, largeFlexibleFamily.scheduleAssignments.get(1).columnIndex);
+  }
+
   private Settings.TimeAvailabilityLabels defaultTimeAvailability() {
     Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
     currentSettings.earlyMorning = "8:00-9:00 AM";

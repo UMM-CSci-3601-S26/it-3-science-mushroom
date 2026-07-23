@@ -383,18 +383,84 @@ public class FamilySchedulingService {
       int columnCount = columnCount(columnType);
 
       for (int startRowIndex = 0; startRowIndex < slots.size(); startRowIndex++) {
+        SchedulePlacement sameRowPlacement = findSameRowPlacement(
+            slots,
+            columnType,
+            startRowIndex,
+            neededVolunteerCells,
+            columnCount);
+        if (sameRowPlacement != null) {
+          return sameRowPlacement;
+        }
+
+        SchedulePlacement sameColumnPlacement = findSameColumnPlacement(
+            slots,
+            columnType,
+            startRowIndex,
+            neededVolunteerCells,
+            columnCount);
+        if (sameColumnPlacement != null) {
+          return sameColumnPlacement;
+        }
+      }
+
+      return null;
+    }
+
+    private SchedulePlacement findSameRowPlacement(
+        List<String> slots,
+        String columnType,
+        int rowIndex,
+        int neededVolunteerCells,
+        int columnCount
+    ) {
+      for (int startColumnIndex = 1; startColumnIndex <= columnCount; startColumnIndex++) {
         List<SchedulePlacementCell> cells = new ArrayList<>();
 
-        for (int rowIndex = startRowIndex; rowIndex < slots.size(); rowIndex++) {
-          for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-            if (isColumnOpen(slots.get(rowIndex), columnType, columnIndex)) {
-              cells.add(new SchedulePlacementCell(rowIndex, columnIndex));
+        for (int columnOffset = 0; columnOffset < neededVolunteerCells; columnOffset++) {
+          int columnIndex = startColumnIndex + columnOffset;
 
-              if (cells.size() == neededVolunteerCells) {
-                return new SchedulePlacement(cells);
-              }
-            }
+          if (columnIndex > columnCount
+              || !isColumnOpen(slots.get(rowIndex), columnType, columnIndex)) {
+            cells.clear();
+            break;
           }
+
+          cells.add(new SchedulePlacementCell(rowIndex, columnIndex));
+        }
+
+        if (cells.size() == neededVolunteerCells) {
+          return new SchedulePlacement(cells);
+        }
+      }
+
+      return null;
+    }
+
+    private SchedulePlacement findSameColumnPlacement(
+        List<String> slots,
+        String columnType,
+        int startRowIndex,
+        int neededVolunteerCells,
+        int columnCount
+    ) {
+      for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+        List<SchedulePlacementCell> cells = new ArrayList<>();
+
+        for (int rowOffset = 0; rowOffset < neededVolunteerCells; rowOffset++) {
+          int rowIndex = startRowIndex + rowOffset;
+
+          if (rowIndex >= slots.size()
+              || !isColumnOpen(slots.get(rowIndex), columnType, columnIndex)) {
+            cells.clear();
+            break;
+          }
+
+          cells.add(new SchedulePlacementCell(rowIndex, columnIndex));
+        }
+
+        if (cells.size() == neededVolunteerCells) {
+          return new SchedulePlacement(cells);
         }
       }
 
