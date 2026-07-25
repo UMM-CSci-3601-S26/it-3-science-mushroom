@@ -346,37 +346,4 @@ public class SupplyListController {
     supplyList.percentageFilled = percentageFilled;
   }
 
-  /**
-   * Calculates calculatedMinQuantity for a given inventory item based on given supply list item
-   * @param supplyList The supply list item to use to calculate the calculatedMinQuantity for the inventory item.
-   * @note This is purely for determining an estimate of the absolute minimum number of units to fulfill all of the supply lists linked to that inventory item
-   * It is not a guarantee that the supply lists will be fulfilled, as there may be other supply lists that are not linked to this inventory item that also require the same item.
-   * Additionally, it has no influence on actual quantity nor is it influnced by actual quantity
-   * Finally, it references the first linked inventory item ONLY
-   */
-  private void calculateMinQuantity(SupplyList supplyList) {
-    if (supplyList == null) {
-      return;
-    }
-
-    if (supplyList.invIDs != null && !supplyList.invIDs.isEmpty()) {
-      String firstInvID = supplyList.invIDs.get(0);
-      Inventory inventory = inventoryCollection.find(eq("internalID", firstInvID)).first();
-      if (inventory != null) {
-        int totalQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
-        int requestedQuantity = inventory.quantity;
-        int calculatedMinQuantity = totalQuantity - requestedQuantity;
-        inventory.calculatedMinQuantity = calculatedMinQuantity > 0 ? calculatedMinQuantity : 0;
-
-        int requestedQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
-        int calculatedMinQuantity = inventory.calculatedMinQuantity + requestedQuantity;
-        inventory.calculatedMinQuantity = calculatedMinQuantity > 0 ? calculatedMinQuantity : 0;
-      } else {
-        inventory.calculatedMinQuantity = -1; // Indicates no linked supply list items, so no minimum quantity can be calculated
-      }
-    }
-
-  }
-
-
 }
