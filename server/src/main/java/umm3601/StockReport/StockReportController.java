@@ -23,6 +23,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 // Com Imports
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
@@ -276,10 +277,47 @@ public class StockReportController {
     return schoolGradeTeacherTotals;
   }
 
+   /**
+   * Updates the calculatedStockState of the given inventory item based on quantity, minQuantity, and maxQuantity.
+   * Use this method to update the calculatedStockState of an inventory item whenever its
+   * calculatedMinQuantity changes.
+   *
+   * @param inv The inventory item to update the calculatedStockState for
+   * @throws NotFoundResponse if the item was not found
+   * @throws IllegalArgumentException if calculatedMinQuantity is null
+   * @return the updated calculatedStockState of the inventory item
+  */
+  private String calculateStockState(Inventory inv) {
+    String calculatedStockState = null;
+    // Make sure item exists
+    if (inv == null) {
+      throw new NotFoundResponse("The requested inventory item was not found");
+    } else {
+      // Validate quantity, minQuantity, and maxQuantity
+      if (inv.calculatedMinQuantity == null) {
+        throw new IllegalArgumentException("calculatedMinQuantity must be an integer.");
+      }
+
+      int itemDiff = inv.quantity - inv.calculatedMinQuantity;
+
+      if (calculatedMinQuantity == 0) {
+        calculatedStockState = "Stocked";
+      } else if (itemDiff < 0) {
+        calculatedStockState = "Understocked";
+      } else if (itemDiff > 0) {
+        calculatedStockState = "Overstocked";
+      } else {
+        calculatedStockState = "Stocked";
+      }
+
+      return calculatedStockState;
+    }
+  }
+
   /**
-   * Predicts stock state and quantity of items based on number of students under each teacher, grade, and school.
+   * Calculates the calculatedStockState and calculatedMinQuantity of items based on number of students under each teacher, grade, and school.
    */
-  private void predictUnits(){
+  private void calculatesUnits(){
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
 
     // loop through each supply list
@@ -307,10 +345,13 @@ public class StockReportController {
               int qty = supplyList.quantity != null ? supplyList.quantity : 1;
               totalNeeded += numStudents * qty;
 
-              // Find best matching inventory item for this supply list and update its predicted quantity
+              // Use the first linked item in the supply list to find the corresponding inventory item and update its predictedMinQuantity
               Inventory bestMatch = inventoryCollection.find(eq("internalID", supplyList.invIDs[0])).first();
               if (bestMatch != null) {
-                bestMatch.predictedQuantity = totalNeeded;
+                bestMatch.calculatedMinQuantity = totalNeeded;
+                bestMatch.calculatedStockState = calculateStockState(bestMatch);
+                inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("predictedMinQuantity", bestMatch.predictedMinQuantity));
+                inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("calculatedStockState", bestMatch.calculatedStockState));
               }
             }
           }
