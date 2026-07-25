@@ -4966,6 +4966,10 @@
       "exactly": "",
       "anyOf": []
     },
+    "material": {
+      "exactly": "",
+      "anyOf": []
+    },
     "packageSize": null,
     "quantity": 1,
     "notes": "",
