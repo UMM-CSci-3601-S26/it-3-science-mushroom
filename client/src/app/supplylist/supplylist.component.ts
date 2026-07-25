@@ -94,6 +94,12 @@ export class SupplyListComponent {
     return this.authService.hasPermission('delete_supply_list');
   }
 
+  get noLinkedInventoryItems() {
+    return (supply: SupplyList) => {
+      return !supply.invIDs || supply.invIDs.length === 0;
+    };
+  }
+
   constructor() {
     // Keep the Material data source in sync with the signal-backed server data.
     effect(() => {

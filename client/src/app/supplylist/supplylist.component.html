@@ -193,6 +193,10 @@
                     <mat-label>Notes</mat-label>
                     <input matInput [(ngModel)]="element.notes" />
                   </mat-form-field>
+                  <mat-form-field appearance="outline" class="edit-field">
+                    <mat-label>Inventory IDs</mat-label>
+                    <input matInput [(ngModel)]="element.invIDs" />
+                  </mat-form-field>
                 </div>
                 <div class="item-actions">
                   <button type="button" mat-icon-button color="primary" matTooltip="Save" (click)="saveEdit(element)"
@@ -217,6 +221,11 @@
                   <button type="button" mat-icon-button color="warn" matTooltip="Delete" (click)="confirmDelete(element._id)"
                     data-cy="delete-item">
                     <mat-icon>delete</mat-icon>
+                  </button>
+                  }
+                  @if (noLinkedInventoryItems(element)) {
+                    <button type="button" mat-icon-button color="warn" matTooltip="No Linked Items!">
+                    <mat-icon>error</mat-icon>
                   </button>
                   }
                 </div>
