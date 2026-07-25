@@ -14,6 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 // RxJS Imports
 import { catchError, of, tap } from 'rxjs';
@@ -58,7 +59,8 @@ import { AuthService } from '../auth/auth-service';
     MatTooltipModule,
     MatIconModule,
     StockReportTreeComponent,
-    ReportGeneratorComponent
+    ReportGeneratorComponent,
+    MatSlideToggleModule
   ],
 })
 export class StockReportComponent {
@@ -68,6 +70,14 @@ export class StockReportComponent {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private authService = inject(AuthService);
+
+  private viewPreferenceChanged = false;
+  viewType = signal<'actual' | 'calculated'>('actual');
+
+  setViewType(viewType: 'actual' | 'calculated'): void {
+    this.viewPreferenceChanged = true;
+    this.viewType.set(viewType);
+  }
 
   get canManageStockReports(): boolean {
     return this.authService.hasPermission('manage_stock_reports');
@@ -245,6 +255,52 @@ export class StockReportComponent {
     this.inventory()?.filter(item => this.isStockState(item, 'overstocked')).length ?? 0
   );
 
+  // Compute tree nodes from inventory data
+  // Each  calculated stock state gets its own, grouped by item name
+  calculatedStockedItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isStockState(item, 'stocked')) ?? [];
+    return this.groupInventoryByItem(filtered);
+  });
+
+  calculatedUnknownStockItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isStockState(item, 'unknown')) ?? [];
+    return this.groupInventoryByItem(filtered);
+  });
+
+  calculatedUnderstockedItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isStockState(item, 'understocked')) ?? [];
+    return this.groupInventoryByItem(filtered);
+  });
+
+  calculatedOverstockedItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isStockState(item, 'overstocked')) ?? [];
+    return this.groupInventoryByItem(filtered);
+  });
+
+  // How many items are stocked properly
+  calculatedStockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'stocked')).length ?? 0
+  );
+
+  // How many items are out of stock
+  calculatedUnknownStockItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'unknown')).length ?? 0
+  );
+
+  // How many items are understocked
+  calculatedUnderstockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'understocked')).length ?? 0
+  );
+
+  // How many items are overstocked
+  calculatedOverstockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isStockState(item, 'overstocked')).length ?? 0
+  );
+
   /**
    * Calculates how many units are needed to reach minimum/max quantity
    * @param item item to calculate unit difference for
@@ -254,7 +310,7 @@ export class StockReportComponent {
     if (item.quantity > item.maxQuantity) { // Item overstocked
       return `Overstocked by ${item.quantity - item.maxQuantity} unit(s)`;
     } else if (item.quantity < item.minQuantity) { // Item under/out of stock
-      return `Need ${item.minQuantity - item.quantity} more unit(s)`;
+      return `Need ${item.calculatedMinQuantity } more unit(s)`;
     }
     return `Properly stocked!`; // Item stocked
   }
@@ -279,7 +335,7 @@ export class StockReportComponent {
     }, 0) ?? 0
   );
 
-  private isStockState(item: Inventory, expected: 'stocked' | 'out of stock' | 'understocked' | 'overstocked'): boolean {
+  private isStockState(item: Inventory, expected: 'stocked' | 'out of stock' | 'understocked' | 'overstocked' | 'unknown'): boolean {
     const normalized = item.stockState
       .trim()
       .toLowerCase()
