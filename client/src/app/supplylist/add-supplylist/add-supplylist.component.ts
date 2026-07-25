@@ -118,7 +118,8 @@ export class AddSupplyListComponent implements OnInit {
     type: new FormControl(''),
     material: new FormControl(''),
     quantity: new FormControl('', [Validators.required, Validators.min(1)]),
-    notes: new FormControl('')
+    notes: new FormControl(''),
+    invIDs: new FormControl('')
   });
 
   readonly validationMessages = {
@@ -138,7 +139,8 @@ export class AddSupplyListComponent implements OnInit {
       { type: 'required', message: 'Quantity is required' },
       { type: 'min', message: 'Quantity must be at least 1' }
     ],
-    notes: []
+    notes: [],
+    invIDs: []
   };
 
   ngOnInit() {
@@ -437,7 +439,8 @@ export class AddSupplyListComponent implements OnInit {
       material: toAttr(raw.material),
       notes: raw.notes ?? undefined,
       packageSize: raw.packageSize ? parseInt(raw.packageSize, 10) : 1,
-      quantity: raw.quantity ? parseInt(raw.quantity, 10) : 1
+      quantity: raw.quantity ? parseInt(raw.quantity, 10) : 1,
+      invIDs: raw.invIDs ? raw.invIDs.split(',').map(s => s.trim()).filter(Boolean) : undefined
     };
 
     this.supplyListService.addSupplyList(formData).subscribe({
