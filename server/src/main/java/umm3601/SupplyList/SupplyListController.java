@@ -326,6 +326,10 @@ public class SupplyListController {
     int totalQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
     int requestedQuantity = 0;
 
+    // >= 0 is a "percentage" filled
+    // -1 is "not calculated" (default)
+    // -2 is "not applicable" (ie: empty invIDs list)
+
     if (supplyList.invIDs != null && !supplyList.invIDs.isEmpty()) {
       for (String invID : supplyList.invIDs) {
         Inventory inventory = inventoryCollection.find(eq("internalID", invID)).first();
@@ -334,7 +338,7 @@ public class SupplyListController {
         }
       }
     } else {
-      supplyList.percentageFilled = -1; // Indicates that the supply list item has no associated inventory items
+      supplyList.percentageFilled = -2; // Indicates that the supply list item has no associated inventory items
       return;
     }
 
