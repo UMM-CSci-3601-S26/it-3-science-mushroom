@@ -41,7 +41,6 @@ import umm3601.Inventory.Inventory;
 import umm3601.Family.Family;
 import umm3601.Family.FamilyController;
 import umm3601.SupplyList.SupplyList;
-import umm3601.SupplyList.SupplyListController;
 
 @SuppressWarnings({ "MagicNumber" })
 public class StockReportController {
@@ -300,14 +299,14 @@ public class StockReportController {
 
       int itemDiff = inv.quantity - inv.calculatedMinQuantity;
 
-      if (calculatedMinQuantity == 0) {
+      if (itemDiff == 0) {
         calculatedStockState = "Stocked";
       } else if (itemDiff < 0) {
         calculatedStockState = "Understocked";
       } else if (itemDiff > 0) {
         calculatedStockState = "Overstocked";
       } else {
-        calculatedStockState = "Stocked";
+        calculatedStockState = "Unknown";
       }
 
       return calculatedStockState;
@@ -345,12 +344,12 @@ public class StockReportController {
               int qty = supplyList.quantity != null ? supplyList.quantity : 1;
               totalNeeded += numStudents * qty;
 
-              // Use the first linked item in the supply list to find the corresponding inventory item and update its predictedMinQuantity
-              Inventory bestMatch = inventoryCollection.find(eq("internalID", supplyList.invIDs[0])).first();
+              // Use the first linked item in the supply list to find the corresponding inventory item and update its calculatedMinQuantity
+              Inventory bestMatch = inventoryCollection.find(eq("internalID", supplyList.invIDs.get(0))).first();
               if (bestMatch != null) {
                 bestMatch.calculatedMinQuantity = totalNeeded;
                 bestMatch.calculatedStockState = calculateStockState(bestMatch);
-                inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("predictedMinQuantity", bestMatch.predictedMinQuantity));
+                inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("calculatedMinQuantity", bestMatch.calculatedMinQuantity));
                 inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("calculatedStockState", bestMatch.calculatedStockState));
               }
             }
