@@ -348,14 +348,22 @@ public class SupplyListController {
       .get();
 
     try {
-      // The path id is the source of truth even if the request body has no _id
-      // or carries a stale one.
-      updatedSupplyList._id = id;
-      long modifiedCount = supplyListCollection.replaceOne(
-        eq("_id", new ObjectId(id)), updatedSupplyList).getModifiedCount();
-      if (modifiedCount == 0) {
+      ObjectId objectId = new ObjectId(id);
+
+      SupplyList existingSupplyList = supplyListCollection.find(eq("_id", objectId)).first();
+      if (existingSupplyList == null) {
         throw new NotFoundResponse("The requested supply list item was not found");
       }
+
+      // The path id is the source of truth even if the request body has no _id
+      // or carries a stale one
+      updatedSupplyList._id = id;
+      // These fields are not editable, and must be preserved from the existing document
+      updatedSupplyList.supplyID = existingSupplyList.supplyID;
+      updatedSupplyList.invIDs = existingSupplyList.invIDs;
+      updatedSupplyList.percentageFilled = existingSupplyList.percentageFilled;
+
+      supplyListCollection.replaceOne(eq("_id", objectId), updatedSupplyList);
       ctx.status(HttpStatus.OK);
     } catch (IllegalArgumentException e) {
       throw new BadRequestResponse("The requested supply list id wasn't a legal Mongo Object ID.");
