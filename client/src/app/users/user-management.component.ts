@@ -69,7 +69,6 @@ const PERMISSION_BUNDLES: PermissionBundle[] = [
 // Hide lower-level implementation permissions from the checkbox list when a
 // friendlier bundle permission grants the same access.
 const HIDDEN_IMPLEMENTATION_PERMISSIONS = new Set([
-  'edit_available_spots',
   'edit_time_availability',
   'view_families',
   'view_family',

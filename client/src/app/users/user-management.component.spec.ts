@@ -79,7 +79,6 @@ describe('UserManagementComponent', () => {
       { permission: 'schedule_families', group: 'Family', label: 'Family Scheduling', volunteerAssignable: true },
       { permission: 'manage_checklist', group: 'Checklist', label: 'Checklist Management', volunteerAssignable: true },
       { permission: 'edit_time_availability', group: 'Settings', label: 'Time Availability Editing', volunteerAssignable: true },
-      { permission: 'edit_available_spots', group: 'Settings', label: 'Available Spot Editing', volunteerAssignable: true },
       { permission: 'view_inventory', group: 'Inventory', label: 'Inventory Viewing', volunteerAssignable: true },
       { permission: 'secret.admin', group: 'Settings', label: 'Secret admin', volunteerAssignable: false }
     ]
@@ -141,8 +140,6 @@ describe('UserManagementComponent', () => {
       .not.toContain('schedule_families');
     expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
       .not.toContain('edit_time_availability');
-    expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
-      .not.toContain('edit_available_spots');
     expect(component.isLoading).toBeFalse();
   });
 
@@ -363,7 +360,6 @@ describe('UserManagementComponent', () => {
     expect(component.selectedJobRole?.permissions).toContain('manage_drive_scheduling');
     expect(component.selectedJobRole?.permissions).toContain('schedule_families');
     expect(component.selectedJobRole?.permissions).toContain('edit_time_availability');
-    expect(component.selectedJobRole?.permissions).not.toContain('edit_available_spots');
     expect(component.permissionSourceLabel('edit_time_availability')).toBe('Included by Drive Scheduling Management');
   });
 
@@ -582,8 +578,7 @@ describe('UserManagementComponent', () => {
       { permission: 'edit_family', group: 'Family', label: 'Family Editing', volunteerAssignable: true },
       { permission: 'view_families', group: 'Family', label: 'Family List Viewing', volunteerAssignable: true },
       { permission: 'view_checklist', group: 'Checklist', label: 'Checklist Viewing', volunteerAssignable: true },
-      { permission: 'edit_time_availability', group: 'Settings', label: 'Time Availability Editing', volunteerAssignable: true },
-      { permission: 'edit_available_spots', group: 'Settings', label: 'Available Spot Editing', volunteerAssignable: true }
+      { permission: 'edit_time_availability', group: 'Settings', label: 'Time Availability Editing', volunteerAssignable: true }
     ] as PermissionCatalogEntry[]);
 
     expect(mappedRoles).toEqual([

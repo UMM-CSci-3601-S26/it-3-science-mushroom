@@ -157,7 +157,6 @@ class FamilyControllerSpec {
       inventoryDoc("Water Bottle", "Blue Water Bottle", 0, "ID-10002", "ITEM-10002", "EXT-10002")));
 
     settingsDocuments.insertOne(new Document()
-      .append("availableSpots", 5)
       .append("timeAvailability", new Document()
         .append("earlyMorning", "8:00-9:00 AM")
         .append("lateMorning", "10:00-11:00 AM")

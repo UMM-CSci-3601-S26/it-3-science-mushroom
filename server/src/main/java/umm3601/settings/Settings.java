@@ -4,6 +4,9 @@ package umm3601.Settings;
 // Java Imports
 import java.util.List;
 
+// Jackson Imports
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 // Mongojack Imports
 import org.mongojack.Id;
 
@@ -16,6 +19,7 @@ import org.mongojack.Id;
  *
  * Only one document ever exists, identified by _id = "app-settings".
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @SuppressWarnings({"VisibilityModifier", "MagicNumber"})
 public class Settings {
 
@@ -59,12 +63,6 @@ public class Settings {
     public int englishFamilies;
     public int spanishFamilies;
   }
-
-  /**
-   * Spots available per time slot at the drive
-   * Used to schedule families between the different time slots based on their preferences
-   */
-  public int availableSpots;
 
   // Warns the operator before printing more than this many barcode labels for one item
   public int barcodePrintWarningLimit = 25;

@@ -94,8 +94,6 @@ class FamilyControllerRevertSessionSpec {
       inventoryDoc("Backpack", "Student Backpack", 3, "ID-10000", "ITEM-10000", "EXT-10000"),
       inventoryDoc("Notebook", "Wide Ruled Notebook", 4, "ID-10001", "ITEM-10001", "SUB-10001"),
       inventoryDoc("Water Bottle", "Blue Water Bottle", 0, "ID-10002", "ITEM-10002", "EXT-10002")));
-    settingsDocuments.insertOne(new Document().append("availableSpots", 5));
-
     familyController = new FamilyController(db);
   }
 
