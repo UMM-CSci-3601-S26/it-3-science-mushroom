@@ -452,6 +452,23 @@ class SettingsControllerSpec {
     assertEquals(SettingsController.SETTINGS_ID, settingsCaptor.getValue()._id);
   }
 
+  @Test
+  void getSettingsIgnoresRemovedAvailableSpotsField() {
+    db.getCollection("settings").drop();
+    db.getCollection("settings").insertOne(
+      new Document("_id", SettingsController.SETTINGS_ID)
+        .append("schools", List.of())
+        .append("timeAvailability", new Document())
+        .append("availableSpots", 10));
+
+    settingsController.getSettings(ctx);
+
+    settingsCaptor = ArgumentCaptor.forClass(Settings.class);
+    verify(ctx).json(settingsCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertEquals(SettingsController.SETTINGS_ID, settingsCaptor.getValue()._id);
+  }
+
   // ---- updateSupplyOrder tests ----
 
   @Test
@@ -588,19 +605,5 @@ class SettingsControllerSpec {
       assertEquals("barcodePrintWarningLimit must be at least 1.", e.getMessage());
     }
     assertTrue(threw);
-  }
-
-  @Test
-  void updateSpotAvailabilityTest() {
-    Settings body = new Settings();
-    body.availableSpots = 10;
-
-    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
-
-    settingsController.updateSpotAvailability(ctx);
-
-    assertEquals(body.availableSpots, 10);
-
-    verify(ctx).status(HttpStatus.OK);
   }
 }

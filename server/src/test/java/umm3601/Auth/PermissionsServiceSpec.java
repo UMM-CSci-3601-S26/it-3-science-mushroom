@@ -284,8 +284,8 @@ class PermissionsServiceSpec {
         .filter(entry -> "edit_drive_day".equals(entry.permission))
         .findFirst()
         .orElse(null);
-    PermissionsService.PermissionCatalogEntry availableSpots = permissionsService.getPermissionCatalog().stream()
-        .filter(entry -> "edit_available_spots".equals(entry.permission))
+    PermissionsService.PermissionCatalogEntry timeAvailability = permissionsService.getPermissionCatalog().stream()
+        .filter(entry -> "edit_time_availability".equals(entry.permission))
         .findFirst()
         .orElse(null);
     PermissionsService.PermissionCatalogEntry scheduleFamilies = permissionsService.getPermissionCatalog().stream()
@@ -311,8 +311,9 @@ class PermissionsServiceSpec {
     assertEquals("Settings", settings.group);
     assertEquals("Drive Day Editing", settings.label);
 
-    assertNotNull(availableSpots);
-    assertFalse(availableSpots.volunteerAssignable);
+    assertNotNull(timeAvailability);
+    assertEquals("Settings", timeAvailability.group);
+    assertEquals("Time Availability Editing", timeAvailability.label);
 
     assertNotNull(scheduleFamilies);
     assertFalse(scheduleFamilies.volunteerAssignable);
