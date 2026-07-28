@@ -78,6 +78,7 @@ describe('UserManagementComponent', () => {
       { permission: 'view_dashboard_stats', group: 'Family', label: 'Dashboard Statistics', volunteerAssignable: true },
       { permission: 'schedule_families', group: 'Family', label: 'Family Scheduling', volunteerAssignable: true },
       { permission: 'manage_checklist', group: 'Checklist', label: 'Checklist Management', volunteerAssignable: true },
+      { permission: 'edit_time_availability', group: 'Settings', label: 'Time Availability Editing', volunteerAssignable: true },
       { permission: 'edit_available_spots', group: 'Settings', label: 'Available Spot Editing', volunteerAssignable: true },
       { permission: 'view_inventory', group: 'Inventory', label: 'Inventory Viewing', volunteerAssignable: true },
       { permission: 'secret.admin', group: 'Settings', label: 'Secret admin', volunteerAssignable: false }
@@ -138,6 +139,8 @@ describe('UserManagementComponent', () => {
       .not.toContain('view_dashboard_stats');
     expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
       .not.toContain('schedule_families');
+    expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
+      .not.toContain('edit_time_availability');
     expect(component.groupedPermissions.flatMap(group => group.permissions.map(permission => permission.permission)))
       .not.toContain('edit_available_spots');
     expect(component.isLoading).toBeFalse();
@@ -350,7 +353,7 @@ describe('UserManagementComponent', () => {
     expect(dialogService.openDialog).toHaveBeenCalledWith(
       {
         title: 'Enable Drive Scheduling Management',
-        message: 'Drive Scheduling Management will also add these required permissions: Family Scheduling, Available Spot Editing. Enable it?',
+        message: 'Drive Scheduling Management will also add these required permissions: Family Scheduling, Time Availability Editing. Enable it?',
         buttonOne: 'Cancel',
         buttonTwo: 'Enable'
       },
@@ -359,8 +362,9 @@ describe('UserManagementComponent', () => {
     );
     expect(component.selectedJobRole?.permissions).toContain('manage_drive_scheduling');
     expect(component.selectedJobRole?.permissions).toContain('schedule_families');
-    expect(component.selectedJobRole?.permissions).toContain('edit_available_spots');
-    expect(component.permissionSourceLabel('edit_available_spots')).toBe('Included by Drive Scheduling Management');
+    expect(component.selectedJobRole?.permissions).toContain('edit_time_availability');
+    expect(component.selectedJobRole?.permissions).not.toContain('edit_available_spots');
+    expect(component.permissionSourceLabel('edit_time_availability')).toBe('Included by Drive Scheduling Management');
   });
 
   it('treats volunteer base permissions as not inherited on the base role', () => {
@@ -578,6 +582,7 @@ describe('UserManagementComponent', () => {
       { permission: 'edit_family', group: 'Family', label: 'Family Editing', volunteerAssignable: true },
       { permission: 'view_families', group: 'Family', label: 'Family List Viewing', volunteerAssignable: true },
       { permission: 'view_checklist', group: 'Checklist', label: 'Checklist Viewing', volunteerAssignable: true },
+      { permission: 'edit_time_availability', group: 'Settings', label: 'Time Availability Editing', volunteerAssignable: true },
       { permission: 'edit_available_spots', group: 'Settings', label: 'Available Spot Editing', volunteerAssignable: true }
     ] as PermissionCatalogEntry[]);
 

@@ -16,14 +16,12 @@ import { InventoryService } from '../inventory/inventory.service';
 import { SelectOption } from '../inventory/inventory';
 import { DialogService } from '../shared/dialog/dialog.service';
 import { AuthService } from '../auth/auth-service';
-import { FamilyService } from '../family/family.service';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
   let termsServiceSpy: jasmine.SpyObj<TermsService>;
-  let familyServiceSpy: jasmine.SpyObj<FamilyService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
@@ -57,7 +55,6 @@ describe('SettingsComponent', () => {
       lateAfternoon: '1:00-2:00 PM',
     },
     supplyOrder: [],
-    availableSpots: 5,
     barcodePrintWarningLimit: 25,
   };
 
@@ -68,12 +65,9 @@ describe('SettingsComponent', () => {
       'updateTimeAvailability',
       'updateDefaultScheduleColumns',
       'updateSupplyOrder',
-      'updateAvailableSpots',
-      'scheduleFamilies',
       'updateBarcodePrintWarningLimit'
     ]);
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
-    familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission', 'isAdmin']);
     itemOptionsSignal = signal<SelectOption[]>([]);
@@ -133,7 +127,6 @@ describe('SettingsComponent', () => {
         { provide: TermsService, useValue: termsServiceSpy },
         { provide: InventoryService, useValue: inventoryServiceSpy },
         { provide: DialogService, useValue: dialogServiceSpy },
-        { provide: FamilyService, useValue: familyServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
         { provide: MatSnackBar, useValue: snackBarSpy },
@@ -615,26 +608,6 @@ describe('SettingsComponent', () => {
     expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to save default schedule columns', 'OK', { duration: 3000 });
   });
 
-  it('Should call updateAvailableSpots and show success snack bar', () => {
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
-    component.availableSpotsForm.setValue({ availableSpots: 28 });
-
-    component.saveAvailableSpots();
-
-    const availableSpots = component.availableSpotsForm.get('availableSpots').value;
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith(`Available spots setting saved: ${availableSpots}`, 'OK', { duration: 2000 });
-  });
-
-  it('Should call updateAvailableSpots and show failure snack bar', () => {
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(throwError(() => new Error('fail')));
-    component.availableSpotsForm.setValue({ availableSpots: 28 });
-
-    component.saveAvailableSpots();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
-  });
-
   it('filters inventory management dropdown options using the typed filter values', () => {
     itemOptionsSignal.set([
       { label: 'Markers', value: 'Markers' },
@@ -1022,85 +995,6 @@ describe('SettingsComponent', () => {
       expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to reset quantities.', 'OK', { duration: 4000 });
     }));
   });
-
-  it('Should call scheduleFamilies and show successful snackBar', fakeAsync(() => {
-    familyServiceSpy.scheduleFamilies.and.returnValue(of(undefined));
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
-    expect(settingsServiceSpy.updateAvailableSpots).not.toHaveBeenCalled();
-
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/family-schedule']);
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Families scheduled', 'OK', { duration: 2000 });
-  }));
-
-  it('Should call scheduleFamilies and show capacity error snackBar', fakeAsync(() => {
-    familyServiceSpy.scheduleFamilies.and.returnValue(
-      throwError(() => ({
-        error: {
-          title: 'Not all families were able to be sorted, your event capacity may be too low'
-        }
-      }))
-    );
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith(
-      'Not enough schedule capacity. Add more 15-minute blocks in Settings > Time Availability, then try scheduling again.',
-      'OK',
-      { duration: 5000 }
-    );
-  }));
-
-  it('Should call scheduleFamilies and show invalid time range error snackBar', fakeAsync(() => {
-    familyServiceSpy.scheduleFamilies.and.returnValue(
-      throwError(() => ({
-        error: {
-          title: 'Time slot contains an invalid time'
-        }
-      }))
-    );
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith(
-      'The saved Time Availability ranges are invalid. Use ranges like 8:00-9:00 AM, save them, then schedule again.',
-      'OK',
-      { duration: 5000 }
-    );
-  }));
-
-  it('Should call scheduleFamilies and show general error snackBar', fakeAsync(() => {
-    familyServiceSpy.scheduleFamilies.and.returnValue(
-      throwError(() => ({
-        error: { title: 'general error' }
-      }))
-    );
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith(
-      'Unable to schedule families right now. Check the saved Time Availability ranges and try again.',
-      'OK',
-      { duration: 5000 }
-    );
-  }));
 
   it('saves the barcode print warning limit setting', () => {
     settingsServiceSpy.updateBarcodePrintWarningLimit.and.returnValue(of(undefined));

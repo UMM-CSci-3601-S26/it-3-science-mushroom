@@ -214,46 +214,6 @@
           </div>
         </mat-tab>
 
-        <!-- ── Available Spots Tab ── -->
-        <mat-tab label="Available Spots">
-          <div class="tab-content">
-            <p class="tab-description">
-              Save the event's general available spots value. Family scheduling uses the Time Availability
-              windows above and assigns one family per 15-minute block.
-            </p>
-
-            <div>
-
-              <form
-                class="available-spots-form app-field-action-row"
-                [formGroup]="availableSpotsForm"
-                (ngSubmit)="saveAvailableSpots()">
-                <mat-form-field appearance="outline">
-                  <mat-label>Available Spots</mat-label>
-                  <input matInput formControlName="availableSpots" placeholder="e.g. 5">
-                  <mat-error *ngIf="availableSpotsForm.get('availableSpots')?.hasError('required')">Required</mat-error>
-                </mat-form-field>
-
-                @if (canEditAvailableSlots) {
-                <div class="save-button app-action-row">
-                  <button mat-raised-button color="primary" type="submit" [disabled]="!availableSpotsForm.valid"
-                    data-test="saveButton">
-                    Save Available Spots
-                  </button>
-                  @if (canScheduleFamilies) {
-                  <button mat-raised-button color="accent" type="button" (click)="scheduleFamilies()" data-test="scheduleFamiliesButton">
-                      <mat-icon>playlist_add_check</mat-icon>
-                     Schedule Families
-                  </button>
-                  }
-                </div>
-                }
-              </form>
-            </div>
-
-          </div>
-        </mat-tab>
-
         <!-- Barcode Printing Tab -->
         <mat-tab label="Barcode Printing">
           <div class="tab-content">

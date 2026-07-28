@@ -152,14 +152,6 @@ mat-paginator {
   margin-bottom: 0;
 }
 
-.available-spots-form {
-  max-width: 720px;
-}
-
-.available-spots-form .save-button {
-  margin-bottom: 0;
-}
-
 .inventory-target-form {
   margin-bottom: 12px;
 }
@@ -342,8 +334,7 @@ mat-paginator {
     grid-template-rows: none;
   }
 
-  .settings-form-stack,
-  .available-spots-form {
+  .settings-form-stack {
     max-width: none;
   }
 

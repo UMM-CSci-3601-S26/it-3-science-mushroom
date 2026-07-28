@@ -30,7 +30,6 @@ describe('SettingsService', () => {
       { itemTerm: 'folder', status: 'unstaged' },
       { itemTerm: 'pencil', status: 'notGiven' },
     ],
-    availableSpots: 5,
     barcodePrintWarningLimit: 25,
   };
 
@@ -151,19 +150,6 @@ describe('SettingsService', () => {
       const req = httpTestingController.expectOne(`${settingsUrl}/defaultScheduleColumns`);
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(defaultScheduleColumns);
-      req.flush(null);
-    });
-  });
-
-  describe('updateAvailableSpots()', () => {
-    it('sends PATCH to /api/settings/availableSpots', () => {
-      const updatedValue = 28;
-
-      service.updateAvailableSpots(updatedValue).subscribe();
-
-      const req = httpTestingController.expectOne(`${settingsUrl}/availableSpots`);
-      expect(req.request.method).toBe('PATCH');
-      expect(req.request.body).toEqual({ availableSpots: updatedValue });
       req.flush(null);
     });
   });

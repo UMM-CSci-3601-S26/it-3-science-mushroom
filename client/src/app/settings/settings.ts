@@ -20,15 +20,12 @@ export interface DefaultScheduleColumns {
   spanishFamilies: number;
 }
 
-// export type availableSpots= number;
-
 export interface AppSettings {
   _id?: string;
   schools: SchoolInfo[];
   timeAvailability: TimeAvailabilityLabels;
   defaultScheduleColumns?: DefaultScheduleColumns;
   supplyOrder: SupplyItemOrder[];
-  availableSpots: number;
   barcodePrintWarningLimit: number;
   driveDay?: DriveDay;
 }

@@ -41,9 +41,6 @@ import {
   TimeAvailabilityLabels
 } from './settings';
 
-// Family Imports
-import { FamilyService } from '../family/family.service';
-
 // Terms Imports
 import { TermsService } from '../terms/terms.service';
 
@@ -87,7 +84,6 @@ export class SettingsComponent implements OnInit {
   private termsService = inject(TermsService);
   private inventoryService = inject(InventoryService);
   private dialogService = inject(DialogService);
-  private familyService = inject(FamilyService);
   //private inventoryIndex = inject(InventoryIndex);
   //private inventoryComponent = inject(InventoryComponent);
 
@@ -101,7 +97,6 @@ export class SettingsComponent implements OnInit {
     'schools',
     'time-availability',
     'drive-day',
-    'available-spots',
     'barcode-printing',
     'drive-order',
     'inventory-management'
@@ -118,13 +113,6 @@ export class SettingsComponent implements OnInit {
 
   get canEditSupplyOrder(): boolean {
     return this.authService.hasPermission('edit_supply_order');
-  }
-
-  get canEditAvailableSlots(): boolean {
-    return this.authService.hasPermission('edit_available_spots');
-  }
-  get canScheduleFamilies(): boolean {
-    return this.authService.isAdmin() && this.authService.hasPermission('schedule_families');
   }
 
   get canEditDriveDay(): boolean {
@@ -259,10 +247,6 @@ export class SettingsComponent implements OnInit {
     spanishFamilies: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
   });
 
-  availableSpotsForm = new FormGroup({
-    availableSpots: new FormControl<number>(5, [Validators.required, Validators.min(1)])
-  })
-
   inventoryFilterForm = new FormGroup({
     item: new FormControl(''),
     brand: new FormControl(''),
@@ -305,8 +289,6 @@ export class SettingsComponent implements OnInit {
       if (settings.defaultScheduleColumns) {
         this.timeAvailabilityForm.patchValue(settings.defaultScheduleColumns);
       }
-
-      this.availableSpotsForm.patchValue({ availableSpots: settings.availableSpots});
 
       if (settings.driveDay) {
         this.driveDayForm.patchValue({
@@ -527,27 +509,6 @@ export class SettingsComponent implements OnInit {
   }
 
   /**
-  * Saves the input in the available spots field to the server
-  */
-  saveAvailableSpots(): void {
-    if (!this.canEditAvailableSlots) {
-      return;
-    }
-
-    if (this.availableSpotsForm.valid) {
-      const availableSpots = this.availableSpotsForm.value.availableSpots ?? 5;
-      this.settingsService.updateAvailableSpots(
-        availableSpots
-      ).subscribe({
-        next: () => {
-          this.snackBar.open(`Available spots setting saved: ${availableSpots}`, 'OK', { duration: 2000 });
-        },
-        error: () => this.snackBar.open('Failed to save available spots', 'OK', { duration: 3000 })
-      });
-    }
-  }
-
-  /**
    * Gets filter values from signals and returns an object of only non-empty filters
    */
   private getInventoryTargetFilters(item: string | undefined, brand: string | undefined, color: string | undefined, size: string | undefined, type: string | undefined, material: string | undefined): { item?: string; brand?: string; color?: string; size?: string; type?: string; material?: string } {
@@ -714,73 +675,6 @@ export class SettingsComponent implements OnInit {
         });
       }
     });
-  }
-
-  /**
-  * Schedules families according to their selected availability windows.
-  * The 15-minute schedule capacity comes from the saved time availability ranges.
-  */
-  scheduleFamilies(): void {
-    if (!this.canScheduleFamilies) {
-      return;
-    }
-
-    this.familyService.scheduleFamilies().subscribe({
-      next: () => {
-        this.router.navigate(['/family-schedule'])
-          .then(navigated => {
-            if (navigated) {
-              this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
-            } else {
-              this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
-            }
-          })
-          .catch(() => {
-            this.snackBar.open('Families scheduled, but the schedule page could not be opened', 'OK', {duration: 3000});
-          });
-      },
-      error: (err) => {
-        this.snackBar.open(this.scheduleFailureMessage(err), 'OK', { duration: 5000 });
-      }
-    });
-  }
-
-  private scheduleFailureMessage(err: unknown): string {
-    const errorText = this.scheduleErrorText(err);
-
-    if (this.isLowCapacityScheduleError(err, errorText)) {
-      return 'Not enough schedule capacity. Add more 15-minute blocks in Settings > Time Availability, then try scheduling again.';
-    }
-
-    if (this.isInvalidTimeSlotScheduleError(errorText)) {
-      return 'The saved Time Availability ranges are invalid. Use ranges like 8:00-9:00 AM, save them, then schedule again.';
-    }
-
-    return 'Unable to schedule families right now. Check the saved Time Availability ranges and try again.';
-  }
-
-  private scheduleErrorText(err: unknown): string {
-    const httpError = err as {
-      error?: unknown;
-      message?: string;
-    };
-
-    return [
-      typeof httpError?.error === 'string' ? httpError.error : JSON.stringify(httpError?.error ?? {}),
-      httpError?.message ?? ''
-    ].join(' ');
-  }
-
-  private isLowCapacityScheduleError(err: unknown, errorText: string): boolean {
-    const httpError = err as { status?: number };
-    return httpError?.status === 404
-      || errorText.includes('Not all families were able to be sorted, your event capacity may be too low');
-  }
-
-  private isInvalidTimeSlotScheduleError(errorText: string): boolean {
-    return errorText.includes('Time slot must include AM or PM')
-      || errorText.includes('Time slot contains an invalid time')
-      || errorText.includes('Time slot end must be after the start time');
   }
 
   saveBarcodePrintSettings(): void {

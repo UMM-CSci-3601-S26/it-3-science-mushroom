@@ -279,7 +279,6 @@ describe('Inventory Table', () => {
         lateAfternoon: ''
       },
       supplyOrder: [],
-      availableSpots: 0,
       barcodePrintWarningLimit: 30
     }));
     spyOn(dialog, 'open').and.returnValues(
