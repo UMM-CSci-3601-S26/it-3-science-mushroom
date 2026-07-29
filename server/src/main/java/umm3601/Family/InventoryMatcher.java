@@ -93,7 +93,7 @@ public class InventoryMatcher {
 
     int score = itemScore;
     score += attributeSimilarityScore(supplyList.brand, inventory.brand);
-    score += colorSimilarityScore(supplyList.color, inventory.color);
+    score += attributeSimilarityScore(supplyList.color, inventory.color);
     score += attributeSimilarityScore(supplyList.size, inventory.size);
     score += attributeSimilarityScore(supplyList.type, inventory.type);
     score += attributeSimilarityScore(supplyList.material, inventory.material);
@@ -139,20 +139,7 @@ public class InventoryMatcher {
     if (options == null) {
       return 0;
     }
-    if (hasText(options.allOf) && nameEquivalent(options.allOf, inventoryValue)) {
-      return REQUIRED_ATTRIBUTE_MATCH_SCORE;
-    }
-    if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
-      return OPTIONAL_ATTRIBUTE_MATCH_SCORE;
-    }
-    return 0;
-  }
-
-  public int colorSimilarityScore(SupplyList.ColorAttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return 0;
-    }
-    if (options.allOf != null && options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
+    if (hasText(options.exactly) && nameEquivalent(options.exactly, inventoryValue)) {
       return REQUIRED_ATTRIBUTE_MATCH_SCORE;
     }
     if (options.anyOf != null && options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue))) {
@@ -175,7 +162,7 @@ public class InventoryMatcher {
     if (!requiredAttributeMatches(supplyList.brand, inventory.brand)) {
       return false;
     }
-    if (!requiredColorMatches(supplyList.color, inventory.color)) {
+    if (!requiredAttributeMatches(supplyList.color, inventory.color)) {
       return false;
     }
     if (!requiredAttributeMatches(supplyList.size, inventory.size)) {
@@ -221,26 +208,8 @@ public class InventoryMatcher {
     if (options == null) {
       return true;
     }
-    if (hasText(options.allOf)) {
-      return descriptorMatches(options.allOf, inventoryValue);
-    }
-    if (options.anyOf != null && !options.anyOf.isEmpty()) {
-      return options.anyOf.stream()
-        .anyMatch(option -> descriptorMatches(option, inventoryValue));
-    }
-    return true;
-  }
-
-  private boolean requiredColorMatches(
-      SupplyList.ColorAttributeOptions options,
-      String inventoryValue
-  ) {
-    if (options == null) {
-      return true;
-    }
-    if (options.allOf != null && !options.allOf.isEmpty()) {
-      return options.allOf.stream()
-        .anyMatch(option -> descriptorMatches(option, inventoryValue));
+    if (hasText(options.exactly)) {
+      return descriptorMatches(options.exactly, inventoryValue);
     }
     if (options.anyOf != null && !options.anyOf.isEmpty()) {
       return options.anyOf.stream()
@@ -266,7 +235,7 @@ public class InventoryMatcher {
     if (!matchesAttribute(supplyList.brand, inventory.brand)) {
       return false;
     }
-    if (!matchesColorAttribute(supplyList.color, inventory.color)) {
+    if (!matchesAttribute(supplyList.color, inventory.color)) {
       return false;
     }
     if (!matchesAttribute(supplyList.size, inventory.size)) {
@@ -353,24 +322,8 @@ public class InventoryMatcher {
     if (options == null) {
       return true;
     }
-    if (hasText(options.allOf) && !nameEquivalent(options.allOf, inventoryValue)) {
+    if (hasText(options.exactly) && !nameEquivalent(options.exactly, inventoryValue)) {
       return false;
-    }
-    if (options.anyOf != null && !options.anyOf.isEmpty()) {
-      return options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-    }
-    return true;
-  }
-
-  private boolean matchesColorAttribute(SupplyList.ColorAttributeOptions options, String inventoryValue) {
-    if (options == null) {
-      return true;
-    }
-    if (options.allOf != null && !options.allOf.isEmpty()) {
-      boolean allOfMatch = options.allOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));
-      if (!allOfMatch) {
-        return false;
-      }
     }
     if (options.anyOf != null && !options.anyOf.isEmpty()) {
       return options.anyOf.stream().anyMatch(option -> nameEquivalent(option, inventoryValue));

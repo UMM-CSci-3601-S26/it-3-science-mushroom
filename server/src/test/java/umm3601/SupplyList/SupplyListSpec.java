@@ -31,9 +31,9 @@ public class SupplyListSpec {
     inv1.grade = "PreK";
     inv1.item = Arrays.asList("Pencil");
     inv1.brand = new SupplyList.AttributeOptions();
-    inv1.brand.allOf = "Ticonderoga";
-    inv1.color = new SupplyList.ColorAttributeOptions();
-    inv1.color.allOf = Arrays.asList("yellow");
+    inv1.brand.exactly = "Ticonderoga";
+    inv1.color = new SupplyList.AttributeOptions();
+    inv1.color.exactly = "yellow";
     inv1.packageSize = EXPECTED_COUNT;
     inv1.quantity = EXPECTED_QUANTITY;
   }

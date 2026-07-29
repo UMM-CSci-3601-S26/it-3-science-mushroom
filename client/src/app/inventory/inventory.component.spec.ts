@@ -53,7 +53,9 @@ describe('Inventory Table', () => {
     internalID: '',
     minQuantity: 0,
     maxQuantity: 0,
-    stockState: 'Unknown'
+    calculatedMinQuantity: 0,
+    stockState: 'Unknown',
+    calculatedStockState: 'N/A'
   };
 
   beforeEach(() => {
@@ -663,7 +665,9 @@ describe('confirmSingleDelete Tests', () => {
     externalBarcode: [],
     minQuantity: 1,
     maxQuantity: 20,
+    calculatedMinQuantity: 0,
     stockState: 'In Stock',
+    calculatedStockState: 'N/A',
     packageSize: 1
   };
 

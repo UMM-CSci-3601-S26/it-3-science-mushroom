@@ -1084,6 +1084,251 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void requestToDeleteFamilyCreatesDeleteRequest() {
+    FamilyController.FamilyDeleteRequest deleteRequest = new FamilyController.FamilyDeleteRequest();
+    deleteRequest.message = "  Please review this family  ";
+
+    when(ctx.attribute("userId")).thenReturn("request-user-1");
+    when(ctx.attribute("systemRole")).thenReturn(umm3601.Auth.Role.VOLUNTEER);
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.body()).thenReturn("{\"message\":\"Please review this family\"}");
+    when(ctx.bodyAsClass(FamilyController.FamilyDeleteRequest.class)).thenReturn(deleteRequest);
+
+    familyController.requestToDeleteFamily(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertTrue(familyCaptor.getValue().deleteRequest.requested);
+    assertEquals("Please review this family", familyCaptor.getValue().deleteRequest.message);
+    assertEquals("request-user-1", familyCaptor.getValue().deleteRequest.requestedByUserId);
+    assertEquals("VOLUNTEER", familyCaptor.getValue().deleteRequest.requestedBySystemRole);
+  }
+
+  @Test
+  void requestToDeleteFamilyRejectsBadId() {
+    when(ctx.attribute("userId")).thenReturn("request-user-1");
+    when(ctx.attribute("systemRole")).thenReturn(umm3601.Auth.Role.VOLUNTEER);
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> familyController.requestToDeleteFamily(ctx));
+
+    assertEquals("The requested family id wasn't a legal Mongo Object ID.", exception.getMessage());
+  }
+
+  @Test
+  void requestToDeleteFamilyRejectsMissingFamily() {
+    when(ctx.attribute("userId")).thenReturn("request-user-1");
+    when(ctx.attribute("systemRole")).thenReturn(umm3601.Auth.Role.VOLUNTEER);
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toHexString());
+
+    NotFoundResponse exception = assertThrows(NotFoundResponse.class,
+      () -> familyController.requestToDeleteFamily(ctx));
+
+    assertEquals("The requested family was not found", exception.getMessage());
+  }
+
+  @Test
+  void getDeleteRequestsReturnsCorrectly() {
+    UsersService usersService = new UsersService(db);
+    usersService.createUser(
+      "delete.requester",
+      "hash",
+      "Delete Requester",
+      "delete.requester@example.com",
+      umm3601.Auth.Role.VOLUNTEER,
+      "volunteer_base");
+    Users requester = usersService.findByUsername("delete.requester");
+
+    Document requestedFamily = familyDoc(new ObjectId(), "Pending Delete", "pending@email.com",
+      "12 Main St", null, "1:00-2:00", false, false, false, false, false, "not_helped",
+      List.of(studentDoc("Kid One", "4", "Morris Area High School", "MAHS")));
+    requestedFamily.append("deleteRequest", new Document()
+      .append("requested", true)
+      .append("message", "delete me")
+      .append("requestedByUserId", requester._id)
+      .append("requestedByUserName", "")
+      .append("requestedBySystemRole", "")
+      .append("requestedAt", "2026-07-14T00:00:00Z"));
+    db.getCollection("family").insertOne(requestedFamily);
+
+    familyController.getDeleteRequests(ctx);
+
+    verify(ctx).json(familyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertTrue(familyArrayListCaptor.getValue().stream()
+      .anyMatch(f -> "Pending Delete".equals(f.guardianName)
+        && f.deleteRequest != null
+        && f.deleteRequest.requested
+        && "Delete Requester".equals(f.deleteRequest.requestedByUserName)
+        && "VOLUNTEER".equals(f.deleteRequest.requestedBySystemRole)));
+  }
+
+  @Test
+  void restoreFamilyClearsDeleteRequest() {
+    Document requestedFamily = familyDoc(testFamilyId, "Restore Me", "restore@email.com",
+      "45 Oak St", null, "2:00-3:00", false, false, false, false, false, "not_helped",
+      List.of(studentDoc("Kid Two", "3", "Herman High School", "HHS")));
+    requestedFamily.append("deleteRequest", new Document()
+      .append("requested", true)
+      .append("message", "delete me")
+      .append("requestedByUserId", "request-user-1")
+      .append("requestedByUserName", "Request User")
+      .append("requestedBySystemRole", "VOLUNTEER")
+      .append("requestedAt", "2026-07-14T00:00:00Z"));
+    db.getCollection("family").replaceOne(eq("_id", testFamilyId), requestedFamily);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.restoreFamilyDeleteRequest(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertNull(familyCaptor.getValue().deleteRequest);
+  }
+
+  @Test
+  void restoreFamilyDeleteRequestRejectsBadId() {
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> familyController.restoreFamilyDeleteRequest(ctx));
+
+    assertEquals("The requested family id wasn't a legal Mongo Object ID.", exception.getMessage());
+  }
+
+  @Test
+  void restoreFamilyDeleteRequestRejectsMissingFamily() {
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toHexString());
+
+    NotFoundResponse exception = assertThrows(NotFoundResponse.class,
+      () -> familyController.restoreFamilyDeleteRequest(ctx));
+
+    assertEquals("The requested family was not found", exception.getMessage());
+  }
+
+  @Test
+  void linkGuardianLinksGuardianToFamily() {
+    UsersService usersService = new UsersService(db);
+    usersService.createUser(
+      "guardian-link-user",
+      "hash",
+      "Guardian Link User",
+      "guardian-link@example.com",
+      umm3601.Auth.Role.GUARDIAN,
+      null);
+    Users guardian = usersService.findByUsername("guardian-link-user");
+
+    FamilyGuardianLinkRequest request = new FamilyGuardianLinkRequest();
+    request.setGuardianUserId(guardian._id);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyAsClass(FamilyGuardianLinkRequest.class)).thenReturn(request);
+
+    familyController.linkGuardian(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertEquals(guardian._id, familyCaptor.getValue().ownerUserId);
+  }
+
+  @Test
+  void linkGuardianRejectsBadFamilyId() {
+    FamilyGuardianLinkRequest request = new FamilyGuardianLinkRequest();
+    request.setGuardianUserId(new ObjectId().toHexString());
+
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+    when(ctx.bodyAsClass(FamilyGuardianLinkRequest.class)).thenReturn(request);
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> familyController.linkGuardian(ctx));
+
+    assertEquals("The requested family id was not a legal Mongo Object.", exception.getMessage());
+  }
+
+  @Test
+  void linkGuardianRejectsMissingFamily() {
+    UsersService usersService = new UsersService(db);
+    usersService.createUser(
+      "guardian-link-user-2",
+      "hash",
+      "Guardian Link User 2",
+      "guardian-link-2@example.com",
+      umm3601.Auth.Role.GUARDIAN,
+      null);
+    Users guardian = usersService.findByUsername("guardian-link-user-2");
+
+    FamilyGuardianLinkRequest request = new FamilyGuardianLinkRequest();
+    request.setGuardianUserId(guardian._id);
+
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toHexString());
+    when(ctx.bodyAsClass(FamilyGuardianLinkRequest.class)).thenReturn(request);
+
+    NotFoundResponse exception = assertThrows(NotFoundResponse.class,
+      () -> familyController.linkGuardian(ctx));
+
+    assertEquals("The requested family was not found", exception.getMessage());
+  }
+
+  @Test
+  void linkGuardianRejectsNonGuardianUser() {
+    UsersService usersService = new UsersService(db);
+    usersService.createUser(
+      "volunteer-link-user",
+      "hash",
+      "Volunteer Link User",
+      "volunteer-link@example.com",
+      umm3601.Auth.Role.VOLUNTEER,
+      "volunteer_base");
+    Users volunteer = usersService.findByUsername("volunteer-link-user");
+
+    FamilyGuardianLinkRequest request = new FamilyGuardianLinkRequest();
+    request.setGuardianUserId(volunteer._id);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyAsClass(FamilyGuardianLinkRequest.class)).thenReturn(request);
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> familyController.linkGuardian(ctx));
+
+    assertEquals("Linked user must be a guardian account", exception.getMessage());
+  }
+
+  @Test
+  void unlinkGuardianRemovesLinkedGuardian() {
+    db.getCollection("family").updateOne(eq("_id", testFamilyId),
+      new Document("$set", new Document("ownerUserId", "guardian-link-user")));
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.unlinkGuardian(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertNull(familyCaptor.getValue().ownerUserId);
+  }
+
+  @Test
+  void unlinkGuardianRejectsBadFamilyId() {
+    when(ctx.pathParam("id")).thenReturn("bad-id");
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> familyController.unlinkGuardian(ctx));
+
+    assertEquals("The requested family id was not a legal Mongo Object.", exception.getMessage());
+  }
+
+  @Test
+  void unlinkGuardianRejectsMissingFamily() {
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toHexString());
+
+    NotFoundResponse exception = assertThrows(NotFoundResponse.class,
+      () -> familyController.unlinkGuardian(ctx));
+
+    assertEquals("The requested family was not found", exception.getMessage());
+  }
+
+  @Test
   void getDashboardStats() {
     familyController.getDashboardStats(ctx);
 

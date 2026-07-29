@@ -8,7 +8,7 @@
     "jobRole": null
   },
   {
-    "username": "viorel",
+    "username": "volly",
     "passwordHash": "$2a$12$05sHfXuH7y0SqDImhn3xH.u/Sk5j2NRa2Pd2q.8VnZO039EV4pyPq",
     "fullName": "Random Person",
     "email": "volunteer@readyforsupplies.org",
@@ -16,10 +16,10 @@
     "jobRole": "volunteer_base"
   },
   {
-    "username": "gwen",
+    "username": "guardy",
     "passwordHash": "$2a$12$05sHfXuH7y0SqDImhn3xH.u/Sk5j2NRa2Pd2q.8VnZO039EV4pyPq",
     "fullName": "Random Person",
-    "email": null,
+    "email": "guardian@readyforsupplies.org",
     "systemRole": "GUARDIAN",
     "jobRole": null
   }

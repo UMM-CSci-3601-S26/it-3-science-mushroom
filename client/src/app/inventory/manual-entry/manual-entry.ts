@@ -98,7 +98,9 @@ export class ManualEntry implements OnInit {
       notes: item.notes ?? '',
       maxQuantity: item.maxQuantity ?? 0,
       minQuantity: item.minQuantity ?? 0,
-      stockState: item.stockState ?? ''
+      stockState: item.stockState ?? '',
+      calculatedMinQuantity: item.calculatedMinQuantity ?? 0,
+      calculatedStockState: item.calculatedStockState ?? 'N/A'
     });
   }
 
@@ -166,7 +168,9 @@ export class ManualEntry implements OnInit {
         notes: this.form.get('notes')?.value || '',
         maxQuantity: this.form.get('maxQuantity')?.value || 0,
         minQuantity: this.form.get('minQuantity')?.value || 0,
-        stockState: this.form.get('stockState')?.value || ''
+        stockState: this.form.get('stockState')?.value || '',
+        calculatedMinQuantity: 0,
+        calculatedStockState: 'N/A'
       };
 
       this.dialogRef.close({

@@ -15,14 +15,17 @@ describe('SupplyListService', () => {
       school: "MHS",
       grade: "PreK",
       item: ["Washable Marker"],
-      brand: { allOf: "", anyOf: ["Crayola"] },
-      color: { allOf: [], anyOf: ["Black"] },
+      brand: { exactly: "", anyOf: ["Crayola"] },
+      color: { exactly: "", anyOf: ["Black"] },
       packageSize: 8,
-      size: { allOf: "Wide", anyOf: [] },
-      type: { allOf: "", anyOf: [] },
-      material: { allOf: "", anyOf: [] },
+      size: { exactly: "Wide", anyOf: [] },
+      type: { exactly: "", anyOf: [] },
+      material: { exactly: "", anyOf: [] },
       quantity: 0,
       notes: "N/A",
+      supplyID: "",
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '2',
@@ -31,14 +34,17 @@ describe('SupplyListService', () => {
       school: "Herman",
       grade: "6",
       item: ["Folder"],
-      brand: { allOf: "", anyOf: ["N/A"] },
-      color: { allOf: [], anyOf: ["Red"] },
+      brand: { exactly: "", anyOf: ["N/A"] },
+      color: { exactly: "", anyOf: ["Red"] },
       packageSize: 1,
-      size: { allOf: "N/A", anyOf: [] },
-      type: { allOf: "2 Prong", anyOf: [] },
-      material: { allOf: "Plastic", anyOf: [] },
+      size: { exactly: "N/A", anyOf: [] },
+      type: { exactly: "2 Prong", anyOf: [] },
+      material: { exactly: "Plastic", anyOf: [] },
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      supplyID: "",
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '3',
@@ -47,14 +53,17 @@ describe('SupplyListService', () => {
       school: "MHS",
       grade: "4",
       item: ["Notebook"],
-      brand: { allOf: "", anyOf: ["Five Star"] },
-      color: { allOf: [], anyOf: ["Yellow"] },
+      brand: { exactly: "", anyOf: ["Five Star"] },
+      color: { exactly: "", anyOf: ["Yellow"] },
       packageSize: 1,
-      size: { allOf: "Wide Ruled", anyOf: [] },
-      type: { allOf: "Spiral", anyOf: [] },
-      material: { allOf: "", anyOf: ["N/A"] },
+      size: { exactly: "Wide Ruled", anyOf: [] },
+      type: { exactly: "Spiral", anyOf: [] },
+      material: { exactly: "", anyOf: ["N/A"] },
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      supplyID: "",
+      invIDs: [],
+      percentageFilled: 0
     }
   ];
 
@@ -317,11 +326,11 @@ describe('SupplyListService', () => {
         school: 'MHS',
         grade: 'PreK',
         item: ['Scissors'],
-        brand: { allOf: '', anyOf: ['Fiskars'] },
-        color: { allOf: [], anyOf: ['Orange'] },
-        size: { allOf: 'Kids', anyOf: [] },
-        type: { allOf: 'Blunt', anyOf: [] },
-        material: { allOf: '', anyOf: ['Metal'] },
+        brand: { exactly: '', anyOf: ['Fiskars'] },
+        color: { exactly: "", anyOf: ['Orange'] },
+        size: { exactly: 'Kids', anyOf: [] },
+        type: { exactly: 'Blunt', anyOf: [] },
+        material: { exactly: '', anyOf: ['Metal'] },
         packageSize: 1,
         quantity: 5,
         notes: 'N/A'
@@ -336,9 +345,9 @@ describe('SupplyListService', () => {
 
     it('returns the id from the server response', () => {
       const newItem: Partial<SupplyList> = { item: ['Glue Stick'], school: 'Herman', grade: '2nd grade',
-        brand: { allOf: '', anyOf: ['Elmer\'s'] }, color: { allOf: [], anyOf: ['White'] },
-        size: { allOf: 'Regular', anyOf: [] }, type: { allOf: 'Stick', anyOf: [] },
-        material: { allOf: '', anyOf: ['N/A'] }, packageSize: 1, quantity: 3, notes: '' };
+        brand: { exactly: '', anyOf: ['Elmer\'s'] }, color: { exactly: "", anyOf: ['White'] },
+        size: { exactly: 'Regular', anyOf: [] }, type: { exactly: 'Stick', anyOf: [] },
+        material: { exactly: '', anyOf: ['N/A'] }, packageSize: 1, quantity: 3, notes: '' };
 
       supplylistService.addSupplyList(newItem).subscribe();
 
@@ -356,11 +365,11 @@ describe('SupplyListService', () => {
         school: 'MHS',
         grade: '4th grade',
         item: ['Notebook'],
-        brand: { allOf: '', anyOf: ['Five Star'] },
-        color: { allOf: [], anyOf: ['Blue'] },
-        size: { allOf: 'Wide Ruled', anyOf: [] },
-        type: { allOf: 'Spiral', anyOf: [] },
-        material: { allOf: '', anyOf: ['N/A'] },
+        brand: { exactly: '', anyOf: ['Five Star'] },
+        color: { exactly: "", anyOf: ['Blue'] },
+        size: { exactly: 'Wide Ruled', anyOf: [] },
+        type: { exactly: 'Spiral', anyOf: [] },
+        material: { exactly: '', anyOf: ['N/A'] },
         packageSize: 1,
         quantity: 2,
         notes: 'N/A'

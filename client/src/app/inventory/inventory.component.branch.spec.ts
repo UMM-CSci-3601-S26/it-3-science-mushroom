@@ -56,7 +56,9 @@ describe('InventoryComponent branch coverage', () => {
     notes: 'Keep sealed',
     maxQuantity: 20,
     minQuantity: 1,
-    stockState: 'In Stock'
+    calculatedMinQuantity: 0,
+    stockState: 'In Stock',
+    calculatedStockState: 'N/A'
   };
 
   const itemB: Inventory = {
@@ -75,7 +77,9 @@ describe('InventoryComponent branch coverage', () => {
     notes: 'Sharpened',
     maxQuantity: 30,
     minQuantity: 2,
-    stockState: 'Low'
+    calculatedMinQuantity: 0,
+    stockState: 'Low',
+    calculatedStockState: 'N/A'
   };
 
   function makeCard(

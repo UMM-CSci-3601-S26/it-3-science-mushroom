@@ -60,8 +60,8 @@ describe('Add Supply List Item', () => {
       expect(request.body.school).to.equal(TARGET_GROUP.school);
       expect(request.body.grade).to.equal(TARGET_GROUP.grade);
       expect(request.body.item).to.deep.equal([NEW_ITEM.item]);
-      expect(request.body.brand.allOf).to.equal(NEW_ITEM.brand);
-      expect(request.body.color.allOf).to.deep.equal([NEW_ITEM.color]);
+      expect(request.body.brand.exactly).to.equal(NEW_ITEM.brand);
+      expect(request.body.color.exactly).to.equal(NEW_ITEM.color);
       expect(request.body.quantity).to.equal(2);
       expect(request.body.packageSize).to.equal(1);
       expect(request.body.notes).to.equal(NEW_ITEM.notes);
