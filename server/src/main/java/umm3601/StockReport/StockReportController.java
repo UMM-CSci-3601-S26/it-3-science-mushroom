@@ -6,7 +6,6 @@ import static com.mongodb.client.model.Filters.eq;
 
 // Java Imports
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
@@ -23,7 +22,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 // Com Imports
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 
 // IO Imports
@@ -38,9 +36,7 @@ import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
 import umm3601.Inventory.Inventory;
-import umm3601.Family.Family;
 import umm3601.Family.FamilyController;
-import umm3601.SupplyList.SupplyList;
 
 @SuppressWarnings({ "MagicNumber" })
 public class StockReportController {
@@ -53,8 +49,7 @@ public class StockReportController {
 
   private final JacksonMongoCollection<StockReport> stockReportCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
-  private final JacksonMongoCollection<Family> familyCollection;
-  private final JacksonMongoCollection<SupplyList> supplyListCollection;
+
 
   public StockReportController(MongoDatabase database) {
     stockReportCollection = JacksonMongoCollection.builder().build(
@@ -68,19 +63,6 @@ public class StockReportController {
       database,
       "inventory",
       Inventory.class,
-      UuidRepresentation.STANDARD
-    );
-    familyCollection = JacksonMongoCollection.builder().build(
-      database,
-      "family",
-      Family.class,
-      UuidRepresentation.STANDARD
-    );
-
-    supplyListCollection = JacksonMongoCollection.builder().build(
-      database,
-      "supplyList",
-      SupplyList.class,
       UuidRepresentation.STANDARD
     );
   }
@@ -232,134 +214,6 @@ public class StockReportController {
   }
 
   /**
-   * Gets the total number of students in each school and grade.
-   * @return a map of school to grade to teacher to student count
-   */
-  private Map<String, Map<String, Map<String, Integer>>> getSchoolGradeTeacherTotals() {
-    ArrayList<Family> families = familyCollection.find().into(new ArrayList<>());
-    Map<String, Map<String, Map<String, Integer>>> schoolGradeTeacherTotals = new HashMap<>();
-
-    // Go through all the families
-    for (Family family : families) {
-      if (family == null || family.students == null) {
-        continue;
-      }
-
-      // Go through all the students in that family
-      for (Family.StudentInfo student : family.students) {
-        if (student == null) {
-          continue;
-        }
-
-        // Get the school, grade, and teacher for the student
-        String school = student.school != null ? student.school : "Unknown School";
-        String grade = student.grade != null ? student.grade : "Unknown Grade";
-        String teacher = student.teacher != null ? student.teacher : "Unknown Teacher";
-
-        // Add the student to the appropriate school
-        Map<String, Map<String, Integer>> gradeTotals = schoolGradeTeacherTotals.get(school);
-        if (gradeTotals == null) {
-          gradeTotals = new HashMap<>();
-          schoolGradeTeacherTotals.put(school, gradeTotals); // Put grades in schools
-        }
-
-        Map<String, Integer> teacherTotals = gradeTotals.get(grade);
-        if (teacherTotals == null) {
-          teacherTotals = new HashMap<>();
-          gradeTotals.put(grade, teacherTotals); // Put teachers in grades
-        }
-
-        teacherTotals.put(teacher, teacherTotals.getOrDefault(teacher, 0) + 1);  // Add student to teacher
-      }
-    }
-
-    return schoolGradeTeacherTotals;
-  }
-
-   /**
-   * Updates the calculatedStockState of the given inventory item based on quantity, minQuantity, and maxQuantity.
-   * Use this method to update the calculatedStockState of an inventory item whenever its
-   * calculatedMinQuantity changes.
-   *
-   * @param inv The inventory item to update the calculatedStockState for
-   * @throws NotFoundResponse if the item was not found
-   * @throws IllegalArgumentException if calculatedMinQuantity is null
-   * @return the updated calculatedStockState of the inventory item
-  */
-  private String calculateStockState(Inventory inv) {
-    String calculatedStockState = null;
-    // Make sure item exists
-    if (inv == null) {
-      throw new NotFoundResponse("The requested inventory item was not found");
-    } else {
-      // Validate quantity, minQuantity, and maxQuantity
-      if (inv.calculatedMinQuantity == null) {
-        throw new IllegalArgumentException("calculatedMinQuantity must be an integer.");
-      }
-
-      int itemDiff = inv.quantity - inv.calculatedMinQuantity;
-
-      if (itemDiff == 0) {
-        calculatedStockState = "Stocked";
-      } else if (itemDiff < 0) {
-        calculatedStockState = "Understocked";
-      } else if (itemDiff > 0) {
-        calculatedStockState = "Overstocked";
-      } else {
-        calculatedStockState = "Unknown";
-      }
-
-      return calculatedStockState;
-    }
-  }
-
-  /**
-   * Calculates the calculatedStockState and calculatedMinQuantity of items based on number of students under each teacher, grade, and school.
-   */
-  private void calculatesUnits(){
-    ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-
-    // loop through each supply list
-    for (SupplyList supplyList : allSupplyLists) {
-      int totalNeeded = 0;
-
-      // loop through each school
-      for (Map.Entry<String, Map<String, Map<String, Integer>>> schoolEntry : getSchoolGradeTeacherTotals().entrySet()) {
-        String school = schoolEntry.getKey();
-        Map<String, Map<String, Integer>> gradeTotals = schoolEntry.getValue();
-
-        // loop through each grade
-        for (Map.Entry<String, Map<String, Integer>> gradeEntry : gradeTotals.entrySet()) {
-          String grade = gradeEntry.getKey();
-          Map<String, Integer> teacherTotals = gradeEntry.getValue();
-
-          // loop through each teacher
-          for (Map.Entry<String, Integer> teacherEntry : teacherTotals.entrySet()) {
-            String teacher = teacherEntry.getKey();
-            int numStudents = teacherEntry.getValue();
-
-            // if the supply list matches the school, grade, and teacher,
-            // add the quantity needed for that supply list to the total needed
-            if (supplyList.school.equals(school) && (supplyList.grade.equals(grade)) && (supplyList.teacher.equals(teacher))) {
-              int qty = supplyList.quantity != null ? supplyList.quantity : 1;
-              totalNeeded += numStudents * qty;
-
-              // Use the first linked item in the supply list to find the corresponding inventory item and update its calculatedMinQuantity
-              Inventory bestMatch = inventoryCollection.find(eq("internalID", supplyList.invIDs.get(0))).first();
-              if (bestMatch != null) {
-                bestMatch.calculatedMinQuantity = totalNeeded;
-                bestMatch.calculatedStockState = calculateStockState(bestMatch);
-                inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("calculatedMinQuantity", bestMatch.calculatedMinQuantity));
-                inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("calculatedStockState", bestMatch.calculatedStockState));
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Makes CSVs for each Stock State from Inventory
    * @returns Array of CSV strings, one for each Stock State report in the system
    * (Stocked, Out of Stock, Understocked, Overstocked)
@@ -374,7 +228,9 @@ public class StockReportController {
         "maxQuantity",
         "minQuantity",
         "stockState",
-        "notes"))
+        "notes",
+        "calculatedMinQuantity",
+        "calculatedStockState"))
       .into(new ArrayList<>());
 
     // Separate StringBuilders for each Stock State report type
@@ -384,22 +240,24 @@ public class StockReportController {
     StringBuilder overstockedCSV = new StringBuilder();
 
     // Sheet Headers
-    stockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
-    outOfStockCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
-    understockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
-    overstockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
+    stockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
+    outOfStockCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
+    understockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
+    overstockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
 
     // Fill rows for each report type
     for (Inventory item : inventoryItems) {
       String row = String.format("\"%s\",%d,%d,%d,\"%s\"\n",
+        // Note! If description includes Inventory Item property names (e.g: brand, size, etc)
+        // and they're separated by commas, it will put them in separate cells
+        // Fixing would require extra logic for something that is ultimately very minor
         FamilyController.cleanUpCSV(item.description),
         item.quantity,
         item.maxQuantity,
         item.minQuantity,
-        FamilyController.cleanUpCSV(item.notes)
-        // Note! If description includes Inventory Item property names (e.g: brand, size, etc)
-        // and they're separated by commas, it will put them in separate cells
-        // Fixing would require extra logic for something that is ultimately very minor
+        FamilyController.cleanUpCSV(item.notes),
+        item.calculatedMinQuantity != null ? item.calculatedMinQuantity : 0,
+        FamilyController.cleanUpCSV(item.calculatedStockState != null ? item.calculatedStockState : "Unknown")
       );
 
       if (item.stockState == null) {
