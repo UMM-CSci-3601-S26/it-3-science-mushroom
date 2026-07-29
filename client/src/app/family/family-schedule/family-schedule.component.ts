@@ -13,6 +13,8 @@ import { FamilyService } from '../family.service';
 import { SettingsService } from '../../settings/settings.service';
 import { DefaultScheduleColumns, TimeAvailabilityLabels } from '../../settings/settings';
 // Data structure for expandable columns
+type ScheduleMeridiem = 'AM' | 'PM';
+
 interface ScheduleColumn {
   id: number;
   label: string;
@@ -50,6 +52,9 @@ const DEFAULT_SCHEDULE_COLUMNS: DefaultScheduleColumns = {
   englishFamilies: 1,
   spanishFamilies: 0
 };
+
+const TIME_SLOT_SEPARATOR = /\s*[-\u2013\u2014]\s*/;
+const MERIDIEM_SUFFIX_PATTERN = /(AM|PM)\s*$/i;
 
 @Component({
   selector: 'app-family-schedule',
@@ -517,38 +522,56 @@ export class FamilyScheduleComponent {
     return family.scheduleAssignment ? [family.scheduleAssignment] : [];
   }
 
-  private timeSlotRange(timeSlot: string | undefined): { start: number; end: number } | undefined {
+  private timeSlotRange(
+    timeSlot: string | undefined,
+    fallbackMeridiem?: ScheduleMeridiem
+  ): { start: number; end: number } | undefined {
     if (!timeSlot) {
       return undefined;
     }
 
-    const normalizedTimeSlot = timeSlot.trim().toUpperCase().replace(/\u2013|\u2014/g, '-');
-    const rangeParts = normalizedTimeSlot.split(/\s*-\s*/, 2);
+    const normalizedTimeSlot = timeSlot.trim().replace(/\u2013|\u2014/g, '-');
+    const rangeParts = normalizedTimeSlot.split(TIME_SLOT_SEPARATOR, 2);
+    const endText = rangeParts.length === 2 ? rangeParts[1] : undefined;
 
-    if (rangeParts.length < 2) {
+    if (!rangeParts[0]?.trim()) {
       return undefined;
     }
 
-    const endMeridiem = this.rangeMeridiem(rangeParts[1]);
-    const startMeridiem = this.rangeMeridiem(rangeParts[0]) ?? endMeridiem;
-
-    if (!startMeridiem || !endMeridiem) {
+    const explicitStartMeridiem = this.rangeMeridiem(rangeParts[0]);
+    const explicitEndMeridiem = endText ? this.rangeMeridiem(endText) : undefined;
+    const startMeridiems = this.startMeridiemCandidates(
+      explicitStartMeridiem,
+      explicitEndMeridiem,
+      fallbackMeridiem
+    );
+    if (startMeridiems.length === 0) {
       return undefined;
     }
 
-    const start = this.parseScheduleTime(rangeParts[0], startMeridiem);
-    const end = this.parseScheduleTime(rangeParts[1], endMeridiem);
+    for (const startMeridiem of startMeridiems) {
+      const endMeridiem = explicitEndMeridiem ?? startMeridiem;
+      const start = this.parseScheduleTime(rangeParts[0], startMeridiem);
+      const end = endText
+        ? this.parseScheduleTime(endText, endMeridiem)
+        : start + 60;
 
-    if (start === Number.MAX_SAFE_INTEGER || end === Number.MAX_SAFE_INTEGER || end <= start) {
-      return undefined;
+      if (start !== Number.MAX_SAFE_INTEGER && end !== Number.MAX_SAFE_INTEGER && end > start) {
+        return { start, end };
+      }
     }
 
-    return { start, end };
+    return undefined;
   }
 
   private timeSlotSortValue(timeSlot: string | undefined): number {
     if (!timeSlot || timeSlot.toLowerCase().includes('assigned') || timeSlot.toLowerCase() === 'tbd') {
       return Number.MAX_SAFE_INTEGER;
+    }
+
+    const range = this.timeSlotRange(timeSlot);
+    if (range) {
+      return range.start;
     }
 
     const normalizedTimeSlot = timeSlot.trim().toUpperCase();
@@ -571,39 +594,52 @@ export class FamilyScheduleComponent {
     return hour * 60 + minute;
   }
 
-  private rangeMeridiem(timeSlot: string): 'AM' | 'PM' | undefined {
-    return timeSlot.match(/\b(AM|PM)\b/g)?.at(-1) as 'AM' | 'PM' | undefined;
+  private rangeMeridiem(timeSlot: string): ScheduleMeridiem | undefined {
+    const match = timeSlot.match(MERIDIEM_SUFFIX_PATTERN);
+    return match ? match[1].toUpperCase() as ScheduleMeridiem : undefined;
   }
 
-  private subdivideTimeSlot(timeSlot: string | undefined, fallbackMeridiem: 'AM' | 'PM'): string[] {
+  private subdivideTimeSlot(timeSlot: string | undefined, fallbackMeridiem: ScheduleMeridiem): string[] {
     if (!timeSlot?.trim()) {
       return [];
     }
 
-    const normalizedTimeSlot = timeSlot.trim().replace(/\u2013|\u2014/g, '-');
-    const rangeParts = normalizedTimeSlot.split(/\s*-\s*/, 2);
-    const endMeridiem = rangeParts[1] ? this.rangeMeridiem(rangeParts[1]) : undefined;
-    const startMeridiem = this.rangeMeridiem(rangeParts[0]) ?? endMeridiem ?? fallbackMeridiem;
+    const range = this.timeSlotRange(timeSlot, fallbackMeridiem);
 
-    const start = this.parseScheduleTime(rangeParts[0], startMeridiem);
-    const end = rangeParts[1]
-      ? this.parseScheduleTime(rangeParts[1], endMeridiem ?? startMeridiem)
-      : start + 60;
-
-    if (end <= start) {
+    if (!range) {
       return [];
     }
 
     const rows: string[] = [];
-    for (let current = start; current + 15 <= end; current += 15) {
+    for (let current = range.start; current + 15 <= range.end; current += 15) {
       rows.push(this.formatScheduleBlock(current, current + 15));
     }
 
     return rows;
   }
 
-  private parseScheduleTime(timeText: string, meridiem: 'AM' | 'PM'): number {
-    const cleanedTime = timeText.replace(/\b(AM|PM)\b/gi, '').trim();
+  private startMeridiemCandidates(
+    explicitStartMeridiem: ScheduleMeridiem | undefined,
+    explicitEndMeridiem: ScheduleMeridiem | undefined,
+    fallbackMeridiem: ScheduleMeridiem | undefined
+  ): ScheduleMeridiem[] {
+    if (explicitStartMeridiem) {
+      return [explicitStartMeridiem];
+    }
+
+    if (explicitEndMeridiem) {
+      return [explicitEndMeridiem, this.oppositeMeridiem(explicitEndMeridiem)];
+    }
+
+    return fallbackMeridiem ? [fallbackMeridiem] : [];
+  }
+
+  private oppositeMeridiem(meridiem: ScheduleMeridiem): ScheduleMeridiem {
+    return meridiem === 'AM' ? 'PM' : 'AM';
+  }
+
+  private parseScheduleTime(timeText: string, meridiem: ScheduleMeridiem): number {
+    const cleanedTime = timeText.replace(MERIDIEM_SUFFIX_PATTERN, '').trim();
     const match = cleanedTime.match(/^(\d{1,2})(?::(\d{2}))?$/);
     if (!match) {
       return Number.MAX_SAFE_INTEGER;
