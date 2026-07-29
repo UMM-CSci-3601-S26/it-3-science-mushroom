@@ -78,6 +78,7 @@ import { DialogService } from '../shared/dialog/dialog.service';
 })
 export class SettingsComponent implements OnInit {
   private static readonly timeSlotSeparator = /\s*[-\u2013\u2014]\s*/;
+  private static readonly meridiemPattern = /(AM|PM)\s*$/i;
 
   // Services & Components
   private settingsService = inject(SettingsService);
@@ -700,33 +701,64 @@ export class SettingsComponent implements OnInit {
       }
 
       const rangeParts = value.split(SettingsComponent.timeSlotSeparator, 2);
-      const endMeridiem = rangeParts.length === 2
+      const explicitEndMeridiem = rangeParts.length === 2
         ? SettingsComponent.extractMeridiem(rangeParts[1])
         : undefined;
-      const startMeridiem = SettingsComponent.extractMeridiem(rangeParts[0]) ?? endMeridiem;
-      const resolvedEndMeridiem = endMeridiem ?? startMeridiem;
-
-      const start = SettingsComponent.parseTimeSlotPart(rangeParts[0], startMeridiem);
-      if (start === undefined) {
-        return startMeridiem ? { timeSlot: true } : { timeMeridiem: true };
+      const explicitStartMeridiem = SettingsComponent.extractMeridiem(rangeParts[0]);
+      const startMeridiems = SettingsComponent.startMeridiemCandidates(explicitStartMeridiem, explicitEndMeridiem);
+      if (startMeridiems.length === 0) {
+        return { timeMeridiem: true };
       }
 
-      if (rangeParts.length === 1) {
-        return null;
+      let parseError: ValidationErrors | null = null;
+      for (const startMeridiem of startMeridiems) {
+        const start = SettingsComponent.parseTimeSlotPart(rangeParts[0], startMeridiem);
+        if (start === undefined) {
+          parseError = { timeSlot: true };
+          continue;
+        }
+
+        if (rangeParts.length === 1) {
+          return null;
+        }
+
+        const resolvedEndMeridiem = explicitEndMeridiem ?? startMeridiem;
+        const end = SettingsComponent.parseTimeSlotPart(rangeParts[1], resolvedEndMeridiem);
+        if (end === undefined) {
+          parseError = { timeSlot: true };
+          continue;
+        }
+
+        if (end > start) {
+          return null;
+        }
       }
 
-      const end = SettingsComponent.parseTimeSlotPart(rangeParts[1], resolvedEndMeridiem);
-      if (end === undefined) {
-        return resolvedEndMeridiem ? { timeSlot: true } : { timeMeridiem: true };
-      }
-
-      return end > start ? null : { timeOrder: true };
+      return parseError ?? { timeOrder: true };
     };
   }
 
   private static extractMeridiem(timeText: string): 'AM' | 'PM' | undefined {
-    const matches = timeText.match(/\b(AM|PM)\b/gi);
-    return matches?.at(-1)?.toUpperCase() as 'AM' | 'PM' | undefined;
+    return timeText.match(SettingsComponent.meridiemPattern)?.[1].toUpperCase() as 'AM' | 'PM' | undefined;
+  }
+
+  private static startMeridiemCandidates(
+    explicitStartMeridiem: 'AM' | 'PM' | undefined,
+    explicitEndMeridiem: 'AM' | 'PM' | undefined
+  ): ('AM' | 'PM')[] {
+    if (explicitStartMeridiem) {
+      return [explicitStartMeridiem];
+    }
+
+    if (explicitEndMeridiem) {
+      return [explicitEndMeridiem, SettingsComponent.oppositeMeridiem(explicitEndMeridiem)];
+    }
+
+    return [];
+  }
+
+  private static oppositeMeridiem(meridiem: 'AM' | 'PM'): 'AM' | 'PM' {
+    return meridiem === 'AM' ? 'PM' : 'AM';
   }
 
   private static parseTimeSlotPart(timeText: string, meridiem: 'AM' | 'PM' | undefined): number | undefined {
@@ -734,7 +766,7 @@ export class SettingsComponent implements OnInit {
       return undefined;
     }
 
-    const cleanedTime = timeText.replace(/\b(AM|PM)\b/gi, '').trim();
+    const cleanedTime = timeText.replace(SettingsComponent.meridiemPattern, '').trim();
     const match = cleanedTime.match(/^(\d{1,2}):(\d{2})$/);
     if (!match) {
       return undefined;

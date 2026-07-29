@@ -528,6 +528,34 @@ describe('SettingsComponent', () => {
     expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
   });
 
+  it('accepts noon crossover when only the end time has a meridiem', () => {
+    component.timeAvailabilityForm.patchValue({
+      earlyMorning: '8:00-9:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '11:30-12:30 PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
+
+    const earlyAfternoon = component.timeAvailabilityForm.get('earlyAfternoon');
+
+    expect(earlyAfternoon?.hasError('timeOrder')).toBeFalse();
+    expect(earlyAfternoon?.valid).toBeTrue();
+  });
+
+  it('accepts noon crossover without a space before the end meridiem', () => {
+    component.timeAvailabilityForm.patchValue({
+      earlyMorning: '8:00-9:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '11:30 AM - 12:30PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
+
+    const earlyAfternoon = component.timeAvailabilityForm.get('earlyAfternoon');
+
+    expect(earlyAfternoon?.hasError('timeOrder')).toBeFalse();
+    expect(earlyAfternoon?.valid).toBeTrue();
+  });
+
   it('saveDefaultColumns calls updateDefaultScheduleColumns and shows success snack bar', () => {
     settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(of(undefined));
     component.timeAvailabilityForm.patchValue({
