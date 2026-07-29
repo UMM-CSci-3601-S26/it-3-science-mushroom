@@ -622,10 +622,8 @@ public class InventoryController {
         calculatedStockState = "Stocked";
       } else if (itemDiff < 0) {
         calculatedStockState = "Understocked";
-      } else if (itemDiff > 0) {
-        calculatedStockState = "Overstocked";
       } else {
-        calculatedStockState = "Unknown";
+        calculatedStockState = "Overstocked";
       }
 
       return calculatedStockState;
