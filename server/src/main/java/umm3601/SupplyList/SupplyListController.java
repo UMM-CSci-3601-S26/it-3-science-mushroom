@@ -37,7 +37,7 @@ import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
 
 // Misc Imports
-import umm3601.Inventory.Inventory;
+//import umm3601.Inventory.Inventory;
 
 /**
  * API controller for school supply-list items.
@@ -68,7 +68,7 @@ public class SupplyListController {
   static final String ID_KEY = "supplyID";
 
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
-  private final JacksonMongoCollection<Inventory> inventoryCollection;
+  //private final JacksonMongoCollection<Inventory> inventoryCollection;
 
   public SupplyListController(MongoDatabase database) {
     supplyListCollection = JacksonMongoCollection.builder().build(
@@ -78,12 +78,12 @@ public class SupplyListController {
       UuidRepresentation.STANDARD
     );
 
-    inventoryCollection = JacksonMongoCollection.builder().build(
-      database,
-      "inventory",
-      Inventory.class,
-      UuidRepresentation.STANDARD
-    );
+    // inventoryCollection = JacksonMongoCollection.builder().build(
+    //   database,
+    //   "inventory",
+    //   Inventory.class,
+    //   UuidRepresentation.STANDARD
+    // );
   }
 
   /**
@@ -383,36 +383,36 @@ public class SupplyListController {
     }
   }
 
-  /**
-   * calculatePercentageFilled calculates the percentage of the supply list item that is filled
-   * @param supplyList The supply list item to calculate the percentage for
-   */
-  private void calculatePercentageFilled(SupplyList supplyList) {
-    if (supplyList == null) {
-      return;
-    }
+  // /**
+  //  * calculatePercentageFilled calculates the percentage of the supply list item that is filled
+  //  * @param supplyList The supply list item to calculate the percentage for
+  //  */
+  // private void calculatePercentageFilled(SupplyList supplyList) {
+  //   if (supplyList == null) {
+  //     return;
+  //   }
 
-    int totalQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
-    int requestedQuantity = 0;
+  //   int totalQuantity = supplyList.quantity != null ? supplyList.quantity : 0;
+  //   int requestedQuantity = 0;
 
-    // >= 0 is a "percentage" filled
-    // -1 is "not calculated" (default)
-    // -2 is "not applicable" (ie: empty invIDs list)
+  //   // >= 0 is a "percentage" filled
+  //   // -1 is "not calculated" (default)
+  //   // -2 is "not applicable" (ie: empty invIDs list)
 
-    if (supplyList.invIDs != null && !supplyList.invIDs.isEmpty()) {
-      for (String invID : supplyList.invIDs) {
-        Inventory inventory = inventoryCollection.find(eq("internalID", invID)).first();
-        if (inventory != null) {
-          requestedQuantity += inventory.quantity;
-        }
-      }
-    } else {
-      supplyList.percentageFilled = -2; // Indicates that the supply list item has no associated inventory items
-      return;
-    }
+  //   if (supplyList.invIDs != null && !supplyList.invIDs.isEmpty()) {
+  //     for (String invID : supplyList.invIDs) {
+  //       Inventory inventory = inventoryCollection.find(eq("internalID", invID)).first();
+  //       if (inventory != null) {
+  //         requestedQuantity += inventory.quantity;
+  //       }
+  //     }
+  //   } else {
+  //     supplyList.percentageFilled = -2; // Indicates that the supply list item has no associated inventory items
+  //     return;
+  //   }
 
-    int percentageFilled = totalQuantity > 0 ? ((int) requestedQuantity / totalQuantity) * 100 : 0;
-    supplyList.percentageFilled = percentageFilled;
-  }
+  //   int percentageFilled = totalQuantity > 0 ? ((int) requestedQuantity / totalQuantity) * 100 : 0;
+  //   supplyList.percentageFilled = percentageFilled;
+  // }
 
 }
