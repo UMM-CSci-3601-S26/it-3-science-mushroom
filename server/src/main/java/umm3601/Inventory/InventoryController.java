@@ -627,7 +627,7 @@ public class InventoryController {
   /**
    * Calculates the calculatedStockState and calculatedMinQuantity of items based on number of students under each teacher, grade, and school.
    */
-  private void calculatesUnitsAndStates(){
+  private void calculateUnitsAndStates(){
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
 
     // loop through each supply list
@@ -696,11 +696,7 @@ public class InventoryController {
   }
 
   private void test(){
-    FindIterable<Inventory> results = inventoryCollection.find();
-    ArrayList<Inventory> matching = results.into(new ArrayList<>());
-    for (Inventory inv : matching) {
-      calculateStockState(inv);
-    }
+    calculateUnitsAndStates();
   }
 
   // Endpoint to calculate states
