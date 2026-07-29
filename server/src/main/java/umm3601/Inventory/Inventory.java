@@ -28,8 +28,8 @@ public class Inventory {
   public int maxQuantity;
   public int minQuantity;
   public int calculatedMinQuantity;
-  public String stockState; // "Stocked", "Under-Stocked", "Over-Stocked", "Out of Stock"
-  public String calculatedStockState;
+  public String stockState; // "Stocked", "Understocked", "Overstocked", "Out of Stock"
+  public String calculatedStockState; // "Stocked", "Understocked", "Overstocked", "Unknown"
   public String notes;
   public String internalID;
   public String internalBarcode;

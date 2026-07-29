@@ -302,6 +302,8 @@ public class SupplyListController {
     .get();
 
     newSupplyList.supplyID = generateNextID();
+    newSupplyList.percentageFilled = -1; // Initialize percentageFilled to -1 to indicate it hasn't been calculated yet
+    newSupplyList.invIDs = new ArrayList<>(); // Initialize invIDs as an empty list
     supplyListCollection.insertOne(newSupplyList);
     ctx.status(HttpStatus.CREATED);
   }
