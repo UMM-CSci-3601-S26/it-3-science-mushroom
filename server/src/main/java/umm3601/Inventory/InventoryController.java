@@ -147,6 +147,7 @@ public class InventoryController {
 
     Inventory exists = inventoryCollection.find(filter).first();
 
+    // Update item quantity if it already exists
     if (exists != null) {
       int existingQuantity = (exists.quantity > 0) ? exists.quantity : 0;
       int newInvQuantity = (newInv.quantity > 0) ? newInv.quantity : 1;
@@ -166,6 +167,7 @@ public class InventoryController {
       return;
     }
 
+    // Handle internalID and internalBarcode
     int next = inventoryIdService.getNextSequence();
 
     newInv.internalID = inventoryIdService.formatInternalID(next);
@@ -174,6 +176,7 @@ public class InventoryController {
       newInv.externalBarcode = new ArrayList<>();
     }
 
+    // Filter out improper externalBarcode entries
     if (newInv.externalBarcode != null) {
       newInv.externalBarcode = newInv.externalBarcode.stream()
         .filter(code -> code != null && !code.isBlank() && !code.matches("^ITEM-\\d+$"))
@@ -190,11 +193,16 @@ public class InventoryController {
     boolean idExists = inventoryCollection.find(eq("internalID", newInv.internalID)).first() != null;
     boolean barcodeExists = inventoryCollection.find(eq("internalBarcode", newInv.internalBarcode)).first() != null;
 
+    // Duplicate check
     if (idExists || barcodeExists) {
       ctx.status(HttpStatus.CONFLICT);
       ctx.result("Duplicate internalID or internalBarcode detected");
       return;
     }
+
+    // Initialize calculatedStockState and calculatedMinQuantity
+    newInv.calculatedStockState = "Unknown";
+    newInv.calculatedMinQuantity = 0;
 
     newInv.refreshDescription();
     inventoryCollection.insertOne(newInv);

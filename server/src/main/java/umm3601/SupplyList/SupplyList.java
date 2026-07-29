@@ -11,7 +11,7 @@ import org.mongojack.ObjectId;
 /**
  * Mongo-backed school supply-list item.
  *
- * AttributeOptions fields support both required traits (allOf) and acceptable
+ * AttributeOptions fields support both required traits (exactly) and acceptable
  * alternatives (anyOf), which lets a list say things like "blue and plastic" or
  * "Crayola or RoseArt".
  */
@@ -30,22 +30,22 @@ public class SupplyList {
   public String academicYear;
   public List<String> item;
   public AttributeOptions brand;
-  public ColorAttributeOptions color;
+  public AttributeOptions color;
   public AttributeOptions size;
   public AttributeOptions type;
   public AttributeOptions material;
   public Integer packageSize;
   public Integer quantity;
   public String notes;
+  public String supplyID; // ID of the supply item in the supply collection
+  public List<String> invIDs; // List of inventory IDs associated with this supply list item
+  public Integer percentageFilled = -1; // Percentage of the supply list item that has been filled
+  // >= 0 is a "percentage" filled
+  // -1 is "not calculated" (default)
+  // -2 is "not applicable" (ie: empty invIDs list)
 
   public static class AttributeOptions {
-    public String allOf;
-    public List<String> anyOf;
-  }
-
-  // Color stores allOf as a list because users commonly enter several colors.
-  public static class ColorAttributeOptions {
-    public List<String> allOf;
+    public String exactly;
     public List<String> anyOf;
   }
 
@@ -90,14 +90,14 @@ public class SupplyList {
       sb.append(" ");
     }
 
-    // Format allOf/anyOf for each attribute
-    String allOfStr = formatAllOf(type, "");
-    allOfStr += formatAllOf(color, allOfStr.isEmpty() ? "" : ", ");
-    allOfStr += formatAllOf(brand, allOfStr.isEmpty() ? "" : ", ");
-    allOfStr += formatAllOf(material, allOfStr.isEmpty() ? "" : ", ");
-    allOfStr += formatAllOf(size, allOfStr.isEmpty() ? "" : ", ");
-    if (!allOfStr.isEmpty()) {
-      sb.append(allOfStr);
+    // Format exactly/anyOf for each attribute
+    String exactlyStr = formatExactly(type, "");
+    exactlyStr += formatExactly(color, exactlyStr.isEmpty() ? "" : ", ");
+    exactlyStr += formatExactly(brand, exactlyStr.isEmpty() ? "" : ", ");
+    exactlyStr += formatExactly(material, exactlyStr.isEmpty() ? "" : ", ");
+    exactlyStr += formatExactly(size, exactlyStr.isEmpty() ? "" : ", ");
+    if (!exactlyStr.isEmpty()) {
+      sb.append(exactlyStr);
     }
 
     // Format anyOf for each attribute (grouped by category)
@@ -118,42 +118,16 @@ public class SupplyList {
     return sb.toString().trim();
   }
 
-  // Helper to format allOf as comma-separated with 'and' before last
-  private String formatAllOf(AttributeOptions attr, String prefix) {
-    if (attr == null || attr.allOf == null || attr.allOf.isEmpty()) {
+  // Helper to format exactly as comma-separated with 'and' before last
+  private String formatExactly(AttributeOptions attr, String prefix) {
+    if (attr == null || attr.exactly == null || attr.exactly.isEmpty()) {
       return "";
     }
-    return prefix + attr.allOf;
-  }
-
-  // Color allOf is a list, so format with commas and 'and'
-  private String formatAllOf(ColorAttributeOptions attr, String prefix) {
-    if (attr == null || attr.allOf == null || attr.allOf.isEmpty()) {
-      return "";
-    }
-    StringBuilder sb = new StringBuilder(prefix);
-    int n = attr.allOf.size();
-    for (int i = 0; i < n; i++) {
-      sb.append(attr.allOf.get(i));
-      if (i < n - 2) {
-        sb.append(", ");
-      } else if (i == n - 2) {
-        sb.append(", and ");
-      }
-    }
-    return sb.toString();
+    return prefix + attr.exactly;
   }
 
   // Helper to format anyOf as (a, b, or c) per category
   private String formatAnyOf(AttributeOptions attr) {
-    if (attr == null) {
-      return "";
-    }
-    return formatAnyOf(attr.anyOf);
-  }
-
-  // Helper to format anyOf as (a, b, or c) per category
-  private String formatAnyOf(ColorAttributeOptions attr) {
     if (attr == null) {
       return "";
     }

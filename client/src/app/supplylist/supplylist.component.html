@@ -158,28 +158,28 @@
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="edit-field">
                     <mat-label>Brand</mat-label>
-                    <input matInput [ngModel]="element.brand?.allOf ?? ''"
-                      (ngModelChange)="element.brand = { allOf: ($event ?? '').trim(), anyOf: element.brand?.anyOf ?? [] }" />
+                    <input matInput [ngModel]="element.brand?.exactly ?? ''"
+                      (ngModelChange)="element.brand = { exactly: ($event ?? '').trim(), anyOf: element.brand?.anyOf ?? [] }" />
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="edit-field">
                     <mat-label>Color</mat-label>
-                    <input matInput [ngModel]="element.color?.allOf?.join(', ')"
-                      (ngModelChange)="element.color = { allOf: parseStringArray($event), anyOf: element.color?.anyOf ?? [] }" />
+                    <input matInput [ngModel]="element.color?.exactly ?? ''"
+                      (ngModelChange)="element.color = { exactly: ($event ?? '').trim(), anyOf: element.color?.anyOf ?? [] }" />
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="edit-field">
                     <mat-label>Size</mat-label>
-                    <input matInput [ngModel]="element.size?.allOf ?? ''"
-                      (ngModelChange)="element.size = { allOf: ($event ?? '').trim(), anyOf: element.size?.anyOf ?? [] }" />
+                    <input matInput [ngModel]="element.size?.exactly ?? ''"
+                      (ngModelChange)="element.size = { exactly: ($event ?? '').trim(), anyOf: element.size?.anyOf ?? [] }" />
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="edit-field">
                     <mat-label>Type</mat-label>
-                    <input matInput [ngModel]="element.type?.allOf ?? ''"
-                      (ngModelChange)="element.type = { allOf: ($event ?? '').trim(), anyOf: element.type?.anyOf ?? [] }" />
+                    <input matInput [ngModel]="element.type?.exactly ?? ''"
+                      (ngModelChange)="element.type = { exactly: ($event ?? '').trim(), anyOf: element.type?.anyOf ?? [] }" />
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="edit-field">
                     <mat-label>Material</mat-label>
-                    <input matInput [ngModel]="element.material?.allOf ?? ''"
-                      (ngModelChange)="element.material = { allOf: ($event ?? '').trim(), anyOf: element.material?.anyOf ?? [] }" />
+                    <input matInput [ngModel]="element.material?.exactly ?? ''"
+                      (ngModelChange)="element.material = { exactly: ($event ?? '').trim(), anyOf: element.material?.anyOf ?? [] }" />
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="edit-field">
                     <mat-label>Count</mat-label>

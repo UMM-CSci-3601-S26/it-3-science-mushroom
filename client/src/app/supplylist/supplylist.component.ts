@@ -25,7 +25,7 @@ import { DialogService } from '../shared/dialog/dialog.service';
 import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
 
 // Supply List Imports
-import { SupplyList, AttributeOptions, ColorAttributeOptions } from './supplylist';
+import { SupplyList, AttributeOptions } from './supplylist';
 import { SupplyListService } from './supplylist.service';
 
 // Auth
@@ -241,10 +241,8 @@ export class SupplyListComponent {
 
   /** Builds a compact human-readable label for an item, mirroring the server-side toString(). */
   toLabel(s: SupplyList): string {
-    const attrStr = (a: AttributeOptions | ColorAttributeOptions | undefined) => {
-      const allOf = a?.allOf;
-      const allOfArr = Array.isArray(allOf) ? allOf : (allOf ? [allOf] : []);
-      return [...allOfArr, ...(a?.anyOf ?? [])].filter(v => v && v !== 'N/A').join('/');
+    const attrStr = (a: AttributeOptions | undefined) => {
+      return [a?.exactly, ...(a?.anyOf ?? [])].filter(v => v && v !== 'N/A').join('/');
     };
     const parts: string[] = [];
     const qty = s.quantity > 0 ? s.quantity : null;
