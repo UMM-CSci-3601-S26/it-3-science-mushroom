@@ -2,7 +2,6 @@ package umm3601.Family;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,10 +10,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
-import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
+import umm3601.Common.TimeSlotParser;
+import umm3601.Common.TimeSlotParser.TimeRange;
 import umm3601.Settings.Settings;
 import umm3601.Family.Family.AvailabilityOptions;
 
@@ -26,7 +25,6 @@ public class FamilySchedulingService {
   private static final int LARGE_FAMILY_CHILDREN_THRESHOLD = 3;
   private static final int EXTRA_LARGE_FAMILY_CHILDREN_THRESHOLD = 6;
   private static final int SCHEDULE_MERIDIEM_SUFFIX_LENGTH = 3;
-  private static final int DEFAULT_SCHEDULE_WINDOW_MINUTES = 60;
   private static final int DEFAULT_ENGLISH_COLUMN_COUNT = 1;
   private static final int DEFAULT_SPANISH_COLUMN_COUNT = 0;
   private static final int EARLY_MORNING_AVAILABILITY_ORDER = 0;
@@ -116,33 +114,13 @@ public class FamilySchedulingService {
       return List.of();
     }
 
-    String normalized = timeSlot.trim();
-    String[] rangeParts = normalized.split("\\s*[-\u2013\u2014]\\s*", 2);
-
-    String endMeridiem = rangeParts.length == 2 ? meridiem(rangeParts[1]) : null;
-    String startMeridiem = meridiem(rangeParts[0]);
-    if (startMeridiem == null) {
-      startMeridiem = endMeridiem == null ? fallbackMeridiem : endMeridiem;
-    }
-    if (endMeridiem == null) {
-      endMeridiem = startMeridiem;
-    }
-
-    LocalTime start = parseScheduleTime(rangeParts[0], startMeridiem);
-    LocalTime end = rangeParts.length == 2
-        ? parseScheduleTime(rangeParts[1], endMeridiem)
-        : start.plusMinutes(DEFAULT_SCHEDULE_WINDOW_MINUTES);
-
-    if (!end.isAfter(start)) {
-      throw new BadRequestResponse("Time slot end must be after the start time");
-    }
-
+    TimeRange range = TimeSlotParser.parseRange(timeSlot, fallbackMeridiem, "Time slot");
     List<String> blocks = new ArrayList<>();
-    LocalTime currentStart = start;
+    LocalTime currentStart = range.start();
 
-    while (currentStart.isBefore(end)) {
+    while (currentStart.isBefore(range.end())) {
       LocalTime currentEnd = currentStart.plusMinutes(SCHEDULE_BLOCK_MINUTES);
-      if (currentEnd.isAfter(end)) {
+      if (currentEnd.isAfter(range.end())) {
         break;
       }
 
@@ -155,31 +133,6 @@ public class FamilySchedulingService {
 
   private AvailabilityOptions availability(Family family) {
     return family.timeAvailability == null ? new AvailabilityOptions() : family.timeAvailability;
-  }
-
-  private LocalTime parseScheduleTime(String timeText, String meridiem) {
-    if (meridiem == null) {
-      throw new BadRequestResponse("Time slot must include AM or PM");
-    }
-
-    String cleanedTime = timeText
-        .replaceAll("(?i)\\b(AM|PM)\\b", "")
-        .trim();
-
-    try {
-      return LocalTime.parse(cleanedTime + " " + meridiem, SCHEDULE_TIME_FORMATTER);
-    } catch (DateTimeParseException exception) {
-      throw new BadRequestResponse("Time slot contains an invalid time");
-    }
-  }
-
-  private String meridiem(String timeText) {
-    java.util.regex.Matcher matcher = Pattern.compile("(?i)\\b(AM|PM)\\b").matcher(timeText);
-    String result = null;
-    while (matcher.find()) {
-      result = matcher.group(1).toUpperCase(Locale.US);
-    }
-    return result;
   }
 
   private String formatScheduleBlock(LocalTime start, LocalTime end) {

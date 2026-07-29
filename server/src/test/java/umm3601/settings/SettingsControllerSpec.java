@@ -350,6 +350,28 @@ class SettingsControllerSpec {
   }
 
   @Test
+  void updateTimeAvailabilityAcceptsNoonCrossoverWhenOnlyEndHasMeridiem() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.lateMorning = "11:30-12:30 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    settingsController.updateTimeAvailability(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateTimeAvailabilityAcceptsNoonCrossoverWithoutSpaceBeforeEndMeridiem() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.lateMorning = "11:30 AM - 12:30PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    settingsController.updateTimeAvailability(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
   void updateTimeAvailabilityRejectsInvalidTimeSlot() {
     Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
     labels.earlyMorning = "banana";

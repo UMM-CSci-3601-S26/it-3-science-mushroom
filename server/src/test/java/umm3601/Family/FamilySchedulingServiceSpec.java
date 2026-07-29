@@ -58,6 +58,28 @@ class FamilySchedulingServiceSpec {
   }
 
   @Test
+  void subdivideTimeSlotHandlesNoonCrossoverWhenOnlyEndHasMeridiem() {
+    List<String> blocks = familySchedulingService.subdivideTimeSlot("11:30-12:30 PM");
+
+    assertEquals(List.of(
+      "11:30-11:45 AM",
+      "11:45 AM-12:00 PM",
+      "12:00-12:15 PM",
+      "12:15-12:30 PM"), blocks);
+  }
+
+  @Test
+  void subdivideTimeSlotHandlesNoonCrossoverWithoutSpaceBeforeEndMeridiem() {
+    List<String> blocks = familySchedulingService.subdivideTimeSlot("11:30 AM - 12:30PM");
+
+    assertEquals(List.of(
+      "11:30-11:45 AM",
+      "11:45 AM-12:00 PM",
+      "12:00-12:15 PM",
+      "12:15-12:30 PM"), blocks);
+  }
+
+  @Test
   void schedulingAlgorithmTreatsSingleSettingTimeAsOneHourWindow() {
     ArrayList<Family> families = new ArrayList<>(List.of(
       familyForScheduling("Family One", true, false, false, false, 2)));

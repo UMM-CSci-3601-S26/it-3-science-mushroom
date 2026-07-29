@@ -5,13 +5,8 @@ package umm3601.Settings;
 import static com.mongodb.client.model.Filters.eq;
 
 // Java Imports
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 // Org Imports
@@ -32,6 +27,7 @@ import io.javalin.http.HttpStatus;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
+import umm3601.Common.TimeSlotParser;
 
 /**
  * Controller for the singleton app settings document.
@@ -56,8 +52,6 @@ public class SettingsController {
   private static final int DEFAULT_BARCODE_PRINT_WARNING_LIMIT = 25;
   private static final int DEFAULT_ENGLISH_FAMILY_COLUMNS = 1;
   private static final int DEFAULT_SPANISH_FAMILY_COLUMNS = 0;
-  private static final DateTimeFormatter TIME_SLOT_FORMATTER =
-      DateTimeFormatter.ofPattern("h:mm a", Locale.US);
 
   private final JacksonMongoCollection<Settings> settingsCollection;
 
@@ -231,50 +225,7 @@ public class SettingsController {
       throw new BadRequestResponse(fieldName + " must be a valid time slot.");
     }
 
-    String[] rangeParts = timeSlot.trim().split("\\s*[-\u2013\u2014]\\s*", 2);
-    String endMeridiem = rangeParts.length == 2 ? meridiem(rangeParts[1]) : null;
-    String startMeridiem = meridiem(rangeParts[0]);
-    if (startMeridiem == null) {
-      startMeridiem = endMeridiem;
-    }
-    if (endMeridiem == null) {
-      endMeridiem = startMeridiem;
-    }
-
-    LocalTime start = parseTimeSlotPart(rangeParts[0], startMeridiem, fieldName);
-    if (rangeParts.length == 1) {
-      return;
-    }
-
-    LocalTime end = parseTimeSlotPart(rangeParts[1], endMeridiem, fieldName);
-    if (!end.isAfter(start)) {
-      throw new BadRequestResponse(fieldName + " end time must be after the start time.");
-    }
-  }
-
-  private LocalTime parseTimeSlotPart(String timeText, String meridiem, String fieldName) {
-    if (meridiem == null) {
-      throw new BadRequestResponse(fieldName + " must include AM or PM.");
-    }
-
-    String cleanedTime = timeText
-        .replaceAll("(?i)\\b(AM|PM)\\b", "")
-        .trim();
-
-    try {
-      return LocalTime.parse(cleanedTime + " " + meridiem, TIME_SLOT_FORMATTER);
-    } catch (DateTimeParseException exception) {
-      throw new BadRequestResponse(fieldName + " contains an invalid time.");
-    }
-  }
-
-  private String meridiem(String timeText) {
-    java.util.regex.Matcher matcher = Pattern.compile("(?i)\\b(AM|PM)\\b").matcher(timeText);
-    String result = null;
-    while (matcher.find()) {
-      result = matcher.group(1).toUpperCase(Locale.US);
-    }
-    return result;
+    TimeSlotParser.parseRange(timeSlot, null, fieldName);
   }
 
   /**
