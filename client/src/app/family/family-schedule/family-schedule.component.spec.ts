@@ -62,13 +62,13 @@ describe('FamilyScheduleComponent', () => {
 
   it('creates schedule rows for a noon crossover saved without a start meridiem', () => {
     const rows = component.scheduleTimeRows();
-    const firstNoonRowIndex = rows.indexOf('11:30-11:45 AM');
+    const firstNoonRowIndex = rows.indexOf('11:30 AM-11:45 AM');
 
     expect(rows.slice(firstNoonRowIndex, firstNoonRowIndex + 4)).toEqual([
-      '11:30-11:45 AM',
+      '11:30 AM-11:45 AM',
       '11:45 AM-12:00 PM',
-      '12:00-12:15 PM',
-      '12:15-12:30 PM'
+      '12:00 PM-12:15 PM',
+      '12:15 PM-12:30 PM'
     ]);
   });
 
@@ -79,7 +79,7 @@ describe('FamilyScheduleComponent', () => {
 
     expect(block).toBeDefined();
     expect(block.family.guardianName).toBe('Noon Family');
-    expect(block.rowStart).toBe(component.scheduleTimeRows().indexOf('11:30-11:45 AM') + 1);
+    expect(block.rowStart).toBe(component.scheduleTimeRows().indexOf('11:30 AM-11:45 AM') + 1);
     expect(block.rowSpan).toBe(4);
     expect(block.columnStart).toBe(1);
   });

@@ -662,10 +662,6 @@ export class FamilyScheduleComponent {
     const start = this.formatScheduleTime(startMinutes);
     const end = this.formatScheduleTime(endMinutes);
 
-    if (start.meridiem === end.meridiem) {
-      return `${start.time}-${end.time} ${end.meridiem}`;
-    }
-
     return `${start.time} ${start.meridiem}-${end.time} ${end.meridiem}`;
   }
 

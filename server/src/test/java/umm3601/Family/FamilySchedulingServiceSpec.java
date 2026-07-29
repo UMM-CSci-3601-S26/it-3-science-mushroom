@@ -29,10 +29,10 @@ class FamilySchedulingServiceSpec {
     List<String> blocks = familySchedulingService.subdivideTimeSlot("8:00-9:00 AM");
 
     assertEquals(List.of(
-      "8:00-8:15 AM",
-      "8:15-8:30 AM",
-      "8:30-8:45 AM",
-      "8:45-9:00 AM"), blocks);
+      "8:00 AM-8:15 AM",
+      "8:15 AM-8:30 AM",
+      "8:30 AM-8:45 AM",
+      "8:45 AM-9:00 AM"), blocks);
   }
 
   @Test
@@ -40,10 +40,10 @@ class FamilySchedulingServiceSpec {
     List<String> blocks = familySchedulingService.subdivideTimeSlot("1:00-2:00 PM");
 
     assertEquals(List.of(
-      "1:00-1:15 PM",
-      "1:15-1:30 PM",
-      "1:30-1:45 PM",
-      "1:45-2:00 PM"), blocks);
+      "1:00 PM-1:15 PM",
+      "1:15 PM-1:30 PM",
+      "1:30 PM-1:45 PM",
+      "1:45 PM-2:00 PM"), blocks);
   }
 
   @Test
@@ -51,10 +51,10 @@ class FamilySchedulingServiceSpec {
     List<String> blocks = familySchedulingService.subdivideTimeSlot("8:00\u20139:00 AM");
 
     assertEquals(List.of(
-      "8:00-8:15 AM",
-      "8:15-8:30 AM",
-      "8:30-8:45 AM",
-      "8:45-9:00 AM"), blocks);
+      "8:00 AM-8:15 AM",
+      "8:15 AM-8:30 AM",
+      "8:30 AM-8:45 AM",
+      "8:45 AM-9:00 AM"), blocks);
   }
 
   @Test
@@ -62,10 +62,10 @@ class FamilySchedulingServiceSpec {
     List<String> blocks = familySchedulingService.subdivideTimeSlot("11:30-12:30 PM");
 
     assertEquals(List.of(
-      "11:30-11:45 AM",
+      "11:30 AM-11:45 AM",
       "11:45 AM-12:00 PM",
-      "12:00-12:15 PM",
-      "12:15-12:30 PM"), blocks);
+      "12:00 PM-12:15 PM",
+      "12:15 PM-12:30 PM"), blocks);
   }
 
   @Test
@@ -73,10 +73,10 @@ class FamilySchedulingServiceSpec {
     List<String> blocks = familySchedulingService.subdivideTimeSlot("11:30 AM - 12:30PM");
 
     assertEquals(List.of(
-      "11:30-11:45 AM",
+      "11:30 AM-11:45 AM",
       "11:45 AM-12:00 PM",
-      "12:00-12:15 PM",
-      "12:15-12:30 PM"), blocks);
+      "12:00 PM-12:15 PM",
+      "12:15 PM-12:30 PM"), blocks);
   }
 
   @Test
@@ -89,7 +89,7 @@ class FamilySchedulingServiceSpec {
 
     familySchedulingService.schedulingAlgorithm(families, currentSettings);
 
-    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
+    assertEquals("8:00 AM-8:15 AM", families.get(0).timeSlot);
   }
 
   @Test
@@ -126,8 +126,8 @@ class FamilySchedulingServiceSpec {
 
     familySchedulingService.schedulingAlgorithm(families, currentSettings);
 
-    assertEquals("8:00-8:15 AM", familyNamed(families, "Morning Family").timeSlot);
-    assertEquals("1:00-1:15 PM", familyNamed(families, "Afternoon Family").timeSlot);
+    assertEquals("8:00 AM-8:15 AM", familyNamed(families, "Morning Family").timeSlot);
+    assertEquals("1:00 PM-1:15 PM", familyNamed(families, "Afternoon Family").timeSlot);
   }
 
   @Test
@@ -143,17 +143,17 @@ class FamilySchedulingServiceSpec {
     familySchedulingService.schedulingAlgorithm(families, defaultTimeAvailability());
 
     assertEquals("John Christensen", families.get(0).guardianName);
-    assertEquals("10:00-10:15 AM", families.get(0).timeSlot);
+    assertEquals("10:00 AM-10:15 AM", families.get(0).timeSlot);
     assertEquals("John Johnson", families.get(1).guardianName);
-    assertEquals("3:00-3:15 PM", families.get(1).timeSlot);
+    assertEquals("3:00 PM-3:15 PM", families.get(1).timeSlot);
     assertEquals("Melina Brim", families.get(2).guardianName);
-    assertEquals("1:00-1:15 PM", families.get(2).timeSlot);
+    assertEquals("1:00 PM-1:15 PM", families.get(2).timeSlot);
     assertEquals("Bob Jones", families.get(3).guardianName);
-    assertEquals("10:15-10:30 AM", families.get(3).timeSlot);
+    assertEquals("10:15 AM-10:30 AM", families.get(3).timeSlot);
     assertEquals("Bob Dylan", families.get(4).guardianName);
-    assertEquals("10:30-10:45 AM", families.get(4).timeSlot);
+    assertEquals("10:30 AM-10:45 AM", families.get(4).timeSlot);
     assertEquals("Jane Doe", families.get(5).guardianName);
-    assertEquals("8:00-8:15 AM", families.get(5).timeSlot);
+    assertEquals("8:00 AM-8:15 AM", families.get(5).timeSlot);
   }
 
   @Test
@@ -183,8 +183,8 @@ class FamilySchedulingServiceSpec {
 
     familySchedulingService.schedulingAlgorithm(families, currentSettings);
 
-    assertEquals("8:00-8:30 AM", families.get(0).timeSlot);
-    assertEquals("8:30-8:45 AM", families.get(1).timeSlot);
+    assertEquals("8:00 AM-8:30 AM", families.get(0).timeSlot);
+    assertEquals("8:30 AM-8:45 AM", families.get(1).timeSlot);
   }
 
   @Test
@@ -198,8 +198,8 @@ class FamilySchedulingServiceSpec {
 
     familySchedulingService.schedulingAlgorithm(families, currentSettings);
 
-    assertEquals("8:00-8:45 AM", families.get(0).timeSlot);
-    assertEquals("8:45-9:00 AM", families.get(1).timeSlot);
+    assertEquals("8:00 AM-8:45 AM", families.get(0).timeSlot);
+    assertEquals("8:45 AM-9:00 AM", families.get(1).timeSlot);
   }
 
   @Test
@@ -213,10 +213,10 @@ class FamilySchedulingServiceSpec {
         defaultTimeAvailability(),
         defaultScheduleColumns(2, 0));
 
-    assertEquals("8:00-8:15 AM", families.get(0).timeSlot);
+    assertEquals("8:00 AM-8:15 AM", families.get(0).timeSlot);
     assertEquals("English", families.get(0).scheduleAssignment.columnType);
     assertEquals(1, families.get(0).scheduleAssignment.columnIndex);
-    assertEquals("8:00-8:15 AM", families.get(1).timeSlot);
+    assertEquals("8:00 AM-8:15 AM", families.get(1).timeSlot);
     assertEquals("English", families.get(1).scheduleAssignment.columnType);
     assertEquals(2, families.get(1).scheduleAssignment.columnIndex);
   }
@@ -235,10 +235,10 @@ class FamilySchedulingServiceSpec {
     Family spanishFamily = familyNamed(families, "Spanish Family");
     Family englishFamily = familyNamed(families, "English Family");
 
-    assertEquals("8:00-8:15 AM", spanishFamily.timeSlot);
+    assertEquals("8:00 AM-8:15 AM", spanishFamily.timeSlot);
     assertEquals("Spanish", spanishFamily.scheduleAssignment.columnType);
     assertEquals(1, spanishFamily.scheduleAssignment.columnIndex);
-    assertEquals("8:00-8:15 AM", englishFamily.timeSlot);
+    assertEquals("8:00 AM-8:15 AM", englishFamily.timeSlot);
     assertEquals("English", englishFamily.scheduleAssignment.columnType);
     assertEquals(1, englishFamily.scheduleAssignment.columnIndex);
   }
@@ -263,9 +263,9 @@ class FamilySchedulingServiceSpec {
     Family earlyFamily = familyNamed(families, "Early Family");
     Family lateFamily = familyNamed(families, "Late Family");
 
-    assertEquals("8:30-9:00 AM", largeEarlyFamily.timeSlot);
-    assertEquals("9:00-9:15 AM", earlyFamily.timeSlot);
-    assertEquals("9:15-9:30 AM", lateFamily.timeSlot);
+    assertEquals("8:30 AM-9:00 AM", largeEarlyFamily.timeSlot);
+    assertEquals("9:00 AM-9:15 AM", earlyFamily.timeSlot);
+    assertEquals("9:15 AM-9:30 AM", lateFamily.timeSlot);
     assertEquals(1, largeEarlyFamily.scheduleAssignments.get(0).columnIndex);
     assertEquals(1, largeEarlyFamily.scheduleAssignments.get(1).columnIndex);
     assertEquals(1, earlyFamily.scheduleAssignment.columnIndex);
@@ -289,11 +289,11 @@ class FamilySchedulingServiceSpec {
     Family largeFamily = familyNamed(families, "Large Family");
     Family smallFamily = familyNamed(families, "Small Family");
 
-    assertEquals("8:00-8:15 AM", largeFamily.timeSlot);
+    assertEquals("8:00 AM-8:15 AM", largeFamily.timeSlot);
     assertEquals(2, largeFamily.scheduleAssignments.size());
     assertEquals(1, largeFamily.scheduleAssignments.get(0).columnIndex);
     assertEquals(2, largeFamily.scheduleAssignments.get(1).columnIndex);
-    assertEquals("8:15-8:30 AM", smallFamily.timeSlot);
+    assertEquals("8:15 AM-8:30 AM", smallFamily.timeSlot);
   }
 
   @Test
@@ -314,10 +314,10 @@ class FamilySchedulingServiceSpec {
 
     Family largeFlexibleFamily = familyNamed(families, "Large Flexible Family");
 
-    assertEquals("8:00-8:30 AM", largeFlexibleFamily.timeSlot);
+    assertEquals("8:00 AM-8:30 AM", largeFlexibleFamily.timeSlot);
     assertEquals(2, largeFlexibleFamily.scheduleAssignments.size());
-    assertEquals("8:00-8:15 AM", largeFlexibleFamily.scheduleAssignments.get(0).timeSlot);
-    assertEquals("8:15-8:30 AM", largeFlexibleFamily.scheduleAssignments.get(1).timeSlot);
+    assertEquals("8:00 AM-8:15 AM", largeFlexibleFamily.scheduleAssignments.get(0).timeSlot);
+    assertEquals("8:15 AM-8:30 AM", largeFlexibleFamily.scheduleAssignments.get(1).timeSlot);
     assertEquals(3, largeFlexibleFamily.scheduleAssignments.get(0).columnIndex);
     assertEquals(3, largeFlexibleFamily.scheduleAssignments.get(1).columnIndex);
   }

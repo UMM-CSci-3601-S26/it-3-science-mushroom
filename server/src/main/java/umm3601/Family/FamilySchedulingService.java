@@ -24,7 +24,6 @@ public class FamilySchedulingService {
   private static final int EXTRA_LARGE_FAMILY_SCHEDULE_BLOCKS = 3;
   private static final int LARGE_FAMILY_CHILDREN_THRESHOLD = 3;
   private static final int EXTRA_LARGE_FAMILY_CHILDREN_THRESHOLD = 6;
-  private static final int SCHEDULE_MERIDIEM_SUFFIX_LENGTH = 3;
   private static final int DEFAULT_ENGLISH_COLUMN_COUNT = 1;
   private static final int DEFAULT_SPANISH_COLUMN_COUNT = 0;
   private static final int EARLY_MORNING_AVAILABILITY_ORDER = 0;
@@ -138,17 +137,6 @@ public class FamilySchedulingService {
   private String formatScheduleBlock(LocalTime start, LocalTime end) {
     String startText = start.format(SCHEDULE_TIME_FORMATTER);
     String endText = end.format(SCHEDULE_TIME_FORMATTER);
-    String startMeridiem = startText.substring(startText.length() - 2);
-    String endMeridiem = endText.substring(endText.length() - 2);
-
-    if (startMeridiem.equals(endMeridiem)) {
-      return startText.substring(0, startText.length() - SCHEDULE_MERIDIEM_SUFFIX_LENGTH)
-          + "-"
-          + endText.substring(0, endText.length() - SCHEDULE_MERIDIEM_SUFFIX_LENGTH)
-          + " "
-          + endMeridiem;
-    }
-
     return startText + "-" + endText;
   }
   // Return the current family language needs based on the boolean type.
