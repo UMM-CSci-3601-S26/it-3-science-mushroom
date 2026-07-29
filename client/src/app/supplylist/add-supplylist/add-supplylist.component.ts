@@ -215,7 +215,7 @@ export class AddSupplyListComponent implements OnInit {
     const patch: Record<string, string> = {};
 
     // Detect whether the input uses "or" to join options (anyOf) versus
-    // "and" / commas (allOf). This drives how multi-value fields are stored.
+    // "and" / commas (exactly). This drives how multi-value fields are stored.
     const hasOr = /\bor\b/.test(lower);
     // Separator written into the form field value; toAttr() reads this.
     const sep = hasOr ? ' | ' : ', ';
@@ -232,10 +232,10 @@ export class AddSupplyListComponent implements OnInit {
       }
     }
 
-    // Package size: "24 count", "24ct", "pack of 24", or "box of 24".
-    // "24 count", "24ct", "24-count", "pack of 24", "box of 24"
+    // Package size: "24 count", "24ct", "pack/container/bag of 24", etc.
+    // "24 count", "24ct", "24-count", "pack of 24", "container of 24", "bag of 24"
     const packageSizeMatch = lower.match(/(\d+)\s*[-]?\s*(?:count|ct|pk|pack)\b/)
-      || lower.match(/(?:pack|box|set)\s+of\s+(\d+)/);
+      || lower.match(/(?:pack|box|set|container|bag)\s+of\s+(\d+)/);
     if (packageSizeMatch) {
       patch['packageSize'] = packageSizeMatch[1];
     }
@@ -248,13 +248,11 @@ export class AddSupplyListComponent implements OnInit {
     }
 
     // Item: longest matching term wins to avoid "pen" matching "pencil".
-    // Longest matching term wins (avoids "pen" matching "pencil").
-    // If no item is found directly, use the brand-to-item hint map as a fallback.
+    // If no item is found directly, use brand hints only when they map to an existing term.
     let matchedItem = this.bestTermMatch(lower, this.terms.item);
     if (!matchedItem && matchedBrand) {
       const hints = this.brandItemHints[matchedBrand.toLowerCase()] ?? [];
-      matchedItem = this.bestTermMatch(hints.join(' '), this.terms.item)
-        ?? (hints.length ? hints[0] : null);
+      matchedItem = this.bestTermMatch(hints.join(' '), this.terms.item);
     }
     if (matchedItem) {
       patch['item'] = matchedItem;
@@ -267,26 +265,10 @@ export class AddSupplyListComponent implements OnInit {
       patch['color'] = matchedColors.join(sep);
     }
 
-    // Size: keep explicit size terms before inferring a container type.
-    // Size is entered as a simple text field in the form and converted to
-    // AttributeOptions during submit.
+    // Size: only use explicit size terms that already exist in the term list.
     const sizeTermMatches = this.allTermMatches(lower, this.terms.size);
-    const fallbackSize = ['large', 'medium', 'small', 'xl', 'xxl', 'xs'].find(s => lower.includes(s)) ?? null;
     if (sizeTermMatches.length) {
       patch['size'] = sizeTermMatches.join(sep);
-    } else if (fallbackSize) {
-      patch['size'] = fallbackSize;
-    }
-
-    // Default container size for descriptions like "2 boxes of 24 crayons".
-    // If quantity > 1 and no size was detected from the new DB terms,
-    // infer a container type. If a count exists, include it.
-    if (!patch['size'] && patch['quantity']) {
-      const qty = Number(patch['quantity']);
-      if (qty > 1) {
-        const packageSize = patch['packageSize'] ? ` of ${patch['packageSize']}` : '';
-        patch['size'] = `Box${packageSize}`;   // e.g., "Box of 24", "Box"
-      }
     }
 
     // Type.
@@ -404,26 +386,26 @@ export class AddSupplyListComponent implements OnInit {
 
   submitForm() {
     const raw = this.addSupplyListForm.value;
-    // For AttributeOptions fields, '|' means anyOf; otherwise value is stored in allOf.
+    // For AttributeOptions fields, '|' means anyOf; otherwise value is stored in exactly.
     const toAttr = (val: string | null | undefined): import('../supplylist').AttributeOptions => {
       if (!val || !val.trim()) {
-        return { allOf: '', anyOf: [] };
+        return { exactly: '', anyOf: [] };
       }
       if (val.includes('|')) {
-        return { allOf: '', anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
+        return { exactly: '', anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
       }
-      return { allOf: val.split(',').map(s => s.trim()).filter(Boolean).join(', '), anyOf: [] };
+      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean)[0] ?? '', anyOf: [] };
     };
 
-    // Color keeps allOf/anyOf as string arrays.
-    const toColorAttr = (val: string | null | undefined): import('../supplylist').ColorAttributeOptions => {
+    // Color keeps exactly/anyOf as string arrays.
+    const toColorAttr = (val: string | null | undefined): import('../supplylist').AttributeOptions => {
       if (!val || !val.trim()) {
-        return { allOf: [], anyOf: [] };
+        return { exactly: "", anyOf: [] };
       }
       if (val.includes('|')) {
-        return { allOf: [], anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
+        return { exactly: "", anyOf: val.split('|').map(s => s.trim()).filter(Boolean) };
       }
-      return { allOf: val.split(',').map(s => s.trim()).filter(Boolean), anyOf: [] };
+      return { exactly: val.split(',').map(s => s.trim()).filter(Boolean)[0] ?? '', anyOf: [] };
     };
 
     const formData: Partial<import('../supplylist').SupplyList> = {

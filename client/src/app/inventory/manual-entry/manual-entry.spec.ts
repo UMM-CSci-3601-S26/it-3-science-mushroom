@@ -26,7 +26,9 @@ describe('ManualEntry', () => {
     notes: 'A',
     maxQuantity: 10,
     minQuantity: 1,
-    stockState: 'stocked'
+    stockState: 'stocked',
+    calculatedMinQuantity: 0,
+    calculatedStockState: 'N/A'
   };
 
   const itemB: Inventory = {
@@ -45,7 +47,9 @@ describe('ManualEntry', () => {
     notes: 'B',
     maxQuantity: 12,
     minQuantity: 2,
-    stockState: 'stocked'
+    stockState: 'stocked',
+    calculatedMinQuantity: 0,
+    calculatedStockState: 'N/A'
   };
 
   function createComponent(data: { barcode: string; quantity: number } = { barcode: 'UPC-NEW', quantity: 3 }) {
@@ -165,7 +169,9 @@ describe('ManualEntry', () => {
         notes: 'New',
         maxQuantity: 9,
         minQuantity: 1,
-        stockState: 'low'
+        stockState: 'low',
+        calculatedMinQuantity: 0,
+        calculatedStockState: 'N/A'
       },
       quantity: 4
     });
@@ -255,7 +261,9 @@ describe('ManualEntry', () => {
       notes: 'Keep sealed',
       maxQuantity: 20,
       minQuantity: 2,
-      stockState: 'Stocked'
+      stockState: 'Stocked',
+      calculatedMinQuantity: 0,
+      calculatedStockState: 'N/A'
     };
 
     it('should clear inventory lists when loadInventory fails', () => {
@@ -530,7 +538,9 @@ describe('ManualEntry', () => {
         notes: null as unknown as string,
         maxQuantity: null as unknown as number,
         minQuantity: undefined as unknown as number,
-        stockState: null as unknown as string
+        stockState: null as unknown as string,
+        calculatedMinQuantity: null as unknown as number,
+        calculatedStockState: null as unknown as string
       };
 
       component.selectExistingItem(itemWithNulls);

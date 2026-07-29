@@ -27,7 +27,9 @@ export class MockInventoryService implements Pick<InventoryService,
       externalBarcode: ["MFG-XYZ123"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: ''
+      calculatedMinQuantity: 0,
+      stockState: '',
+      calculatedStockState: ''
     },
     {
       internalID: "987654321",
@@ -45,7 +47,9 @@ export class MockInventoryService implements Pick<InventoryService,
       externalBarcode: ["MFG-ABC456"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: ''
+      calculatedMinQuantity: 0,
+      stockState: '',
+      calculatedStockState: ''
     },
     {
       internalID: "456789123",
@@ -63,7 +67,9 @@ export class MockInventoryService implements Pick<InventoryService,
       externalBarcode: ["MFG-DEF789"], // Example of an external barcode referencing this item
       maxQuantity: 0,
       minQuantity: 0,
-      stockState: ''
+      calculatedMinQuantity: 0,
+      stockState: '',
+      calculatedStockState: ''
     }
   ];
 

@@ -108,7 +108,9 @@ describe('PointOfSaleSessionDialogComponent', () => {
         reservedQuantity: 1,
         maxQuantity: 10,
         minQuantity: 0,
+        calculatedMinQuantity: 0,
         stockState: 'Stocked',
+        calculatedStockState: 'N/A',
         notes: '',
         externalBarcode: ['UPC-2']
       },
@@ -126,7 +128,9 @@ describe('PointOfSaleSessionDialogComponent', () => {
         reservedQuantity: 3,
         maxQuantity: 10,
         minQuantity: 0,
+        calculatedMinQuantity: 0,
         stockState: 'Stocked',
+        calculatedStockState: 'N/A',
         notes: '',
         externalBarcode: ['UPC-3']
       },
@@ -144,7 +148,9 @@ describe('PointOfSaleSessionDialogComponent', () => {
         reservedQuantity: 0,
         maxQuantity: 10,
         minQuantity: 0,
+        calculatedMinQuantity: 0,
         stockState: 'Stocked',
+        calculatedStockState: 'N/A',
         notes: '',
         externalBarcode: ['UPC-4']
       },
@@ -162,7 +168,9 @@ describe('PointOfSaleSessionDialogComponent', () => {
         reservedQuantity: 0,
         maxQuantity: 10,
         minQuantity: 0,
+        calculatedMinQuantity: 0,
         stockState: 'Stocked',
+        calculatedStockState: 'N/A',
         notes: '',
         externalBarcode: ['UPC-5']
       }
@@ -209,7 +217,9 @@ describe('PointOfSaleSessionDialogComponent', () => {
       reservedQuantity: 1,
       maxQuantity: 10,
       minQuantity: 0,
+      calculatedMinQuantity: 0,
       stockState: 'Stocked',
+      calculatedStockState: 'N/A',
       notes: '',
       externalBarcode: ['UPC-2']
     }));

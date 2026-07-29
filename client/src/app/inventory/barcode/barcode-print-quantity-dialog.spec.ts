@@ -26,6 +26,8 @@ describe('BarcodePrintQuantityDialog', () => {
     maxQuantity: 10,
     minQuantity: 1,
     stockState: 'stocked',
+    calculatedMinQuantity: 0,
+    calculatedStockState: 'N/A',
     notes: 'A',
   };
 
@@ -43,6 +45,8 @@ describe('BarcodePrintQuantityDialog', () => {
     maxQuantity: 20,
     minQuantity: 2,
     stockState: 'stocked',
+    calculatedMinQuantity: 0,
+    calculatedStockState: 'N/A',
     notes: 'B',
   };
 

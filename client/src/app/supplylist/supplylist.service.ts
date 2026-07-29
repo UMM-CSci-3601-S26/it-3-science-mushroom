@@ -16,6 +16,7 @@ type SupplyListFilters = {
   material?: string;
   quantity?: number;
   notes?: string;
+  supplyID?: string;
 };
 
 @Injectable({
@@ -37,6 +38,7 @@ export class SupplyListService {
   private readonly materialKey = 'material';
   private readonly quantityKey = 'quantity';
   private readonly notesKey = 'notes';
+  private readonly supplyIDKey = 'supplyID';
 
   getSupplyList(filters?: SupplyListFilters): Observable<SupplyList[]> {
     // Keep filter names aligned with SupplyListController query keys. The
@@ -76,6 +78,9 @@ export class SupplyListService {
       }
       if (filters.notes) {
         httpParams = httpParams.set(this.notesKey, filters.notes);
+      }
+      if (filters.supplyID) {
+        httpParams = httpParams.set(this.supplyIDKey, filters.supplyID);
       }
     }
     return this.httpClient.get<SupplyList[]>(this.supplylistUrl, { params: httpParams });
