@@ -12,6 +12,7 @@
   - [Project Features](#project-features)
   - [Technical Documents](#technical-documents)
     - [Deployment Document](#deployment-document)
+    - [Database Management Tools](#database-management-tools)
     - [Development Document](#development-document)
     - [Frontend Style Guide](#frontend-style-guide)
     - [Family Module Document](#family-module-document)
@@ -66,6 +67,10 @@ These documents explain different aspects of the application.
 ### [Deployment Document](DEPLOYMENT.md)
 
 A document that explains how to set-up and manage a DigitalOcean Droplet of the application. This is the main technical document.
+
+### [Database Management Tools](DATABASE_MANAGEMENT_TOOLS.md)
+
+A document that explains the scripts for dropping, reseeding, and conditionally seeding MongoDB collections in Docker.
 
 ### [Development Document](DEVELOPMENT.md)
 
