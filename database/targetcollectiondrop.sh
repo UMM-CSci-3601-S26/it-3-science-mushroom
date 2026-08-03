@@ -74,6 +74,23 @@ dropTargetCollection() {
   docker-compose -f "$compose_file" exec -T mongo mongosh "$database_name" --quiet --eval "db.getCollection('$collection_name').drop()"
 }
 
+# Ask the user to confirm the exact target before changing data.
+confirmTargetAction() {
+  local message="$1"
+  local expected_target="$2"
+  local confirmation
+
+  echo "$message"
+  read -r -p "Type '$expected_target' to continue: " confirmation
+
+  if [ "$confirmation" != "$expected_target" ]; then
+    echo "Confirmation did not match. Canceling."
+    return 1
+  fi
+
+  return 0
+}
+
 # Stop early if required arguments are missing.
 if [ -z "$database_name" ] || [ -z "$collection_name" ]; then
   echo "Usage: $0 <database-name> <collection-name>"
@@ -89,6 +106,8 @@ validateTargetCollection "$database_name" "$collection_name" || exit 1
 
 doc_count="$(documentCount "$database_name" "$collection_name")"
 echo "Collection '$database_name.$collection_name' currently has $doc_count documents"
+
+confirmTargetAction "This will drop '$database_name.$collection_name' and will not reseed it." "$database_name.$collection_name" || exit 1
 
 if ! drop_result="$(dropTargetCollection "$database_name" "$collection_name")"; then
   echo "$drop_result"

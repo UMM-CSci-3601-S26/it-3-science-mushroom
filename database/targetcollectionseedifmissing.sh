@@ -76,6 +76,23 @@ documentCount() {
   docker-compose -f "$compose_file" exec -T mongo mongosh "$database_name" --quiet --eval "db.getCollection('$collection_name').countDocuments({})"
 }
 
+# Ask the user to confirm the exact target before changing data.
+confirmTargetAction() {
+  local message="$1"
+  local expected_target="$2"
+  local confirmation
+
+  echo "$message"
+  read -r -p "Type '$expected_target' to continue: " confirmation
+
+  if [ "$confirmation" != "$expected_target" ]; then
+    echo "Confirmation did not match. Canceling."
+    return 1
+  fi
+
+  return 0
+}
+
 # Stop early if required arguments are missing.
 if [ -z "$database_name" ] || [ -z "$collection_name" ] || [ -z "$seed_name" ]; then
   echo "Usage: $0 <database-name> <collection-name> <seed-file-name>"
@@ -96,6 +113,7 @@ if collectionExists "$database_name" "$collection_name"; then
 fi
 
 echo "Collection '$database_name.$collection_name' does not exist; seeding it now"
+confirmTargetAction "This will import '$seed_file' into '$database_name.$collection_name'." "$database_name.$collection_name" || exit 1
 importSeedFile "$database_name" "$collection_name" "$seed_file" || exit 1
 
 ending_doc_count="$(documentCount "$database_name" "$collection_name")"
