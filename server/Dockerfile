@@ -3,6 +3,8 @@ FROM eclipse-temurin:21 AS build
 # Copy the project into /tmp/server
 COPY . /tmp/server
 WORKDIR /tmp/server
+# Normalize the Gradle wrapper for Linux containers, even from Windows clones.
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 # Build the server with Gradle
 RUN ./gradlew assemble --no-daemon
 
