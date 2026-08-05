@@ -13,6 +13,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { Location } from '@angular/common';
 import { TermsService } from '../../terms/terms.service';
+import { MatDialog } from '@angular/material/dialog';
+import { SupplyListInventoryLinkDialogComponent } from '../inventory-link-dialog/supply-list-inventory-link-dialog.component';
 
 // Minimal terms object reused across parse / helper tests
 const testTerms = {
@@ -593,11 +595,147 @@ describe('AddSupplyListComponent#clearForm()', () => {
     component.clearForm();
     expect(component.showPreview).toBeFalse();
   });
+
+  it('should reset linked inventory IDs to an empty array', () => {
+    component.addSupplyListForm.patchValue({ invIDs: ['inv-1'] });
+    component.clearForm();
+    expect(component.addSupplyListForm.controls.invIDs.value).toEqual([]);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests for private helper methods
 // ─────────────────────────────────────────────────────────────────────────────
+describe('AddSupplyListComponent inventory linking', () => {
+  let component: AddSupplyListComponent;
+  let dialog: MatDialog;
+
+  const completeFormValues = {
+    school: 'MHS',
+    grade: 'PreK',
+    item: 'Markers, Crayons',
+    brand: 'N/A | Crayola',
+    color: 'N/A, Blue',
+    packageSize: '8',
+    size: 'Wide',
+    type: 'Washable | Dry',
+    material: 'N/A',
+    quantity: '2',
+    notes: '',
+    invIDs: [' inv-1 ', 'inv-1']
+  };
+
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [AddSupplyListComponent, MatSnackBarModule],
+      providers: sharedProviders
+    }).compileComponents();
+  }));
+
+  beforeEach(() => {
+    ({ component } = createComponentWithTerms());
+    dialog = (component as unknown as { dialog: MatDialog }).dialog;
+  });
+
+  it('should summarize no linked inventory, one link, and multiple links', () => {
+    component.addSupplyListForm.patchValue({ invIDs: [] });
+    expect(component.linkedInventorySummary()).toBe('No linked inventory');
+
+    component.addSupplyListForm.patchValue({ invIDs: [' inv-1 ', 'inv-1'] });
+    expect(component.linkedInventorySummary()).toBe('1 linked item');
+
+    component.addSupplyListForm.patchValue({ invIDs: ['inv-1', 'inv-2'] });
+    expect(component.linkedInventorySummary()).toBe('2 linked items');
+  });
+
+  it('should prefill the link dialog from the current form fields', () => {
+    component.addSupplyListForm.setValue(completeFormValues);
+    const openSpy = spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of(undefined)
+    } as never);
+
+    component.openInventoryLinkDialog();
+
+    expect(openSpy).toHaveBeenCalledWith(SupplyListInventoryLinkDialogComponent, jasmine.objectContaining({
+      width: '920px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: jasmine.objectContaining({
+        requirementLabel: '2x 8ct. Markers Crayola Blue Wide Washable',
+        selectedInventoryIds: ['inv-1'],
+        filters: {
+          item: 'Markers',
+          brand: 'Crayola',
+          color: 'Blue',
+          size: 'Wide',
+          type: 'Washable',
+          material: undefined
+        }
+      })
+    }));
+  });
+
+  it('should leave linked IDs unchanged when the link dialog is cancelled', () => {
+    component.addSupplyListForm.patchValue({ invIDs: ['inv-1'] });
+    spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of(undefined)
+    } as never);
+
+    component.openInventoryLinkDialog();
+
+    expect(component.addSupplyListForm.controls.invIDs.value).toEqual(['inv-1']);
+    expect(component.addSupplyListForm.controls.invIDs.dirty).toBeFalse();
+  });
+
+  it('should save normalized linked IDs returned by the dialog', () => {
+    spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of([' inv-2 ', 'inv-2', 'inv-3', ''])
+    } as never);
+
+    component.openInventoryLinkDialog();
+
+    expect(component.addSupplyListForm.controls.invIDs.value).toEqual(['inv-2', 'inv-3']);
+    expect(component.addSupplyListForm.controls.invIDs.dirty).toBeTrue();
+  });
+
+  it('should fall back to a generic requirement label when the form is blank', () => {
+    const helpers = component as unknown as {
+      requirementLabelFromForm(): string;
+      inventoryFiltersFromForm(): {
+        item?: string;
+        brand?: string;
+        color?: string;
+        size?: string;
+        type?: string;
+        material?: string;
+      };
+    };
+
+    expect(helpers.requirementLabelFromForm()).toBe('New supply list item');
+    expect(helpers.inventoryFiltersFromForm()).toEqual({
+      item: undefined,
+      brand: undefined,
+      color: undefined,
+      size: undefined,
+      type: undefined,
+      material: undefined
+    });
+  });
+
+  it('should return undefined for blank, N/A, null, and undefined filter tokens', () => {
+    const helpers = component as unknown as {
+      firstFilterToken(value: string | null | undefined): string | undefined;
+      normalizeInventoryIds(ids: string[] | null | undefined): string[];
+    };
+
+    expect(helpers.firstFilterToken(' , N/A | ')).toBeUndefined();
+    expect(helpers.firstFilterToken(null)).toBeUndefined();
+    expect(helpers.firstFilterToken(undefined)).toBeUndefined();
+    expect(helpers.normalizeInventoryIds(null)).toEqual([]);
+    expect(helpers.normalizeInventoryIds(undefined)).toEqual([]);
+  });
+});
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 describe('AddSupplyListComponent private helpers', () => {
   let component: AddSupplyListComponent;
@@ -874,6 +1012,41 @@ describe('AddSupplyListComponent#submitForm() — pipe separator (anyOf) path', 
     expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
       brand: { exactly: "", anyOf: [] },
       type: { exactly: "", anyOf: [] }
+    }));
+  });
+
+  it('should map a | separator to anyOf for non-color attributes when submitting', () => {
+    const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
+    component.addSupplyListForm.patchValue({ brand: 'Crayola | Expo' });
+
+    component.submitForm();
+
+    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      brand: jasmine.objectContaining({ exactly: '', anyOf: ['Crayola', 'Expo'] })
+    }));
+  });
+
+  it('should submit normalized inventory IDs when linked items are present', () => {
+    const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
+    component.addSupplyListForm.patchValue({ invIDs: [' inv-1 ', 'inv-1', 'inv-2', ' '] });
+
+    component.submitForm();
+
+    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      invIDs: ['inv-1', 'inv-2']
+    }));
+  });
+
+  it('should default optional numeric and item fields when they are blank', () => {
+    const addSpy = spyOn(supplyListService, 'addSupplyList').and.returnValue(of(undefined));
+    component.addSupplyListForm.patchValue({ item: '', packageSize: '', quantity: '' });
+
+    component.submitForm();
+
+    expect(addSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      item: undefined,
+      packageSize: 1,
+      quantity: 1
     }));
   });
 });

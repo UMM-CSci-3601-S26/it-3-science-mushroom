@@ -310,7 +310,7 @@ export class StockReportComponent {
     if (item.quantity > item.maxQuantity) { // Item overstocked
       return `Overstocked by ${item.quantity - item.maxQuantity} unit(s)`;
     } else if (item.quantity < item.minQuantity) { // Item under/out of stock
-      return `Need ${item.calculatedMinQuantity } more unit(s)`;
+      return `Need ${Math.max(0, item.minQuantity - item.quantity)} more unit(s)`;
     }
     return `Properly stocked!`; // Item stocked
   }
