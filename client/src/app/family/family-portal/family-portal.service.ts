@@ -12,6 +12,7 @@ export interface FamilyPortalFormPayload {
   email: string;
   address: string;
   accommodations: string;
+  needSpanishHelp: boolean;
   timeSlot: string;
   students: StudentInfo[];
   timeAvailability: Family['timeAvailability'];

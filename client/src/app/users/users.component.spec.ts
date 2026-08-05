@@ -105,6 +105,7 @@ describe('UsersComponent', () => {
         email: 'g@example.com',
         address: '123 St',
         accommodations: 'None',
+        needSpanishHelp: false,
         timeSlot: '9:00-10:00',
         students: [],
         timeAvailability: { earlyMorning: true, lateMorning: false, earlyAfternoon: false, lateAfternoon: false },

@@ -67,6 +67,11 @@ export class FamilyCardComponent {
     return students.map(student => student.name).join(', ');
   }
 
+  scheduleWindow(): string {
+    const timeSlot = this.family().timeSlot?.trim();
+    return timeSlot ? timeSlot : 'To be assigned';
+  }
+
   onRequestDelete(): void {
     this.requestDelete.emit();
   }

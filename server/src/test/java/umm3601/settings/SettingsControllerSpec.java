@@ -4,6 +4,7 @@ package umm3601.Settings;
 // Static Imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static com.mongodb.client.model.Filters.eq;
@@ -211,6 +212,9 @@ class SettingsControllerSpec {
     assertEquals(SettingsController.SETTINGS_ID, returned._id);
     assertNotNull(returned.schools);
     assertNotNull(returned.timeAvailability);
+    assertNotNull(returned.defaultScheduleColumns);
+    assertEquals(1, returned.defaultScheduleColumns.englishFamilies);
+    assertEquals(0, returned.defaultScheduleColumns.spanishFamilies);
     assertEquals(25, returned.barcodePrintWarningLimit);
   }
 
@@ -284,7 +288,7 @@ class SettingsControllerSpec {
   }
 
   @Test
-  void updateTimeAvailabilityWithNullFields() {
+  void updateTimeAvailabilityRejectsNullFields() {
     Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
     labels.earlyMorning = null;
     labels.lateMorning = null;
@@ -292,8 +296,166 @@ class SettingsControllerSpec {
     labels.lateAfternoon = null;
     when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
 
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning must be a valid time slot.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityRejectsMissingBody() {
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(null);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("Request body must include time availability labels.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityRejectsBlankFields() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.earlyMorning = " ";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning must be a valid time slot.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityAcceptsSingleStartTimeLabels() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "8:00 AM";
+    labels.lateMorning = "10:00 AM";
+    labels.earlyAfternoon = "1:00 PM";
+    labels.lateAfternoon = "3:00 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
     settingsController.updateTimeAvailability(ctx);
+
     verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateTimeAvailabilityAcceptsRangeWhenOnlyStartHasMeridiem() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.earlyMorning = "8:00 AM-9:00";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    settingsController.updateTimeAvailability(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateTimeAvailabilityAcceptsNoonCrossoverWhenOnlyEndHasMeridiem() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.lateMorning = "11:30-12:30 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    settingsController.updateTimeAvailability(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateTimeAvailabilityAcceptsNoonCrossoverWithoutSpaceBeforeEndMeridiem() {
+    Settings.TimeAvailabilityLabels labels = validTimeAvailabilityLabels();
+    labels.lateMorning = "11:30 AM - 12:30PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    settingsController.updateTimeAvailability(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateTimeAvailabilityRejectsInvalidTimeSlot() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "banana";
+    labels.lateMorning = "9:00-10:00 AM";
+    labels.earlyAfternoon = "12:00-1:00 PM";
+    labels.lateAfternoon = "2:00-3:00 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning must include AM or PM.", exception.getMessage());
+  }
+
+  @Test
+  void updateTimeAvailabilityRejectsEndBeforeStart() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "9:00-8:00 AM";
+    labels.lateMorning = "9:00-10:00 AM";
+    labels.earlyAfternoon = "12:00-1:00 PM";
+    labels.lateAfternoon = "2:00-3:00 PM";
+    when(ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class)).thenReturn(labels);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateTimeAvailability(ctx));
+
+    assertEquals("earlyMorning end time must be after the start time.", exception.getMessage());
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsReturnsOK() {
+    Settings.DefaultScheduleColumns columns = new Settings.DefaultScheduleColumns();
+    columns.englishFamilies = 3;
+    columns.spanishFamilies = 1;
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(columns);
+
+    settingsController.updateDefaultScheduleColumns(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsRejectsMissingBody() {
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(null);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateDefaultScheduleColumns(ctx));
+
+    assertEquals("Request body must include default schedule columns.", exception.getMessage());
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsRejectsInvalidEnglishCount() {
+    Settings.DefaultScheduleColumns columns = new Settings.DefaultScheduleColumns();
+    columns.englishFamilies = 0;
+    columns.spanishFamilies = 1;
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(columns);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateDefaultScheduleColumns(ctx));
+
+    assertEquals("englishFamilies must be at least 1.", exception.getMessage());
+  }
+
+  @Test
+  void updateDefaultScheduleColumnsRejectsInvalidSpanishCount() {
+    Settings.DefaultScheduleColumns columns = new Settings.DefaultScheduleColumns();
+    columns.englishFamilies = 1;
+    columns.spanishFamilies = -1;
+    when(ctx.bodyAsClass(Settings.DefaultScheduleColumns.class)).thenReturn(columns);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateDefaultScheduleColumns(ctx));
+
+    assertEquals("spanishFamilies must be at least 0.", exception.getMessage());
+  }
+
+  private Settings.TimeAvailabilityLabels validTimeAvailabilityLabels() {
+    Settings.TimeAvailabilityLabels labels = new Settings.TimeAvailabilityLabels();
+    labels.earlyMorning = "8:00-9:00 AM";
+    labels.lateMorning = "9:00-10:00 AM";
+    labels.earlyAfternoon = "12:00-1:00 PM";
+    labels.lateAfternoon = "2:00-3:00 PM";
+    return labels;
   }
 
   @Test
@@ -303,6 +465,23 @@ class SettingsControllerSpec {
       new Document("_id", SettingsController.SETTINGS_ID)
         .append("schools", List.of())
         .append("timeAvailability", new Document()));
+
+    settingsController.getSettings(ctx);
+
+    settingsCaptor = ArgumentCaptor.forClass(Settings.class);
+    verify(ctx).json(settingsCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+    assertEquals(SettingsController.SETTINGS_ID, settingsCaptor.getValue()._id);
+  }
+
+  @Test
+  void getSettingsIgnoresRemovedAvailableSpotsField() {
+    db.getCollection("settings").drop();
+    db.getCollection("settings").insertOne(
+      new Document("_id", SettingsController.SETTINGS_ID)
+        .append("schools", List.of())
+        .append("timeAvailability", new Document())
+        .append("availableSpots", 10));
 
     settingsController.getSettings(ctx);
 
@@ -448,19 +627,5 @@ class SettingsControllerSpec {
       assertEquals("barcodePrintWarningLimit must be at least 1.", e.getMessage());
     }
     assertTrue(threw);
-  }
-
-  @Test
-  void updateSpotAvailabilityTest() {
-    Settings body = new Settings();
-    body.availableSpots = 10;
-
-    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
-
-    settingsController.updateSpotAvailability(ctx);
-
-    assertEquals(body.availableSpots, 10);
-
-    verify(ctx).status(HttpStatus.OK);
   }
 }

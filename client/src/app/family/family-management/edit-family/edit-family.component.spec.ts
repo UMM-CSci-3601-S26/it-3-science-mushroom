@@ -417,6 +417,7 @@ describe('editFamilyComponent', () => {
         guardianLastName: 'Smith',
         address: '123 Avenue',
         accommodations: 'None',
+        needSpanishHelp: false,
         email: 'csmith@email.com',
         students: [
           {

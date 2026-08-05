@@ -24,6 +24,7 @@ describe('AppRoutingModule', () => {
 
     expect(routeSummary).toContain({ path: '', title: 'Home' });
     expect(routeSummary).toContain({ path: 'family', title: 'Family' });
+    expect(routeSummary).toContain({ path: 'family-schedule', title: 'Family Schedule' });
     expect(routeSummary).toContain({ path: 'family/new', title: 'Add Family' });
     expect(routeSummary).toContain({ path: 'inventory', title: 'Inventory' });
     expect(routeSummary).toContain({ path: 'stock-report', title: 'Stock Report' });
@@ -48,6 +49,13 @@ describe('AppRoutingModule', () => {
 
     expect(styleGuideRoute?.canActivate).toEqual([AuthGuard, RoleGuard]);
     expect(styleGuideRoute?.data?.['roles']).toEqual(['ADMIN']);
+  });
+
+  it('protects the family schedule as an admin-only page', () => {
+    const familyScheduleRoute = router.config.find(route => route.path === 'family-schedule');
+
+    expect(familyScheduleRoute?.canActivate).toEqual([AuthGuard, RoleGuard]);
+    expect(familyScheduleRoute?.data?.['roles']).toEqual(['ADMIN']);
   });
 
   // What is the point of this test? It is just testing that the same route is defined twice, which is not a good thing.

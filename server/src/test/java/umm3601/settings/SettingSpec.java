@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 public class SettingSpec {
 
   private static final int DEFAULT_BARCODE_PRINT_WARNING_LIMIT = 25;
+  private static final int DEFAULT_ENGLISH_FAMILY_COLUMNS = 3;
 
   @Test
   void canCreateSettingsWithSchoolListAndTimeAvailability() {
@@ -28,6 +29,11 @@ public class SettingSpec {
     labels.lateAfternoon = "3:00 PM - 5:00 PM";
     settings.timeAvailability = labels;
 
+    Settings.DefaultScheduleColumns defaultScheduleColumns = new Settings.DefaultScheduleColumns();
+    defaultScheduleColumns.englishFamilies = DEFAULT_ENGLISH_FAMILY_COLUMNS;
+    defaultScheduleColumns.spanishFamilies = 1;
+    settings.defaultScheduleColumns = defaultScheduleColumns;
+
     assertEquals("app-settings", settings._id);
     assertEquals(1, settings.schools.size());
     assertEquals("Morris Area High School", settings.schools.get(0).name);
@@ -36,6 +42,8 @@ public class SettingSpec {
     assertEquals("10:30 AM - 12:30 AM", settings.timeAvailability.lateMorning);
     assertEquals("1:00 PM - 3:00 PM", settings.timeAvailability.earlyAfternoon);
     assertEquals("3:00 PM - 5:00 PM", settings.timeAvailability.lateAfternoon);
+    assertEquals(DEFAULT_ENGLISH_FAMILY_COLUMNS, settings.defaultScheduleColumns.englishFamilies);
+    assertEquals(1, settings.defaultScheduleColumns.spanishFamilies);
     assertEquals(DEFAULT_BARCODE_PRINT_WARNING_LIMIT, settings.barcodePrintWarningLimit);
   }
 
