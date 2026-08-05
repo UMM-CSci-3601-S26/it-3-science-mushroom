@@ -353,7 +353,7 @@ describe('AddSupplyListComponent#submitForm()', () => {
   let location: Location;
   let router: Router;
 
-  // All 12 form controls must be supplied for setValue() to work
+  // All form controls must be supplied for setValue() to work
   const validFormValues = {
     school:   'MHS',
     grade:    'PreK',
@@ -365,7 +365,8 @@ describe('AddSupplyListComponent#submitForm()', () => {
     type:     'Washable',
     material: 'N/A',
     quantity: '3',
-    notes:    ''
+    notes:    '',
+    invIDs: []
   };
 
   beforeEach(waitForAsync(() => {
@@ -832,7 +833,7 @@ describe('AddSupplyListComponent#submitForm() — pipe separator (anyOf) path', 
 
   const baseFormValues = {
     school: 'MHS', grade: 'PreK', item: 'Markers',
-    brand: '', color: '', packageSize: '', size: '', type: '', material: '', quantity: '1', notes: ''
+    brand: '', color: '', packageSize: '', size: '', type: '', material: '', quantity: '1', notes: '', invIDs: []
   };
 
   beforeEach(waitForAsync(() => {
