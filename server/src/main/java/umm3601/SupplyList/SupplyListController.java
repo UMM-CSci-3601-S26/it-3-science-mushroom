@@ -265,6 +265,27 @@ public class SupplyListController {
     return String.format("Supply-%05d", n);
   }
 
+  private List<String> sanitizeInventoryIds(List<String> invIDs) {
+    List<String> sanitized = new ArrayList<>();
+
+    if (invIDs == null) {
+      return sanitized;
+    }
+
+    for (String invID : invIDs) {
+      if (invID == null || invID.isBlank()) {
+        continue;
+      }
+
+      String trimmed = invID.trim();
+      if (!sanitized.contains(trimmed)) {
+        sanitized.add(trimmed);
+      }
+    }
+
+    return sanitized;
+  }
+
   /**
    * Scans supply list to find the next available ID number for supplyID
    * @return The number to use
@@ -314,7 +335,7 @@ public class SupplyListController {
 
     newSupplyList.supplyID = generateNextID();
     newSupplyList.percentageFilled = -1; // Initialize percentageFilled to -1 to indicate it hasn't been calculated yet
-    newSupplyList.invIDs = new ArrayList<>(); // Initialize invIDs as an empty list
+    newSupplyList.invIDs = sanitizeInventoryIds(newSupplyList.invIDs);
     supplyListCollection.insertOne(newSupplyList);
     ctx.status(HttpStatus.CREATED);
   }
@@ -373,8 +394,16 @@ public class SupplyListController {
       updatedSupplyList._id = id;
       // These fields are not editable, and must be preserved from the existing document
       updatedSupplyList.supplyID = existingSupplyList.supplyID;
-      updatedSupplyList.invIDs = existingSupplyList.invIDs;
-      updatedSupplyList.percentageFilled = existingSupplyList.percentageFilled;
+      List<String> existingInvIDs = sanitizeInventoryIds(existingSupplyList.invIDs);
+      if (updatedSupplyList.invIDs == null) {
+        updatedSupplyList.invIDs = existingInvIDs;
+        updatedSupplyList.percentageFilled = existingSupplyList.percentageFilled;
+      } else {
+        updatedSupplyList.invIDs = sanitizeInventoryIds(updatedSupplyList.invIDs);
+        updatedSupplyList.percentageFilled = updatedSupplyList.invIDs.equals(existingInvIDs)
+          ? existingSupplyList.percentageFilled
+          : -1;
+      }
 
       supplyListCollection.replaceOne(eq("_id", objectId), updatedSupplyList);
       ctx.status(HttpStatus.OK);
