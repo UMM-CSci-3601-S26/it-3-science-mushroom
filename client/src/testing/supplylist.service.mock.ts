@@ -17,14 +17,17 @@ export class MockSupplyListService implements Pick<SupplyListService, 'getSupply
       school: "MHS",
       grade: "PreK",
       item: ["Markers"],
-      brand: { allOf: "Crayola", anyOf: []},
-      color: { allOf: [], anyOf: []},
+      brand: { exactly: "Crayola", anyOf: []},
+      color: { exactly: "", anyOf: []},
       packageSize: 8,
-      size: { allOf: "Wide", anyOf: []},
-      type: { allOf: "Washable", anyOf: []},
-      material: { allOf: "N/A", anyOf: []},
+      size: { exactly: "Wide", anyOf: []},
+      type: { exactly: "Washable", anyOf: []},
+      material: { exactly: "N/A", anyOf: []},
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      supplyID: "N/A",
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '2',
@@ -33,14 +36,17 @@ export class MockSupplyListService implements Pick<SupplyListService, 'getSupply
       school: "Herman",
       grade: "preK",
       item: ["Folder"],
-      brand: { allOf: "N/A", anyOf: []},
-      color: { allOf: ["Red"], anyOf: []},
+      brand: { exactly: "N/A", anyOf: []},
+      color: { exactly: "Red", anyOf: []},
       packageSize: 1,
-      size: { allOf: "N/A", anyOf: []},
-      type: { allOf: "2 Prong", anyOf: []},
-      material: { allOf: "Plastic", anyOf: []},
+      size: { exactly: "N/A", anyOf: []},
+      type: { exactly: "2 Prong", anyOf: []},
+      material: { exactly: "Plastic", anyOf: []},
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      supplyID: "N/A",
+      invIDs: [],
+      percentageFilled: 0
     },
     {
       _id: '3',
@@ -49,14 +55,17 @@ export class MockSupplyListService implements Pick<SupplyListService, 'getSupply
       school: "MHS",
       grade: "6th grade",
       item: ["Notebook"],
-      brand: { allOf: "Five Star", anyOf: []},
-      color: { allOf: ["Yellow"], anyOf: []},
+      brand: { exactly: "Five Star", anyOf: []},
+      color: { exactly: "Yellow", anyOf: []},
       packageSize: 1,
-      size: { allOf: "Wide Ruled", anyOf: []},
-      type: { allOf: "Spiral", anyOf: []},
-      material: { allOf: "N/A", anyOf: []},
+      size: { exactly: "Wide Ruled", anyOf: []},
+      type: { exactly: "Spiral", anyOf: []},
+      material: { exactly: "N/A", anyOf: []},
       quantity: 0,
-      notes: "N/A"
+      notes: "N/A",
+      supplyID: "N/A",
+      invIDs: [],
+      percentageFilled: 0
     }
   ];
 

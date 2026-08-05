@@ -20,6 +20,8 @@ describe('BarcodePrintWindowService', () => {
     maxQuantity: 10,
     minQuantity: 1,
     stockState: 'stocked',
+    calculatedMinQuantity: 0,
+    calculatedStockState: 'N/A',
     notes: 'A',
   };
 

@@ -128,22 +128,22 @@ public class SupplyListControllerSpec {
         .append("grade", "PreK")
         .append("item", Arrays.asList("Pencil"))
         .append("brand", new Document()
-          .append("allOf", "Ticonderoga")
+          .append("exactly", "Ticonderoga")
           .append("anyOf", new ArrayList<>()))
         .append("color", new Document()
-          .append("allOf", Arrays.asList("yellow"))
+          .append("exactly", "yellow")
           .append("anyOf", new ArrayList<>()))
         .append("packageSize", 1)
         .append("size", new Document()
-          .append("allOf", "Standard")
+          .append("exactly", "Standard")
           .append("anyOf", new ArrayList<>()))
         .append("quantity", 10)
         .append("notes", "N/A")
         .append("type", new Document()
-          .append("allOf", "")
+          .append("exactly", "")
           .append("anyOf", new ArrayList<>()))
         .append("material", new Document()
-          .append("allOf", "wood")
+          .append("exactly", "wood")
           .append("anyOf", new ArrayList<>()))
     );
     testSupplyList.add(
@@ -152,22 +152,22 @@ public class SupplyListControllerSpec {
         .append("grade", "12th grade")
         .append("item", Arrays.asList("Eraser"))
         .append("brand", new Document()
-          .append("allOf", "Pink Pearl")
+          .append("exactly", "Pink Pearl")
           .append("anyOf", new ArrayList<>()))
         .append("color", new Document()
-          .append("allOf", Arrays.asList("pink"))
+          .append("exactly", "pink")
           .append("anyOf", new ArrayList<>()))
         .append("packageSize", 1)
         .append("size", new Document()
-          .append("allOf", "Small")
+          .append("exactly", "Small")
           .append("anyOf", new ArrayList<>()))
         .append("quantity", 5)
         .append("notes", "N/A")
         .append("type", new Document()
-          .append("allOf", "")
+          .append("exactly", "")
           .append("anyOf", new ArrayList<>()))
         .append("material", new Document()
-          .append("allOf", "rubber")
+          .append("exactly", "rubber")
           .append("anyOf", new ArrayList<>()))
     );
     testSupplyList.add(
@@ -176,22 +176,22 @@ public class SupplyListControllerSpec {
         .append("grade", "PreK")
         .append("item", Arrays.asList("Notebook"))
         .append("brand", new Document()
-          .append("allOf", "Five Star")
+          .append("exactly", "Five Star")
           .append("anyOf", new ArrayList<>()))
         .append("color", new Document()
-          .append("allOf", Arrays.asList("blue"))
+          .append("exactly", "blue")
           .append("anyOf", new ArrayList<>()))
         .append("packageSize", 1)
         .append("size", new Document()
-          .append("allOf", "N/A")
+          .append("exactly", "N/A")
           .append("anyOf", new ArrayList<>()))
         .append("quantity", 3)
         .append("notes", "N/A")
         .append("type", new Document()
-          .append("allOf", "spiral")
+          .append("exactly", "spiral")
           .append("anyOf", new ArrayList<>()))
         .append("material", new Document()
-          .append("allOf", "paper")
+          .append("exactly", "paper")
           .append("anyOf", new ArrayList<>())));
 
     samsId = new ObjectId();
@@ -201,22 +201,22 @@ public class SupplyListControllerSpec {
       .append("grade", "PreK")
       .append("item", Arrays.asList("Backpack"))
       .append("brand", new Document()
-        .append("allOf", "JanSport")
+        .append("exactly", "JanSport")
         .append("anyOf", new ArrayList<>()))
       .append("color", new Document()
-        .append("allOf", Arrays.asList("black"))
+        .append("exactly", "black")
         .append("anyOf", new ArrayList<>()))
       .append("packageSize", 1)
       .append("size", new Document()
-        .append("allOf", "Standard")
+        .append("exactly", "Standard")
         .append("anyOf", new ArrayList<>()))
       .append("quantity", 2)
       .append("notes", "Plain colors only")
       .append("type", new Document()
-        .append("allOf", "shoulder bag")
+        .append("exactly", "shoulder bag")
         .append("anyOf", new ArrayList<>()))
       .append("material", new Document()
-        .append("allOf", "fabric")
+        .append("exactly", "fabric")
         .append("anyOf", new ArrayList<>()));
 
     supplylistDocuments.insertMany(testSupplyList);
@@ -316,7 +316,7 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(1, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().get(0).brand.allOf.contains("Ticonderoga"));
+    assertTrue(supplylistArrayCaptor.getValue().get(0).brand.exactly.contains("Ticonderoga"));
   }
 
   @Test
@@ -330,7 +330,7 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(1, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().get(0).color.allOf.contains("yellow"));
+    assertTrue(supplylistArrayCaptor.getValue().get(0).color.exactly.contains("yellow"));
   }
 
   @Test
@@ -344,7 +344,7 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(2, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().stream().allMatch(s -> "Standard".equals(s.size.allOf)));
+    assertTrue(supplylistArrayCaptor.getValue().stream().allMatch(s -> "Standard".equals(s.size.exactly)));
   }
 
   @Test
@@ -370,7 +370,7 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(1, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().get(0).material.allOf.contains("wood"));
+    assertTrue(supplylistArrayCaptor.getValue().get(0).material.exactly.contains("wood"));
   }
 
   @Test
@@ -383,7 +383,7 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(1, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().get(0).type.allOf.contains("shoulder bag"));
+    assertTrue(supplylistArrayCaptor.getValue().get(0).type.exactly.contains("shoulder bag"));
   }
 
   @Test
@@ -439,8 +439,8 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(2, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().get(0).brand.allOf.contains("Ticonderoga"));
-    assertTrue(supplylistArrayCaptor.getValue().get(1).brand.allOf.contains("Pink Pearl"));
+    assertTrue(supplylistArrayCaptor.getValue().get(0).brand.exactly.contains("Ticonderoga"));
+    assertTrue(supplylistArrayCaptor.getValue().get(1).brand.exactly.contains("Pink Pearl"));
   }
 
   @Test
@@ -454,9 +454,9 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(3, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().get(0).color.allOf.contains("yellow"));
-    assertTrue(supplylistArrayCaptor.getValue().get(1).color.allOf.contains("pink"));
-    assertTrue(supplylistArrayCaptor.getValue().get(2).color.allOf.contains("blue"));
+    assertTrue(supplylistArrayCaptor.getValue().get(0).color.exactly.contains("yellow"));
+    assertTrue(supplylistArrayCaptor.getValue().get(1).color.exactly.contains("pink"));
+    assertTrue(supplylistArrayCaptor.getValue().get(2).color.exactly.contains("blue"));
   }
 
   @Test
@@ -470,8 +470,8 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(3, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> "Small".equals(s.size.allOf)));
-    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> "Standard".equals(s.size.allOf)));
+    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> "Small".equals(s.size.exactly)));
+    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> "Standard".equals(s.size.exactly)));
   }
 
   @Test
@@ -484,8 +484,8 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(2, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().get(0).material.allOf.contains("wood"));
-    assertTrue(supplylistArrayCaptor.getValue().get(1).material.allOf.contains("paper"));
+    assertTrue(supplylistArrayCaptor.getValue().get(0).material.exactly.contains("wood"));
+    assertTrue(supplylistArrayCaptor.getValue().get(1).material.exactly.contains("paper"));
   }
 
   @Test
@@ -498,8 +498,8 @@ public class SupplyListControllerSpec {
     verify(ctx).status(HttpStatus.OK);
 
     assertEquals(2, supplylistArrayCaptor.getValue().size());
-    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> s.type.allOf.contains("spiral")));
-    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> s.type.allOf.contains("shoulder bag")));
+    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> s.type.exactly.contains("spiral")));
+    assertTrue(supplylistArrayCaptor.getValue().stream().anyMatch(s -> s.type.exactly.contains("shoulder bag")));
   }
 
   @Test
@@ -538,14 +538,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Marker"],
-          "brand": {"allOf": "", "anyOf": ["Crayola"]},
-          "color": {"allOf": [], "anyOf": ["red"]},
+          "brand": {"exactly": "", "anyOf": ["Crayola"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
-          "size": {"allOf": "N/A", "anyOf": []},
+          "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
-          "type": {"allOf": "dry erase", "anyOf": []},
-          "material": {"allOf": "plastic", "anyOf": []}
+          "type": {"exactly": "dry erase", "anyOf": []},
+          "material": {"exactly": "plastic", "anyOf": []}
         }
         """;
 
@@ -569,14 +569,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Marker"],
-          "brand": {"allOf": "", "anyOf": ["Crayola"]},
-          "color": {"allOf": [], "anyOf": ["red"]},
+          "brand": {"exactly": "", "anyOf": ["Crayola"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
-          "size": {"allOf": "N/A", "anyOf": []},
+          "size": {"exactly": "N/A", "anyOf": []},
           "quantity": -5,
           "notes": "N/A",
-          "type": {"allOf": "dry erase", "anyOf": []},
-          "material": {"allOf": "plastic", "anyOf": []}
+          "type": {"exactly": "dry erase", "anyOf": []},
+          "material": {"exactly": "plastic", "anyOf": []}
         }
         """;
 
@@ -603,14 +603,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Marker"],
-          "brand": {"allOf": "", "anyOf": ["Crayola"]},
-          "color": {"allOf": [], "anyOf": ["red"]},
+          "brand": {"exactly": "", "anyOf": ["Crayola"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 0,
-          "size": {"allOf": "N/A", "anyOf": []},
+          "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
-          "type": {"allOf": "dry erase", "anyOf": []},
-          "material": {"allOf": "plastic", "anyOf": []}
+          "type": {"exactly": "dry erase", "anyOf": []},
+          "material": {"exactly": "plastic", "anyOf": []}
         }
         """;
 
@@ -640,14 +640,14 @@ public class SupplyListControllerSpec {
         {
           "school": "MHS",
           "grade": "PreK",
-          "brand": {"allOf": "", "anyOf": ["Crayola"]},
-          "color": {"allOf": [], "anyOf": ["red"]},
+          "brand": {"exactly": "", "anyOf": ["Crayola"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
-          "size": {"allOf": "N/A", "anyOf": []},
+          "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
-          "type": {"allOf": "dry erase", "anyOf": []},
-          "material": {"allOf": "plastic", "anyOf": []}
+          "type": {"exactly": "dry erase", "anyOf": []},
+          "material": {"exactly": "plastic", "anyOf": []}
         }
         """;
 
@@ -672,14 +672,14 @@ public class SupplyListControllerSpec {
         {
           "grade": "PreK",
           "item": ["Marker"],
-          "brand": {"allOf": "", "anyOf": ["Crayola"]},
-          "color": {"allOf": [], "anyOf": ["red"]},
+          "brand": {"exactly": "", "anyOf": ["Crayola"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
-          "size": {"allOf": "N/A", "anyOf": []},
+          "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
-          "type": {"allOf": "dry erase", "anyOf": []},
-          "material": {"allOf": "plastic", "anyOf": []}
+          "type": {"exactly": "dry erase", "anyOf": []},
+          "material": {"exactly": "plastic", "anyOf": []}
         }
         """;
 
@@ -709,14 +709,14 @@ public class SupplyListControllerSpec {
         {
           "school": "MHS",
           "item": ["Marker"],
-          "brand": {"allOf": "", "anyOf": ["Crayola"]},
-          "color": {"allOf": [], "anyOf": ["red"]},
+          "brand": {"exactly": "", "anyOf": ["Crayola"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
           "packageSize": 1,
-          "size": {"allOf": "N/A", "anyOf": []},
+          "size": {"exactly": "N/A", "anyOf": []},
           "quantity": 10,
           "notes": "N/A",
-          "type": {"allOf": "dry erase", "anyOf": []},
-          "material": {"allOf": "plastic", "anyOf": []}
+          "type": {"exactly": "dry erase", "anyOf": []},
+          "material": {"exactly": "plastic", "anyOf": []}
         }
         """;
 
@@ -837,22 +837,22 @@ public class SupplyListControllerSpec {
             .append("teacher", "Smith")
             .append("item", Arrays.asList("Ruler"))
             .append("brand", new Document()
-              .append("allOf", "Westcott")
+              .append("exactly", "Westcott")
               .append("anyOf", new ArrayList<>()))
             .append("color", new Document()
-              .append("allOf", Arrays.asList("clear"))
+              .append("exactly", "clear")
               .append("anyOf", new ArrayList<>()))
             .append("packageSize", 1)
             .append("size", new Document()
-              .append("allOf", "12 inch")
+              .append("exactly", "12 inch")
               .append("anyOf", new ArrayList<>()))
             .append("quantity", 1)
             .append("notes", "N/A")
             .append("type", new Document()
-              .append("allOf", "")
+              .append("exactly", "")
               .append("anyOf", new ArrayList<>()))
             .append("material", new Document()
-              .append("allOf", "plastic")
+              .append("exactly", "plastic")
               .append("anyOf", new ArrayList<>())));
 
     when(ctx.queryParamMap()).thenReturn(Map.of("teacher", List.of("Smith")));
@@ -875,22 +875,22 @@ public class SupplyListControllerSpec {
             .append("academicYear", "2025-2026")
             .append("item", Arrays.asList("Scissors"))
             .append("brand", new Document()
-                .append("allOf", "Fiskars")
+                .append("exactly", "Fiskars")
                 .append("anyOf", new ArrayList<>()))
             .append("color", new Document()
-                .append("allOf", Arrays.asList("orange"))
+                .append("exactly", "orange")
                 .append("anyOf", new ArrayList<>()))
             .append("packageSize", 1)
             .append("size", new Document()
-                .append("allOf", "5 inch")
+                .append("exactly", "5 inch")
                 .append("anyOf", new ArrayList<>()))
             .append("quantity", 1)
             .append("notes", "N/A")
             .append("type", new Document()
-                .append("allOf", "")
+                .append("exactly", "")
                 .append("anyOf", new ArrayList<>()))
             .append("material", new Document()
-              .append("allOf", "metal")
+              .append("exactly", "metal")
               .append("anyOf", new ArrayList<>())));
 
     when(ctx.queryParamMap()).thenReturn(Map.of("academicYear", List.of("2025-2026")));
@@ -927,14 +927,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["red"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "red", "anyOf": []},
           "packageSize": 1,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 3,
           "notes": "Updated notes",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -957,14 +957,14 @@ public class SupplyListControllerSpec {
         {
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["black"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -995,14 +995,14 @@ public class SupplyListControllerSpec {
           "school": "   ",
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["black"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -1033,14 +1033,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["black"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": null,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": null,
           "notes": "N/A",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -1064,14 +1064,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["black"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 0,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -1102,14 +1102,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["black"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 0,
           "notes": "N/A",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -1139,14 +1139,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["black"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -1172,14 +1172,14 @@ public class SupplyListControllerSpec {
           "school": "MHS",
           "grade": "PreK",
           "item": ["Backpack"],
-          "brand": {"allOf": "JanSport", "anyOf": []},
-          "color": {"allOf": ["black"], "anyOf": []},
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
           "packageSize": 1,
-          "size": {"allOf": "Standard", "anyOf": []},
+          "size": {"exactly": "Standard", "anyOf": []},
           "quantity": 2,
           "notes": "N/A",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "fabric", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []}
         }
         """;
 
@@ -1205,14 +1205,14 @@ public class SupplyListControllerSpec {
           "school": "CHS",
           "grade": "5th grade",
           "item": ["Backpack"],
-          "brand": {"allOf": "Nike", "anyOf": []},
-          "color": {"allOf": ["blue"], "anyOf": []},
+          "brand": {"exactly": "Nike", "anyOf": []},
+          "color": {"exactly": "blue", "anyOf": []},
           "packageSize": 2,
-          "size": {"allOf": "Large", "anyOf": []},
+          "size": {"exactly": "Large", "anyOf": []},
           "quantity": 5,
           "notes": "No wheels",
-          "type": {"allOf": "shoulder bag", "anyOf": []},
-          "material": {"allOf": "nylon", "anyOf": []}
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "nylon", "anyOf": []}
         }
         """;
 
@@ -1232,5 +1232,39 @@ public class SupplyListControllerSpec {
     verify(ctx).json(supplylistCaptor.capture());
     assertEquals("CHS", supplylistCaptor.getValue().school);
     assertEquals("5th grade", supplylistCaptor.getValue().grade);
+  }
+
+  @Test
+  void generateNextIdReturnsFirstWhenCollectionEmpty() {
+    db.getCollection("supplylist").drop();
+
+    supplylistController.generateNextID(ctx);
+
+    verify(ctx).json("Supply-00001");
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void generateNextIdReturnsNextSequentialId() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertOne(new Document()
+        .append("supplyID", "Supply-00009"));
+
+    supplylistController.generateNextID(ctx);
+
+    verify(ctx).json("Supply-00010");
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void generateNextIdReturnsFirstWhenHighestIdIsMalformed() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertOne(new Document()
+        .append("supplyID", "Supply-ABC"));
+
+    supplylistController.generateNextID(ctx);
+
+    verify(ctx).json("Supply-00001");
+    verify(ctx).status(HttpStatus.OK);
   }
 }

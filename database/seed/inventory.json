@@ -14,7 +14,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 5,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "This is a test item."
   },
   {
@@ -32,7 +34,9 @@
     "quantity": 10,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -50,7 +54,9 @@
     "quantity": 56,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -68,7 +74,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -86,7 +94,9 @@
     "quantity": 23,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -104,7 +114,9 @@
     "quantity": 124,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "no wheels"
   },
   {
@@ -122,7 +134,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -140,7 +154,9 @@
     "quantity": 12312,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -158,7 +174,9 @@
     "quantity": 6,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -176,7 +194,9 @@
     "quantity": 1234,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -194,7 +214,9 @@
     "quantity": 81,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -212,7 +234,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -230,7 +254,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -248,7 +274,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -266,7 +294,9 @@
     "quantity": 12,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -284,7 +314,9 @@
     "quantity": 5550,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "shirt that can get dirty"
   },
   {
@@ -302,7 +334,9 @@
     "quantity": 67,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -320,7 +354,9 @@
     "quantity": 547,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -338,7 +374,9 @@
     "quantity": 7387358,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -356,7 +394,9 @@
     "quantity": 72957,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -374,7 +414,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -392,7 +434,9 @@
     "quantity": 6876,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -410,7 +454,9 @@
     "quantity": 0,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -428,7 +474,9 @@
     "quantity": 654465,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -446,7 +494,9 @@
     "quantity": 4563,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -464,7 +514,9 @@
     "quantity": 4746,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -482,7 +534,9 @@
     "quantity": 466,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -500,7 +554,9 @@
     "quantity": 51,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -518,7 +574,9 @@
     "quantity": 545,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -536,7 +594,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -554,7 +614,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -572,7 +634,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -590,7 +654,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -608,7 +674,9 @@
     "quantity": 6,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -626,7 +694,9 @@
     "quantity": 14,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -644,7 +714,9 @@
     "quantity": 786,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -662,7 +734,9 @@
     "quantity": 247,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -680,7 +754,9 @@
     "quantity": 6,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -698,7 +774,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -716,7 +794,9 @@
     "quantity": 72,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -734,7 +814,9 @@
     "quantity": 57,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -752,7 +834,9 @@
     "quantity": 62,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -770,7 +854,9 @@
     "quantity": 77,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -788,7 +874,9 @@
     "quantity": 62,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -806,7 +894,9 @@
     "quantity": 75,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -824,7 +914,9 @@
     "quantity": 3,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -842,7 +934,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -860,7 +954,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -878,7 +974,9 @@
     "quantity": 57,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -896,7 +994,9 @@
     "quantity": 0,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -914,7 +1014,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -932,7 +1034,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -950,7 +1054,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -968,7 +1074,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -986,7 +1094,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1004,7 +1114,9 @@
     "quantity": 4,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1022,7 +1134,9 @@
     "quantity": 25,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1040,7 +1154,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1058,7 +1174,9 @@
     "quantity": 24,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1076,7 +1194,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1094,7 +1214,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1112,7 +1234,9 @@
     "quantity": 127,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1130,7 +1254,9 @@
     "quantity": 65,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1148,7 +1274,9 @@
     "quantity": 6572,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1166,7 +1294,9 @@
     "quantity": 76,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1184,7 +1314,9 @@
     "quantity": 545,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1202,7 +1334,9 @@
     "quantity": 367,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1220,7 +1354,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1238,7 +1374,9 @@
     "quantity": 65,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1256,7 +1394,9 @@
     "quantity": 26,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1274,7 +1414,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1292,7 +1434,9 @@
     "quantity": 756,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1310,7 +1454,9 @@
     "quantity": 42,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1328,7 +1474,9 @@
     "quantity": 76,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1346,7 +1494,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1364,7 +1514,9 @@
     "quantity": 57,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1382,7 +1534,9 @@
     "quantity": 37,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1400,7 +1554,9 @@
     "quantity": 67,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1418,7 +1574,9 @@
     "quantity": 52,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1436,7 +1594,9 @@
     "quantity": 767,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1454,7 +1614,9 @@
     "quantity": 23,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1472,7 +1634,9 @@
     "quantity": 24,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1490,7 +1654,9 @@
     "quantity": 767,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1508,7 +1674,9 @@
     "quantity": 72,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1526,7 +1694,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1544,7 +1714,9 @@
     "quantity": 67,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1562,7 +1734,9 @@
     "quantity": 557,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1580,7 +1754,9 @@
     "quantity": 27,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1598,7 +1774,9 @@
     "quantity": 37,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1616,7 +1794,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1634,7 +1814,9 @@
     "quantity": 67,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1652,7 +1834,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1670,7 +1854,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1688,7 +1874,9 @@
     "quantity": 2767,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1706,7 +1894,9 @@
     "quantity": 52,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1724,7 +1914,9 @@
     "quantity": 75,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1742,7 +1934,9 @@
     "quantity": 752,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1760,7 +1954,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1778,7 +1974,9 @@
     "quantity": 72,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1796,7 +1994,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1814,7 +2014,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1832,7 +2034,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1850,7 +2054,9 @@
     "quantity": 527,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1868,7 +2074,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1886,7 +2094,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1904,7 +2114,9 @@
     "quantity": 72,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1922,7 +2134,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1940,7 +2154,9 @@
     "quantity": 72,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1958,7 +2174,9 @@
     "quantity": 72,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1976,7 +2194,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -1994,7 +2214,9 @@
     "quantity": 77,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2012,7 +2234,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2030,7 +2254,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2048,7 +2274,9 @@
     "quantity": 6,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2066,7 +2294,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2084,7 +2314,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2102,7 +2334,9 @@
     "quantity": 6,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2120,7 +2354,9 @@
     "quantity": 9,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2138,7 +2374,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2156,7 +2394,9 @@
     "quantity": 42,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2174,7 +2414,9 @@
     "quantity": 6,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2192,7 +2434,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2210,7 +2454,9 @@
     "quantity": 3,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2228,7 +2474,9 @@
     "quantity": 4,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2246,7 +2494,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2264,7 +2514,9 @@
     "quantity": 745,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2282,7 +2534,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2300,7 +2554,9 @@
     "quantity": 63,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2318,7 +2574,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2336,7 +2594,9 @@
     "quantity": 3,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2354,7 +2614,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2372,7 +2634,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2390,7 +2654,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2408,7 +2674,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2426,7 +2694,9 @@
     "quantity": 3,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2444,7 +2714,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2462,7 +2734,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2480,7 +2754,9 @@
     "quantity": 3,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2498,7 +2774,9 @@
     "quantity": 4,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2516,7 +2794,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2534,7 +2814,9 @@
     "quantity": 89,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2552,7 +2834,9 @@
     "quantity": 83,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2570,7 +2854,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2588,7 +2874,9 @@
     "quantity": 67,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2606,7 +2894,9 @@
     "quantity": 73,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2624,7 +2914,9 @@
     "quantity": 327,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2642,7 +2934,9 @@
     "quantity": 55,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2660,7 +2954,9 @@
     "quantity": 84,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2678,7 +2974,9 @@
     "quantity": 54,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2696,7 +2994,9 @@
     "quantity": 89632,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2714,7 +3014,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2732,7 +3034,9 @@
     "quantity": 9621,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2750,7 +3054,9 @@
     "quantity": 489,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2768,7 +3074,9 @@
     "quantity": 621,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2786,7 +3094,9 @@
     "quantity": 4896,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2804,7 +3114,9 @@
     "quantity": 369,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2822,7 +3134,9 @@
     "quantity": 841,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2840,7 +3154,9 @@
     "quantity": 214,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2858,7 +3174,9 @@
     "quantity": 89,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2876,7 +3194,9 @@
     "quantity": 84,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2894,7 +3214,9 @@
     "quantity": 25,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2912,7 +3234,9 @@
     "quantity": 841,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2930,7 +3254,9 @@
     "quantity": 58,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2948,7 +3274,9 @@
     "quantity": 963,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2966,7 +3294,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -2984,7 +3314,9 @@
     "quantity": 412,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3002,7 +3334,9 @@
     "quantity": 587,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3020,7 +3354,9 @@
     "quantity": 42,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3038,7 +3374,9 @@
     "quantity": 21,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3056,7 +3394,9 @@
     "quantity": 478,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3074,7 +3414,9 @@
     "quantity": 965,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3092,7 +3434,9 @@
     "quantity": 47,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3110,7 +3454,9 @@
     "quantity": 89,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3128,7 +3474,9 @@
     "quantity": 54,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3146,7 +3494,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3164,7 +3514,9 @@
     "quantity": 89,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3182,7 +3534,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3200,7 +3554,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3218,7 +3574,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3236,7 +3594,9 @@
     "quantity": 47,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3254,7 +3614,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3272,7 +3634,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3290,7 +3654,9 @@
     "quantity": 47,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3308,7 +3674,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3326,7 +3694,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3344,7 +3714,9 @@
     "quantity": 47,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3362,7 +3734,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3380,7 +3754,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3398,7 +3774,9 @@
     "quantity": 478,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3416,7 +3794,9 @@
     "quantity": 965,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3434,7 +3814,9 @@
     "quantity": 47,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3452,7 +3834,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3470,7 +3854,9 @@
     "quantity": 9,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3488,7 +3874,9 @@
     "quantity": 85,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3506,7 +3894,9 @@
     "quantity": 89,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3524,7 +3914,9 @@
     "quantity": 87,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3542,7 +3934,9 @@
     "quantity": 42,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3560,7 +3954,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3578,7 +3974,9 @@
     "quantity": 585,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3596,7 +3994,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3614,7 +4014,9 @@
     "quantity": 14,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3632,7 +4034,9 @@
     "quantity": 785,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3650,7 +4054,9 @@
     "quantity": 201,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3668,7 +4074,9 @@
     "quantity": 478,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3686,7 +4094,9 @@
     "quantity": 963,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3704,7 +4114,9 @@
     "quantity": 20,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3722,7 +4134,9 @@
     "quantity": 148,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3740,7 +4154,9 @@
     "quantity": 96,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3758,7 +4174,9 @@
     "quantity": 21,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3776,7 +4194,9 @@
     "quantity": 48,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3794,7 +4214,9 @@
     "quantity": 96,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3812,7 +4234,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3830,7 +4254,9 @@
     "quantity": 18,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3848,7 +4274,9 @@
     "quantity": 96,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3866,7 +4294,9 @@
     "quantity": 55,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "Pair of scissors"
   },
   {
@@ -3884,7 +4314,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3902,7 +4334,9 @@
     "quantity": 96,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3920,7 +4354,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3938,7 +4374,9 @@
     "quantity": 48,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3956,7 +4394,9 @@
     "quantity": 96,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3974,7 +4414,9 @@
     "quantity": 5,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -3992,7 +4434,9 @@
     "quantity": 89,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4010,7 +4454,9 @@
     "quantity": 62,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4028,7 +4474,9 @@
     "quantity": 1,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4046,7 +4494,9 @@
     "quantity": 8,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4064,7 +4514,9 @@
     "quantity": 52,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4082,7 +4534,9 @@
     "quantity": 0,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4100,7 +4554,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4118,7 +4574,9 @@
     "quantity": 0,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "8 Color"
   },
   {
@@ -4136,7 +4594,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4154,7 +4614,9 @@
     "quantity": 65,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "8 Color"
   },
   {
@@ -4172,7 +4634,9 @@
     "quantity": 72,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4190,7 +4654,9 @@
     "quantity": 722572,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4208,7 +4674,9 @@
     "quantity": 7,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4226,7 +4694,9 @@
     "quantity": 52,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4244,7 +4714,9 @@
     "quantity": 75,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   },
   {
@@ -4262,7 +4734,9 @@
     "quantity": 2,
     "maxQuantity": 10,
     "minQuantity": 1,
+    "calculatedMinQuantity": 0,
     "stockState": "",
+    "calculatedStockState": "",
     "notes": "N/A"
   }
 ]

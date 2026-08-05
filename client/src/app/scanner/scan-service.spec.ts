@@ -24,7 +24,9 @@ describe('ScanService', () => {
     notes: 'test',
     maxQuantity: 10,
     minQuantity: 1,
-    stockState: 'stocked'
+    calculatedMinQuantity: 0,
+    stockState: 'stocked',
+    calculatedStockState: 'N/A'
   };
 
   beforeEach(() => {
