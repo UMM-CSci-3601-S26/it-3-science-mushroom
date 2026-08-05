@@ -36,7 +36,6 @@
       @if (canAccessPath('/admin-panel')) {
         <a mat-button routerLink="/admin-panel" routerLinkActive="header-link-active">Admin Panel</a>
       }
-      @if (canAccessPath('/supplylist') || canAccessPath('/stock-report')) {
       @if (canAccessPath('/supplylist') || canAccessPath('/stock-report') || canAccessPath('/family-schedule')) {
         <button type="button" mat-button [matMenuTriggerFor]="operationsMenu">
           Operations
