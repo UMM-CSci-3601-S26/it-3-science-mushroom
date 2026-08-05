@@ -22,7 +22,10 @@ public class Family {
   // Whether the guardian or volunteer has completed the family profile.
   public boolean profileComplete;
   public String timeSlot;
+  public ScheduleAssignment scheduleAssignment;
+  public List<ScheduleAssignment> scheduleAssignments;
   public String accommodations;
+  public boolean needSpanishHelp;
   public boolean helped;
   public String status;
   public FamilyChecklist checklist;
@@ -30,6 +33,12 @@ public class Family {
   public List<StudentInfo> students;
 
   public AvailabilityOptions timeAvailability;
+
+  public static class ScheduleAssignment {
+    public String timeSlot;
+    public String columnType;
+    public int columnIndex;
+  }
 
   public static class AvailabilityOptions {
     public boolean earlyMorning;

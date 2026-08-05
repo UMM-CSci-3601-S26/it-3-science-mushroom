@@ -20,6 +20,7 @@ describe('FamilyPortalHomeComponent', () => {
         email: 'alex@example.com',
         address: '123 Portal Lane',
         accommodations: '',
+        needSpanishHelp: false,
         timeSlot: '9:00-10:00 AM',
         students: [{
           name: 'Sam Student',
@@ -98,6 +99,7 @@ describe('FamilyPortalHomeComponent', () => {
         email: 'alex@example.com',
         address: '123 Portal Lane',
         accommodations: '',
+        needSpanishHelp: false,
         timeSlot: '9:00-10:00 AM',
         students: [{
           name: 'Sam Student',

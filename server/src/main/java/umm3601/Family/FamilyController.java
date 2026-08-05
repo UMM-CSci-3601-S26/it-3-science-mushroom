@@ -10,7 +10,6 @@ import static com.mongodb.client.model.Updates.unset;
 // Java Imports
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -63,6 +62,7 @@ public class FamilyController {
   // API Endpoints
   private static final String API_FAMILY = "/api/family";
   private static final String API_SCHEDULE_FAMILIES = "/api/family/schedule";
+  private static final String API_CLEAR_SCHEDULED_TIMES = "/api/family/schedule/clear";
   private static final String API_DASHBOARD = "/api/dashboard";
   private static final String API_FAMILY_BY_ID = "/api/family/{id}";
   private static final String API_FAMILY_EXPORT = "/api/family/export";
@@ -105,6 +105,7 @@ public class FamilyController {
   private final InventoryReservationService inventoryReservationService;
   private final InventoryMatcher inventoryMatcher;
   private final FamilyChecklistService familyChecklistService;
+  private final FamilySchedulingService familySchedulingService;
 
 
   // Database Constructor
@@ -117,7 +118,8 @@ public class FamilyController {
       database,
       new InventoryReservationService(database, inventoryMatcher),
       inventoryMatcher,
-      new FamilyChecklistService(database, inventoryMatcher)
+      new FamilyChecklistService(database, inventoryMatcher),
+      new FamilySchedulingService()
     );
   }
 
@@ -130,7 +132,8 @@ public class FamilyController {
       database,
       inventoryReservationService,
       inventoryMatcher,
-      new FamilyChecklistService(database, inventoryMatcher)
+      new FamilyChecklistService(database, inventoryMatcher),
+      new FamilySchedulingService()
     );
   }
 
@@ -140,9 +143,26 @@ public class FamilyController {
       InventoryMatcher inventoryMatcher,
       FamilyChecklistService familyChecklistService
   ) {
+    this(
+      database,
+      inventoryReservationService,
+      inventoryMatcher,
+      familyChecklistService,
+      new FamilySchedulingService()
+    );
+  }
+
+  public FamilyController(
+      MongoDatabase database,
+      InventoryReservationService inventoryReservationService,
+      InventoryMatcher inventoryMatcher,
+      FamilyChecklistService familyChecklistService,
+      FamilySchedulingService familySchedulingService
+  ) {
     this.inventoryReservationService = inventoryReservationService;
     this.inventoryMatcher = inventoryMatcher;
     this.familyChecklistService = familyChecklistService;
+    this.familySchedulingService = familySchedulingService;
     familyCollection = JacksonMongoCollection.builder().build(
         database,
         "family",
@@ -249,84 +269,6 @@ public class FamilyController {
     rebuildInventoryReservation();
   }
 
-  /**
-  * Takes the list of families and goes through them one by one sorting them into the first available time slot.
-  * Families with fewer preferences are prioritized. Earliest drive times are also prioritized.
-  */
-  public ArrayList<Family> schedulingAlgorithm(
-    ArrayList<Family> families,
-    int capacity,
-    Settings.TimeAvailabilityLabels currentSettings
-  ) {
-    int earlyMorningCapacity = 0; // current number of people in a timeslot
-    int lateMorningCapacity = 0;
-    int earlyAfternoonCapacity = 0;
-    int lateAfternoonCapacity = 0;
-
-    families.sort(Comparator.comparingInt(f -> f.timeAvailability.countTrue()));
-
-    if (currentSettings == null) {
-      currentSettings = new Settings.TimeAvailabilityLabels();
-    }
-
-    for (int j = 0; j < families.size(); j++) {
-      int famSize = families.get(j).students.size() + 1;
-
-      // goes through for each item in the array
-      if (families.get(j).timeAvailability.earlyMorning) {
-        // checks if earlyMorning availability is marked true
-        if (earlyMorningCapacity + famSize <= capacity) {
-          // checks if the family fits within the capacity restraints of the bin
-          families.get(j).timeSlot = currentSettings.earlyMorning;
-          // should correspond with set timeslot in settings
-          earlyMorningCapacity += famSize;
-          // adds the number of people in the family to the capacity
-          continue;
-        }
-      }
-
-      if (families.get(j).timeAvailability.lateMorning) {
-        // checks if lateMorning availability is marked true
-        if (lateMorningCapacity + famSize <= capacity) {
-          // checks if the family fits within the capacity restraints of the bin
-          families.get(j).timeSlot = currentSettings.lateMorning;
-          //should correspond with set timeslot in settings
-          lateMorningCapacity += famSize;
-          // adds the number of people in the family to the capacity
-          continue;
-        }
-      }
-
-      if (families.get(j).timeAvailability.earlyAfternoon) {
-        // checks if earlyAfternoon availability is marked true
-        if (earlyAfternoonCapacity + famSize <= capacity) {
-          // checks if the family fits within the capacity restraints of the bin
-          families.get(j).timeSlot = currentSettings.earlyAfternoon;
-          //should correspond with set timeslot in settings
-          earlyAfternoonCapacity += famSize;
-          // adds the number of people in the family to the capacity
-          continue;
-        }
-      }
-
-      if (families.get(j).timeAvailability.lateAfternoon) {
-        // checks if lateAfternoon availability is marked true
-        if (lateAfternoonCapacity + famSize <= capacity) {
-          // checks if the family fits within the capacity restraints
-          families.get(j).timeSlot = currentSettings.lateAfternoon;
-          //should correspond with set timeslot in settings
-          lateAfternoonCapacity += famSize;
-          // adds the number of people in the family to the capacity
-          continue;
-        }
-      }
-
-      throw new NotFoundResponse("Not all families were able to be sorted, your event capacity may be too low");
-
-    }
-    return families;
-  }
-
   @Route(method = HttpMethod.POST, path = API_SCHEDULE_FAMILIES)
   @RequirePermission("schedule_families")
   /*
@@ -341,9 +283,13 @@ public class FamilyController {
         .find(filter)
         .into(new ArrayList<>()); //loading families
 
-    int capacity = settings.availableSpots;
-
-    schedulingAlgorithm(families, capacity, settings.timeAvailability); // scheduling families
+    Settings.TimeAvailabilityLabels timeAvailability = settings == null ? null : settings.timeAvailability;
+    Settings.DefaultScheduleColumns defaultScheduleColumns =
+        settings == null ? null : settings.defaultScheduleColumns;
+    familySchedulingService.schedulingAlgorithm(
+        families,
+        timeAvailability,
+        defaultScheduleColumns); // scheduling families
 
     List<WriteModel<Family>> updates = new ArrayList<>();
 
@@ -351,12 +297,54 @@ public class FamilyController {
         updates.add(
             new UpdateOneModel<>(
                 Filters.eq("_id", new ObjectId(fam._id)),
-                Updates.set("timeSlot", fam.timeSlot)
+                Updates.combine(
+                    Updates.set("timeSlot", fam.timeSlot),
+                    Updates.set("scheduleAssignment", scheduleAssignmentDocument(fam.scheduleAssignment)),
+                    Updates.set("scheduleAssignments", scheduleAssignmentDocuments(fam.scheduleAssignments)))
             )
         );
     }
 
     familyCollection.bulkWrite(updates);
+
+    ctx.json(families);
+    ctx.status(HttpStatus.OK);
+  }
+
+  private Document scheduleAssignmentDocument(Family.ScheduleAssignment scheduleAssignment) {
+    if (scheduleAssignment == null) {
+      return null;
+    }
+
+    return new Document()
+        .append("timeSlot", scheduleAssignment.timeSlot)
+        .append("columnType", scheduleAssignment.columnType)
+        .append("columnIndex", scheduleAssignment.columnIndex);
+  }
+
+  private List<Document> scheduleAssignmentDocuments(List<Family.ScheduleAssignment> scheduleAssignments) {
+    if (scheduleAssignments == null) {
+      return List.of();
+    }
+
+    return scheduleAssignments.stream()
+        .map(this::scheduleAssignmentDocument)
+        .toList();
+  }
+
+  @Route(method = HttpMethod.POST, path = API_CLEAR_SCHEDULED_TIMES)
+  @RequirePermission("schedule_families")
+  public void clearScheduledTimes(Context ctx) {
+    familyCollection.updateMany(
+        new Document(),
+        Updates.combine(
+            Updates.set("timeSlot", ""),
+            unset("scheduleAssignment"),
+            unset("scheduleAssignments")));
+
+    ArrayList<Family> families = familyCollection
+        .find()
+        .into(new ArrayList<>());
 
     ctx.json(families);
     ctx.status(HttpStatus.OK);
@@ -488,6 +476,7 @@ public class FamilyController {
       .append("email", updatedFamily.email)
       .append("address", updatedFamily.address)
       .append("accommodations", updatedFamily.accommodations)
+      .append("needSpanishHelp", updatedFamily.needSpanishHelp)
       .append("timeSlot", updatedFamily.timeSlot)
       .append("timeAvailability", new Document()
         .append("earlyMorning", updatedFamily.timeAvailability.earlyMorning)

@@ -21,7 +21,11 @@ export class SettingsPage {
     return cy.get(this.button);
   }
 
-  getTab() {
+  getTimeAvailabilityTab() {
+    return cy.contains('.mat-mdc-tab', 'Time Availability');
+  }
+
+  getAvailableSpotsTab() {
     return cy.contains('.mat-mdc-tab', 'Available Spots');
   }
 

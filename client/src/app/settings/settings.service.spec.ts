@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { environment } from '../../environments/environment';
-import { AppSettings, SupplyItemOrder } from './settings';
+import { AppSettings, DefaultScheduleColumns, SupplyItemOrder } from './settings';
 import { SettingsService } from './settings.service';
 
 describe('SettingsService', () => {
@@ -21,12 +21,15 @@ describe('SettingsService', () => {
       earlyAfternoon: '12:00 PM',
       lateAfternoon: '2:00 PM',
     },
+    defaultScheduleColumns: {
+      englishFamilies: 3,
+      spanishFamilies: 1,
+    },
     supplyOrder: [
       { itemTerm: 'notebook', status: 'staged' },
       { itemTerm: 'folder', status: 'unstaged' },
       { itemTerm: 'pencil', status: 'notGiven' },
     ],
-    availableSpots: 5,
     barcodePrintWarningLimit: 25,
   };
 
@@ -135,15 +138,18 @@ describe('SettingsService', () => {
     });
   });
 
-  describe('updateAvailableSpots()', () => {
-    it('sends PATCH to /api/settings/availableSpots', () => {
-      const updatedValue = 28;
+  describe('updateDefaultScheduleColumns()', () => {
+    it('sends PATCH to /api/settings/defaultScheduleColumns with column counts body', () => {
+      const defaultScheduleColumns: DefaultScheduleColumns = {
+        englishFamilies: 3,
+        spanishFamilies: 1,
+      };
 
-      service.updateAvailableSpots(updatedValue).subscribe();
+      service.updateDefaultScheduleColumns(defaultScheduleColumns).subscribe();
 
-      const req = httpTestingController.expectOne(`${settingsUrl}/availableSpots`);
+      const req = httpTestingController.expectOne(`${settingsUrl}/defaultScheduleColumns`);
       expect(req.request.method).toBe('PATCH');
-      expect(req.request.body).toEqual({ availableSpots: updatedValue });
+      expect(req.request.body).toEqual(defaultScheduleColumns);
       req.flush(null);
     });
   });

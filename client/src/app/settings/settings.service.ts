@@ -7,7 +7,14 @@ import { Observable } from 'rxjs';
 
 // Environment and Settings Interface Imports
 import { environment } from '../../environments/environment';
-import { AppSettings, SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels, DriveDay } from './settings';
+import {
+  AppSettings,
+  DefaultScheduleColumns,
+  DriveDay,
+  SchoolInfo,
+  SupplyItemOrder,
+  TimeAvailabilityLabels
+} from './settings';
 
 @Injectable({
   providedIn: 'root'
@@ -32,14 +39,14 @@ export class SettingsService {
     return this.httpClient.patch<void>(`${this.settingsUrl}/timeAvailability`, labels);
   }
 
+  // Replaces the default schedule column counts.
+  updateDefaultScheduleColumns(defaultScheduleColumns: DefaultScheduleColumns): Observable<void> {
+    return this.httpClient.patch<void>(`${this.settingsUrl}/defaultScheduleColumns`, defaultScheduleColumns);
+  }
+
   // Replaces the full supply order list. Only touches the supplyOrder field.
   updateSupplyOrder(order: SupplyItemOrder[]): Observable<void> {
     return this.httpClient.patch<void>(`${this.settingsUrl}/supplyOrder`, { supplyOrder: order });
-  }
-
-  // Replaces the availableSpots setting with a new number
-  updateAvailableSpots(availableSpots: number): Observable<void> {
-    return this.httpClient.patch<void>(`${this.settingsUrl}/availableSpots`, { availableSpots });
   }
 
   // Replaces the barcode print warning limit setting with a new number

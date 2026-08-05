@@ -45,6 +45,7 @@ describe('FamilyPortalService', () => {
       email: 'alex@example.com',
       address: '123 Main St',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: 'to be assigned',
       students: [],
       timeAvailability: {

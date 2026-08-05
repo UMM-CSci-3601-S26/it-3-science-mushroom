@@ -61,15 +61,15 @@ const PERMISSION_BUNDLES: PermissionBundle[] = [
     group: 'Settings',
     label: 'Drive Scheduling Management',
     sourceLabel: 'Included by Drive Scheduling Management',
-    permissions: ['schedule_families', 'edit_available_spots'],
-    description: 'This allows volunteers to set available drive spots and run family scheduling.'
+    permissions: ['schedule_families', 'edit_time_availability'],
+    description: 'This allows volunteers to configure schedule windows and run family scheduling.'
   }
 ];
 
 // Hide lower-level implementation permissions from the checkbox list when a
 // friendlier bundle permission grants the same access.
 const HIDDEN_IMPLEMENTATION_PERMISSIONS = new Set([
-  'edit_available_spots',
+  'edit_time_availability',
   'view_families',
   'view_family',
   'view_dashboard_stats',
@@ -83,7 +83,7 @@ const HIDDEN_IMPLEMENTATION_PERMISSIONS = new Set([
 // Fallback labels for permissions that are not in the catalog. This ensures that all permissions have a readable label
 // in the UI, even if the catalog is missing entries for some permissions.
 const PERMISSION_LABEL_FALLBACKS = new Map<string, string>([
-  ['edit_available_spots', 'Available Spot Editing'],
+  ['edit_time_availability', 'Time Availability Editing'],
   ['manage_family_help_sessions', 'Family Help Sessions'],
   ['schedule_families', 'Family Scheduling'],
   ['view_dashboard_stats', 'Dashboard Statistics'],
