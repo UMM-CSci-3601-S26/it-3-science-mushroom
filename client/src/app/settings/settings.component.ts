@@ -711,6 +711,7 @@ export class SettingsComponent implements OnInit {
         this.snackBar.open('Failed to calculate predicted states', 'OK', { duration: 3000 });
       }
     });
+  }
 
   private static timeSlotValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {

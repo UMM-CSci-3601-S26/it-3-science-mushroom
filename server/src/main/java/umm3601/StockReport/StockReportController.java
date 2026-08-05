@@ -46,6 +46,8 @@ public class StockReportController {
   private static final String API_REPORT_BYTES_BY_ID = "/api/stockreport/{id}/bytes";
   private static final String API_GENERATE_REPORT = "/api/stockreport/generate";
   private static final String API_GENERATE_REPORT_AND_SAVE = "/api/stockreport/generate-and-save";
+  private static final String STOCK_STATE_CSV_HEADER =
+    "Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n";
 
   private final JacksonMongoCollection<StockReport> stockReportCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
@@ -240,10 +242,10 @@ public class StockReportController {
     StringBuilder overstockedCSV = new StringBuilder();
 
     // Sheet Headers
-    stockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
-    outOfStockCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
-    understockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
-    overstockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n");
+    stockedCSV.append(STOCK_STATE_CSV_HEADER);
+    outOfStockCSV.append(STOCK_STATE_CSV_HEADER);
+    understockedCSV.append(STOCK_STATE_CSV_HEADER);
+    overstockedCSV.append(STOCK_STATE_CSV_HEADER);
 
     // Fill rows for each report type
     for (Inventory item : inventoryItems) {

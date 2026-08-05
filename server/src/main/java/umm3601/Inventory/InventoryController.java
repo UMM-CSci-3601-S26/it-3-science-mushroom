@@ -73,6 +73,10 @@ public class InventoryController {
   private static final int STARTS_WITH_SCORE = 2;
   private static final int CONTAINS_SCORE = 1;
   private static final int NO_MATCH_SCORE = 0;
+  private static final int INVALID_LINK_PERCENTAGE_FILLED = -2;
+  private static final int PERCENT_SCALE = 100;
+  private static final int BEST_MATCH_NULL_RESULT_INDEX = 3;
+  private static final int SCHOOL_COUNT_RESULT_INDEX = 4;
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final InventoryReservationService inventoryReservationService;
@@ -631,11 +635,12 @@ public class InventoryController {
   }
 
   /**
-   * Calculates the calculatedStockState and calculatedMinQuantity of items based on number of students under each teacher, grade, and school.
+   * Calculates the calculatedStockState and calculatedMinQuantity of items based on
+   * number of students under each teacher, grade, and school.
    */
-  private long[] calculateUnitsAndStates(){
+  private long[] calculateUnitsAndStates() {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-    long totalSupplyLists =  supplyListCollection.countDocuments();
+    long totalSupplyLists = supplyListCollection.countDocuments();
 
     long validInvIDCount = 0;
     long invalidInvIDCount = 0;
@@ -663,8 +668,10 @@ public class InventoryController {
 
       if (validInvID == null) { // No properly formatted ID found
         invalidInvIDCount++;
-        supplyList.percentageFilled = -2;
-        supplyListCollection.updateOne(eq("_id", new ObjectId(supplyList._id)), Updates.set("percentageFilled", supplyList.percentageFilled));
+        supplyList.percentageFilled = INVALID_LINK_PERCENTAGE_FILLED;
+        supplyListCollection.updateOne(
+          eq("_id", new ObjectId(supplyList._id)),
+          Updates.set("percentageFilled", supplyList.percentageFilled));
         continue; // Skip to next supply list
       }
 
@@ -676,7 +683,8 @@ public class InventoryController {
       }
 
       // loop through each school
-      for (Map.Entry<String, Map<String, Map<String, Integer>>> schoolEntry : getSchoolGradeTeacherTotals().entrySet()) {
+      Map<String, Map<String, Map<String, Integer>>> studentTotals = getSchoolGradeTeacherTotals();
+      for (Map.Entry<String, Map<String, Map<String, Integer>>> schoolEntry : studentTotals.entrySet()) {
         String school = schoolEntry.getKey();
         Map<String, Map<String, Integer>> gradeTotals = schoolEntry.getValue();
 
@@ -692,18 +700,24 @@ public class InventoryController {
 
             // if the supply list matches the school, grade, and teacher,
             // add the quantity needed for that supply list to the total needed
-            if (supplyList.school.equals(school) && (supplyList.grade.equals(grade)) && (supplyList.teacher.equals(teacher))) {
+            if (supplyList.school.equals(school)
+              && supplyList.grade.equals(grade)
+              && supplyList.teacher.equals(teacher)) {
               int qty = supplyList.quantity != null ? supplyList.quantity : 1;
               totalNeeded += numStudents * qty;
 
               schoolCount++;
 
-              // Use the first linked item in the supply list to find the corresponding inventory item and update its calculatedMinQuantity
+              // Use the first linked item to update its calculatedMinQuantity.
 
               bestMatch.calculatedMinQuantity = totalNeeded;
               bestMatch.calculatedStockState = calculateStockState(bestMatch);
-              inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("calculatedMinQuantity", bestMatch.calculatedMinQuantity));
-              inventoryCollection.updateOne(eq("_id", new ObjectId(bestMatch._id)), Updates.set("calculatedStockState", bestMatch.calculatedStockState));
+              inventoryCollection.updateOne(
+                eq("_id", new ObjectId(bestMatch._id)),
+                Updates.set("calculatedMinQuantity", bestMatch.calculatedMinQuantity));
+              inventoryCollection.updateOne(
+                eq("_id", new ObjectId(bestMatch._id)),
+                Updates.set("calculatedStockState", bestMatch.calculatedStockState));
 
               // Combine quantity from all valid invIDs in the supply list to calculate percentageFilled
               int requestedQuantity = 0;
@@ -716,9 +730,13 @@ public class InventoryController {
                 }
               }
 
-              int percentageFilled = requestedQuantity > 0 ? (int) (Math.round((double) requestedQuantity / totalNeeded * 100)) : 0;
+              int percentageFilled = requestedQuantity > 0
+                ? (int) (Math.round((double) requestedQuantity / totalNeeded * PERCENT_SCALE))
+                : 0;
               supplyList.percentageFilled = percentageFilled;
-              supplyListCollection.updateOne(eq("_id", new ObjectId(supplyList._id)), Updates.set("percentageFilled", supplyList.percentageFilled));
+              supplyListCollection.updateOne(
+                eq("_id", new ObjectId(supplyList._id)),
+                Updates.set("percentageFilled", supplyList.percentageFilled));
             }
           }
         }
@@ -737,8 +755,8 @@ public class InventoryController {
       "totalSupplyLists", results[0],
       "validInvIDCount", results[1],
       "invalidInvIDCount", results[2],
-      "bestMatchNullCount", results[3],
-      "schoolCount", results[4]
+      "bestMatchNullCount", results[BEST_MATCH_NULL_RESULT_INDEX],
+      "schoolCount", results[SCHOOL_COUNT_RESULT_INDEX]
     ));
     ctx.status(HttpStatus.OK);
   }
