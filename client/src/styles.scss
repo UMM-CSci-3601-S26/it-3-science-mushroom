@@ -112,6 +112,10 @@
   --app-shadow-md: 0 8px 22px var(--app-shadow-color);
   --app-shadow-lg: 0 14px 34px var(--app-shadow-color);
 
+  --app-data-grid-label-column-min-width: 8rem;
+  --app-data-grid-label-column-width: 10rem;
+  --app-data-grid-cell-width: 10rem;
+
   --app-primary-color: var(--app-primary);
   --app-primary-on-color: var(--app-on-primary);
   --app-warn-color: var(--app-warn);
@@ -601,6 +605,30 @@ body {
   text-shadow:
     1px 1px 0 color-mix(in srgb, var(--decor-bolt, var(--app-accent)) 36%, transparent),
     -1px 0 0 color-mix(in srgb, var(--decor-outline, var(--app-primary)) 28%, transparent);
+}
+
+.account-menu.mat-mdc-menu-panel {
+  max-width: min(92vw, 360px);
+  min-width: min(92vw, 280px);
+  overflow-x: hidden;
+  width: max-content;
+}
+
+.account-menu .mat-mdc-menu-content {
+  overflow-x: hidden;
+}
+
+.account-menu .mat-mdc-menu-item {
+  height: auto;
+  min-height: 48px;
+  white-space: normal;
+  width: 100%;
+}
+
+.account-menu .mat-mdc-menu-item-text,
+.account-menu .mat-mdc-menu-item span {
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 // Shared interaction motion gives the rest of the app the same responsive feel

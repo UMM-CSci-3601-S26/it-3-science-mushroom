@@ -33,6 +33,8 @@ const routes: Routes = [
   // Family Pages (Volunteer and Admin view)
   {path: 'family', loadComponent: () => import('./family/family-list.component').then(m => m.FamilyListComponent), title: 'Family',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_families', 'view_dashboard_stats'] }},
+  {path: 'family-schedule', loadComponent: () => import('./family/family-schedule/family-schedule.component').then(m => m.FamilyScheduleComponent), title: 'Family Schedule',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN'] }},
   {path: 'family/new', loadComponent: () => import('./family/family-management/add-family/add-family.component').then(m => m.AddFamilyComponent), title: 'Add Family',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['add_family'] }},
   {path: 'family/:id', loadComponent: () => import('./family/family-management/edit-family/edit-family.component').then(m => m.EditFamilyComponent), title: 'Edit Family',

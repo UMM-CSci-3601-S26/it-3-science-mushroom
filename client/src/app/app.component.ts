@@ -112,6 +112,10 @@ export class AppComponent implements OnInit {
     this.applyThemeFromPreferences();
   }
 
+  togglePosterStyle() {
+    this.setPosterStyle(!this.posterStyleEnabled);
+  }
+
   // Method to log out the user, clear pending delete request count, and navigate to the login page
   logout() {
     this.authService.logout().subscribe({

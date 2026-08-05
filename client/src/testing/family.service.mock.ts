@@ -19,6 +19,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'jjohnson@email.com',
       address: '713 Broadway',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: '8:00-9:00',
       timeAvailability: {
         earlyMorning: false,
@@ -45,6 +46,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'janedoe@email.com',
       address: '123 Street',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: '10:00-11:00',
       timeAvailability: {
         earlyMorning: false,
@@ -81,6 +83,7 @@ export class MockFamilyService implements Pick<FamilyService, 'getFamilyById' | 
       email: 'georgepeter@email.com',
       address: '245 Acorn Way',
       accommodations: 'None',
+      needSpanishHelp: false,
       timeSlot: '1:00-2:00',
       timeAvailability: {
         earlyMorning: false,

@@ -15,14 +15,17 @@ export interface TimeAvailabilityLabels {
   lateAfternoon: string;
 }
 
-// export type availableSpots= number;
+export interface DefaultScheduleColumns {
+  englishFamilies: number;
+  spanishFamilies: number;
+}
 
 export interface AppSettings {
   _id?: string;
   schools: SchoolInfo[];
   timeAvailability: TimeAvailabilityLabels;
+  defaultScheduleColumns?: DefaultScheduleColumns;
   supplyOrder: SupplyItemOrder[];
-  availableSpots: number;
   barcodePrintWarningLimit: number;
   driveDay?: DriveDay;
 }
