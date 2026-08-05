@@ -113,7 +113,7 @@
               </mat-autocomplete>
             </mat-form-field>
 
-            <!-- Row 6: Count + Inventory IDs -->
+            <!-- Row 6: Count + inventory linking -->
             <mat-form-field>
               <mat-label>Quantity</mat-label>
               <input matInput type="number" formControlName="quantity" required min="1" data-cy="quantity-input">
@@ -125,10 +125,21 @@
               <input matInput type="number" formControlName="packageSize" min="1" data-cy="packageSize-input">
             </mat-form-field>
 
-            <mat-form-field>
-              <mat-label>Inventory IDs</mat-label>
-              <input matInput type="text" formControlName="invIDs" data-cy="invIDs-input">
-            </mat-form-field>
+            <div class="inventory-link-field span-2" data-cy="inventory-link-field">
+              <button mat-stroked-button type="button" (click)="openInventoryLinkDialog()" data-cy="link-inventory-button">
+                <mat-icon>link</mat-icon>
+                Link Inventory
+              </button>
+              <span class="inventory-link-summary" data-cy="linked-inventory-summary">{{ linkedInventorySummary() }}</span>
+
+              @if (linkedInventoryIds().length > 0) {
+                <div class="inventory-link-pills" aria-label="Linked inventory IDs">
+                  @for (inventoryId of linkedInventoryIds(); track inventoryId) {
+                    <span>{{ inventoryId }}</span>
+                  }
+                </div>
+              }
+            </div>
 
             <!-- Row 7: Notes (full width) -->
             <mat-form-field class="span-2">

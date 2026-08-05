@@ -1,0 +1,117 @@
+<h2 mat-dialog-title>Link Inventory</h2>
+
+<div class="inventory-link-dialog-panel">
+  <mat-dialog-content class="inventory-link-content">
+    <section class="requirement-summary">
+      <span>Supply List Item</span>
+      <strong>{{ data.requirementLabel }}</strong>
+    </section>
+
+    <div class="inventory-filter-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Item</mat-label>
+        <input matInput type="text" [(ngModel)]="itemFilter" data-cy="inventory-link-item-filter">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Brand</mat-label>
+        <input matInput type="text" [(ngModel)]="brandFilter" data-cy="inventory-link-brand-filter">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Color</mat-label>
+        <input matInput type="text" [(ngModel)]="colorFilter" data-cy="inventory-link-color-filter">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Size</mat-label>
+        <input matInput type="text" [(ngModel)]="sizeFilter" data-cy="inventory-link-size-filter">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Type</mat-label>
+        <input matInput type="text" [(ngModel)]="typeFilter" data-cy="inventory-link-type-filter">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Material</mat-label>
+        <input matInput type="text" [(ngModel)]="materialFilter" data-cy="inventory-link-material-filter">
+      </mat-form-field>
+    </div>
+
+    <div class="inventory-link-toolbar">
+      <button mat-stroked-button type="button" (click)="searchInventory()" data-cy="inventory-link-search">
+        <mat-icon>search</mat-icon>
+        Search
+      </button>
+      <button mat-stroked-button type="button" (click)="clearFilters()" data-cy="inventory-link-clear-filters">
+        <mat-icon>filter_alt_off</mat-icon>
+        Clear Filters
+      </button>
+      <button mat-stroked-button type="button" (click)="selectVisibleInventory()" [disabled]="inventory().length === 0">
+        <mat-icon>playlist_add_check</mat-icon>
+        Select Visible
+      </button>
+      <button mat-stroked-button type="button" (click)="clearSelectedInventory()" [disabled]="selectedInventoryIds().length === 0">
+        <mat-icon>remove_done</mat-icon>
+        Clear Selected
+      </button>
+    </div>
+
+    <section class="selected-links" aria-label="Selected inventory links">
+      @if (selectedInventoryIds().length > 0) {
+        @for (inventoryId of selectedInventoryIds(); track inventoryId) {
+          <span class="linked-inventory-pill">
+            {{ selectedInventoryLabel(inventoryId) }}
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Remove link"
+              aria-label="Remove linked inventory"
+              (click)="removeInventoryId(inventoryId)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </span>
+        }
+      } @else {
+        <span class="empty-selected-links">No linked inventory</span>
+      }
+    </section>
+
+    <div class="inventory-list-frame">
+      @if (loading()) {
+        <div class="inventory-loading">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      } @else if (error()) {
+        <p class="inventory-link-message">{{ error() }}</p>
+      } @else {
+        <div class="inventory-result-list">
+          @for (item of inventory(); track item.internalID) {
+            <div class="inventory-result-row">
+              <mat-checkbox
+                [checked]="isSelected(item)"
+                (change)="toggleInventory(item, $event.checked)">
+              </mat-checkbox>
+              <div class="inventory-result-info">
+                <div class="inventory-result-name">{{ bestDescription(item) }}</div>
+                <div class="inventory-result-details">{{ inventoryDetails(item) }}</div>
+              </div>
+            </div>
+          }
+
+          @if (inventory().length === 0) {
+            <p class="inventory-link-message">No inventory matches these filters.</p>
+          }
+        </div>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="inventory-link-actions" align="end">
+    <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary" type="button" (click)="save()" data-cy="inventory-link-save">
+      Save Links
+    </button>
+  </mat-dialog-actions>
+</div>

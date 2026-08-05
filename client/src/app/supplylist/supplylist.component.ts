@@ -3,6 +3,7 @@ import { Component, computed, effect, inject, signal, viewChild, ChangeDetection
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,6 +28,10 @@ import { catchError, combineLatest, debounceTime, of, switchMap } from 'rxjs';
 // Supply List Imports
 import { SupplyList, AttributeOptions } from './supplylist';
 import { SupplyListService } from './supplylist.service';
+import {
+  SupplyListInventoryLinkDialogComponent,
+  SupplyListInventoryLinkFilters
+} from './inventory-link-dialog/supply-list-inventory-link-dialog.component';
 
 // Auth
 import { AuthService } from '../auth/auth-service';
@@ -43,6 +48,7 @@ import { AuthService } from '../auth/auth-service';
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
+    MatDialogModule,
     MatSelectModule,
     MatOptionModule,
     MatRadioModule,
@@ -78,6 +84,7 @@ export class SupplyListComponent {
   readonly sort = viewChild<MatSort>(MatSort);
 
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
   private dialogService = inject(DialogService);
   private supplylistService = inject(SupplyListService);
   private authService = inject(AuthService);
@@ -239,6 +246,35 @@ export class SupplyListComponent {
     return value.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
+  linkedInventorySummary(invIDs?: string[]): string {
+    const linkedCount = this.normalizeInventoryIds(invIDs).length;
+    return linkedCount === 0 ? 'No linked inventory' : `${linkedCount} linked item${linkedCount === 1 ? '' : 's'}`;
+  }
+
+  openInventoryLinkDialogForSupply(supply: SupplyList, saveOnClose: boolean): void {
+    const dialogRef = this.dialog.open(SupplyListInventoryLinkDialogComponent, {
+      width: '920px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: {
+        requirementLabel: this.toLabel(supply),
+        selectedInventoryIds: this.normalizeInventoryIds(supply.invIDs),
+        filters: this.inventoryFiltersFromSupply(supply)
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((selectedInventoryIds: string[] | undefined) => {
+      if (selectedInventoryIds === undefined) {
+        return;
+      }
+
+      supply.invIDs = this.normalizeInventoryIds(selectedInventoryIds);
+      if (saveOnClose) {
+        this.saveEdit(supply);
+      }
+    });
+  }
+
   /** Builds a compact human-readable label for an item, mirroring the server-side toString(). */
   toLabel(s: SupplyList): string {
     const attrStr = (a: AttributeOptions | undefined) => {
@@ -348,6 +384,41 @@ export class SupplyListComponent {
     this.grade.set(undefined);
     this.quantity.set(undefined);
     this.advancedFiltersExpanded.set(false);
+  }
+
+  private inventoryFiltersFromSupply(supply: SupplyList): SupplyListInventoryLinkFilters {
+    return {
+      item: this.firstInventoryItemToken(supply.item),
+      brand: this.firstAttributeToken(supply.brand),
+      color: this.firstAttributeToken(supply.color),
+      size: this.firstAttributeToken(supply.size),
+      type: this.firstAttributeToken(supply.type),
+      material: this.firstAttributeToken(supply.material)
+    };
+  }
+
+  private firstInventoryItemToken(items: string[] | undefined): string | undefined {
+    return items?.map(item => item.trim()).find(item => !!item && item !== 'N/A');
+  }
+
+  private firstAttributeToken(attribute: AttributeOptions | undefined): string | undefined {
+    return [
+      attribute?.exactly,
+      ...(attribute?.anyOf ?? [])
+    ].map(value => value?.trim()).find(value => !!value && value !== 'N/A');
+  }
+
+  private normalizeInventoryIds(ids: string[] | undefined): string[] {
+    const normalized: string[] = [];
+
+    for (const id of ids ?? []) {
+      const trimmed = id.trim();
+      if (trimmed && !normalized.includes(trimmed)) {
+        normalized.push(trimmed);
+      }
+    }
+
+    return normalized;
   }
 }
 export { SupplyListService };

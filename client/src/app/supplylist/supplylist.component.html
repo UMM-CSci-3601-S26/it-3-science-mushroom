@@ -193,10 +193,14 @@
                     <mat-label>Notes</mat-label>
                     <input matInput [(ngModel)]="element.notes" />
                   </mat-form-field>
-                  <mat-form-field appearance="outline" class="edit-field">
-                    <mat-label>Inventory IDs</mat-label>
-                    <input matInput [(ngModel)]="element.invIDs" />
-                  </mat-form-field>
+                  <div class="inventory-link-edit-field">
+                    <button type="button" mat-stroked-button (click)="openInventoryLinkDialogForSupply(element, false)"
+                      data-cy="edit-link-inventory-button">
+                      <mat-icon>link</mat-icon>
+                      Link Inventory
+                    </button>
+                    <span>{{ linkedInventorySummary(element.invIDs) }}</span>
+                  </div>
                 </div>
                 <div class="item-actions">
                   <button type="button" mat-icon-button color="primary" matTooltip="Save" (click)="saveEdit(element)"
@@ -213,6 +217,10 @@
                 @if (canEditSupplyList || canDeleteSupplyList) {
                 <div class="item-actions">
                   @if (canEditSupplyList) {
+                  <button type="button" mat-icon-button matTooltip="Link inventory"
+                    (click)="openInventoryLinkDialogForSupply(element, true)" data-cy="link-inventory-item">
+                    <mat-icon>link</mat-icon>
+                  </button>
                   <button type="button" mat-icon-button matTooltip="Edit" (click)="startEdit(element)" data-cy="edit-item">
                     <mat-icon>edit</mat-icon>
                   </button>
