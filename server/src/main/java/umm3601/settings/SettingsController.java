@@ -27,6 +27,7 @@ import io.javalin.http.HttpStatus;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
+import umm3601.Common.TimeSlotParser;
 
 /**
  * Controller for the singleton app settings document.
@@ -42,14 +43,15 @@ public class SettingsController {
   private static final String API_SETTINGS = "/api/settings";
   private static final String API_SETTINGS_SCHOOLS = "/api/settings/schools";
   private static final String API_SETTINGS_TIME = "/api/settings/timeAvailability";
+  private static final String API_SETTINGS_DEFAULT_SCHEDULE_COLUMNS = "/api/settings/defaultScheduleColumns";
   private static final String API_SETTINGS_SUPPLY_ORDER = "/api/settings/supplyOrder";
-  private static final String API_SETTINGS_AVAILABLE_SPOTS = "/api/settings/availableSpots";
   private static final String API_SETTINGS_BARCODE_PRINT_WARNING_LIMIT = "/api/settings/barcodePrintWarningLimit";
   private static final String API_SETTINGS_DRIVE_DAY = "/api/settings/driveDay";
 
   // Default values for settings fields if the document doesn't exist yet or is missing fields.
-  private static final int DEFAULT_AVAILABLE_SPOTS = 5;
   private static final int DEFAULT_BARCODE_PRINT_WARNING_LIMIT = 25;
+  private static final int DEFAULT_ENGLISH_FAMILY_COLUMNS = 1;
+  private static final int DEFAULT_SPANISH_FAMILY_COLUMNS = 0;
 
   private final JacksonMongoCollection<Settings> settingsCollection;
 
@@ -65,8 +67,8 @@ public class SettingsController {
    * getSettings retrieves the singleton settings document and returns it as JSON. If the document doesn't exist,
    * it returns a new Settings object with default values (except for _id which is set to SETTINGS_ID). The
    * client can use this endpoint to get the current application settings, including the list of schools,
-   * time availability labels, supply item order, available spots, barcode print warning limit,
-   * and drive day information.
+   * time availability labels, schedule column defaults, supply item order, barcode print warning limit, and drive
+   * day information.
    * @param ctx
    */
   @Route(method = HttpMethod.GET, path = API_SETTINGS)
@@ -87,16 +89,32 @@ public class SettingsController {
       settings._id = SETTINGS_ID;
       settings.schools = new ArrayList<>();
       settings.timeAvailability = new Settings.TimeAvailabilityLabels();
-      settings.availableSpots = DEFAULT_AVAILABLE_SPOTS;
+      settings.defaultScheduleColumns = defaultScheduleColumns();
       settings.barcodePrintWarningLimit = DEFAULT_BARCODE_PRINT_WARNING_LIMIT;
       settings.supplyOrder = new ArrayList<>();
     } else if (settings.supplyOrder == null) {
       settings.supplyOrder = new ArrayList<>();
     }
+    if (settings.defaultScheduleColumns == null) {
+      settings.defaultScheduleColumns = defaultScheduleColumns();
+    }
+    if (settings.defaultScheduleColumns.englishFamilies < 1) {
+      settings.defaultScheduleColumns.englishFamilies = DEFAULT_ENGLISH_FAMILY_COLUMNS;
+    }
+    if (settings.defaultScheduleColumns.spanishFamilies < 0) {
+      settings.defaultScheduleColumns.spanishFamilies = DEFAULT_SPANISH_FAMILY_COLUMNS;
+    }
     if (settings.barcodePrintWarningLimit < 1) {
       settings.barcodePrintWarningLimit = DEFAULT_BARCODE_PRINT_WARNING_LIMIT;
     }
     return settings;
+  }
+
+  private static Settings.DefaultScheduleColumns defaultScheduleColumns() {
+    Settings.DefaultScheduleColumns defaults = new Settings.DefaultScheduleColumns();
+    defaults.englishFamilies = DEFAULT_ENGLISH_FAMILY_COLUMNS;
+    defaults.spanishFamilies = DEFAULT_SPANISH_FAMILY_COLUMNS;
+    return defaults;
   }
 
   /**
@@ -175,6 +193,8 @@ public class SettingsController {
   @RequirePermission("edit_time_availability")
   public void updateTimeAvailability(Context ctx) {
     Settings.TimeAvailabilityLabels body = ctx.bodyAsClass(Settings.TimeAvailabilityLabels.class);
+    validateTimeAvailabilityLabels(body);
+
     Document taDoc = new Document()
         .append("earlyMorning", body.earlyMorning)
         .append("lateMorning", body.lateMorning)
@@ -189,26 +209,59 @@ public class SettingsController {
     ctx.status(HttpStatus.OK);
   }
 
+  private void validateTimeAvailabilityLabels(Settings.TimeAvailabilityLabels labels) {
+    if (labels == null) {
+      throw new BadRequestResponse("Request body must include time availability labels.");
+    }
+
+    validateTimeSlotLabel(labels.earlyMorning, "earlyMorning");
+    validateTimeSlotLabel(labels.lateMorning, "lateMorning");
+    validateTimeSlotLabel(labels.earlyAfternoon, "earlyAfternoon");
+    validateTimeSlotLabel(labels.lateAfternoon, "lateAfternoon");
+  }
+
+  private void validateTimeSlotLabel(String timeSlot, String fieldName) {
+    if (timeSlot == null || timeSlot.isBlank()) {
+      throw new BadRequestResponse(fieldName + " must be a valid time slot.");
+    }
+
+    TimeSlotParser.parseRange(timeSlot, null, fieldName);
+  }
+
   /**
-   * updateSpotAvailability updates the number of available spots for drive day in the settings document.
-   * The request body must include an 'availableSpots' field with a positive integer value.
-   * This endpoint allows operators to manage how many families can be scheduled for each time slot
-   * on drive day based on their preferences. The method validates the input and updates the settings
-   * document in the database, creating it if it doesn't exist.
+   * updateDefaultScheduleColumns updates the default schedule column counts used when a new family schedule is made.
+   * The request body must include 'englishFamilies' and 'spanishFamilies' count fields.
    * @param ctx
-   * @throws BadRequestResponse if the request body is missing or does not include a valid 'availableSpots' value
+   * @throws BadRequestResponse if either column count is outside the supported range
    */
-  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_AVAILABLE_SPOTS)
-  @RequirePermission("edit_available_spots")
-  public void updateSpotAvailability(Context ctx) {
-    Settings body = ctx.bodyAsClass(Settings.class);
+  @Route(method = HttpMethod.PATCH, path = API_SETTINGS_DEFAULT_SCHEDULE_COLUMNS)
+  @RequirePermission("edit_time_availability")
+  public void updateDefaultScheduleColumns(Context ctx) {
+    Settings.DefaultScheduleColumns body = ctx.bodyAsClass(Settings.DefaultScheduleColumns.class);
+    validateDefaultScheduleColumns(body);
+
+    Document defaultScheduleColumnsDoc = new Document()
+        .append("englishFamilies", body.englishFamilies)
+        .append("spanishFamilies", body.spanishFamilies);
 
     settingsCollection.updateOne(
         eq("_id", SETTINGS_ID),
-        new Document("$set", new Document("availableSpots", body.availableSpots)),
+        new Document("$set", new Document("defaultScheduleColumns", defaultScheduleColumnsDoc)),
         new UpdateOptions().upsert(true));
 
     ctx.status(HttpStatus.OK);
+  }
+
+  private void validateDefaultScheduleColumns(Settings.DefaultScheduleColumns defaultScheduleColumns) {
+    if (defaultScheduleColumns == null) {
+      throw new BadRequestResponse("Request body must include default schedule columns.");
+    }
+    if (defaultScheduleColumns.englishFamilies < 1) {
+      throw new BadRequestResponse("englishFamilies must be at least 1.");
+    }
+    if (defaultScheduleColumns.spanishFamilies < 0) {
+      throw new BadRequestResponse("spanishFamilies must be at least 0.");
+    }
   }
 
   /**

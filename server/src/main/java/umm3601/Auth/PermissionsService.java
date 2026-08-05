@@ -57,7 +57,6 @@ public class PermissionsService {
   // Permissions that are defined in code but not assignable to volunteers through the API,
   // typically because they are required for baseline access or are only relevant for staff roles.
   private static final Set<String> NON_ASSIGNABLE_PERMISSIONS = Set.of(
-      "edit_available_spots",
       "family_portal_access",
       "manage_checklist",
       "manage_family_help_sessions",
@@ -107,7 +106,6 @@ public class PermissionsService {
       "view_supply_lists",
       "manage_checklist",
       "view_checklist",
-      "edit_available_spots",
       "edit_barcode_print_limit",
       "edit_drive_day",
       "edit_schools",
@@ -463,7 +461,6 @@ public class PermissionsService {
         || permission.contains("drive_day")
         || permission.contains("supply_order")
         || permission.contains("time_availability")
-        || permission.contains("available_spots")
         || permission.contains("barcode_print")) {
       return "Settings";
     }
@@ -508,7 +505,6 @@ public class PermissionsService {
       case "manage_checklist" -> "Checklist Management";
       case "view_checklist" -> "Checklist Viewing";
       case "edit_schools" -> "School Settings Editing";
-      case "edit_available_spots" -> "Available Spot Editing";
       case "edit_barcode_print_limit" -> "Barcode Print Limit Editing";
       case "edit_drive_day" -> "Drive Day Editing";
       case "edit_supply_order" -> "Supply Order Editing";

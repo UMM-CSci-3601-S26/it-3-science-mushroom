@@ -45,6 +45,7 @@ describe('FamilyPortalFormComponent', () => {
       email: 'taylor@example.com',
       address: '123 Main St',
       accommodations: 'Needs elevator access',
+      needSpanishHelp: false,
       timeSlot: 'to be assigned',
       timeAvailability: {
         earlyMorning: true,
@@ -82,6 +83,7 @@ describe('FamilyPortalFormComponent', () => {
         email: 'taylor@example.com',
         address: '123 Main St',
         accommodations: 'None',
+        needSpanishHelp: false,
         timeSlot: '9:00-10:00 AM',
         students: [{
           name: 'Avery',
@@ -164,6 +166,7 @@ describe('FamilyPortalFormComponent', () => {
       email: 'taylor@example.com',
       address: '123 Main St',
       accommodations: 'Needs elevator access',
+      needSpanishHelp: false,
       timeSlot: 'to be assigned',
       students: [{
         name: 'Avery',
@@ -221,6 +224,7 @@ describe('FamilyPortalFormComponent', () => {
       email: undefined,
       address: null,
       accommodations: undefined,
+      needSpanishHelp: false,
       timeSlot: undefined,
       students: [{
         name: undefined,
@@ -241,6 +245,7 @@ describe('FamilyPortalFormComponent', () => {
       email: '',
       address: '',
       accommodations: '',
+      needSpanishHelp: false,
       timeSlot: 'to be assigned',
       students: [{
         name: '',
@@ -281,6 +286,7 @@ describe('FamilyPortalFormComponent', () => {
         email: 'taylor@example.com',
         address: '123 Main St',
         accommodations: 'None',
+        needSpanishHelp: false,
         timeSlot: '',
         students: [],
         timeAvailability: {

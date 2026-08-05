@@ -16,14 +16,12 @@ import { InventoryService } from '../inventory/inventory.service';
 import { SelectOption } from '../inventory/inventory';
 import { DialogService } from '../shared/dialog/dialog.service';
 import { AuthService } from '../auth/auth-service';
-import { FamilyService } from '../family/family.service';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
   let termsServiceSpy: jasmine.SpyObj<TermsService>;
-  let familyServiceSpy: jasmine.SpyObj<FamilyService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
@@ -51,13 +49,12 @@ describe('SettingsComponent', () => {
   const mockSettings: AppSettings = {
     schools: [],
     timeAvailability: {
-      earlyMorning: 'early morning',
-      lateMorning: 'late morning',
-      earlyAfternoon: 'early afternoon',
-      lateAfternoon: 'late afternoon',
+      earlyMorning: '8:00-9:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '12:00-1:00 PM',
+      lateAfternoon: '1:00-2:00 PM',
     },
     supplyOrder: [],
-    availableSpots: 5,
     barcodePrintWarningLimit: 25,
   };
 
@@ -66,13 +63,11 @@ describe('SettingsComponent', () => {
       'getSettings',
       'updateSchools',
       'updateTimeAvailability',
+      'updateDefaultScheduleColumns',
       'updateSupplyOrder',
-      'updateAvailableSpots',
-      'scheduleFamilies',
       'updateBarcodePrintWarningLimit'
     ]);
     termsServiceSpy = jasmine.createSpyObj('TermsService', ['getTerms']);
-    familyServiceSpy = jasmine.createSpyObj('FamilyService', ['scheduleFamilies']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission', 'isAdmin']);
     itemOptionsSignal = signal<SelectOption[]>([]);
@@ -99,12 +94,14 @@ describe('SettingsComponent', () => {
     });
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy.navigate.and.returnValue(Promise.resolve(true));
 
 
     // Default: return empty settings and the three mock terms
     settingsServiceSpy.getSettings.and.returnValue(of(mockSettings));
     termsServiceSpy.getTerms.and.returnValue(of(mockTerms));
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(of(undefined));
     authServiceSpy.hasPermission.and.returnValue(true);
     authServiceSpy.isAdmin.and.returnValue(true);
     inventoryServiceSpy.getInventory.and.returnValue(of([]));
@@ -130,7 +127,6 @@ describe('SettingsComponent', () => {
         { provide: TermsService, useValue: termsServiceSpy },
         { provide: InventoryService, useValue: inventoryServiceSpy },
         { provide: DialogService, useValue: dialogServiceSpy },
-        { provide: FamilyService, useValue: familyServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
         { provide: MatSnackBar, useValue: snackBarSpy },
@@ -144,6 +140,30 @@ describe('SettingsComponent', () => {
   });
 
   // ---- loadDriveOrder ----
+
+  it('loads optional schedule column and drive day settings into the forms', () => {
+    settingsServiceSpy.getSettings.and.returnValue(of({
+      ...mockSettings,
+      defaultScheduleColumns: {
+        englishFamilies: 4,
+        spanishFamilies: 2,
+      },
+      driveDay: {
+        date: '2026-08-15',
+      },
+      barcodePrintWarningLimit: undefined,
+    }));
+
+    component.ngOnInit();
+
+    expect(component.timeAvailabilityForm.value.englishFamilies).toBe(4);
+    expect(component.timeAvailabilityForm.value.spanishFamilies).toBe(2);
+    expect(component.driveDayForm.value).toEqual({
+      date: '2026-08-15',
+      location: '',
+    });
+    expect(component.barcodePrintForm.value.barcodePrintWarningLimit).toBe(25);
+  });
 
   it('populates unstagedTerms with all terms when no saved order exists', () => {
     // All three terms are unsorted/unstaged by default (no supplyOrder saved)
@@ -432,7 +452,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability calls updateTimeAvailability and shows success snack bar', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: '8:00 AM',
       lateMorning: '10:00 AM',
       earlyAfternoon: '12:00 PM',
@@ -452,7 +472,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability shows error snack bar on failure', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(throwError(() => new Error('fail')));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: '8:00 AM',
       lateMorning: '10:00 AM',
       earlyAfternoon: '12:00 PM',
@@ -466,7 +486,7 @@ describe('SettingsComponent', () => {
 
   it('saveTimeAvailability does nothing when form is invalid', () => {
     settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
-    component.timeAvailabilityForm.setValue({
+    component.timeAvailabilityForm.patchValue({
       earlyMorning: '',
       lateMorning: '',
       earlyAfternoon: '',
@@ -478,24 +498,142 @@ describe('SettingsComponent', () => {
     expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
   });
 
-  it('Should call updateAvailableSpots and show success snack bar', () => {
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
-    component.availableSpotsForm.setValue({ availableSpots: 28 });
+  it('saveTimeAvailability rejects invalid time slot text', () => {
+    settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
+    component.timeAvailabilityForm.patchValue({
+      earlyMorning: 'banana',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '12:00-1:00 PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
 
-    component.saveAvailableSpots();
+    component.saveTimeAvailability();
 
-    const availableSpots = component.availableSpotsForm.get('availableSpots').value;
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith(`Available spots setting saved: ${availableSpots}`, 'OK', { duration: 2000 });
+    expect(component.timeAvailabilityForm.get('earlyMorning')?.hasError('timeMeridiem')).toBeTrue();
+    expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
   });
 
-  it('Should call updateAvailableSpots and show failure snack bar', () => {
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(throwError(() => new Error('fail')));
-    component.availableSpotsForm.setValue({ availableSpots: 28 });
+  it('saveTimeAvailability rejects a time slot that ends before it starts', () => {
+    settingsServiceSpy.updateTimeAvailability.and.returnValue(of(undefined));
+    component.timeAvailabilityForm.patchValue({
+      earlyMorning: '9:00-8:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '12:00-1:00 PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
 
-    component.saveAvailableSpots();
+    component.saveTimeAvailability();
 
-    expect(snackBarSpy.open).toHaveBeenCalledWith(`Failed to save available spots`, 'OK', { duration: 3000 });
+    expect(component.timeAvailabilityForm.get('earlyMorning')?.hasError('timeOrder')).toBeTrue();
+    expect(settingsServiceSpy.updateTimeAvailability).not.toHaveBeenCalled();
+  });
+
+  it('accepts noon crossover when only the end time has a meridiem', () => {
+    component.timeAvailabilityForm.patchValue({
+      earlyMorning: '8:00-9:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '11:30-12:30 PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
+
+    const earlyAfternoon = component.timeAvailabilityForm.get('earlyAfternoon');
+
+    expect(earlyAfternoon?.hasError('timeOrder')).toBeFalse();
+    expect(earlyAfternoon?.valid).toBeTrue();
+  });
+
+  it('accepts noon crossover without a space before the end meridiem', () => {
+    component.timeAvailabilityForm.patchValue({
+      earlyMorning: '8:00-9:00 AM',
+      lateMorning: '9:00-10:00 AM',
+      earlyAfternoon: '11:30 AM - 12:30PM',
+      lateAfternoon: '1:00-2:00 PM',
+    });
+
+    const earlyAfternoon = component.timeAvailabilityForm.get('earlyAfternoon');
+
+    expect(earlyAfternoon?.hasError('timeOrder')).toBeFalse();
+    expect(earlyAfternoon?.valid).toBeTrue();
+  });
+
+  it('saveDefaultColumns calls updateDefaultScheduleColumns and shows success snack bar', () => {
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(of(undefined));
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 3,
+      spanishFamilies: 1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).toHaveBeenCalledWith({
+      englishFamilies: 3,
+      spanishFamilies: 1,
+    });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Default schedule columns saved', 'OK', { duration: 2000 });
+  });
+
+  it('saveDefaultColumns uses fallback values when the column controls have no values', () => {
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(of(undefined));
+    const englishFamiliesControl = component.timeAvailabilityForm.get('englishFamilies');
+    const spanishFamiliesControl = component.timeAvailabilityForm.get('spanishFamilies');
+
+    englishFamiliesControl?.clearValidators();
+    spanishFamiliesControl?.clearValidators();
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: null,
+      spanishFamilies: null,
+    });
+    englishFamiliesControl?.updateValueAndValidity();
+    spanishFamiliesControl?.updateValueAndValidity();
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).toHaveBeenCalledWith({
+      englishFamilies: 1,
+      spanishFamilies: 0,
+    });
+  });
+
+  it('saveDefaultColumns does nothing without edit time availability permission', () => {
+    authServiceSpy.hasPermission.and.callFake(permission => permission !== 'edit_time_availability');
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).not.toHaveBeenCalled();
+  });
+
+  it('saveDefaultColumns does nothing when a column count is invalid', () => {
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 0,
+      spanishFamilies: 1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).not.toHaveBeenCalled();
+  });
+
+  it('saveDefaultColumns does nothing when the Spanish column count is invalid', () => {
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 1,
+      spanishFamilies: -1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(settingsServiceSpy.updateDefaultScheduleColumns).not.toHaveBeenCalled();
+  });
+
+  it('saveDefaultColumns shows a failure snack bar when the save fails', () => {
+    settingsServiceSpy.updateDefaultScheduleColumns.and.returnValue(throwError(() => new Error('fail')));
+    component.timeAvailabilityForm.patchValue({
+      englishFamilies: 2,
+      spanishFamilies: 1,
+    });
+
+    component.saveDefaultColumns();
+
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to save default schedule columns', 'OK', { duration: 3000 });
   });
 
   it('filters inventory management dropdown options using the typed filter values', () => {
@@ -886,78 +1024,6 @@ describe('SettingsComponent', () => {
     }));
   });
 
-  it('Should call scheduleFamilies and show successful snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 5 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
-    familyServiceSpy.scheduleFamilies.and.returnValue(of(undefined));
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
-
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/family']);
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Families scheduled', 'OK', { duration: 2000 });
-  }));
-
-  it('Should call scheduleFamilies and show capacity error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 1 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
-    familyServiceSpy.scheduleFamilies.and.returnValue(
-      throwError(() => ({
-        error: {
-          title: 'Not all families were able to be sorted, your event capacity may be too low'
-        }
-      }))
-    );
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Your capacity is too low for the number of families', 'OK', { duration: 3000 });
-  }));
-
-  it('Should call scheduleFamilies and show general error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 1 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(of(undefined));
-    familyServiceSpy.scheduleFamilies.and.returnValue(
-      throwError(() => ({
-        error: { title: 'general error' }
-      }))
-    );
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(familyServiceSpy.scheduleFamilies).toHaveBeenCalled();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to schedule families', 'OK', { duration: 3000 });
-  }));
-
-  it('Should call scheduleFamilies and show update available spots error snackBar', fakeAsync(() => {
-    component.availableSpotsForm.setValue({ availableSpots: 1 });
-
-    settingsServiceSpy.updateAvailableSpots.and.returnValue(
-      throwError(() => ({
-        error: { title: 'update available spots error'}
-      }))
-    );
-
-    component.scheduleFamilies();
-    tick();
-    tick();
-
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to update available spots', 'OK', { duration: 3000 });
-  }));
   it('saves the barcode print warning limit setting', () => {
     settingsServiceSpy.updateBarcodePrintWarningLimit.and.returnValue(of(undefined));
     component.barcodePrintForm.setValue({ barcodePrintWarningLimit: 30 });

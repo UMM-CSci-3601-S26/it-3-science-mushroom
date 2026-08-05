@@ -1,6 +1,15 @@
 // Angular and Material Imports
 import { Component, OnInit, inject, viewChild, signal, effect, computed } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
@@ -24,10 +33,13 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 // Settings Service and Type Imports
 import { SettingsService } from './settings.service';
-import { SchoolInfo, SupplyItemOrder, TimeAvailabilityLabels, DriveDay } from './settings';
-
-// Family Imports
-import { FamilyService } from '../family/family.service';
+import {
+  DefaultScheduleColumns,
+  DriveDay,
+  SchoolInfo,
+  SupplyItemOrder,
+  TimeAvailabilityLabels
+} from './settings';
 
 // Terms Imports
 import { TermsService } from '../terms/terms.service';
@@ -65,12 +77,14 @@ import { DialogService } from '../shared/dialog/dialog.service';
   ]
 })
 export class SettingsComponent implements OnInit {
+  private static readonly timeSlotSeparator = /\s*[-\u2013\u2014]\s*/;
+  private static readonly meridiemPattern = /(AM|PM)\s*$/i;
+
   // Services & Components
   private settingsService = inject(SettingsService);
   private termsService = inject(TermsService);
   private inventoryService = inject(InventoryService);
   private dialogService = inject(DialogService);
-  private familyService = inject(FamilyService);
   //private inventoryIndex = inject(InventoryIndex);
   //private inventoryComponent = inject(InventoryComponent);
 
@@ -84,7 +98,6 @@ export class SettingsComponent implements OnInit {
     'schools',
     'time-availability',
     'drive-day',
-    'available-spots',
     'barcode-printing',
     'drive-order',
     'inventory-management'
@@ -101,14 +114,6 @@ export class SettingsComponent implements OnInit {
 
   get canEditSupplyOrder(): boolean {
     return this.authService.hasPermission('edit_supply_order');
-  }
-
-  get canEditAvailableSlots(): boolean {
-    return this.authService.hasPermission('edit_available_spots');
-  }
-
-  get canScheduleFamilies(): boolean {
-    return this.authService.hasPermission('schedule_families');
   }
 
   get canEditDriveDay(): boolean {
@@ -235,15 +240,13 @@ export class SettingsComponent implements OnInit {
 
   // Form for setting clock-time labels for each availability slot
   timeAvailabilityForm = new FormGroup({
-    earlyMorning: new FormControl('', Validators.required),
-    lateMorning: new FormControl('', Validators.required),
-    earlyAfternoon: new FormControl('', Validators.required),
-    lateAfternoon: new FormControl('', Validators.required),
+    earlyMorning: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    lateMorning: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    earlyAfternoon: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    lateAfternoon: new FormControl('', [Validators.required, SettingsComponent.timeSlotValidator()]),
+    englishFamilies: new FormControl<number>(1, [Validators.required, Validators.min(1)]),
+    spanishFamilies: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
   });
-
-  availableSpotsForm = new FormGroup({
-    availableSpots: new FormControl<number>(5, [Validators.required, Validators.min(1)])
-  })
 
   inventoryFilterForm = new FormGroup({
     item: new FormControl(''),
@@ -284,7 +287,9 @@ export class SettingsComponent implements OnInit {
         this.timeAvailabilityForm.patchValue(settings.timeAvailability);
       }
 
-      this.availableSpotsForm.patchValue({ availableSpots: settings.availableSpots});
+      if (settings.defaultScheduleColumns) {
+        this.timeAvailabilityForm.patchValue(settings.defaultScheduleColumns);
+      }
 
       if (settings.driveDay) {
         this.driveDayForm.patchValue({
@@ -449,13 +454,45 @@ export class SettingsComponent implements OnInit {
     }
 
     if (this.timeAvailabilityForm.valid) {
+      const timeAvailability: TimeAvailabilityLabels = {
+        earlyMorning: this.timeAvailabilityForm.value.earlyMorning ?? '',
+        lateMorning: this.timeAvailabilityForm.value.lateMorning ?? '',
+        earlyAfternoon: this.timeAvailabilityForm.value.earlyAfternoon ?? '',
+        lateAfternoon: this.timeAvailabilityForm.value.lateAfternoon ?? ''
+      };
+
       this.settingsService.updateTimeAvailability(
-        this.timeAvailabilityForm.value as TimeAvailabilityLabels
+        timeAvailability
       ).subscribe({
         next: () => this.snackBar.open('Time availability saved', 'OK', { duration: 2000 }),
         error: () => this.snackBar.open('Failed to save time availability', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  saveDefaultColumns(): void {
+    if (!this.canEditTimeAvailability) {
+      return;
+    }
+
+    const englishFamiliesControl = this.timeAvailabilityForm.get('englishFamilies');
+    const spanishFamiliesControl = this.timeAvailabilityForm.get('spanishFamilies');
+
+    if (englishFamiliesControl?.invalid || spanishFamiliesControl?.invalid) {
+      englishFamiliesControl?.markAsTouched();
+      spanishFamiliesControl?.markAsTouched();
+      return;
+    }
+
+    const defaultScheduleColumns: DefaultScheduleColumns = {
+      englishFamilies: this.timeAvailabilityForm.value.englishFamilies ?? 1,
+      spanishFamilies: this.timeAvailabilityForm.value.spanishFamilies ?? 0
+    };
+
+    this.settingsService.updateDefaultScheduleColumns(defaultScheduleColumns).subscribe({
+      next: () => this.snackBar.open('Default schedule columns saved', 'OK', { duration: 2000 }),
+      error: () => this.snackBar.open('Failed to save default schedule columns', 'OK', { duration: 3000 })
+    });
   }
 
   saveDriveDay(): void {
@@ -470,27 +507,6 @@ export class SettingsComponent implements OnInit {
       next: () => this.snackBar.open('Drive day saved', 'OK', { duration: 2000 }),
       error: () => this.snackBar.open('Failed to save drive day', 'OK', { duration: 3000 })
     });
-  }
-
-  /**
-  * Saves the input in the available spots field to the server
-  */
-  saveAvailableSpots(): void {
-    if (!this.canEditAvailableSlots) {
-      return;
-    }
-
-    if (this.availableSpotsForm.valid) {
-      const availableSpots = this.availableSpotsForm.value.availableSpots ?? 5;
-      this.settingsService.updateAvailableSpots(
-        availableSpots
-      ).subscribe({
-        next: () => {
-          this.snackBar.open(`Available spots setting saved: ${availableSpots}`, 'OK', { duration: 2000 });
-        },
-        error: () => this.snackBar.open('Failed to save available spots', 'OK', { duration: 3000 })
-      });
-    }
   }
 
   /**
@@ -662,44 +678,6 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  /**
-  * Schedules families in first available timeslot according to the scheduling algorithm.
-  * The scheduling algorithm prioritizes people with the fewest selections and the earliest times.
-  */
-  scheduleFamilies(): void {
-    if (!this.canEditAvailableSlots || !this.canScheduleFamilies || !this.availableSpotsForm.valid) {
-      return;
-    }
-
-    const availableSpots = this.availableSpotsForm.value.availableSpots ?? 5;
-    this.settingsService.updateAvailableSpots(availableSpots).subscribe({
-      next: () => {
-        this.familyService.scheduleFamilies().subscribe({
-          next: () => {
-            this.router.navigate(['/family']);
-            this.snackBar.open('Families scheduled' , 'OK', {duration: 2000});
-          },
-          error: (err) => {
-            const lowCapacityMessage = 'Not all families were able to be sorted, your event capacity may be too low';
-            const errorText = [
-              typeof err?.error === 'string' ? err.error : JSON.stringify(err?.error ?? {}),
-              err?.message ?? ''
-            ].join(' ');
-
-            if (err?.status === 404 || errorText.includes(lowCapacityMessage)) {
-              this.snackBar.open('Your capacity is too low for the number of families', 'OK', {duration: 3000});
-            } else {
-              this.snackBar.open('Failed to schedule families', 'OK', {duration: 3000});
-            }
-          }
-        })
-      },
-      error: () => {
-        this.snackBar.open('Failed to update available spots', 'OK', { duration: 3000 });
-      }
-    });
-  }
-
   saveBarcodePrintSettings(): void {
     if (!this.canEditBarcode) {
       return;
@@ -713,5 +691,93 @@ export class SettingsComponent implements OnInit {
         error: () => this.snackBar.open('Failed to save barcode print settings', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  private static timeSlotValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = `${control.value ?? ''}`.trim();
+      if (!value) {
+        return null;
+      }
+
+      const rangeParts = value.split(SettingsComponent.timeSlotSeparator, 2);
+      const explicitEndMeridiem = rangeParts.length === 2
+        ? SettingsComponent.extractMeridiem(rangeParts[1])
+        : undefined;
+      const explicitStartMeridiem = SettingsComponent.extractMeridiem(rangeParts[0]);
+      const startMeridiems = SettingsComponent.startMeridiemCandidates(explicitStartMeridiem, explicitEndMeridiem);
+      if (startMeridiems.length === 0) {
+        return { timeMeridiem: true };
+      }
+
+      let parseError: ValidationErrors | null = null;
+      for (const startMeridiem of startMeridiems) {
+        const start = SettingsComponent.parseTimeSlotPart(rangeParts[0], startMeridiem);
+        if (start === undefined) {
+          parseError = { timeSlot: true };
+          continue;
+        }
+
+        if (rangeParts.length === 1) {
+          return null;
+        }
+
+        const resolvedEndMeridiem = explicitEndMeridiem ?? startMeridiem;
+        const end = SettingsComponent.parseTimeSlotPart(rangeParts[1], resolvedEndMeridiem);
+        if (end === undefined) {
+          parseError = { timeSlot: true };
+          continue;
+        }
+
+        if (end > start) {
+          return null;
+        }
+      }
+
+      return parseError ?? { timeOrder: true };
+    };
+  }
+
+  private static extractMeridiem(timeText: string): 'AM' | 'PM' | undefined {
+    return timeText.match(SettingsComponent.meridiemPattern)?.[1].toUpperCase() as 'AM' | 'PM' | undefined;
+  }
+
+  private static startMeridiemCandidates(
+    explicitStartMeridiem: 'AM' | 'PM' | undefined,
+    explicitEndMeridiem: 'AM' | 'PM' | undefined
+  ): ('AM' | 'PM')[] {
+    if (explicitStartMeridiem) {
+      return [explicitStartMeridiem];
+    }
+
+    if (explicitEndMeridiem) {
+      return [explicitEndMeridiem, SettingsComponent.oppositeMeridiem(explicitEndMeridiem)];
+    }
+
+    return [];
+  }
+
+  private static oppositeMeridiem(meridiem: 'AM' | 'PM'): 'AM' | 'PM' {
+    return meridiem === 'AM' ? 'PM' : 'AM';
+  }
+
+  private static parseTimeSlotPart(timeText: string, meridiem: 'AM' | 'PM' | undefined): number | undefined {
+    if (!meridiem) {
+      return undefined;
+    }
+
+    const cleanedTime = timeText.replace(SettingsComponent.meridiemPattern, '').trim();
+    const match = cleanedTime.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) {
+      return undefined;
+    }
+
+    const hour = Number(match[1]);
+    const minute = Number(match[2]);
+    if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+      return undefined;
+    }
+
+    return ((hour % 12) + (meridiem === 'PM' ? 12 : 0)) * 60 + minute;
   }
 }

@@ -76,6 +76,7 @@ export class FamilyPortalFormComponent implements OnInit {
       Validators.minLength(2),
     ]),
     accommodations: new FormControl<string>(''),
+    needSpanishHelp: new FormControl<boolean>(undefined),
     timeSlot: new FormControl('to be assigned'),
     students: new FormArray([], [Validators.required]),
     timeAvailability: new FormGroup({
@@ -244,6 +245,7 @@ export class FamilyPortalFormComponent implements OnInit {
       email: raw.email ?? '',
       address: raw.address ?? '',
       accommodations: raw.accommodations ?? '',
+      needSpanishHelp: raw.needSpanishHelp ?? false,
       timeSlot: raw.timeSlot ?? 'to be assigned',
       students: (raw.students ?? []).map(student => {
         // The select stores either the school abbreviation or name. Send both so
@@ -284,6 +286,7 @@ export class FamilyPortalFormComponent implements OnInit {
       email: family.email ?? '',
       address: family.address ?? '',
       accommodations: family.accommodations ?? '',
+      needSpanishHelp: family.needSpanishHelp ?? undefined,
       timeSlot: family.timeSlot || 'to be assigned',
       timeAvailability: family.timeAvailability
     });

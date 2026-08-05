@@ -1,0 +1,82 @@
+<section class="family-schedule-page app-page-shell app-page-stack" aria-labelledby="family-schedule-heading">
+  <header class="app-page-header">
+    <div>
+      <h1 id="family-schedule-heading" class="app-page-title">Family Schedule</h1>
+      <p class="app-page-subtitle">Families ordered by their scheduled 15-minute window.</p>
+    </div>
+    <div class="schedule-actions" aria-label="Schedule actions">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="scheduleFamilies()">
+        <mat-icon>playlist_add_check</mat-icon>
+        <span>Schedule Families</span>
+      </button>
+      <a mat-stroked-button routerLink="/settings" [queryParams]="{ tab: 'time-availability' }">
+        <mat-icon>schedule</mat-icon>
+        <span>Time Windows</span>
+      </a>
+      <button
+        mat-raised-button
+        color="warn"
+        type="button"
+        [disabled]="!hasScheduledTimes() || isClearingScheduledTimes()"
+        (click)="clearScheduledTimes()">
+        <mat-icon>event_busy</mat-icon>
+        <span>Clear Times</span>
+      </button>
+    </div>
+  </header>
+
+  <mat-card class="schedule-card">
+    <mat-card-content>
+      <div class="schedule-grid">
+        <div class="schedule-header-time">Time</div>
+        <div class="schedule-header">
+          @for (column of scheduledColumns(); track column.id) {
+            <div class="schedule-column">
+              <span>{{ column.label }} - {{ column.type }}</span>
+            </div>
+          }
+        </div>
+        <div class="schedule-body">
+          <div class="schedule-time-rows" [style.grid-template-rows]="scheduleBoardRows()">
+            @for (row of scheduleTimeRows(); track row) {
+              <div class="schedule-row-time">{{ row }}</div>
+            }
+          </div>
+          <div
+            class="schedule-board"
+            [style.grid-template-columns]="scheduleBoardColumns()"
+            [style.grid-template-rows]="scheduleBoardRows()">
+            @for (row of scheduleTimeRows(); track row; let rowIndex = $index) {
+              @for (column of scheduledColumns(); track column.id; let columnIndex = $index) {
+                <div
+                  class="schedule-cell"
+                  [style.grid-row]="rowIndex + 1"
+                  [style.grid-column]="columnIndex + 1"
+                  [attr.aria-label]="row + ' ' + column.label">
+                </div>
+              }
+            }
+            @for (block of scheduleDisplayBlocks(); track block.id) {
+              <div
+                class="schedule-family-block"
+                [class.schedule-family-block-extended]="block.isExtended"
+                [class.schedule-family-block-continuation]="block.isContinuation"
+                [style.grid-row]="block.rowStart + ' / span ' + block.rowSpan"
+                [style.grid-column]="block.columnStart + ' / span ' + block.columnSpan"
+                [attr.aria-label]="block.family.guardianName + ' scheduled for ' + block.scheduleWindow"
+                [attr.aria-hidden]="block.showFamilyDetails ? null : 'true'">
+                @if (block.showFamilyDetails) {
+                  <strong>{{ block.family.guardianName }}</strong>
+                  <span>{{ block.family.students?.length ?? 0 }} students</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</section>

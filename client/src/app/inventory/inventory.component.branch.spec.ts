@@ -137,7 +137,6 @@ describe('InventoryComponent branch coverage', () => {
         lateAfternoon: ''
       },
       supplyOrder: [],
-      availableSpots: 0,
       barcodePrintWarningLimit: 25
     }));
 

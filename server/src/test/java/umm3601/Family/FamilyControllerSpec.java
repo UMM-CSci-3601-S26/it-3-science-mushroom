@@ -54,9 +54,6 @@ import io.javalin.validation.BodyValidator;
 import umm3601.Auth.Role;
 import umm3601.Family.Family.AvailabilityOptions;
 import umm3601.Family.Family.StudentInfo;
-// Misc Imports
-import umm3601.Settings.Settings;
-import umm3601.Settings.Settings.TimeAvailabilityLabels;
 import umm3601.Users.Users;
 import umm3601.Users.UsersService;
 
@@ -159,7 +156,12 @@ class FamilyControllerSpec {
       inventoryDoc("Notebook", "Wide Ruled Notebook", 4, "ID-10001", "ITEM-10001", "SUB-10001"),
       inventoryDoc("Water Bottle", "Blue Water Bottle", 0, "ID-10002", "ITEM-10002", "EXT-10002")));
 
-    settingsDocuments.insertOne(new Document().append("availableSpots", 5));
+    settingsDocuments.insertOne(new Document()
+      .append("timeAvailability", new Document()
+        .append("earlyMorning", "8:00-9:00 AM")
+        .append("lateMorning", "10:00-11:00 AM")
+        .append("earlyAfternoon", "1:00-2:00 PM")
+        .append("lateAfternoon", "3:00-4:00 PM")));
 
     InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
     familyController = new FamilyController(db, inventoryMatcher);
@@ -262,6 +264,21 @@ class FamilyControllerSpec {
     verify(ctx).json(familyArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
     assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
+  }
+
+  @Test
+  void canClearScheduledTimes() {
+    familyController.clearScheduledTimes(ctx);
+
+    verify(ctx).json(familyArrayListCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    List<Document> families = db.getCollection("family")
+      .find()
+      .into(new ArrayList<>());
+
+    assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
+    assertTrue(families.stream().allMatch(family -> "".equals(family.getString("timeSlot"))));
   }
 
   @Test
@@ -1715,69 +1732,6 @@ class FamilyControllerSpec {
       }
       throw exception;
     }
-  }
-
-  @Test
-  public void familySchedulingTest() {
-    Settings.TimeAvailabilityLabels currentSettings = new TimeAvailabilityLabels();
-
-    familyController.scheduleFamilies(ctx);
-
-    verify(ctx).json(familyArrayListCaptor.capture());
-    verify(ctx).status(HttpStatus.OK);
-
-    ArrayList<Family> families = familyArrayListCaptor.getValue();
-
-    assertEquals(db.getCollection("family").countDocuments(), familyArrayListCaptor.getValue().size());
-
-    // families are now ordered by how many availabilities are true
-
-    assertEquals("John Christensen", families.get(0).guardianName);
-    assertEquals(currentSettings.lateMorning, families.get(0).timeSlot);
-    assertEquals("John Johnson", families.get(1).guardianName);
-    assertEquals(currentSettings.lateAfternoon, families.get(1).timeSlot);
-    assertEquals("Melina Brim", families.get(2).guardianName);
-    assertEquals(currentSettings.earlyAfternoon, families.get(2).timeSlot);
-    assertEquals("Bob Jones", families.get(3).guardianName);
-    assertEquals(currentSettings.lateMorning, families.get(3).timeSlot);
-    assertEquals("Bob Dylan", families.get(4).guardianName);
-    assertEquals(currentSettings.lateAfternoon, families.get(4).timeSlot);
-    assertEquals("Jane Doe", families.get(5).guardianName);
-    assertEquals(currentSettings.earlyMorning, families.get(5).timeSlot);
-  }
-
-  @Test
-  public void familySchedulingAtCapacity() {
-    // adding another family to the mix (too big for current capacity)
-    AvailabilityOptions availability = new AvailabilityOptions();
-    availability.earlyMorning = true;
-    availability.lateMorning = true;
-    availability.earlyAfternoon = true;
-    availability.lateAfternoon = true;
-
-    Family newFamily = new Family();
-    newFamily.guardianName = "Charlie Brown";
-    newFamily.email = "charlie@email.com";
-    newFamily.address = "789 Pine St";
-    newFamily.timeAvailability = availability;
-    newFamily.students = List.of(
-      studentInfo("Janie", "4"),
-      studentInfo("Susie", "4"),
-      studentInfo("Paul", "2"));
-
-    String json = javalinJackson.toJsonString(newFamily, Family.class);
-
-    when(ctx.body()).thenReturn(json);
-    when(ctx.bodyValidator(Family.class))
-      .thenReturn(new BodyValidator<>(json, Family.class, () -> javalinJackson.fromJsonString(json, Family.class)));
-
-    familyController.addNewFamily(ctx);
-
-    verify(ctx).json(mapCaptor.capture());
-    verify(ctx).status(HttpStatus.CREATED);
-
-    assertThrows(NotFoundResponse.class,
-    () -> familyController.scheduleFamilies(ctx));
   }
 
   private StudentInfo studentInfo(String name, String grade) {
