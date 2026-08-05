@@ -1,4 +1,4 @@
-package umm3601.Family;
+package umm3601.Common;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -75,14 +75,19 @@ public class InventoryMatcher {
     return Math.max(0, inventory.quantity - inventory.reservedQuantity);
   }
 
-  public boolean supplyListMatchesStudent(SupplyList supplyList, Family.StudentInfo student) {
-    if (!nameEquivalent(supplyList.school, student.school)) {
+  public boolean supplyListMatchesStudent(
+      SupplyList supplyList,
+      String studentSchool,
+      String studentGrade,
+      String studentTeacher
+  ) {
+    if (!nameEquivalent(supplyList.school, studentSchool)) {
       return false;
     }
-    if (!gradeEquivalent(supplyList.grade, student.grade)) {
+    if (!gradeEquivalent(supplyList.grade, studentGrade)) {
       return false;
     }
-    return !hasValue(supplyList.teacher) || nameEquivalent(supplyList.teacher, student.teacher);
+    return !hasValue(supplyList.teacher) || nameEquivalent(supplyList.teacher, studentTeacher);
   }
 
   public int inventorySimilarityScore(Inventory inventory, SupplyList supplyList) {

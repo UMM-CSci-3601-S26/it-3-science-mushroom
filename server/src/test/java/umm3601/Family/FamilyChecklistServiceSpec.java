@@ -22,6 +22,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 
+import umm3601.Common.InventoryMatcher;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 

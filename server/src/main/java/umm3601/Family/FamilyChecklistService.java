@@ -10,6 +10,7 @@ import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
 
+import umm3601.Common.InventoryMatcher;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 
@@ -72,7 +73,11 @@ public class FamilyChecklistService {
     ArrayList<SupplyList> matching = new ArrayList<>();
 
     for (SupplyList supplyList : allSupplyLists) {
-      if (!inventoryMatcher.supplyListMatchesStudent(supplyList, student)) {
+      if (!inventoryMatcher.supplyListMatchesStudent(
+          supplyList,
+          student.school,
+          student.grade,
+          student.teacher)) {
         continue;
       }
       matching.add(supplyList);
