@@ -747,7 +747,7 @@ public class InventoryController {
   }
 
   // Endpoint to calculate states
-  @Route(method = HttpMethod.GET, path = API_CALCULATE_STATES)
+  @Route(method = HttpMethod.POST, path = API_CALCULATE_STATES)
   @RequirePermission("add_inventory_item")
   public void calculateStatesTest(Context ctx) {
     long[] results = calculateUnitsAndStates();
