@@ -883,6 +883,41 @@ public class InventoryControllerSpec {
   }
 
   @Test
+  void calculateStatesAggregatesDemandForSupplyListsLinkedToSameInventory() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(
+        studentDoc("MHS", "PreK", "Ms Doe"),
+        studentDoc("MHS", "PreK", "Ms Doe")),
+      familyDoc(studentDoc("MHS", "1", "Ms One"))
+    ));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00007", 4));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 2, List.of("ID-00007")),
+      supplyListDoc("MHS", "1", "Ms One", 1, List.of("ID-00007"))
+    ));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(2L, response.get("totalSupplyLists"));
+    assertEquals(2L, response.get("validInvIDCount"));
+    assertEquals(0L, response.get("invalidInvIDCount"));
+    assertEquals(0L, response.get("bestMatchNullCount"));
+    assertEquals(2L, response.get("schoolCount"));
+
+    assertCalculatedInventory("ID-00007", 5, "Understocked");
+    assertSupplyListPercentage("MHS", "PreK", 100);
+    assertSupplyListPercentage("MHS", "1", 400);
+  }
+
+  @Test
   void calculateStatesReportsInvalidLinksAndMissingInventory() {
     db.getCollection("family").drop();
     db.getCollection("supplylist").drop();
