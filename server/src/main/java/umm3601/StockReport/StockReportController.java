@@ -249,7 +249,7 @@ public class StockReportController {
 
     // Fill rows for each report type
     for (Inventory item : inventoryItems) {
-      String row = String.format("\"%s\",%d,%d,%d,\"%s\"\n",
+      String row = String.format("\"%s\",%d,%d,%d,\"%s\",%d,\"%s\"\n",
         // Note! If description includes Inventory Item property names (e.g: brand, size, etc)
         // and they're separated by commas, it will put them in separate cells
         // Fixing would require extra logic for something that is ultimately very minor

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 // IO Imports
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +25,9 @@ import java.util.Map;
 // Org Imports
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -500,6 +504,46 @@ public class StockReportControllerSpec {
     assertTrue(exception.getMessage().contains("Failed to generate stock report:"));
   }
 
+  @Test
+  void generatedStockReportRowsIncludeCalculatedFields() throws IOException {
+    MongoCollection<Document> inventoryDocuments = db.getCollection("inventory");
+    inventoryDocuments.drop();
+    inventoryDocuments.insertOne(new Document()
+      .append("description", "Calculated Demand Item")
+      .append("quantity", 3)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 5)
+      .append("stockState", "Understocked")
+      .append("notes", "Needs demand reorder")
+      .append("calculatedMinQuantity", 7)
+      .append("calculatedStockState", "Understocked"));
+
+    byte[] xlsxBytes = stockReportController.createXLSXFile();
+
+    try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(xlsxBytes))) {
+      XSSFSheet sheet = workbook.getSheet("Understocked Items");
+      XSSFRow headerRow = findRowByFirstCell(sheet, "Item Description");
+      XSSFRow itemRow = findRowByFirstCell(sheet, "Calculated Demand Item");
+
+      assertNotNull(headerRow);
+      assertNotNull(itemRow);
+      assertEquals("Calculated Min Quantity", headerRow.getCell(5).getStringCellValue());
+      assertEquals("Calculated Stock State", headerRow.getCell(6).getStringCellValue());
+      assertEquals("7", itemRow.getCell(5).getStringCellValue());
+      assertEquals("Understocked", itemRow.getCell(6).getStringCellValue());
+    }
+  }
+
+  private XSSFRow findRowByFirstCell(XSSFSheet sheet, String firstCellValue) {
+    for (int i = 0; i <= sheet.getLastRowNum(); i++) {
+      XSSFRow row = sheet.getRow(i);
+      if (row != null && row.getCell(0) != null && firstCellValue.equals(row.getCell(0).getStringCellValue())) {
+        return row;
+      }
+    }
+
+    return null;
+  }
 
 }
 
