@@ -4,6 +4,7 @@ import static com.mongodb.client.model.Filters.eq;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,6 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
 
-import io.javalin.http.NotFoundResponse;
 import umm3601.Family.Family;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
@@ -23,6 +23,10 @@ public class DemandService {
   private static final int INVALID_LINK_PERCENTAGE_FILLED = -2;
   private static final int PERCENT_SCALE = 100;
   private static final String INTERNAL_INVENTORY_ID_PATTERN = "^ID-\\d{4,5}$";
+  private static final String MATCHED_STATUS = "matched";
+  private static final String INVALID_LINK_STATUS = "invalid-link";
+  private static final String MISSING_INVENTORY_STATUS = "missing-inventory";
+  private static final String NO_STUDENT_DEMAND_STATUS = "no-student-demand";
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Family> familyCollection;
@@ -52,202 +56,294 @@ public class DemandService {
   }
 
   /**
-   * Calculates the calculatedStockState and calculatedMinQuantity of items based on
-   * number of students under each teacher, grade, and school.
+   * Builds the current demand picture without changing inventory or supply-list documents.
    *
-   * @return summary counts for the demand calculation run
+   * @return current demand grouped by linked inventory item, plus source supply-list rows
    */
   @SuppressWarnings({ "checkstyle:MethodLength" })
-  public DemandCalculationResult calculatePredictedStockStates() {
+  public DemandSnapshot calculateCurrentDemand() {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
     Map<String, Map<String, Map<String, Integer>>> studentTotals = getSchoolGradeTeacherTotals();
-    long totalSupplyLists = supplyListCollection.countDocuments();
+    Map<String, Inventory> inventoryByInternalId = getInventoryByInternalId();
+    Map<String, DemandAccumulator> demandByInternalId = new LinkedHashMap<>();
+    List<DemandSupplyListItem> supplyListItems = new ArrayList<>();
 
+    long totalSupplyLists = supplyListCollection.countDocuments();
     long validInvIDCount = 0;
     long invalidInvIDCount = 0;
     long bestMatchNullCount = 0;
     long schoolCount = 0;
 
-    // loop through each supply list
     for (SupplyList supplyList : allSupplyLists) {
-      int totalNeeded = 0;
-
       if (supplyList.school == null || supplyList.grade == null || supplyList.teacher == null) {
-        continue; // Skip if any of the fields are null
+        continue;
       }
 
-      // Find first properly formatted invID
-      String validInvID = null;
-      for (String invID : inventoryIds(supplyList)) {
-        if (isInternalInventoryId(invID)) {
-          validInvID = invID;
-          validInvIDCount++;
-          break;
-        }
-      }
+      List<String> linkedInventoryIds = validInternalIds(supplyList);
+      int studentCount = studentCountForSupplyList(supplyList, studentTotals);
 
-      if (validInvID == null) { // No properly formatted ID found
+      if (linkedInventoryIds.isEmpty()) {
         invalidInvIDCount++;
-        supplyList.percentageFilled = INVALID_LINK_PERCENTAGE_FILLED;
-        supplyListCollection.updateOne(
-          eq("_id", new ObjectId(supplyList._id)),
-          Updates.set("percentageFilled", supplyList.percentageFilled));
-        continue; // Skip to next supply list
+        supplyListItems.add(buildSupplyListItem(
+          supplyList,
+          linkedInventoryIds,
+          null,
+          INVALID_LINK_STATUS,
+          studentCount,
+          inventoryByInternalId));
+        continue;
       }
 
-      Inventory bestMatch = inventoryCollection.find(eq("internalID", validInvID)).first();
+      validInvIDCount++;
+      String primaryInternalId = linkedInventoryIds.get(0);
+      Inventory primaryInventory = inventoryByInternalId.get(primaryInternalId);
 
-      if (bestMatch == null) {
+      if (primaryInventory == null) {
         bestMatchNullCount++;
-        continue; // Skip if no matching inventory item is found
+        supplyListItems.add(buildSupplyListItem(
+          supplyList,
+          linkedInventoryIds,
+          primaryInternalId,
+          MISSING_INVENTORY_STATUS,
+          studentCount,
+          inventoryByInternalId));
+        continue;
       }
 
-      // loop through each school
-      for (Map.Entry<String, Map<String, Map<String, Integer>>> schoolEntry : studentTotals.entrySet()) {
-        String school = schoolEntry.getKey();
-        Map<String, Map<String, Integer>> gradeTotals = schoolEntry.getValue();
-
-        // loop through each grade
-        for (Map.Entry<String, Map<String, Integer>> gradeEntry : gradeTotals.entrySet()) {
-          String grade = gradeEntry.getKey();
-          Map<String, Integer> teacherTotals = gradeEntry.getValue();
-
-          // loop through each teacher
-          for (Map.Entry<String, Integer> teacherEntry : teacherTotals.entrySet()) {
-            String teacher = teacherEntry.getKey();
-            int numStudents = teacherEntry.getValue();
-
-            // if the supply list matches the school, grade, and teacher,
-            // add the quantity needed for that supply list to the total needed
-            if (supplyList.school.equals(school)
-                && supplyList.grade.equals(grade)
-                && supplyList.teacher.equals(teacher)) {
-              int qty = supplyList.quantity != null ? supplyList.quantity : 1;
-              totalNeeded += numStudents * qty;
-
-              schoolCount++;
-
-              // Use the first linked item to update its calculatedMinQuantity.
-              bestMatch.calculatedMinQuantity = totalNeeded;
-              bestMatch.calculatedStockState = calculateStockState(bestMatch);
-              inventoryCollection.updateOne(
-                eq("_id", new ObjectId(bestMatch._id)),
-                Updates.set("calculatedMinQuantity", bestMatch.calculatedMinQuantity));
-              inventoryCollection.updateOne(
-                eq("_id", new ObjectId(bestMatch._id)),
-                Updates.set("calculatedStockState", bestMatch.calculatedStockState));
-
-              // Combine quantity from all valid invIDs in the supply list to calculate percentageFilled
-              int requestedQuantity = 0;
-              for (String invID : inventoryIds(supplyList)) {
-                if (isInternalInventoryId(invID)) {
-                  Inventory inv = inventoryCollection.find(eq("internalID", invID)).first();
-                  if (inv != null) {
-                    requestedQuantity += inv.quantity;
-                  }
-                }
-              }
-
-              int percentageFilled = requestedQuantity > 0
-                ? (int) (Math.round((double) requestedQuantity / totalNeeded * PERCENT_SCALE))
-                : 0;
-              supplyList.percentageFilled = percentageFilled;
-              supplyListCollection.updateOne(
-                eq("_id", new ObjectId(supplyList._id)),
-                Updates.set("percentageFilled", supplyList.percentageFilled));
-            }
-          }
-        }
+      if (studentCount <= 0) {
+        supplyListItems.add(buildSupplyListItem(
+          supplyList,
+          linkedInventoryIds,
+          primaryInternalId,
+          NO_STUDENT_DEMAND_STATUS,
+          studentCount,
+          inventoryByInternalId));
+        continue;
       }
+
+      schoolCount++;
+      DemandSupplyListItem supplyListItem = buildSupplyListItem(
+        supplyList,
+        linkedInventoryIds,
+        primaryInternalId,
+        MATCHED_STATUS,
+        studentCount,
+        inventoryByInternalId);
+
+      supplyListItems.add(supplyListItem);
+      DemandAccumulator accumulator = demandByInternalId.computeIfAbsent(
+        primaryInternalId,
+        key -> new DemandAccumulator(primaryInventory));
+      accumulator.add(supplyListItem);
     }
 
-    return new DemandCalculationResult(
+    DemandCalculationResult summary = new DemandCalculationResult(
       totalSupplyLists,
       validInvIDCount,
       invalidInvIDCount,
       bestMatchNullCount,
       schoolCount
     );
+
+    List<DemandInventoryItem> inventoryItems = demandByInternalId.values().stream()
+      .map(DemandAccumulator::toDemandInventoryItem)
+      .toList();
+
+    return new DemandSnapshot(summary, inventoryItems, supplyListItems);
   }
 
   /**
-   * Gets the total number of students in each school and grade.
+   * Calculates demand and persists the stock-report fields that are derived from it.
    *
-   * @return a map of school to grade to teacher to student count
+   * @return summary counts for the demand calculation run
    */
+  public DemandCalculationResult calculatePredictedStockStates() {
+    DemandSnapshot snapshot = calculateCurrentDemand();
+    persistSupplyListDemand(snapshot);
+    persistInventoryDemand(snapshot);
+    return snapshot.summary;
+  }
+
+  public int calculateQuantityToBuy(int quantityOnHand, int totalNeeded) {
+    return Math.max(0, totalNeeded - quantityOnHand);
+  }
+
+  public String calculateStockState(int quantityOnHand, int totalNeeded) {
+    int itemDiff = quantityOnHand - totalNeeded;
+
+    if (itemDiff == 0) {
+      return "Stocked";
+    } else if (itemDiff < 0) {
+      return "Understocked";
+    } else {
+      return "Overstocked";
+    }
+  }
+
+  private void persistSupplyListDemand(DemandSnapshot snapshot) {
+    for (DemandSupplyListItem supplyListItem : snapshot.supplyListItems) {
+      if (supplyListItem.percentageFilled == null) {
+        continue;
+      }
+
+      supplyListCollection.updateOne(
+        eq("_id", new ObjectId(supplyListItem.supplyListId)),
+        Updates.set("percentageFilled", supplyListItem.percentageFilled));
+    }
+  }
+
+  private void persistInventoryDemand(DemandSnapshot snapshot) {
+    for (DemandInventoryItem inventoryItem : snapshot.items) {
+      inventoryCollection.updateOne(
+        eq("_id", new ObjectId(inventoryItem.inventoryId)),
+        Updates.combine(
+          Updates.set("calculatedMinQuantity", inventoryItem.totalNeeded),
+          Updates.set("calculatedStockState", inventoryItem.calculatedStockState)));
+    }
+  }
+
+  private DemandSupplyListItem buildSupplyListItem(
+      SupplyList supplyList,
+      List<String> linkedInventoryIds,
+      String primaryInternalId,
+      String status,
+      int studentCount,
+      Map<String, Inventory> inventoryByInternalId
+  ) {
+    DemandSupplyListItem supplyListItem = new DemandSupplyListItem();
+    supplyListItem.supplyListId = supplyList._id;
+    supplyListItem.school = supplyList.school;
+    supplyListItem.grade = supplyList.grade;
+    supplyListItem.teacher = supplyList.teacher;
+    supplyListItem.requestedItems = requestedItems(supplyList);
+    supplyListItem.linkedInventoryIds = List.copyOf(linkedInventoryIds);
+    supplyListItem.primaryInternalId = primaryInternalId;
+    supplyListItem.status = status;
+    supplyListItem.studentCount = studentCount;
+    supplyListItem.quantityPerStudent = quantityPerStudent(supplyList);
+    supplyListItem.totalNeeded = studentCount * supplyListItem.quantityPerStudent;
+    supplyListItem.linkedQuantityOnHand = linkedQuantityOnHand(linkedInventoryIds, inventoryByInternalId);
+    supplyListItem.percentageFilled = percentageFilledForStatus(supplyListItem);
+    return supplyListItem;
+  }
+
+  private Map<String, Inventory> getInventoryByInternalId() {
+    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
+    Map<String, Inventory> inventoryByInternalId = new HashMap<>();
+
+    for (Inventory inventory : inventories) {
+      if (inventory != null && inventory.internalID != null) {
+        inventoryByInternalId.put(inventory.internalID, inventory);
+      }
+    }
+
+    return inventoryByInternalId;
+  }
+
   private Map<String, Map<String, Map<String, Integer>>> getSchoolGradeTeacherTotals() {
     ArrayList<Family> families = familyCollection.find().into(new ArrayList<>());
     Map<String, Map<String, Map<String, Integer>>> schoolGradeTeacherTotals = new HashMap<>();
 
-    // Go through all the families
     for (Family family : families) {
       if (family == null || family.students == null) {
         continue;
       }
 
-      // Go through all the students in that family
       for (Family.StudentInfo student : family.students) {
         if (student == null) {
           continue;
         }
 
-        // Get the school, grade, and teacher for the student
         String school = student.school != null ? student.school : "Unknown School";
         String grade = student.grade != null ? student.grade : "Unknown Grade";
         String teacher = student.teacher != null ? student.teacher : "Unknown Teacher";
 
-        // Add the student to the appropriate school
         Map<String, Map<String, Integer>> gradeTotals = schoolGradeTeacherTotals.get(school);
         if (gradeTotals == null) {
           gradeTotals = new HashMap<>();
-          schoolGradeTeacherTotals.put(school, gradeTotals); // Put grades in schools
+          schoolGradeTeacherTotals.put(school, gradeTotals);
         }
 
         Map<String, Integer> teacherTotals = gradeTotals.get(grade);
         if (teacherTotals == null) {
           teacherTotals = new HashMap<>();
-          gradeTotals.put(grade, teacherTotals); // Put teachers in grades
+          gradeTotals.put(grade, teacherTotals);
         }
 
-        teacherTotals.put(teacher, teacherTotals.getOrDefault(teacher, 0) + 1);  // Add student to teacher
+        teacherTotals.put(teacher, teacherTotals.getOrDefault(teacher, 0) + 1);
       }
     }
 
     return schoolGradeTeacherTotals;
   }
 
-  /**
-   * Updates the calculatedStockState of the given inventory item based on quantity
-   * and calculatedMinQuantity.
-   *
-   * @param inv The inventory item to update the calculatedStockState for
-   * @throws NotFoundResponse if the item was not found
-   * @throws IllegalArgumentException if calculatedMinQuantity is null
-   * @return the updated calculatedStockState of the inventory item
-   */
-  private String calculateStockState(Inventory inv) {
-    String calculatedStockState = null;
-    // Make sure item exists
-    if (inv == null) {
-      throw new NotFoundResponse("The requested inventory item was not found");
-    } else {
-      // Validate quantity, minQuantity, and maxQuantity
-      if (inv.calculatedMinQuantity == null) {
-        throw new IllegalArgumentException("calculatedMinQuantity must be an integer.");
-      }
-
-      int itemDiff = inv.quantity - inv.calculatedMinQuantity;
-
-      if (itemDiff == 0) {
-        calculatedStockState = "Stocked";
-      } else if (itemDiff < 0) {
-        calculatedStockState = "Understocked";
-      } else {
-        calculatedStockState = "Overstocked";
-      }
-
-      return calculatedStockState;
+  private int studentCountForSupplyList(
+      SupplyList supplyList,
+      Map<String, Map<String, Map<String, Integer>>> studentTotals
+  ) {
+    Map<String, Map<String, Integer>> gradeTotals = studentTotals.get(supplyList.school);
+    if (gradeTotals == null) {
+      return 0;
     }
+
+    Map<String, Integer> teacherTotals = gradeTotals.get(supplyList.grade);
+    if (teacherTotals == null) {
+      return 0;
+    }
+
+    return teacherTotals.getOrDefault(supplyList.teacher, 0);
+  }
+
+  private int quantityPerStudent(SupplyList supplyList) {
+    return supplyList.quantity != null ? supplyList.quantity : 1;
+  }
+
+  private int linkedQuantityOnHand(
+      List<String> linkedInventoryIds,
+      Map<String, Inventory> inventoryByInternalId
+  ) {
+    int linkedQuantity = 0;
+    for (String internalId : linkedInventoryIds) {
+      Inventory inventory = inventoryByInternalId.get(internalId);
+      if (inventory != null) {
+        linkedQuantity += inventory.quantity;
+      }
+    }
+    return linkedQuantity;
+  }
+
+  private Integer calculatePercentageFilled(int linkedQuantityOnHand, int totalNeeded) {
+    if (linkedQuantityOnHand <= 0 || totalNeeded <= 0) {
+      return 0;
+    }
+
+    return (int) Math.round((double) linkedQuantityOnHand / totalNeeded * PERCENT_SCALE);
+  }
+
+  private Integer percentageFilledForStatus(DemandSupplyListItem supplyListItem) {
+    if (INVALID_LINK_STATUS.equals(supplyListItem.status)) {
+      return INVALID_LINK_PERCENTAGE_FILLED;
+    }
+    if (MATCHED_STATUS.equals(supplyListItem.status)) {
+      return calculatePercentageFilled(supplyListItem.linkedQuantityOnHand, supplyListItem.totalNeeded);
+    }
+    return null;
+  }
+
+  private List<String> requestedItems(SupplyList supplyList) {
+    return supplyList.item == null ? List.of() : List.copyOf(supplyList.item);
+  }
+
+  private List<String> validInternalIds(SupplyList supplyList) {
+    List<String> validIds = new ArrayList<>();
+
+    for (String invID : inventoryIds(supplyList)) {
+      if (isInternalInventoryId(invID) && !validIds.contains(invID)) {
+        validIds.add(invID);
+      }
+    }
+
+    return validIds;
   }
 
   private List<String> inventoryIds(SupplyList supplyList) {
@@ -256,5 +352,35 @@ public class DemandService {
 
   private boolean isInternalInventoryId(String invID) {
     return invID != null && invID.matches(INTERNAL_INVENTORY_ID_PATTERN);
+  }
+
+  private class DemandAccumulator {
+    private final Inventory inventory;
+    private final List<DemandSupplyListItem> supplyListItems;
+    private int totalNeeded;
+
+    DemandAccumulator(Inventory inventory) {
+      this.inventory = inventory;
+      supplyListItems = new ArrayList<>();
+    }
+
+    void add(DemandSupplyListItem supplyListItem) {
+      totalNeeded += supplyListItem.totalNeeded;
+      supplyListItems.add(supplyListItem);
+    }
+
+    DemandInventoryItem toDemandInventoryItem() {
+      DemandInventoryItem inventoryItem = new DemandInventoryItem();
+      inventoryItem.inventoryId = inventory._id;
+      inventoryItem.internalId = inventory.internalID;
+      inventoryItem.item = inventory.item;
+      inventoryItem.description = inventory.description;
+      inventoryItem.quantityOnHand = inventory.quantity;
+      inventoryItem.totalNeeded = totalNeeded;
+      inventoryItem.quantityToBuy = calculateQuantityToBuy(inventory.quantity, totalNeeded);
+      inventoryItem.calculatedStockState = calculateStockState(inventory.quantity, totalNeeded);
+      inventoryItem.supplyListItems = List.copyOf(supplyListItems);
+      return inventoryItem;
+    }
   }
 }

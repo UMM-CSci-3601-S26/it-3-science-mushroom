@@ -14,6 +14,8 @@ import umm3601.Auth.PermissionsService;
 import umm3601.Auth.RouteRegistrar;
 import umm3601.Common.ApiExceptionHandler;
 import umm3601.Common.InventoryMatcher;
+import umm3601.Demand.DemandController;
+import umm3601.Demand.DemandService;
 import umm3601.Family.FamilyChecklistService;
 import umm3601.Family.FamilyController;
 import umm3601.Family.FamilyPortalController;
@@ -98,6 +100,7 @@ public class Bootstrap {
     InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
     InventoryReservationService inventoryReservationService = new InventoryReservationService(db, inventoryMatcher);
     InventoryIdService inventoryIdService = new InventoryIdService(db);
+    DemandService demandService = new DemandService(db);
     FamilyChecklistService familyChecklistService = new FamilyChecklistService(db, inventoryMatcher);
     FamilyController familyController = new FamilyController(
         db,
@@ -107,7 +110,8 @@ public class Bootstrap {
     SettingsController settingsController = new SettingsController(db);
 
     return new Object[] {
-        new InventoryController(db, inventoryReservationService, inventoryIdService),
+        new InventoryController(db, inventoryReservationService, inventoryIdService, demandService),
+        new DemandController(demandService),
         new BarcodeController(db),
         familyController,
         new FamilyPortalController(familyController, settingsController, usersService),

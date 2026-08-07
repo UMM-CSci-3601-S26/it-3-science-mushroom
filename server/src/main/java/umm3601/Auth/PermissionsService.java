@@ -29,6 +29,7 @@ import io.javalin.http.BadRequestResponse;
 
 // App imports
 import umm3601.Settings.SettingsController;
+import umm3601.Demand.DemandController;
 import umm3601.Family.FamilyController;
 import umm3601.Inventory.InventoryController;
 import umm3601.SupplyList.SupplyListController;
@@ -72,6 +73,7 @@ public class PermissionsService {
   private static final List<Class<?>> PERMISSION_SOURCES = List.of(
       FamilyController.class,
       InventoryController.class,
+      DemandController.class,
       SupplyListController.class,
       SettingsController.class);
 
