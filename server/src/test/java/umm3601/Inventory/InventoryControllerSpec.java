@@ -822,16 +822,16 @@ public class InventoryControllerSpec {
     ));
 
     db.getCollection("inventory").insertMany(List.of(
-      inventoryDoc("ID-0001", 3),
-      inventoryDoc("ID-0002", 1),
-      inventoryDoc("ID-0003", 1),
-      inventoryDoc("ID-0004", 3)
+      inventoryDoc("ID-00001", 3),
+      inventoryDoc("ID-00002", 1),
+      inventoryDoc("ID-00003", 1),
+      inventoryDoc("ID-00004", 3)
     ));
 
     db.getCollection("supplylist").insertMany(List.of(
-      supplyListDoc("MHS", "PreK", "Ms Doe", 2, List.of("ID-0001", "ID-0002")),
-      supplyListDoc("MHS", "1", "Ms One", 1, List.of("ID-0003")),
-      supplyListDoc("CHS", "1", "Ms Two", 1, List.of("ID-0004"))
+      supplyListDoc("MHS", "PreK", "Ms Doe", 2, List.of("ID-00001", "ID-00002")),
+      supplyListDoc("MHS", "1", "Ms One", 1, List.of("ID-00003")),
+      supplyListDoc("CHS", "1", "Ms Two", 1, List.of("ID-00004"))
     ));
 
     inventoryController.calculateStatesTest(ctx);
@@ -846,9 +846,9 @@ public class InventoryControllerSpec {
     assertEquals(0L, response.get("bestMatchNullCount"));
     assertEquals(3L, response.get("schoolCount"));
 
-    assertCalculatedInventory("ID-0001", 4, "Understocked");
-    assertCalculatedInventory("ID-0003", 1, "Stocked");
-    assertCalculatedInventory("ID-0004", 1, "Overstocked");
+    assertCalculatedInventory("ID-00001", 4, "Understocked");
+    assertCalculatedInventory("ID-00003", 1, "Stocked");
+    assertCalculatedInventory("ID-00004", 1, "Overstocked");
     assertSupplyListPercentage("MHS", "PreK", 100);
     assertSupplyListPercentage("MHS", "1", 100);
     assertSupplyListPercentage("CHS", "1", 300);
@@ -861,8 +861,8 @@ public class InventoryControllerSpec {
 
     db.getCollection("supplylist").insertMany(List.of(
       supplyListDoc("MHS", "PreK", "Ms Doe", 1, Arrays.asList(null, "not-an-id")),
-      supplyListDoc("MHS", "PreK", "Ms Doe", 1, List.of("ID-9999")),
-      supplyListDoc(null, "PreK", "Ms Doe", 1, List.of("ID-0001"))
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, List.of("ID-99999")),
+      supplyListDoc(null, "PreK", "Ms Doe", 1, List.of("ID-00001"))
     ));
 
     inventoryController.calculateStatesTest(ctx);
@@ -893,9 +893,9 @@ public class InventoryControllerSpec {
       new Document().append("guardianName", "No Students"),
       familyDoc(null, new Document().append("name", "Unknown Student"))
     ));
-    db.getCollection("inventory").insertOne(inventoryDoc("ID-0005", 1));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00005", 1));
     db.getCollection("supplylist").insertOne(
-      supplyListDoc("Unknown School", "Unknown Grade", "Unknown Teacher", null, List.of("ID-0005")));
+      supplyListDoc("Unknown School", "Unknown Grade", "Unknown Teacher", null, List.of("ID-00005")));
 
     inventoryController.calculateStatesTest(ctx);
 
@@ -906,7 +906,7 @@ public class InventoryControllerSpec {
     assertEquals(1L, response.get("totalSupplyLists"));
     assertEquals(1L, response.get("validInvIDCount"));
     assertEquals(1L, response.get("schoolCount"));
-    assertCalculatedInventory("ID-0005", 1, "Stocked");
+    assertCalculatedInventory("ID-00005", 1, "Stocked");
     assertSupplyListPercentage("Unknown School", "Unknown Grade", 100);
   }
 

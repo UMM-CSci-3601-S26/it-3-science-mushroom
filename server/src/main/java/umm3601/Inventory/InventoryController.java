@@ -77,6 +77,7 @@ public class InventoryController {
   private static final int PERCENT_SCALE = 100;
   private static final int BEST_MATCH_NULL_RESULT_INDEX = 3;
   private static final int SCHOOL_COUNT_RESULT_INDEX = 4;
+  private static final String INTERNAL_INVENTORY_ID_PATTERN = "^ID-\\d{4,5}$";
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final InventoryReservationService inventoryReservationService;
@@ -659,7 +660,7 @@ public class InventoryController {
       // Find first properly formatted invID
       String validInvID = null;
       for (String invID : supplyList.invIDs) {
-        if (invID != null && invID.matches("^ID-\\d{4}$")) {
+        if (isInternalInventoryId(invID)) {
           validInvID = invID;
           validInvIDCount++;
           break;
@@ -722,7 +723,7 @@ public class InventoryController {
               // Combine quantity from all valid invIDs in the supply list to calculate percentageFilled
               int requestedQuantity = 0;
               for (String invID : supplyList.invIDs) {
-                if (invID != null && invID.matches("^ID-\\d{4}$")) {
+                if (isInternalInventoryId(invID)) {
                   Inventory inv = inventoryCollection.find(eq("internalID", invID)).first();
                   if (inv != null) {
                     requestedQuantity += inv.quantity;
@@ -759,6 +760,10 @@ public class InventoryController {
       "schoolCount", results[SCHOOL_COUNT_RESULT_INDEX]
     ));
     ctx.status(HttpStatus.OK);
+  }
+
+  private boolean isInternalInventoryId(String invID) {
+    return invID != null && invID.matches(INTERNAL_INVENTORY_ID_PATTERN);
   }
 
   // // Endpoint to calculate states
