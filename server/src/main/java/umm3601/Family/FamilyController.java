@@ -43,6 +43,7 @@ import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Role;
 import umm3601.Auth.Route;
 import umm3601.Common.AuthContext;
+import umm3601.Common.InventoryMatcher;
 import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Users.Users;

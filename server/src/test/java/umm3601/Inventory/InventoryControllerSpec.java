@@ -95,6 +95,8 @@ public class InventoryControllerSpec {
     // Setup database
     MongoCollection<Document> inventoryDocuments = db.getCollection("inventory");
     inventoryDocuments.drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
     List<Document> testInventory = new ArrayList<>();
     testInventory.add(
         new Document()
@@ -803,6 +805,340 @@ public class InventoryControllerSpec {
     Map<String, Object> response = mapCaptor.getValue();
     assertEquals(0L, response.get("matchedCount"));
     assertEquals("No inventory items matched the provided filters.", response.get("message"));
+  }
+
+  @Test
+  void calculateStatesUpdatesLinkedInventoryDemandAndFillPercentages() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(
+        studentDoc("MHS", "PreK", "Ms Doe"),
+        studentDoc("MHS", "PreK", "Ms Doe"),
+        studentDoc("MHS", "1", "Ms One")),
+      familyDoc(studentDoc("CHS", "1", "Ms Two"))
+    ));
+
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00001", 3),
+      inventoryDoc("ID-00002", 1),
+      inventoryDoc("ID-00003", 1),
+      inventoryDoc("ID-00004", 3)
+    ));
+
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 2, List.of("ID-00001", "ID-00002")),
+      supplyListDoc("MHS", "1", "Ms One", 1, List.of("ID-00003")),
+      supplyListDoc("CHS", "1", "Ms Two", 1, List.of("ID-00004"))
+    ));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(3L, response.get("totalSupplyLists"));
+    assertEquals(3L, response.get("validInvIDCount"));
+    assertEquals(0L, response.get("invalidInvIDCount"));
+    assertEquals(0L, response.get("bestMatchNullCount"));
+    assertEquals(3L, response.get("schoolCount"));
+
+    assertCalculatedInventory("ID-00001", 4, "Understocked");
+    assertCalculatedInventory("ID-00003", 1, "Stocked");
+    assertCalculatedInventory("ID-00004", 1, "Overstocked");
+    assertSupplyListPercentage("MHS", "PreK", 100);
+    assertSupplyListPercentage("MHS", "1", 100);
+    assertSupplyListPercentage("CHS", "1", 300);
+  }
+
+  @Test
+  void calculateStatesUsesCommonMatcherRulesForStudentDemand() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertOne(
+      familyDoc(studentDoc("Morris High School", "10th Grade", "Ms Doe")));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00006", 2));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "High School", null, 3, List.of("ID-00006")));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(1L, response.get("totalSupplyLists"));
+    assertEquals(1L, response.get("validInvIDCount"));
+    assertEquals(0L, response.get("invalidInvIDCount"));
+    assertEquals(0L, response.get("bestMatchNullCount"));
+    assertEquals(1L, response.get("schoolCount"));
+
+    assertCalculatedInventory("ID-00006", 3, "Understocked");
+    assertSupplyListPercentage("MHS", "High School", 67);
+  }
+
+  @Test
+  void calculateStatesAggregatesDemandForSupplyListsLinkedToSameInventory() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(
+        studentDoc("MHS", "PreK", "Ms Doe"),
+        studentDoc("MHS", "PreK", "Ms Doe")),
+      familyDoc(studentDoc("MHS", "1", "Ms One"))
+    ));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00007", 4));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 2, List.of("ID-00007")),
+      supplyListDoc("MHS", "1", "Ms One", 1, List.of("ID-00007"))
+    ));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(2L, response.get("totalSupplyLists"));
+    assertEquals(2L, response.get("validInvIDCount"));
+    assertEquals(0L, response.get("invalidInvIDCount"));
+    assertEquals(0L, response.get("bestMatchNullCount"));
+    assertEquals(2L, response.get("schoolCount"));
+
+    assertCalculatedInventory("ID-00007", 5, "Understocked");
+    assertSupplyListPercentage("MHS", "PreK", 100);
+    assertSupplyListPercentage("MHS", "1", 400);
+  }
+
+  @Test
+  void calculateStatesReportsInvalidLinksAndMissingInventory() {
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, Arrays.asList(null, "not-an-id")),
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, List.of("ID-99999")),
+      supplyListDoc(null, "PreK", "Ms Doe", 1, List.of("ID-00001"))
+    ));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(3L, response.get("totalSupplyLists"));
+    assertEquals(1L, response.get("validInvIDCount"));
+    assertEquals(1L, response.get("invalidInvIDCount"));
+    assertEquals(1L, response.get("bestMatchNullCount"));
+    assertEquals(0L, response.get("schoolCount"));
+
+    Document invalidLinkSupply = db.getCollection("supplylist")
+      .find(new Document("invIDs", Arrays.asList(null, "not-an-id")))
+      .first();
+    assertEquals(-2, invalidLinkSupply.getInteger("percentageFilled"));
+  }
+
+  @Test
+  void calculateStatesTreatsNullInventoryIdsAsInvalidLink() {
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertOne(familyDoc(studentDoc("MHS", "PreK", "Ms Doe")));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, null));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(1L, response.get("totalSupplyLists"));
+    assertEquals(0L, response.get("validInvIDCount"));
+    assertEquals(1L, response.get("invalidInvIDCount"));
+    assertEquals(0L, response.get("bestMatchNullCount"));
+    assertEquals(0L, response.get("schoolCount"));
+
+    Document invalidLinkSupply = db.getCollection("supplylist")
+      .find(new Document("school", "MHS").append("grade", "PreK"))
+      .first();
+    assertEquals(-2, invalidLinkSupply.getInteger("percentageFilled"));
+  }
+
+  @Test
+  void calculateStatesClearsStaleInventoryDemandForItemsWithoutCurrentDemand() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00008", 8)
+        .append("calculatedMinQuantity", 12)
+        .append("calculatedStockState", "Understocked"),
+      inventoryDoc("ID-00009", 2)
+        .append("calculatedMinQuantity", 10)
+        .append("calculatedStockState", "Understocked")
+    ));
+    db.getCollection("family").insertOne(familyDoc(studentDoc("MHS", "PreK", "Ms Doe")));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, List.of("ID-00009")));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    assertCalculatedInventory("ID-00008", 0, "Unknown");
+    assertCalculatedInventory("ID-00009", 1, "Overstocked");
+  }
+
+  @Test
+  void calculateStatesClearsStaleSupplyListPercentagesWhenDemandUnavailable() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00010", 5));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, List.of("ID-00010"))
+        .append("percentageFilled", 80),
+      supplyListDoc("MHS", "1", "Ms One", 1, List.of("ID-99999"))
+        .append("percentageFilled", 70),
+      supplyListDoc("MHS", "2", "Ms Two", 1, List.of())
+        .append("percentageFilled", 60)
+    ));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    assertSupplyListPercentage("MHS", "PreK", -1);
+    assertSupplyListPercentage("MHS", "1", -1);
+    assertSupplyListPercentage("MHS", "2", -2);
+  }
+
+  @Test
+  void calculateStatesUsesFallbackStudentFieldsAndDefaultSupplyQuantity() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertMany(Arrays.asList(
+      new Document().append("guardianName", "No Students"),
+      familyDoc(null, new Document().append("name", "Unknown Student"))
+    ));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00005", 1));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("Unknown School", "Unknown Grade", "Unknown Teacher", null, List.of("ID-00005")));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(1L, response.get("totalSupplyLists"));
+    assertEquals(1L, response.get("validInvIDCount"));
+    assertEquals(1L, response.get("schoolCount"));
+    assertCalculatedInventory("ID-00005", 1, "Stocked");
+    assertSupplyListPercentage("Unknown School", "Unknown Grade", 100);
+  }
+
+  @Test
+  void calculateStatesTreatsZeroSupplyQuantityAsOneForLegacyData() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertOne(familyDoc(studentDoc("MHS", "PreK", "Ms Doe")));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00011", 1));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 0, List.of("ID-00011")));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(1L, response.get("totalSupplyLists"));
+    assertEquals(1L, response.get("validInvIDCount"));
+    assertEquals(1L, response.get("schoolCount"));
+    assertCalculatedInventory("ID-00011", 1, "Stocked");
+    assertSupplyListPercentage("MHS", "PreK", 100);
+  }
+
+  private Document inventoryDoc(String internalID, int quantity) {
+    return new Document()
+      .append("_id", new ObjectId())
+      .append("internalID", internalID)
+      .append("item", "Markers")
+      .append("brand", "Crayola")
+      .append("packageSize", 1)
+      .append("size", "N/A")
+      .append("color", "blue")
+      .append("type", "washable")
+      .append("material", "plastic")
+      .append("description", "Markers")
+      .append("quantity", quantity)
+      .append("maxQuantity", 10)
+      .append("minQuantity", 1)
+      .append("calculatedMinQuantity", 0)
+      .append("stockState", "Stocked")
+      .append("calculatedStockState", "Unknown")
+      .append("notes", "N/A");
+  }
+
+  private Document supplyListDoc(
+      String school,
+      String grade,
+      String teacher,
+      Integer quantity,
+      List<String> invIDs
+  ) {
+    return new Document()
+      .append("_id", new ObjectId())
+      .append("school", school)
+      .append("grade", grade)
+      .append("teacher", teacher)
+      .append("item", List.of("Markers"))
+      .append("quantity", quantity)
+      .append("invIDs", invIDs)
+      .append("percentageFilled", -1);
+  }
+
+  private Document familyDoc(Document... students) {
+    return new Document()
+      .append("guardianName", "Test Guardian")
+      .append("students", Arrays.asList(students));
+  }
+
+  private Document studentDoc(String school, String grade, String teacher) {
+    return new Document()
+      .append("name", "Test Student")
+      .append("school", school)
+      .append("grade", grade)
+      .append("teacher", teacher);
+  }
+
+  private void assertCalculatedInventory(String internalID, int minQuantity, String state) {
+    Document inventory = db.getCollection("inventory")
+      .find(new Document("internalID", internalID))
+      .first();
+
+    assertEquals(minQuantity, inventory.getInteger("calculatedMinQuantity"));
+    assertEquals(state, inventory.getString("calculatedStockState"));
+  }
+
+  private void assertSupplyListPercentage(String school, String grade, int percentageFilled) {
+    Document supplyList = db.getCollection("supplylist")
+      .find(new Document("school", school).append("grade", grade))
+      .first();
+
+    assertEquals(percentageFilled, supplyList.getInteger("percentageFilled"));
   }
 }
 

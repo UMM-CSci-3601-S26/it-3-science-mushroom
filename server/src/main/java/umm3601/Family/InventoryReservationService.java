@@ -16,6 +16,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
 
 import io.javalin.http.BadRequestResponse;
+import umm3601.Common.InventoryMatcher;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 
@@ -143,7 +144,11 @@ public class InventoryReservationService {
     ArrayList<SupplyList> matching = new ArrayList<>();
 
     for (SupplyList supplyList : allSupplyLists) {
-      if (!inventoryMatcher.supplyListMatchesStudent(supplyList, student)) {
+      if (!inventoryMatcher.supplyListMatchesStudent(
+          supplyList,
+          student.school,
+          student.grade,
+          student.teacher)) {
         continue;
       }
       matching.add(supplyList);

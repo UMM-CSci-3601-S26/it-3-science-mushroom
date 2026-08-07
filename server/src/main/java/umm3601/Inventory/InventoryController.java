@@ -38,6 +38,8 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
+import umm3601.Demand.DemandCalculationResult;
+import umm3601.Demand.DemandService;
 import umm3601.Family.InventoryReservationService;
 
 
@@ -49,6 +51,7 @@ public class InventoryController {
   private static final String API_INVENTORY_REMOVE_QUANTITY = "/api/inventory/removeQuantity";
   private static final String API_INVENTORY_CLEAR = "/api/inventory/clear";
   private static final String API_INVENTORY_RESET = "/api/inventory/resetQuantity";
+  private static final String API_CALCULATE_STATES = "/api/inventory/calculateStates";
 
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";
@@ -73,6 +76,7 @@ public class InventoryController {
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final InventoryReservationService inventoryReservationService;
   private final InventoryIdService inventoryIdService;
+  private final DemandService demandService;
 
   public InventoryController(MongoDatabase database) {
     this(database, new InventoryReservationService(database), new InventoryIdService(database));
@@ -87,8 +91,18 @@ public class InventoryController {
       InventoryReservationService inventoryReservationService,
       InventoryIdService inventoryIdService
   ) {
+    this(database, inventoryReservationService, inventoryIdService, new DemandService(database));
+  }
+
+  public InventoryController(
+      MongoDatabase database,
+      InventoryReservationService inventoryReservationService,
+      InventoryIdService inventoryIdService,
+      DemandService demandService
+  ) {
     this.inventoryReservationService = inventoryReservationService;
     this.inventoryIdService = inventoryIdService;
+    this.demandService = demandService;
     inventoryCollection = JacksonMongoCollection.builder().build(
       database,
       "inventory",
@@ -527,5 +541,20 @@ public class InventoryController {
       }
       inventoryCollection.updateOne(eq("_id", new ObjectId(inv._id)), Updates.set("stockState", inv.stockState));
     }
+  }
+
+  // Endpoint to calculate states
+  @Route(method = HttpMethod.POST, path = API_CALCULATE_STATES)
+  @RequirePermission("edit_inventory_item")
+  public void calculateStatesTest(Context ctx) {
+    DemandCalculationResult results = demandService.calculatePredictedStockStates();
+    ctx.json(Map.of(
+      "totalSupplyLists", results.getTotalSupplyLists(),
+      "validInvIDCount", results.getValidInvIDCount(),
+      "invalidInvIDCount", results.getInvalidInvIDCount(),
+      "bestMatchNullCount", results.getBestMatchNullCount(),
+      "schoolCount", results.getSchoolCount()
+    ));
+    ctx.status(HttpStatus.OK);
   }
 }

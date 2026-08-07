@@ -3,7 +3,9 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -16,6 +18,10 @@ import { TermsService } from '../../terms/terms.service';
 import { Terms } from '../../terms/terms';
 import { GRADES } from '../supplylist';
 import { SettingsService } from '../../settings/settings.service';
+import {
+  SupplyListInventoryLinkDialogComponent,
+  SupplyListInventoryLinkFilters
+} from '../inventory-link-dialog/supply-list-inventory-link-dialog.component';
 
 @Component({
   selector: 'app-add-supplylist',
@@ -29,6 +35,8 @@ import { SettingsService } from '../../settings/settings.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatDialogModule,
+    MatIconModule,
     MatSelectModule,
     MatAutocompleteModule,
     RouterLink,
@@ -39,6 +47,7 @@ export class AddSupplyListComponent implements OnInit {
   private supplyListService = inject(SupplyListService);
   private termsService = inject(TermsService);
   private settingsService = inject(SettingsService);
+  private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -118,7 +127,8 @@ export class AddSupplyListComponent implements OnInit {
     type: new FormControl(''),
     material: new FormControl(''),
     quantity: new FormControl('', [Validators.required, Validators.min(1)]),
-    notes: new FormControl('')
+    notes: new FormControl(''),
+    invIDs: new FormControl<string[]>([])
   });
 
   readonly validationMessages = {
@@ -138,7 +148,8 @@ export class AddSupplyListComponent implements OnInit {
       { type: 'required', message: 'Quantity is required' },
       { type: 'min', message: 'Quantity must be at least 1' }
     ],
-    notes: []
+    notes: [],
+    invIDs: []
   };
 
   ngOnInit() {
@@ -378,8 +389,42 @@ export class AddSupplyListComponent implements OnInit {
     return this.addSupplyListForm.value;
   }
 
+  linkedInventoryIds(): string[] {
+    return this.normalizeInventoryIds(this.addSupplyListForm.controls.invIDs.value);
+  }
+
+  linkedInventorySummary(): string {
+    const linkedCount = this.linkedInventoryIds().length;
+    return linkedCount === 0 ? 'No linked inventory' : `${linkedCount} linked item${linkedCount === 1 ? '' : 's'}`;
+  }
+
+  openInventoryLinkDialog(): void {
+    const dialogRef = this.dialog.open(SupplyListInventoryLinkDialogComponent, {
+      width: '920px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: {
+        requirementLabel: this.requirementLabelFromForm(),
+        selectedInventoryIds: this.linkedInventoryIds(),
+        filters: this.inventoryFiltersFromForm()
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((selectedInventoryIds: string[] | undefined) => {
+      if (selectedInventoryIds === undefined) {
+        return;
+      }
+
+      this.addSupplyListForm.patchValue({
+        invIDs: this.normalizeInventoryIds(selectedInventoryIds)
+      });
+      this.addSupplyListForm.controls.invIDs.markAsDirty();
+    });
+  }
+
   clearForm(): void {
     this.addSupplyListForm.reset();
+    this.addSupplyListForm.patchValue({ invIDs: [] });
     this.descriptionInput = '';
     this.showPreview = false;
   }
@@ -419,7 +464,8 @@ export class AddSupplyListComponent implements OnInit {
       material: toAttr(raw.material),
       notes: raw.notes ?? undefined,
       packageSize: raw.packageSize ? parseInt(raw.packageSize, 10) : 1,
-      quantity: raw.quantity ? parseInt(raw.quantity, 10) : 1
+      quantity: raw.quantity ? parseInt(raw.quantity, 10) : 1,
+      invIDs: raw.invIDs && raw.invIDs.length > 0 ? this.normalizeInventoryIds(raw.invIDs) : undefined
     };
 
     this.supplyListService.addSupplyList(formData).subscribe({
@@ -435,5 +481,54 @@ export class AddSupplyListComponent implements OnInit {
         );
       }
     });
+  }
+
+  private inventoryFiltersFromForm(): SupplyListInventoryLinkFilters {
+    const raw = this.addSupplyListForm.value;
+    return {
+      item: this.firstFilterToken(raw.item),
+      brand: this.firstFilterToken(raw.brand),
+      color: this.firstFilterToken(raw.color),
+      size: this.firstFilterToken(raw.size),
+      type: this.firstFilterToken(raw.type),
+      material: this.firstFilterToken(raw.material)
+    };
+  }
+
+  private requirementLabelFromForm(): string {
+    const raw = this.addSupplyListForm.value;
+    const parts = [
+      raw.quantity ? `${raw.quantity}x` : undefined,
+      raw.packageSize ? `${raw.packageSize}ct.` : undefined,
+      this.firstFilterToken(raw.item),
+      this.firstFilterToken(raw.brand),
+      this.firstFilterToken(raw.color),
+      this.firstFilterToken(raw.size),
+      this.firstFilterToken(raw.type),
+      this.firstFilterToken(raw.material)
+    ].filter((value): value is string => !!value);
+
+    return parts.join(' ') || 'New supply list item';
+  }
+
+  private firstFilterToken(value: string | null | undefined): string | undefined {
+    const token = (value ?? '')
+      .split(/[|,]/)
+      .map(v => v.trim())
+      .find(v => v && v !== 'N/A');
+    return token || undefined;
+  }
+
+  private normalizeInventoryIds(ids: string[] | null | undefined): string[] {
+    const normalized: string[] = [];
+
+    for (const id of ids ?? []) {
+      const trimmed = id.trim();
+      if (trimmed && !normalized.includes(trimmed)) {
+        normalized.push(trimmed);
+      }
+    }
+
+    return normalized;
   }
 }

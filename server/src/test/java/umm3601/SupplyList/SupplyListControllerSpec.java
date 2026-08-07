@@ -563,6 +563,41 @@ public class SupplyListControllerSpec {
   }
 
   @Test
+  void addSupplyListPersistsSubmittedInventoryLinks() {
+    String newSupplyList = """
+        {
+          "school": "MHS",
+          "grade": "PreK",
+          "item": ["Marker"],
+          "brand": {"exactly": "", "anyOf": ["Crayola"]},
+          "color": {"exactly": "", "anyOf": ["red"]},
+          "packageSize": 1,
+          "size": {"exactly": "N/A", "anyOf": []},
+          "quantity": 10,
+          "notes": "N/A",
+          "type": {"exactly": "dry erase", "anyOf": []},
+          "material": {"exactly": "plastic", "anyOf": []},
+          "invIDs": [" ID-0232 ", "", "ID-0232", "ID-00001"]
+        }
+        """;
+
+    when(ctx.bodyValidator(SupplyList.class))
+      .thenReturn(new BodyValidator<SupplyList>(
+        newSupplyList,
+        SupplyList.class,
+        () -> javalinJackson.fromJsonString(newSupplyList, SupplyList.class)));
+
+    supplylistController.addSupplyList(ctx);
+
+    Document created = db.getCollection("supplylist")
+      .find(new Document("item", "Marker"))
+      .first();
+    verify(ctx).status(HttpStatus.CREATED);
+    assertEquals(List.of("ID-0232", "ID-00001"), created.getList("invIDs", String.class));
+    assertEquals(-1, created.getInteger("percentageFilled"));
+  }
+
+  @Test
   void addSupplyWithEmptyString() {
     String invalidSupplyList = """
         {
@@ -1232,6 +1267,48 @@ public class SupplyListControllerSpec {
     verify(ctx).json(supplylistCaptor.capture());
     assertEquals("CHS", supplylistCaptor.getValue().school);
     assertEquals("5th grade", supplylistCaptor.getValue().grade);
+  }
+
+  @Test
+  void editSupplyListPersistsSubmittedInventoryLinks() {
+    db.getCollection("supplylist").updateOne(
+      new Document("_id", samsId),
+      new Document("$set", new Document("invIDs", List.of("ID-0999"))
+        .append("percentageFilled", 73)));
+
+    String id = samsId.toHexString();
+    String updatedJson = """
+        {
+          "school": "MHS",
+          "grade": "PreK",
+          "item": ["Backpack"],
+          "brand": {"exactly": "JanSport", "anyOf": []},
+          "color": {"exactly": "black", "anyOf": []},
+          "packageSize": 1,
+          "size": {"exactly": "Standard", "anyOf": []},
+          "quantity": 2,
+          "notes": "Plain colors only",
+          "type": {"exactly": "shoulder bag", "anyOf": []},
+          "material": {"exactly": "fabric", "anyOf": []},
+          "invIDs": ["ID-0232", " ", "ID-0232", "ID-00001"]
+        }
+        """;
+
+    when(ctx.pathParam("id")).thenReturn(id);
+    when(ctx.bodyValidator(SupplyList.class))
+      .thenReturn(new BodyValidator<SupplyList>(
+        updatedJson,
+        SupplyList.class,
+        () -> javalinJackson.fromJsonString(updatedJson, SupplyList.class)));
+
+    supplylistController.editSupplyList(ctx);
+
+    Document updated = db.getCollection("supplylist")
+      .find(new Document("_id", samsId))
+      .first();
+    verify(ctx).status(HttpStatus.OK);
+    assertEquals(List.of("ID-0232", "ID-00001"), updated.getList("invIDs", String.class));
+    assertEquals(-1, updated.getInteger("percentageFilled"));
   }
 
   @Test

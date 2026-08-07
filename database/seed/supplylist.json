@@ -176,7 +176,7 @@
     "quantity": 1,
     "notes": "",
     "supplyID": "Supply-00004",
-    "invIDs": [],
+    "invIDs": ["ID-0232"],
     "percentageFilled": 0
   },
   {

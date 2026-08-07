@@ -60,4 +60,8 @@ export class SettingsService {
   updateDriveDay(driveDay: DriveDay): Observable<void> {
     return this.httpClient.patch<void>(`${this.settingsUrl}/driveDay`, driveDay);
   }
+
+  calculatePredictedStates(): Observable<void> {
+    return this.httpClient.post<void>(`${environment.apiUrl}inventory/calculateStates`, {});
+  }
 }

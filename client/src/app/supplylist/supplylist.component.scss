@@ -171,6 +171,23 @@ th.mat-sort-header-sorted {
   }
 }
 
+.inventory-link-edit-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 180px;
+
+  button {
+    width: 100%;
+  }
+
+  span {
+    color: var(--app-text-muted);
+    font-size: 0.85rem;
+  }
+}
+
 @media (max-width: 720px) {
   .filter-container,
   .primary-filters {
@@ -207,5 +224,9 @@ th.mat-sort-header-sorted {
 
   .item-edit-grid .edit-field {
     width: 100%;
+  }
+
+  .inventory-link-edit-field {
+    min-width: 0;
   }
 }

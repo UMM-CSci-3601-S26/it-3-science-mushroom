@@ -46,9 +46,12 @@ public class StockReportController {
   private static final String API_REPORT_BYTES_BY_ID = "/api/stockreport/{id}/bytes";
   private static final String API_GENERATE_REPORT = "/api/stockreport/generate";
   private static final String API_GENERATE_REPORT_AND_SAVE = "/api/stockreport/generate-and-save";
+  private static final String STOCK_STATE_CSV_HEADER =
+    "Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n";
 
   private final JacksonMongoCollection<StockReport> stockReportCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
+
 
   public StockReportController(MongoDatabase database) {
     stockReportCollection = JacksonMongoCollection.builder().build(
@@ -227,7 +230,9 @@ public class StockReportController {
         "maxQuantity",
         "minQuantity",
         "stockState",
-        "notes"))
+        "notes",
+        "calculatedMinQuantity",
+        "calculatedStockState"))
       .into(new ArrayList<>());
 
     // Separate StringBuilders for each Stock State report type
@@ -237,22 +242,24 @@ public class StockReportController {
     StringBuilder overstockedCSV = new StringBuilder();
 
     // Sheet Headers
-    stockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
-    outOfStockCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
-    understockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
-    overstockedCSV.append("Item Description,Quantity,Max Quantity,Min Quantity,Notes\n");
+    stockedCSV.append(STOCK_STATE_CSV_HEADER);
+    outOfStockCSV.append(STOCK_STATE_CSV_HEADER);
+    understockedCSV.append(STOCK_STATE_CSV_HEADER);
+    overstockedCSV.append(STOCK_STATE_CSV_HEADER);
 
     // Fill rows for each report type
     for (Inventory item : inventoryItems) {
-      String row = String.format("\"%s\",%d,%d,%d,\"%s\"\n",
+      String row = String.format("\"%s\",%d,%d,%d,\"%s\",%d,\"%s\"\n",
+        // Note! If description includes Inventory Item property names (e.g: brand, size, etc)
+        // and they're separated by commas, it will put them in separate cells
+        // Fixing would require extra logic for something that is ultimately very minor
         FamilyController.cleanUpCSV(item.description),
         item.quantity,
         item.maxQuantity,
         item.minQuantity,
-        FamilyController.cleanUpCSV(item.notes)
-        // Note! If description includes Inventory Item property names (e.g: brand, size, etc)
-        // and they're separated by commas, it will put them in separate cells
-        // Fixing would require extra logic for something that is ultimately very minor
+        FamilyController.cleanUpCSV(item.notes),
+        item.calculatedMinQuantity != null ? item.calculatedMinQuantity : 0,
+        FamilyController.cleanUpCSV(item.calculatedStockState != null ? item.calculatedStockState : "Unknown")
       );
 
       if (item.stockState == null) {

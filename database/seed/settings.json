@@ -11,7 +11,8 @@
       { "name": "Chokio-Alberta Elementary School", "abbreviation": "CAES" },
       { "name": "Herman-Norcross High School", "abbreviation": "HNHS" },
       { "name": "Herman-Norcross Middle School", "abbreviation": "HNMS" },
-      { "name": "Herman-Norcross Elementary School", "abbreviation": "HNES" }
+      { "name": "Herman-Norcross Elementary School", "abbreviation": "HNES" },
+      { "name": "St. Mary's Schools", "abbreviation": "SMS" }
     ],
     "timeAvailability": {
       "earlyMorning": "8:00–9:00 AM",

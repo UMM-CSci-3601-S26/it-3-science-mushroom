@@ -14,6 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 // RxJS Imports
 import { catchError, of, tap } from 'rxjs';
@@ -34,6 +35,9 @@ import { ReportGeneratorComponent } from './report-generator/report-generator.co
 // Dialog Imports
 import { DialogService } from '../shared/dialog/dialog.service';
 import { AuthService } from '../auth/auth-service';
+
+type StockState = 'stocked' | 'out of stock' | 'understocked' | 'overstocked' | 'unknown';
+type StockViewType = 'actual' | 'calculated';
 
 /**
  * StockReportComponent is responsible for displaying the Stock Reports and inventory data in a tree structure.
@@ -58,7 +62,8 @@ import { AuthService } from '../auth/auth-service';
     MatTooltipModule,
     MatIconModule,
     StockReportTreeComponent,
-    ReportGeneratorComponent
+    ReportGeneratorComponent,
+    MatSlideToggleModule
   ],
 })
 export class StockReportComponent {
@@ -68,6 +73,14 @@ export class StockReportComponent {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private authService = inject(AuthService);
+
+  private viewPreferenceChanged = false;
+  viewType = signal<StockViewType>('actual');
+
+  setViewType(viewType: StockViewType): void {
+    this.viewPreferenceChanged = true;
+    this.viewType.set(viewType);
+  }
 
   get canManageStockReports(): boolean {
     return this.authService.hasPermission('manage_stock_reports');
@@ -176,7 +189,7 @@ export class StockReportComponent {
    * @param items A list of inventory items to group
    * @returns An array of StockNodes grouped by item name
    */
-  private groupInventoryByItem(items: Inventory[]): StockNode[] {
+  private groupInventoryByItem(items: Inventory[], viewType: StockViewType = 'actual'): StockNode[] {
     // Group items by item name
     const groupedByItem = new Map<string, Inventory[]>();
     items.forEach(item => {
@@ -191,7 +204,10 @@ export class StockReportComponent {
     return Array.from(groupedByItem.entries()).map(([itemName, itemGroup]) => ({
       item: itemName,
       children: itemGroup.map(inventoryItem => ({
-        description: `${inventoryItem.description} - ${inventoryItem.quantity} on hand (min ${inventoryItem.minQuantity}, max ${inventoryItem.maxQuantity})`
+        description: this.inventoryDescription(inventoryItem, viewType),
+        children: [
+          { description: this.calculateUnitDifference(inventoryItem, viewType) }
+        ]
       })).sort((a, b) => a.description!.localeCompare(b.description!)) // Sort descriptions alphabetically
     })).sort((a, b) => a.item!.localeCompare(b.item!)); // Sort items alphabetically by item name
   }
@@ -210,35 +226,120 @@ export class StockReportComponent {
     return this.groupInventoryByItem(filtered);
   });
 
-  underStockedItems = computed(() => {
+  understockedItems = computed(() => {
     const filtered = this.inventory()
       ?.filter(item => this.isStockState(item, 'understocked')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
-  overStockedItems = computed(() => {
+  overstockedItems = computed(() => {
     const filtered = this.inventory()
       ?.filter(item => this.isStockState(item, 'overstocked')) ?? [];
     return this.groupInventoryByItem(filtered);
   });
 
+  // How many items are stocked properly
   stockedItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'stocked')).length ?? 0
   );
 
+  // How many items are out of stock
   outOfStockItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'out of stock')).length ?? 0
   );
 
-  underStockedItemCount = computed(() =>
+  // How many items are understocked
+  understockedItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'understocked')).length ?? 0
   );
 
-  overStockedItemCount = computed(() =>
+  // How many items are overstocked
+  overstockedItemCount = computed(() =>
     this.inventory()?.filter(item => this.isStockState(item, 'overstocked')).length ?? 0
   );
 
-  unitsNeeded = computed(() =>
+  // Compute tree nodes from inventory data
+  // Each  calculated stock state gets its own, grouped by item name
+  calculatedStockedItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isCalculatedStockState(item, 'stocked')) ?? [];
+    return this.groupInventoryByItem(filtered, 'calculated');
+  });
+
+  calculatedUnknownStockItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isCalculatedStockState(item, 'unknown')) ?? [];
+    return this.groupInventoryByItem(filtered, 'calculated');
+  });
+
+  calculatedUnderstockedItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isCalculatedStockState(item, 'understocked')) ?? [];
+    return this.groupInventoryByItem(filtered, 'calculated');
+  });
+
+  calculatedOverstockedItems = computed(() => {
+    const filtered = this.inventory()
+      ?.filter(item => this.isCalculatedStockState(item, 'overstocked')) ?? [];
+    return this.groupInventoryByItem(filtered, 'calculated');
+  });
+
+  // How many items are stocked properly
+  calculatedStockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isCalculatedStockState(item, 'stocked')).length ?? 0
+  );
+
+  // How many items are out of stock
+  calculatedUnknownStockItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isCalculatedStockState(item, 'unknown')).length ?? 0
+  );
+
+  // How many items are understocked
+  calculatedUnderstockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isCalculatedStockState(item, 'understocked')).length ?? 0
+  );
+
+  // How many items are overstocked
+  calculatedOverstockedItemCount = computed(() =>
+    this.inventory()?.filter(item => this.isCalculatedStockState(item, 'overstocked')).length ?? 0
+  );
+
+  private inventoryDescription(item: Inventory, viewType: StockViewType): string {
+    if (viewType === 'calculated') {
+      return `${item.description} - ${item.quantity} on hand (calculated min ${this.calculatedMinQuantity(item)})`;
+    }
+    return `${item.description} - ${item.quantity} on hand (min ${item.minQuantity}, max ${item.maxQuantity})`;
+  }
+
+  /**
+   * Calculates how many units are needed to reach minimum/max quantity
+   * @param item item to calculate unit difference for
+   * @returns difference in unit counts
+   */
+  private calculateUnitDifference(item: Inventory, viewType: StockViewType = 'actual') {
+    if (viewType === 'calculated') {
+      if (this.isCalculatedStockState(item, 'unknown')) {
+        return 'Prediction unavailable';
+      }
+      const calculatedMinimum = this.calculatedMinQuantity(item);
+      if (item.quantity > calculatedMinimum) {
+        return `Overstocked by ${item.quantity - calculatedMinimum} unit(s)`;
+      } else if (item.quantity < calculatedMinimum) {
+        return `Need ${Math.max(0, calculatedMinimum - item.quantity)} more unit(s)`;
+      }
+      return `Properly stocked!`;
+    }
+
+    if (item.quantity > item.maxQuantity) { // Item overstocked
+      return `Overstocked by ${item.quantity - item.maxQuantity} unit(s)`;
+    } else if (item.quantity < item.minQuantity) { // Item under/out of stock
+      return `Need ${Math.max(0, item.minQuantity - item.quantity)} more unit(s)`;
+    }
+    return `Properly stocked!`; // Item stocked
+  }
+
+  // How many units of each item are needed to reach minimum quantity
+  understockedAmount = computed(() =>
     this.inventory()?.reduce((total, item) => {
       if (!this.isStockState(item, 'understocked') && !this.isStockState(item, 'out of stock')) {
         return total;
@@ -247,7 +348,8 @@ export class StockReportComponent {
     }, 0) ?? 0
   );
 
-  overflowUnits = computed(() =>
+  // How many units each item is above the max quantity
+  overstockedAmount = computed(() =>
     this.inventory()?.reduce((total, item) => {
       if (!this.isStockState(item, 'overstocked')) {
         return total;
@@ -256,13 +358,31 @@ export class StockReportComponent {
     }, 0) ?? 0
   );
 
-  private isStockState(item: Inventory, expected: 'stocked' | 'out of stock' | 'understocked' | 'overstocked'): boolean {
-    const normalized = item.stockState
-      .trim()
-      .toLowerCase()
-      .replace(/-/g, ' ')
-      .replace(/\s+/g, ' ');
-    const compact = normalized.replace(/\s/g, '');
-    return compact === expected.replace(/\s/g, '');
+  private isStockState(item: Inventory, expected: StockState): boolean {
+    return this.stockStateMatches(item.stockState, expected);
+  }
+
+  private isCalculatedStockState(item: Inventory, expected: StockState): boolean {
+    return this.stockStateMatches(item.calculatedStockState, expected, true);
+  }
+
+  private stockStateMatches(
+    value: string | null | undefined,
+    expected: StockState,
+    treatMissingAsUnknown = false
+  ): boolean {
+    return this.normalizedStockState(value, treatMissingAsUnknown) === this.normalizedStockState(expected);
+  }
+
+  private normalizedStockState(value: string | null | undefined, treatMissingAsUnknown = false): string {
+    const compact = `${value ?? ''}`.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+    if (treatMissingAsUnknown && (compact === '' || compact === 'na')) {
+      return 'unknown';
+    }
+    return compact;
+  }
+
+  private calculatedMinQuantity(item: Inventory): number {
+    return item.calculatedMinQuantity ?? 0;
   }
 }

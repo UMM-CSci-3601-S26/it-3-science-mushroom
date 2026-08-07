@@ -13,7 +13,6 @@
       </mat-card-content>
     </mat-card>
   } @else {
-    <!-- Summary colors are semantic and retain their meaning in both themes. -->
     <section class="stock-summary app-grid-auto" aria-label="Stock summary">
       <div class="summary-item summary-stocked">
         <span class="summary-value">{{ stockedItemCount() }}</span>
@@ -24,12 +23,12 @@
         <span>items out of stock</span>
       </div>
       <div class="summary-item summary-needed">
-        <span class="summary-value">{{ unitsNeeded() }}</span>
-        <span>units needed to reach minimums</span>
+        <span class="summary-value">{{ understockedItemCount() }}</span>
+        <span>items understocked</span>
       </div>
       <div class="summary-item summary-overflow">
-        <span class="summary-value">{{ overflowUnits() }}</span>
-        <span>units above maximums</span>
+        <span class="summary-value">{{ overstockedItemCount() }}</span>
+        <span>items overstocked</span>
       </div>
     </section>
   }
@@ -110,50 +109,107 @@
     <div class="section-heading app-page-header">
       <h2 id="stock-sections-heading">Current Stock Detail</h2>
       <p class="app-text-muted">Expand an item category once to see its inventory entries and quantities.</p>
+
+
+      <mat-slide-toggle
+        class="view-mode-toggle"
+        [ngModel]="viewType() === 'actual'"
+        (ngModelChange)="setViewType($event ? 'actual' : 'calculated')"
+        data-test="viewTypeToggle"
+      >
+        Actual Stock Levels
+      </mat-slide-toggle>
     </div>
 
     @if (!inventoryError() && inventory() && inventory()!.length > 0) {
-      <div class="stock-cards-container">
-        <mat-card class="stock-card" data-cy="stocked-items-card">
-          <mat-card-header>
-            <mat-card-title>Fully Stocked</mat-card-title>
-            <mat-card-subtitle>{{ stockedItemCount() }} inventory entries</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <app-stock-report-tree [stockNodes]="stockedItems()"></app-stock-report-tree>
-          </mat-card-content>
-        </mat-card>
+      @switch (viewType()) {
 
-        <mat-card class="stock-card" data-cy="out-of-stock-items-card">
-          <mat-card-header>
-            <mat-card-title>Out of Stock</mat-card-title>
-            <mat-card-subtitle>{{ outOfStockItemCount() }} inventory entries</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <app-stock-report-tree [stockNodes]="outOfStockItems()"></app-stock-report-tree>
-          </mat-card-content>
-        </mat-card>
+        @case ('actual') {
+          <div class="stock-cards-container">
+            <mat-card class="stock-card" data-cy="stocked-items-card">
+              <mat-card-header>
+                <mat-card-title>Fully Stocked</mat-card-title>
+                <mat-card-subtitle>{{ stockedItemCount() }} inventory entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="stockedItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
 
-        <mat-card class="stock-card" data-cy="understocked-items-card">
-          <mat-card-header>
-            <mat-card-title>Needs Stock</mat-card-title>
-            <mat-card-subtitle>{{ underStockedItemCount() }} entries, {{ unitsNeeded() }} units needed</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <app-stock-report-tree [stockNodes]="underStockedItems()"></app-stock-report-tree>
-          </mat-card-content>
-        </mat-card>
+            <mat-card class="stock-card" data-cy="out-of-stock-items-card">
+              <mat-card-header>
+                <mat-card-title>Out of Stock</mat-card-title>
+                <mat-card-subtitle>{{ outOfStockItemCount() }} inventory entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="outOfStockItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
 
-        <mat-card class="stock-card" data-cy="overstocked-items-card">
-          <mat-card-header>
-            <mat-card-title>Overflow</mat-card-title>
-            <mat-card-subtitle>{{ overStockedItemCount() }} entries, {{ overflowUnits() }} units above maximum</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <app-stock-report-tree [stockNodes]="overStockedItems()"></app-stock-report-tree>
-          </mat-card-content>
-        </mat-card>
-      </div>
+            <mat-card class="stock-card" data-cy="understocked-items-card">
+              <mat-card-header>
+                <mat-card-title>Understocked</mat-card-title>
+                <mat-card-subtitle>{{ understockedItemCount() }} entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="understockedItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stock-card" data-cy="overstocked-items-card">
+              <mat-card-header>
+                <mat-card-title>Overstocked</mat-card-title>
+                <mat-card-subtitle>{{ overstockedItemCount() }} entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="overstockedItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        } @case ('calculated') {
+          <div class="stock-cards-container">
+            <mat-card class="stock-card" data-cy="calculated-stocked-items-card">
+              <mat-card-header>
+                <mat-card-title>Fully Stocked</mat-card-title>
+                <mat-card-subtitle>{{ calculatedStockedItemCount() }} inventory entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="calculatedStockedItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stock-card" data-cy="calculated-unknown-stock-items-card">
+              <mat-card-header>
+                <mat-card-title>Unknown</mat-card-title>
+                <mat-card-subtitle>{{ calculatedUnknownStockItemCount() }} inventory entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="calculatedUnknownStockItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stock-card" data-cy="calculated-understocked-items-card">
+              <mat-card-header>
+                <mat-card-title>Understocked</mat-card-title>
+                <mat-card-subtitle>{{ calculatedUnderstockedItemCount() }} entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="calculatedUnderstockedItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="stock-card" data-cy="calculated-overstocked-items-card">
+              <mat-card-header>
+                <mat-card-title>Overstocked</mat-card-title>
+                <mat-card-subtitle>{{ calculatedOverstockedItemCount() }} entries</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <app-stock-report-tree [stockNodes]="calculatedOverstockedItems()"></app-stock-report-tree>
+              </mat-card-content>
+            </mat-card>
+          </div>
+          }
+        }
     } @else if (!inventoryError()) {
       <p class="empty-state">No inventory is available for this report.</p>
     }

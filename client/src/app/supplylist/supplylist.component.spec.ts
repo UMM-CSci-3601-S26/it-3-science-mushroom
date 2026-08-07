@@ -9,12 +9,38 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../auth/auth-service';
 import { DialogService } from '../shared/dialog/dialog.service';
+import { MatDialog } from '@angular/material/dialog';
+import { SupplyListInventoryLinkDialogComponent } from './inventory-link-dialog/supply-list-inventory-link-dialog.component';
+
+function supplyListItem(overrides: Partial<SupplyList> = {}): SupplyList {
+  return {
+    _id: 'supply-1',
+    academicYear: '',
+    teacher: '',
+    school: 'MHS',
+    grade: 'PreK',
+    item: ['Markers'],
+    brand: { exactly: '', anyOf: [] },
+    color: { exactly: '', anyOf: [] },
+    size: { exactly: '', anyOf: [] },
+    type: { exactly: '', anyOf: [] },
+    material: { exactly: '', anyOf: [] },
+    packageSize: 1,
+    quantity: 1,
+    notes: '',
+    supplyID: '',
+    invIDs: [],
+    percentageFilled: 0,
+    ...overrides
+  };
+}
 
 describe('SupplyList Table', () => {
   let supplylistTable: SupplyListComponent;
   let fixture: ComponentFixture<SupplyListComponent>
   let supplylistService: SupplyListService;
   let dialogService: jasmine.SpyObj<DialogService>;
+  let dialog: MatDialog;
 
   beforeEach(() => {
     dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
@@ -40,6 +66,7 @@ describe('SupplyList Table', () => {
       fixture = TestBed.createComponent(SupplyListComponent);
       supplylistTable = fixture.componentInstance;
       supplylistService = TestBed.inject(SupplyListService);
+      dialog = (supplylistTable as unknown as { dialog: MatDialog }).dialog;
       fixture.detectChanges();
     });
     flushMicrotasks(); // resolve the compileComponents promise
@@ -226,6 +253,155 @@ describe('SupplyList Table', () => {
 
   it('should not show error message on successful load', () => {
     expect(supplylistTable.errMsg()).toBeUndefined();
+  });
+
+  it('should include quantity when requesting server-filtered supply list data', fakeAsync(() => {
+    const spy = spyOn(supplylistService, 'getSupplyList').and.callThrough();
+
+    supplylistTable.quantity.set(2);
+    fixture.detectChanges();
+    tick(300);
+
+    expect(spy).toHaveBeenCalledWith({
+      school: undefined,
+      grade: undefined,
+      item: undefined,
+      brand: undefined,
+      color: undefined,
+      size: undefined,
+      type: undefined,
+      material: undefined,
+      quantity: 2
+    });
+  }));
+
+  it('should parse comma-separated string values into trimmed arrays', () => {
+    expect(supplylistTable.parseStringArray(' Markers, , Crayons ')).toEqual(['Markers', 'Crayons']);
+  });
+
+  it('should detect supplies without linked inventory IDs', () => {
+    const hasNoLinks = supplylistTable.noLinkedInventoryItems;
+
+    expect(hasNoLinks(supplyListItem({ invIDs: undefined as unknown as string[] }))).toBeTrue();
+    expect(hasNoLinks(supplyListItem({ invIDs: [] }))).toBeTrue();
+    expect(hasNoLinks(supplyListItem({ invIDs: ['inv-1'] }))).toBeFalse();
+  });
+
+  it('should summarize linked inventory counts after normalizing IDs', () => {
+    expect(supplylistTable.linkedInventorySummary(undefined)).toBe('No linked inventory');
+    expect(supplylistTable.linkedInventorySummary([' inv-1 ', 'inv-1'])).toBe('1 linked item');
+    expect(supplylistTable.linkedInventorySummary(['inv-1', 'inv-2'])).toBe('2 linked items');
+  });
+
+  it('should prefill the inventory link dialog from an existing supply item', () => {
+    const supply = supplyListItem({
+      item: ['Markers', 'Crayons'],
+      brand: { exactly: 'N/A', anyOf: ['Crayola'] },
+      color: { exactly: 'Blue', anyOf: [] },
+      size: { exactly: 'Wide', anyOf: [] },
+      type: { exactly: 'Washable', anyOf: [] },
+      material: { exactly: 'N/A', anyOf: [] },
+      packageSize: 8,
+      quantity: 2,
+      invIDs: [' inv-1 ', 'inv-1']
+    });
+    const openSpy = spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of(undefined)
+    } as never);
+
+    supplylistTable.openInventoryLinkDialogForSupply(supply, false);
+
+    expect(openSpy).toHaveBeenCalledWith(SupplyListInventoryLinkDialogComponent, jasmine.objectContaining({
+      width: '920px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: jasmine.objectContaining({
+        requirementLabel: jasmine.stringContaining('Markers or Crayons'),
+        selectedInventoryIds: ['inv-1'],
+        filters: {
+          item: 'Markers',
+          brand: 'Crayola',
+          color: 'Blue',
+          size: 'Wide',
+          type: 'Washable',
+          material: undefined
+        }
+      })
+    }));
+  });
+
+  it('should leave linked inventory unchanged when the link dialog is cancelled', () => {
+    const supply = supplyListItem({ invIDs: ['inv-1'] });
+    const saveSpy = spyOn(supplylistTable, 'saveEdit');
+    spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of(undefined)
+    } as never);
+
+    supplylistTable.openInventoryLinkDialogForSupply(supply, true);
+
+    expect(supply.invIDs).toEqual(['inv-1']);
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('should update linked inventory without saving when saveOnClose is false', () => {
+    const supply = supplyListItem({ invIDs: [] });
+    const saveSpy = spyOn(supplylistTable, 'saveEdit');
+    spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of([' inv-2 ', 'inv-2', 'inv-3', ''])
+    } as never);
+
+    supplylistTable.openInventoryLinkDialogForSupply(supply, false);
+
+    expect(supply.invIDs).toEqual(['inv-2', 'inv-3']);
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('should update linked inventory and save when saveOnClose is true', () => {
+    const supply = supplyListItem({ invIDs: [] });
+    const saveSpy = spyOn(supplylistTable, 'saveEdit');
+    spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of(['inv-4'])
+    } as never);
+
+    supplylistTable.openInventoryLinkDialogForSupply(supply, true);
+
+    expect(supply.invIDs).toEqual(['inv-4']);
+    expect(saveSpy).toHaveBeenCalledWith(supply);
+  });
+
+  it('should return undefined filters when supply fields are blank or N/A', () => {
+    const helpers = supplylistTable as unknown as {
+      inventoryFiltersFromSupply(supply: SupplyList): {
+        item?: string;
+        brand?: string;
+        color?: string;
+        size?: string;
+        type?: string;
+        material?: string;
+      };
+      firstInventoryItemToken(items: string[] | undefined): string | undefined;
+      firstAttributeToken(attribute: SupplyList['brand'] | undefined): string | undefined;
+      normalizeInventoryIds(ids: string[] | undefined): string[];
+    };
+
+    expect(helpers.inventoryFiltersFromSupply(supplyListItem({
+      item: [' ', 'N/A'],
+      brand: { exactly: 'N/A', anyOf: [] },
+      color: { exactly: '', anyOf: ['N/A'] },
+      size: { exactly: '', anyOf: [] },
+      type: { exactly: '', anyOf: [] },
+      material: { exactly: '', anyOf: [] }
+    }))).toEqual({
+      item: undefined,
+      brand: undefined,
+      color: undefined,
+      size: undefined,
+      type: undefined,
+      material: undefined
+    });
+    expect(helpers.firstInventoryItemToken(undefined)).toBeUndefined();
+    expect(helpers.firstAttributeToken(undefined)).toBeUndefined();
+    expect(helpers.normalizeInventoryIds(undefined)).toEqual([]);
   });
 
   it('should group supplies with missing school/grade under fallback labels', fakeAsync(() => {

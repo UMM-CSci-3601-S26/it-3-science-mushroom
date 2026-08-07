@@ -124,6 +124,10 @@ export class SettingsComponent implements OnInit {
     return this.authService.hasPermission('edit_barcode_print_limit');
   }
 
+  get canEditInventory(): boolean {
+    return this.authService.hasPermission('edit_inventory_item');
+  }
+
   // Options for filter dropdowns, built from inventory data
   readonly itemOptions = this.inventoryService.itemOptions;
   readonly brandOptions = this.inventoryService.brandOptions;
@@ -691,6 +695,22 @@ export class SettingsComponent implements OnInit {
         error: () => this.snackBar.open('Failed to save barcode print settings', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  calculatePredictedStates(): void {
+    if (!this.canEditInventory) {
+      return;
+    }
+
+    this.settingsService.calculatePredictedStates().subscribe({
+      next: () => {
+        this.snackBar.open('Predicted states calculated', 'OK', { duration: 2000 });
+        this.reloadInventory();
+      },
+      error: () => {
+        this.snackBar.open('Failed to calculate predicted states', 'OK', { duration: 3000 });
+      }
+    });
   }
 
   private static timeSlotValidator(): ValidatorFn {
