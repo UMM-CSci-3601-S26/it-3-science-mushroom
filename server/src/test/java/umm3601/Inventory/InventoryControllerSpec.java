@@ -884,6 +884,33 @@ public class InventoryControllerSpec {
   }
 
   @Test
+  void calculateStatesTreatsNullInventoryIdsAsInvalidLink() {
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertOne(familyDoc(studentDoc("MHS", "PreK", "Ms Doe")));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, null));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(1L, response.get("totalSupplyLists"));
+    assertEquals(0L, response.get("validInvIDCount"));
+    assertEquals(1L, response.get("invalidInvIDCount"));
+    assertEquals(0L, response.get("bestMatchNullCount"));
+    assertEquals(0L, response.get("schoolCount"));
+
+    Document invalidLinkSupply = db.getCollection("supplylist")
+      .find(new Document("school", "MHS").append("grade", "PreK"))
+      .first();
+    assertEquals(-2, invalidLinkSupply.getInteger("percentageFilled"));
+  }
+
+  @Test
   void calculateStatesUsesFallbackStudentFieldsAndDefaultSupplyQuantity() {
     db.getCollection("inventory").drop();
     db.getCollection("family").drop();
