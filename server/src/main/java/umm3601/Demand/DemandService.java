@@ -315,7 +315,7 @@ public class DemandService {
   }
 
   private int quantityPerStudent(SupplyList supplyList) {
-    return supplyList.quantity != null ? supplyList.quantity : 1;
+    return supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
   }
 
   private int linkedQuantityOnHand(

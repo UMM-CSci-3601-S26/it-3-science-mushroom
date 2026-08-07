@@ -1047,6 +1047,30 @@ public class InventoryControllerSpec {
     assertSupplyListPercentage("Unknown School", "Unknown Grade", 100);
   }
 
+  @Test
+  void calculateStatesTreatsZeroSupplyQuantityAsOneForLegacyData() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertOne(familyDoc(studentDoc("MHS", "PreK", "Ms Doe")));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00011", 1));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 0, List.of("ID-00011")));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(1L, response.get("totalSupplyLists"));
+    assertEquals(1L, response.get("validInvIDCount"));
+    assertEquals(1L, response.get("schoolCount"));
+    assertCalculatedInventory("ID-00011", 1, "Stocked");
+    assertSupplyListPercentage("MHS", "PreK", 100);
+  }
+
   private Document inventoryDoc(String internalID, int quantity) {
     return new Document()
       .append("_id", new ObjectId())
