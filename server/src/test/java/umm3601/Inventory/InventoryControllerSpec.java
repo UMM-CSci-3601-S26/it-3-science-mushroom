@@ -855,6 +855,34 @@ public class InventoryControllerSpec {
   }
 
   @Test
+  void calculateStatesUsesCommonMatcherRulesForStudentDemand() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("family").insertOne(
+      familyDoc(studentDoc("Morris High School", "10th Grade", "Ms Doe")));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00006", 2));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "High School", null, 3, List.of("ID-00006")));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    verify(ctx).json(mapCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Map<String, Object> response = mapCaptor.getValue();
+    assertEquals(1L, response.get("totalSupplyLists"));
+    assertEquals(1L, response.get("validInvIDCount"));
+    assertEquals(0L, response.get("invalidInvIDCount"));
+    assertEquals(0L, response.get("bestMatchNullCount"));
+    assertEquals(1L, response.get("schoolCount"));
+
+    assertCalculatedInventory("ID-00006", 3, "Understocked");
+    assertSupplyListPercentage("MHS", "High School", 67);
+  }
+
+  @Test
   void calculateStatesReportsInvalidLinksAndMissingInventory() {
     db.getCollection("family").drop();
     db.getCollection("supplylist").drop();

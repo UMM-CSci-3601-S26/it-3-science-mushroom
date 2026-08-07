@@ -15,6 +15,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
 
+import umm3601.Common.InventoryMatcher;
 import umm3601.Family.Family;
 import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
@@ -27,12 +28,21 @@ public class DemandService {
   private static final String INVALID_LINK_STATUS = "invalid-link";
   private static final String MISSING_INVENTORY_STATUS = "missing-inventory";
   private static final String NO_STUDENT_DEMAND_STATUS = "no-student-demand";
+  private static final String UNKNOWN_SCHOOL = "Unknown School";
+  private static final String UNKNOWN_GRADE = "Unknown Grade";
+  private static final String UNKNOWN_TEACHER = "Unknown Teacher";
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
+  private final InventoryMatcher inventoryMatcher;
 
   public DemandService(MongoDatabase database) {
+    this(database, new InventoryMatcher(database));
+  }
+
+  public DemandService(MongoDatabase database, InventoryMatcher inventoryMatcher) {
+    this.inventoryMatcher = inventoryMatcher;
     inventoryCollection = JacksonMongoCollection.builder().build(
       database,
       "inventory",
@@ -63,7 +73,7 @@ public class DemandService {
   @SuppressWarnings({ "checkstyle:MethodLength" })
   public DemandSnapshot calculateCurrentDemand() {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-    Map<String, Map<String, Map<String, Integer>>> studentTotals = getSchoolGradeTeacherTotals();
+    List<Family.StudentInfo> students = getStudents();
     Map<String, Inventory> inventoryByInternalId = getInventoryByInternalId();
     Map<String, DemandAccumulator> demandByInternalId = new LinkedHashMap<>();
     List<DemandSupplyListItem> supplyListItems = new ArrayList<>();
@@ -75,12 +85,12 @@ public class DemandService {
     long schoolCount = 0;
 
     for (SupplyList supplyList : allSupplyLists) {
-      if (supplyList.school == null || supplyList.grade == null || supplyList.teacher == null) {
+      if (supplyList.school == null || supplyList.grade == null) {
         continue;
       }
 
       List<String> linkedInventoryIds = validInternalIds(supplyList);
-      int studentCount = studentCountForSupplyList(supplyList, studentTotals);
+      int studentCount = studentCountForSupplyList(supplyList, students);
 
       if (linkedInventoryIds.isEmpty()) {
         invalidInvIDCount++;
@@ -240,9 +250,9 @@ public class DemandService {
     return inventoryByInternalId;
   }
 
-  private Map<String, Map<String, Map<String, Integer>>> getSchoolGradeTeacherTotals() {
+  private List<Family.StudentInfo> getStudents() {
     ArrayList<Family> families = familyCollection.find().into(new ArrayList<>());
-    Map<String, Map<String, Map<String, Integer>>> schoolGradeTeacherTotals = new HashMap<>();
+    List<Family.StudentInfo> students = new ArrayList<>();
 
     for (Family family : families) {
       if (family == null || family.students == null) {
@@ -254,44 +264,38 @@ public class DemandService {
           continue;
         }
 
-        String school = student.school != null ? student.school : "Unknown School";
-        String grade = student.grade != null ? student.grade : "Unknown Grade";
-        String teacher = student.teacher != null ? student.teacher : "Unknown Teacher";
-
-        Map<String, Map<String, Integer>> gradeTotals = schoolGradeTeacherTotals.get(school);
-        if (gradeTotals == null) {
-          gradeTotals = new HashMap<>();
-          schoolGradeTeacherTotals.put(school, gradeTotals);
-        }
-
-        Map<String, Integer> teacherTotals = gradeTotals.get(grade);
-        if (teacherTotals == null) {
-          teacherTotals = new HashMap<>();
-          gradeTotals.put(grade, teacherTotals);
-        }
-
-        teacherTotals.put(teacher, teacherTotals.getOrDefault(teacher, 0) + 1);
+        students.add(student);
       }
     }
 
-    return schoolGradeTeacherTotals;
+    return students;
   }
 
-  private int studentCountForSupplyList(
-      SupplyList supplyList,
-      Map<String, Map<String, Map<String, Integer>>> studentTotals
-  ) {
-    Map<String, Map<String, Integer>> gradeTotals = studentTotals.get(supplyList.school);
-    if (gradeTotals == null) {
-      return 0;
+  private int studentCountForSupplyList(SupplyList supplyList, List<Family.StudentInfo> students) {
+    int studentCount = 0;
+    for (Family.StudentInfo student : students) {
+      if (inventoryMatcher.supplyListMatchesStudent(
+          supplyList,
+          studentSchool(student),
+          studentGrade(student),
+          studentTeacher(student))) {
+        studentCount++;
+      }
     }
 
-    Map<String, Integer> teacherTotals = gradeTotals.get(supplyList.grade);
-    if (teacherTotals == null) {
-      return 0;
-    }
+    return studentCount;
+  }
 
-    return teacherTotals.getOrDefault(supplyList.teacher, 0);
+  private String studentSchool(Family.StudentInfo student) {
+    return student.school != null ? student.school : UNKNOWN_SCHOOL;
+  }
+
+  private String studentGrade(Family.StudentInfo student) {
+    return student.grade != null ? student.grade : UNKNOWN_GRADE;
+  }
+
+  private String studentTeacher(Family.StudentInfo student) {
+    return student.teacher != null ? student.teacher : UNKNOWN_TEACHER;
   }
 
   private int quantityPerStudent(SupplyList supplyList) {

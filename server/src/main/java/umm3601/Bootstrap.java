@@ -100,7 +100,7 @@ public class Bootstrap {
     InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
     InventoryReservationService inventoryReservationService = new InventoryReservationService(db, inventoryMatcher);
     InventoryIdService inventoryIdService = new InventoryIdService(db);
-    DemandService demandService = new DemandService(db);
+    DemandService demandService = new DemandService(db, inventoryMatcher);
     FamilyChecklistService familyChecklistService = new FamilyChecklistService(db, inventoryMatcher);
     FamilyController familyController = new FamilyController(
         db,
