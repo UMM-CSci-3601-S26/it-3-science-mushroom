@@ -1,0 +1,50 @@
+<div class="admin-panel-container">
+  <section class="admin-summary-band">
+    <div>
+      <h1>Admin Panel</h1>
+      <p>Welcome, {{ authService.displayName || 'Admin' }}</p>
+    </div>
+  </section>
+
+  <section class="missing-item-info">
+    <div class="missing-item-header">
+      <h2 class="missing-item-title">Needed Items</h2>
+      <p class="missing-item-description">Items families needed but did not receive through POS.</p>
+    </div>
+
+    <div class="missing-item-stat">
+      <span class="missing-item-count">{{ neededItemLogs().length }}</span>
+      <span class="missing-item-label">{{ neededItemLogs().length === 1 ? 'Open log' : 'Open logs' }}</span>
+    </div>
+
+    <div class="missing-item-list">
+      @for (group of neededItemGroups(); track group.key) {
+        <section class="missing-child-group">
+          <header class="missing-child-header">
+            <div>
+              <h3 class="missing-child-title">{{ group.sectionTitle }}</h3>
+              <p class="missing-child-subtitle">{{ group.guardianName }}</p>
+            </div>
+            <span class="missing-child-count">
+              {{ group.items.length }} {{ group.items.length === 1 ? 'item' : 'items' }}
+            </span>
+          </header>
+
+          <div class="missing-child-items">
+            @for (log of group.items; track log._id || log.itemId) {
+              <div class="missing-item-row">
+                <div class="missing-item-copy">
+                  <span class="missing-item-name">{{ log.label }}</span>
+                  <span class="missing-item-meta">{{ reasonLabel(log.reason) }}</span>
+                </div>
+                <span class="missing-item-quantity">Qty {{ log.requestedQuantity }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      } @empty {
+        <p class="missing-item-empty">No needed items have been logged yet.</p>
+      }
+    </div>
+  </section>
+</div>

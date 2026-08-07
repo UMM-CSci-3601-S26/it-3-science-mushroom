@@ -68,6 +68,7 @@ public class FamilyController {
   private static final String API_FAMILY_EXPORT = "/api/family/export";
   private static final String API_FAMILY_HELPED = "/api/family/{id}/helped";
   private static final String API_FAMILY_STATUS = "/api/family/{id}/status";
+  private static final String API_FAMILY_NEEDED_ITEM_LOGS = "/api/family/needed-item-logs";
   private static final String API_FAMILY_CHECKLIST = "/api/family/{id}/checklist";
   private static final String API_FAMILY_FINALIZED_CHECKLIST = "/api/family/{id}/finalized-checklist";
   private static final String API_FAMILY_HELP_SESSION = "/api/family/{id}/help-session";
@@ -102,6 +103,7 @@ public class FamilyController {
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
   private final JacksonMongoCollection<Users> usersCollection;
+  private final FamilyNeededItemService familyNeededItemService;
   private final InventoryReservationService inventoryReservationService;
   private final InventoryMatcher inventoryMatcher;
   private final FamilyChecklistService familyChecklistService;
@@ -183,6 +185,7 @@ public class FamilyController {
         "users",
         Users.class,
         UuidRepresentation.STANDARD);
+    familyNeededItemService = new FamilyNeededItemService(database);
   }
 
   // GET all families
@@ -240,6 +243,13 @@ public class FamilyController {
     }
 
     ctx.json(family.checklist);
+  }
+
+  @Route(method = HttpMethod.GET, path = API_FAMILY_NEEDED_ITEM_LOGS)
+  @RequirePermission("manage_family_help_sessions")
+  public void getNeededItemLogs(Context ctx) {
+    ctx.json(familyNeededItemService.getNeededItemLogs());
+    ctx.status(HttpStatus.OK);
   }
 
   public Family getByOwnerUserId(String ownerUserId) {
@@ -807,6 +817,7 @@ public class FamilyController {
         replaceSection(family.checklist, normalizedSection);
       }
     }
+    familyNeededItemService.recordNeededButNotAcquiredItems(family);
 
     family.status = STATUS_HELPED;
     family.helped = true;
@@ -860,6 +871,7 @@ public class FamilyController {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureCompletedHelpSessionExists(family);
 
+    familyNeededItemService.removeNeededButNotAcquiredItemLogs(family);
     restoreChecklistInventoryChanges(family.checklist);
     for (Family.ChecklistSection section : family.checklist.sections) {
       section.saved = false;
