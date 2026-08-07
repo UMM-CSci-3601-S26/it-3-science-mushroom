@@ -286,6 +286,13 @@
     linear-gradient(180deg, var(--app-bg) 0%, var(--app-surface-muted) 52%, var(--app-bg) 100%);
 }
 
+.main-content:has(app-admin-panel) {
+  box-sizing: border-box;
+  height: calc(100vh - 64px);
+  min-height: 0;
+  overflow: hidden;
+}
+
 // Responsive design for desktop navigation: hides the desktop navigation and shows the mobile navigation button on screens smaller than 960px.
 @media (max-width: 960px) {
   .desktop-navigation {

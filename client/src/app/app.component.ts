@@ -37,13 +37,7 @@ type AppMode = 'light' | 'dark';
     RouterOutlet,
     MatSnackBarModule,
     MatDividerModule,
-    MatButtonModule,
-    MatBadgeModule,
-    MatDividerModule,
-    MatMenuModule,
     MatSlideToggleModule,
-    RouterOutlet,
-    MatSnackBarModule
   ]
 })
 
