@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
@@ -21,9 +22,12 @@ import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 
 public class DemandService {
+  private static final int NO_DEMAND_MIN_QUANTITY = 0;
+  private static final int NOT_CALCULATED_PERCENTAGE_FILLED = -1;
   private static final int INVALID_LINK_PERCENTAGE_FILLED = -2;
   private static final int PERCENT_SCALE = 100;
   private static final String INTERNAL_INVENTORY_ID_PATTERN = "^ID-\\d{4,5}$";
+  private static final String UNKNOWN_CALCULATED_STOCK_STATE = "Unknown";
   private static final String MATCHED_STATUS = "matched";
   private static final String INVALID_LINK_STATUS = "invalid-link";
   private static final String MISSING_INVENTORY_STATUS = "missing-inventory";
@@ -169,6 +173,7 @@ public class DemandService {
    */
   public DemandCalculationResult calculatePredictedStockStates() {
     DemandSnapshot snapshot = calculateCurrentDemand();
+    resetPersistedDemandFields();
     persistSupplyListDemand(snapshot);
     persistInventoryDemand(snapshot);
     return snapshot.summary;
@@ -200,6 +205,17 @@ public class DemandService {
         eq("_id", new ObjectId(supplyListItem.supplyListId)),
         Updates.set("percentageFilled", supplyListItem.percentageFilled));
     }
+  }
+
+  private void resetPersistedDemandFields() {
+    supplyListCollection.updateMany(
+      new Document(),
+      Updates.set("percentageFilled", NOT_CALCULATED_PERCENTAGE_FILLED));
+    inventoryCollection.updateMany(
+      new Document(),
+      Updates.combine(
+        Updates.set("calculatedMinQuantity", NO_DEMAND_MIN_QUANTITY),
+        Updates.set("calculatedStockState", UNKNOWN_CALCULATED_STOCK_STATE)));
   }
 
   private void persistInventoryDemand(DemandSnapshot snapshot) {

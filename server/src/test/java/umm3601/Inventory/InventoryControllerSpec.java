@@ -974,6 +974,53 @@ public class InventoryControllerSpec {
   }
 
   @Test
+  void calculateStatesClearsStaleInventoryDemandForItemsWithoutCurrentDemand() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00008", 8)
+        .append("calculatedMinQuantity", 12)
+        .append("calculatedStockState", "Understocked"),
+      inventoryDoc("ID-00009", 2)
+        .append("calculatedMinQuantity", 10)
+        .append("calculatedStockState", "Understocked")
+    ));
+    db.getCollection("family").insertOne(familyDoc(studentDoc("MHS", "PreK", "Ms Doe")));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, List.of("ID-00009")));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    assertCalculatedInventory("ID-00008", 0, "Unknown");
+    assertCalculatedInventory("ID-00009", 1, "Overstocked");
+  }
+
+  @Test
+  void calculateStatesClearsStaleSupplyListPercentagesWhenDemandUnavailable() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00010", 5));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("MHS", "PreK", "Ms Doe", 1, List.of("ID-00010"))
+        .append("percentageFilled", 80),
+      supplyListDoc("MHS", "1", "Ms One", 1, List.of("ID-99999"))
+        .append("percentageFilled", 70),
+      supplyListDoc("MHS", "2", "Ms Two", 1, List.of())
+        .append("percentageFilled", 60)
+    ));
+
+    inventoryController.calculateStatesTest(ctx);
+
+    assertSupplyListPercentage("MHS", "PreK", -1);
+    assertSupplyListPercentage("MHS", "1", -1);
+    assertSupplyListPercentage("MHS", "2", -2);
+  }
+
+  @Test
   void calculateStatesUsesFallbackStudentFieldsAndDefaultSupplyQuantity() {
     db.getCollection("inventory").drop();
     db.getCollection("family").drop();
