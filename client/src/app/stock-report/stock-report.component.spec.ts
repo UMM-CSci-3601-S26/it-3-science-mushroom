@@ -27,9 +27,9 @@ describe('StockReportComponent', () => {
 
   // Mock Inventory
   const mockInventory: Inventory[] = [
-    { internalID: "1", internalBarcode: "ITEM-00001", item: 'Shirt', description: 'Stocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, maxQuantity: 10, minQuantity: 0, calculatedMinQuantity: 0, stockState: "Stocked", calculatedStockState: "N/A", notes: '' },
-    { internalID: "2", internalBarcode: "ITEM-00002", item: 'Pants', description: 'Understocked Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, maxQuantity: 10, minQuantity: 7, calculatedMinQuantity: 0, stockState: "Understocked", calculatedStockState: "N/A", notes: '' },
-    { internalID: "3", internalBarcode: "ITEM-00003", item: 'Shirt', description: 'Overstocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 12, maxQuantity: 10, minQuantity: 0, calculatedMinQuantity: 0, stockState: "Overstocked", calculatedStockState: "N/A", notes: '' },
+    { internalID: "1", internalBarcode: "ITEM-00001", item: 'Shirt', description: 'Stocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 10, maxQuantity: 10, minQuantity: 0, calculatedMinQuantity: 12, stockState: "Stocked", calculatedStockState: "Understocked", notes: '' },
+    { internalID: "2", internalBarcode: "ITEM-00002", item: 'Pants', description: 'Understocked Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity: 5, maxQuantity: 10, minQuantity: 7, calculatedMinQuantity: 5, stockState: "Understocked", calculatedStockState: "Stocked", notes: '' },
+    { internalID: "3", internalBarcode: "ITEM-00003", item: 'Shirt', description: 'Overstocked Shirt', brand: 'Nike', color: 'Red', size: 'M', type: 'Top', material: 'Cotton', packageSize: 1, quantity: 12, maxQuantity: 10, minQuantity: 0, calculatedMinQuantity: 4, stockState: "Overstocked", calculatedStockState: "Overstocked", notes: '' },
     { internalID: "4", internalBarcode: "ITEM-00004", item: 'Pants', description: 'Out of Stock Pants', brand: 'Adidas', color: 'Blue', size: 'L', type: 'Bottom', material: 'Polyester', packageSize: 2, quantity:  0, maxQuantity: 10, minQuantity:  7, calculatedMinQuantity: 0, stockState:  "Out of Stock", calculatedStockState:  "N/A", notes:  '' },
   ];
 
@@ -127,6 +127,33 @@ describe('StockReportComponent', () => {
       expect(component.overstockedItemCount()).toBe(1);
       expect(component.understockedAmount()).toBe(9);
       expect(component.overstockedAmount()).toBe(2);
+    });
+
+    it('should compute calculated stock groups from calculated stock state', () => {
+      const calculatedStockedItems = component.calculatedStockedItems();
+      const calculatedUnknownItems = component.calculatedUnknownStockItems();
+      const calculatedUnderstockedItems = component.calculatedUnderstockedItems();
+      const calculatedOverstockedItems = component.calculatedOverstockedItems();
+
+      expect(calculatedStockedItems[0].children?.[0].description)
+        .toContain('Understocked Pants - 5 on hand (calculated min 5)');
+      expect(calculatedStockedItems[0].children?.[0].children?.[0].description).toBe('Properly stocked!');
+      expect(calculatedUnknownItems[0].children?.[0].description)
+        .toContain('Out of Stock Pants - 0 on hand (calculated min 0)');
+      expect(calculatedUnknownItems[0].children?.[0].children?.[0].description).toBe('Prediction unavailable');
+      expect(calculatedUnderstockedItems[0].children?.[0].description)
+        .toContain('Stocked Shirt - 10 on hand (calculated min 12)');
+      expect(calculatedUnderstockedItems[0].children?.[0].children?.[0].description).toBe('Need 2 more unit(s)');
+      expect(calculatedOverstockedItems[0].children?.[0].description)
+        .toContain('Overstocked Shirt - 12 on hand (calculated min 4)');
+      expect(calculatedOverstockedItems[0].children?.[0].children?.[0].description).toBe('Overstocked by 8 unit(s)');
+    });
+
+    it('should compute calculated stock counts from calculated stock state', () => {
+      expect(component.calculatedStockedItemCount()).toBe(1);
+      expect(component.calculatedUnknownStockItemCount()).toBe(1);
+      expect(component.calculatedUnderstockedItemCount()).toBe(1);
+      expect(component.calculatedOverstockedItemCount()).toBe(1);
     });
   });
 
