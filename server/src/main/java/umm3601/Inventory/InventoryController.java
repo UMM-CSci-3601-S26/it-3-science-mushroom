@@ -136,7 +136,7 @@ public class InventoryController {
    * @param ctx The context for the HTTP request
    */
   @Route(method = HttpMethod.POST, path = API_INVENTORY)
-  @RequirePermission("edit_inventory_item")
+  @RequirePermission("add_inventory_item")
   public void addInventory(Context ctx) {
     Inventory newInv = ctx.bodyAsClass(Inventory.class);
     newInv.refreshDescription();
@@ -749,7 +749,7 @@ public class InventoryController {
 
   // Endpoint to calculate states
   @Route(method = HttpMethod.POST, path = API_CALCULATE_STATES)
-  @RequirePermission("add_inventory_item")
+  @RequirePermission("edit_inventory_item")
   public void calculateStatesTest(Context ctx) {
     long[] results = calculateUnitsAndStates();
     ctx.json(Map.of(
