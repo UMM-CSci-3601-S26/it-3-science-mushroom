@@ -1,0 +1,45 @@
+package umm3601.PurchaseList;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+import io.javalin.Javalin;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import umm3601.Auth.RouteRegistrar;
+
+class PurchaseListControllerSpec {
+
+  @Test
+  void addsRoutes() {
+    Javalin mockServer = mock(Javalin.class);
+    PurchaseListController purchaseListController = new PurchaseListController(
+      mock(PurchaseListService.class));
+
+    RouteRegistrar.register(mockServer, purchaseListController, null);
+
+    verify(mockServer).get(any(), any());
+  }
+
+  @Test
+  void getCurrentPurchaseListReturnsSnapshot() {
+    PurchaseListService purchaseListService = mock(PurchaseListService.class);
+    Context ctx = mock(Context.class);
+    PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
+    snapshot.summary = new PurchaseListSummary();
+    snapshot.items = List.of();
+
+    when(purchaseListService.getCurrentPurchaseList()).thenReturn(snapshot);
+
+    new PurchaseListController(purchaseListService).getCurrentPurchaseList(ctx);
+
+    verify(ctx).json(snapshot);
+    verify(ctx).status(HttpStatus.OK);
+  }
+}

@@ -32,6 +32,7 @@ import umm3601.Settings.SettingsController;
 import umm3601.Demand.DemandController;
 import umm3601.Family.FamilyController;
 import umm3601.Inventory.InventoryController;
+import umm3601.PurchaseList.PurchaseListController;
 import umm3601.SupplyList.SupplyListController;
 
 /**
@@ -74,6 +75,7 @@ public class PermissionsService {
       FamilyController.class,
       InventoryController.class,
       DemandController.class,
+      PurchaseListController.class,
       SupplyListController.class,
       SettingsController.class);
 
