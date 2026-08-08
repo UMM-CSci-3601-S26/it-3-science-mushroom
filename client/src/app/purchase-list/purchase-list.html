@@ -1,0 +1,39 @@
+<section class="purchase-list-page app-page-shell app-page-stack">
+  <header class="purchase-list-header app-page-header">
+    <div>
+      <h1 class="purchase-list-title app-page-title">Purchase List</h1>
+      <p class="app-page-subtitle">Demand, available stock, and units still needed.</p>
+    </div>
+
+    <div class="purchase-list-actions app-cluster">
+
+    </div>
+  </header>
+
+  <mat-card class="purchase-list-card app-page-stack">
+    <mat-card-header>
+      <mat-card-title>Items To Buy</mat-card-title>
+      <mat-card-subtitle>Grouped by linked inventory item</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="purchase-searchbar app-split">
+        <div class="purchase-search-preview">
+
+        </div>
+      </div>
+
+      <div class="purchase-table" role="table" aria-label="Purchase list items">
+        <div class="purchase-table-row purchase-table-header" role="row">
+          <span role="columnheader">Item</span>
+          <span role="columnheader">To Buy</span>
+          <span role="columnheader">Status</span>
+        </div>
+
+        <div class="purchase-empty-state">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</section>
