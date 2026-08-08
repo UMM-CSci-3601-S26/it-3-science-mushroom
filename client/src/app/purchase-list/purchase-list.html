@@ -30,9 +30,27 @@
           <span role="columnheader">Status</span>
         </div>
 
-        <div class="purchase-empty-state">
-          <mat-icon>inventory_2</mat-icon>
-        </div>
+        @if (loading()) {
+          <div class="purchase-empty-state">
+            <mat-icon>sync</mat-icon>
+          </div>
+        } @else if (error()) {
+          <div class="purchase-empty-state">
+            <mat-icon>error_outline</mat-icon>
+          </div>
+        } @else if ((purchaseList()?.items?.length ?? 0) === 0) {
+          <div class="purchase-empty-state">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+        } @else {
+          @for (item of purchaseList()?.items ?? []; track item.internalId) {
+            <div class="purchase-table-row purchase-item-row" role="row">
+              <span class="purchase-item-name" role="cell">{{ item.item }}</span>
+              <span class="quantity-cell" role="cell">{{ item.quantityToBuy }}</span>
+              <span class="status-cell" role="cell">{{ item.fulfillmentPercent }}%</span>
+            </div>
+          }
+        }
       </div>
     </mat-card-content>
   </mat-card>
