@@ -13,7 +13,7 @@
   <mat-card class="purchase-list-card app-page-stack">
     <mat-card-header>
       <mat-card-title>Items To Buy</mat-card-title>
-      <mat-card-subtitle>Grouped by linked inventory item</mat-card-subtitle>
+      <mat-card-subtitle>Grouped by supply-list demand</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
@@ -43,9 +43,9 @@
             <mat-icon>inventory_2</mat-icon>
           </div>
         } @else {
-          @for (item of purchaseList()?.items ?? []; track item.internalId) {
+          @for (item of purchaseList()?.items ?? []; track $index) {
             <div class="purchase-table-row purchase-item-row" role="row">
-              <span class="purchase-item-name" role="cell">{{ item.item }}</span>
+              <span class="purchase-item-name" role="cell">{{ item.description }}</span>
               <span class="quantity-cell" role="cell">{{ item.quantityToBuy }}</span>
               <span class="status-cell" role="cell">{{ item.fulfillmentPercent }}%</span>
             </div>

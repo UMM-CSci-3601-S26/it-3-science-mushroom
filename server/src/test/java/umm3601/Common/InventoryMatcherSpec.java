@@ -127,6 +127,23 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestDemandMatchDoesNotRequireEnoughAvailableStock() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Crayon", 1, 0, "UNDERSTOCKED-CRAYON")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Crayon");
+
+    Inventory strictMatch = inventoryMatcher.findBestInventoryMatch(supplyList, 2);
+    Inventory demandMatch = inventoryMatcher.findBestDemandMatch(supplyList);
+
+    assertNull(strictMatch);
+    assertNotNull(demandMatch);
+    assertEquals("UNDERSTOCKED-CRAYON", demandMatch.internalID);
+  }
+
+  @Test
   void findBestInventoryMatchPrefersSimpleInventoryForBroadRequest() {
     db.getCollection("inventory").drop();
     db.getCollection("inventory").insertMany(List.of(

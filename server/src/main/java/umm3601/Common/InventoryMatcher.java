@@ -46,6 +46,17 @@ public class InventoryMatcher {
       .orElse(null);
   }
 
+  public Inventory findBestDemandMatch(SupplyList supplyList) {
+    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
+    return inventories.stream()
+      .filter(inventory -> requiredDescriptorsMatch(inventory, supplyList))
+      .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
+      .max(Comparator
+        .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
+        .thenComparingInt(inventory -> -inventorySpecificityScore(inventory)))
+      .orElse(null);
+  }
+
   public Inventory findBestSubstitutionMatch(SupplyList supplyList, int requestedQuantity) {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
     return inventories.stream()
