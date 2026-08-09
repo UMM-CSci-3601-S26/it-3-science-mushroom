@@ -48,7 +48,7 @@ const routes: Routes = [
   {path: 'supplylist/new', loadComponent: () => import('./supplylist/add-supplylist/add-supplylist.component').then(m => m.AddSupplyListComponent), title: 'Add Supply List Item',
     canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['add_supply_list'] }},
   {path: 'purchase-list', loadComponent: () => import('./purchase-list/purchase-list.component').then(m => m.PurchaseListComponent), title: 'Purchase List',
-    canActivate: [AuthGuard, RoleGuard], data: {roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_inventory']}
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN'] }
   },
   // PDF generator
   {path: 'pdf-generator', loadComponent: () => import('./stock-report/report-generator/report-generator.component').then(m => m.ReportGeneratorComponent), title: 'PDF Generator',
