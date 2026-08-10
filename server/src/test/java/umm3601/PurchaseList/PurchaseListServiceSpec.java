@@ -119,6 +119,34 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void recalculatingAfterAddingMatchingInventoryImprovesPurchaseListFulfillment() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 4));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Pencil", 1));
+
+    PurchaseListSnapshot beforeInventorySnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem beforeInventoryItem = beforeInventorySnapshot.items.get(0);
+
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00013", "Pencil", 2));
+
+    PurchaseListSnapshot afterInventorySnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem afterInventoryItem = afterInventorySnapshot.items.get(0);
+
+    assertAll(
+      () -> assertEquals(4, beforeInventoryItem.totalNeeded),
+      () -> assertEquals(0, beforeInventoryItem.quantityOnHand),
+      () -> assertEquals(4, beforeInventoryItem.quantityToBuy),
+      () -> assertEquals(0, beforeInventoryItem.fulfillmentPercent),
+      () -> assertEquals("unfulfilled", beforeInventoryItem.fulfillmentStatus),
+      () -> assertEquals(4, afterInventoryItem.totalNeeded),
+      () -> assertEquals(2, afterInventoryItem.quantityOnHand),
+      () -> assertEquals(2, afterInventoryItem.quantityToBuy),
+      () -> assertEquals(50, afterInventoryItem.fulfillmentPercent),
+      () -> assertEquals("partial", afterInventoryItem.fulfillmentStatus),
+      () -> assertEquals(2, afterInventorySnapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(2, afterInventorySnapshot.summary.totalUnitsToBuy));
+  }
+
+  @Test
   void matchesUnlinkedSupplyListDemandToInventoryWithoutEnoughStock() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 2));
     db.getCollection("inventory").insertOne(inventoryDoc("ID-00001", "Glue Stick", 3));
