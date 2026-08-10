@@ -3,7 +3,6 @@ package umm3601.PurchaseList;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +78,7 @@ public class PurchaseListService {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
     List<Family.StudentInfo> students = getStudents();
     Map<String, Inventory> inventoryByInternalId = getInventoryByInternalId();
-    Map<String, PurchaseListAccumulator> demandByFulfillmentTarget = new LinkedHashMap<>();
+    List<PurchaseListAccumulator> demandByFulfillmentTarget = new ArrayList<>();
 
     for (SupplyList supplyList : allSupplyLists) {
       if (!hasDemandInputs(supplyList)) {
@@ -95,15 +94,44 @@ public class PurchaseListService {
       int totalNeeded = studentCount * quantityPerStudent;
       InventoryFulfillment fulfillment = resolveInventoryFulfillment(supplyList, inventoryByInternalId);
 
-      PurchaseListAccumulator accumulator = demandByFulfillmentTarget.computeIfAbsent(
-        fulfillment.groupKey,
-        key -> new PurchaseListAccumulator(supplyList, fulfillment));
+      PurchaseListAccumulator accumulator = accumulatorForFulfillmentTarget(
+        demandByFulfillmentTarget,
+        supplyList,
+        fulfillment);
       accumulator.add(supplyList, fulfillment, studentCount, quantityPerStudent, totalNeeded);
     }
 
-    return demandByFulfillmentTarget.values().stream()
+    return demandByFulfillmentTarget.stream()
       .map(accumulator -> accumulator.toPurchaseListItem(inventoryByInternalId))
       .toList();
+  }
+
+  private PurchaseListAccumulator accumulatorForFulfillmentTarget(
+      List<PurchaseListAccumulator> accumulators,
+      SupplyList supplyList,
+      InventoryFulfillment fulfillment
+  ) {
+    List<PurchaseListAccumulator> matchingAccumulators = new ArrayList<>();
+    for (PurchaseListAccumulator accumulator : accumulators) {
+      if (accumulator.matches(fulfillment)) {
+        matchingAccumulators.add(accumulator);
+      }
+    }
+
+    if (matchingAccumulators.isEmpty()) {
+      PurchaseListAccumulator accumulator = new PurchaseListAccumulator(supplyList, fulfillment);
+      accumulators.add(accumulator);
+      return accumulator;
+    }
+
+    PurchaseListAccumulator target = matchingAccumulators.get(0);
+    for (int index = 1; index < matchingAccumulators.size(); index++) {
+      PurchaseListAccumulator duplicate = matchingAccumulators.get(index);
+      target.mergeFrom(duplicate);
+      accumulators.remove(duplicate);
+    }
+
+    return target;
   }
 
   private PurchaseListSummary toPurchaseListSummary(List<PurchaseListItem> items) {
@@ -528,6 +556,7 @@ public class PurchaseListService {
   }
 
   private class PurchaseListAccumulator {
+    private final String groupKey;
     private String item;
     private String description;
     private final Set<String> linkedInventoryIds;
@@ -537,12 +566,21 @@ public class PurchaseListService {
     private boolean usesManualLinkIdentity;
 
     PurchaseListAccumulator(SupplyList supplyList, InventoryFulfillment fulfillment) {
+      groupKey = fulfillment.groupKey;
       item = supplyItemLabel(supplyList, fulfillment.primaryInventory);
       description = supplyItemDescription(supplyList, fulfillment.primaryInventory, item);
       primaryInventory = fulfillment.primaryInventory;
       linkedInventoryIds = new LinkedHashSet<>();
       sources = new ArrayList<>();
       usesManualLinkIdentity = fulfillment.manuallyLinked;
+    }
+
+    boolean matches(InventoryFulfillment fulfillment) {
+      if (fulfillment.linkedInventoryIds.isEmpty()) {
+        return groupKey.equals(fulfillment.groupKey);
+      }
+
+      return overlapsLinkedInventory(fulfillment.linkedInventoryIds);
     }
 
     void add(
@@ -564,6 +602,21 @@ public class PurchaseListService {
         usesManualLinkIdentity = true;
       }
       sources.add(toPurchaseListSource(supplyList, studentCount, quantityPerStudent, sourceTotalNeeded));
+    }
+
+    void mergeFrom(PurchaseListAccumulator other) {
+      totalNeeded += other.totalNeeded;
+      linkedInventoryIds.addAll(other.linkedInventoryIds);
+      if (primaryInventory == null && other.primaryInventory != null) {
+        primaryInventory = other.primaryInventory;
+      }
+      if (other.usesManualLinkIdentity && !usesManualLinkIdentity) {
+        item = other.item;
+        description = other.description;
+        primaryInventory = other.primaryInventory;
+        usesManualLinkIdentity = true;
+      }
+      sources.addAll(other.sources);
     }
 
     PurchaseListItem toPurchaseListItem(Map<String, Inventory> inventoryByInternalId) {
@@ -588,6 +641,15 @@ public class PurchaseListService {
 
     private String inventoryInternalId(Inventory inventory) {
       return inventory == null ? "" : fallback(inventory.internalID);
+    }
+
+    private boolean overlapsLinkedInventory(List<String> inventoryIds) {
+      for (String inventoryId : inventoryIds) {
+        if (linkedInventoryIds.contains(inventoryId)) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 

@@ -153,10 +153,10 @@ class PurchaseListServiceSpec {
   @Test
   void aggregatesLinkedAndAutoMatchedSupplyListRowsAgainstSameInventoryItem() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 2));
-    db.getCollection("inventory").insertOne(inventoryDoc("ID-00006", "Glue Stick", 3));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00006", "Disinfectant Wipe", 3));
     db.getCollection("supplylist").insertMany(List.of(
-      supplyListDoc(SCHOOL, "1", TEACHER, "Glue Stick", 1, List.of("ID-00006")),
-      supplyListDoc(SCHOOL, "1", TEACHER, "Glue Stick", 2)));
+      supplyListDoc(SCHOOL, "1", TEACHER, "Disinfectant Wipe", 2),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Sanitizing Wipes", 1, List.of("ID-00006"))));
 
     PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
 
@@ -168,13 +168,44 @@ class PurchaseListServiceSpec {
       () -> assertEquals(3, snapshot.summary.totalUnitsToBuy));
 
     PurchaseListItem item = snapshot.items.get(0);
-    assertEquals("Glue Stick", item.item);
+    assertEquals("Sanitizing Wipes", item.item);
+    assertEquals("1x Sanitizing Wipes (linked to Disinfectant Wipe)", item.description);
     assertEquals(6, item.totalNeeded);
     assertEquals(3, item.quantityOnHand);
     assertEquals(3, item.quantityToBuy);
     assertEquals(50, item.fulfillmentPercent);
     assertEquals("partial", item.fulfillmentStatus);
     assertIterableEquals(List.of("ID-00006"), item.linkedInventoryIds);
+    assertEquals(2, item.sources.size());
+  }
+
+  @Test
+  void aggregatesOverlappingLinkedInventorySetsIntoOnePurchaseListItem() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00010", "Marker", 3),
+      inventoryDoc("ID-00011", "Writing Tool", 4),
+      inventoryDoc("ID-00012", "Pencil", 5)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 2, List.of("ID-00010", "ID-00011")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Pencil", 2, List.of("ID-00011", "ID-00012"))));
+
+    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+
+    assertAll(
+      () -> assertEquals(1, snapshot.items.size()),
+      () -> assertEquals(1, snapshot.summary.totalDemandedItems),
+      () -> assertEquals(20, snapshot.summary.totalUnitsNeeded),
+      () -> assertEquals(12, snapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(8, snapshot.summary.totalUnitsToBuy));
+
+    PurchaseListItem item = snapshot.items.get(0);
+    assertEquals(20, item.totalNeeded);
+    assertEquals(12, item.quantityOnHand);
+    assertEquals(8, item.quantityToBuy);
+    assertEquals(60, item.fulfillmentPercent);
+    assertEquals("partial", item.fulfillmentStatus);
+    assertIterableEquals(List.of("ID-00010", "ID-00011", "ID-00012"), item.linkedInventoryIds);
     assertEquals(2, item.sources.size());
   }
 
