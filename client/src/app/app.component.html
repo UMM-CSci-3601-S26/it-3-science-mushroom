@@ -107,10 +107,10 @@
   </mat-menu>
 
   <mat-menu #mobileNavigationMenu="matMenu">
-    <a mat-menu-item routerLink="/">
+    <button type="button" mat-menu-item (click)="navigateHome()">
       <mat-icon>home</mat-icon>
       <span>Home</span>
-    </a>
+    </button>
     @if (canAccessPath('/family')) {
       <a mat-menu-item routerLink="/family">
         <mat-icon>group</mat-icon>

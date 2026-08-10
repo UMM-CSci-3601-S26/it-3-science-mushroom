@@ -124,6 +124,10 @@ export class AppComponent implements OnInit {
     });
   }
 
+  navigateHome(): void {
+    this.router.navigate(['/']);
+  }
+
   // Method to refresh the count of pending delete requests by fetching them from the server
   refreshDeleteRequestCount() {
     if (!this.authService.hasPermission('delete_family')) {

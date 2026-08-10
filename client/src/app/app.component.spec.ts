@@ -242,6 +242,15 @@ describe('AppComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
+  it('should navigate home from the mobile home menu action', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    app.navigateHome();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/']);
+  });
+
   it('should sync access profile when the window regains focus', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
