@@ -697,22 +697,6 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  calculatePredictedStates(): void {
-    if (!this.canEditInventory) {
-      return;
-    }
-
-    this.settingsService.calculatePredictedStates().subscribe({
-      next: () => {
-        this.snackBar.open('Predicted states calculated', 'OK', { duration: 2000 });
-        this.reloadInventory();
-      },
-      error: () => {
-        this.snackBar.open('Failed to calculate predicted states', 'OK', { duration: 3000 });
-      }
-    });
-  }
-
   private static timeSlotValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = `${control.value ?? ''}`.trim();

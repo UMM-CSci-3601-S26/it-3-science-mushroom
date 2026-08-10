@@ -571,21 +571,6 @@
           </div>
         </mat-tab>
 
-        <!-- Supply List Tab -->
-        <mat-tab label="Supply List">
-          <div class="tab-content">
-            <p class="tab-description">
-              Options for the Supply List page.
-            </p>
-            <p>Calculate "predicted" Inventory State based on Supply List and Family</p>
-            <div class="save-button app-action-row">
-              <button mat-raised-button color="primary" type="submit" (click)="calculatePredictedStates()" [disabled]="!canEditInventory" data-cy="calculate-states-button">
-                Calculate Predicted
-              </button>
-            </div>
-          </div>
-        </mat-tab>
-
       </mat-tab-group>
     </mat-card-content>
   </mat-card>
