@@ -36,10 +36,7 @@
       @if (canAccessPath('/admin-panel')) {
         <a mat-button routerLink="/admin-panel" routerLinkActive="header-link-active">Admin Panel</a>
       }
-      @if (canAccessPath('/purchase-list')) {
-        <a mat-button routerLink="/purchase-list" routerLinkActive="header-link-active">Purchase list</a>
-      }
-      @if (canAccessPath('/supplylist') || canAccessPath('/stock-report') || canAccessPath('/family-schedule')) {
+      @if (canAccessPath('/supplylist') || canAccessPath('/stock-report') || canAccessPath('/family-schedule') || canAccessPath('/purchase-list')) {
         <button type="button" mat-button [matMenuTriggerFor]="operationsMenu">
           Operations
           <mat-icon>expand_more</mat-icon>
@@ -101,6 +98,11 @@
         <mat-icon>event</mat-icon>
         <span>Family Schedule</span>
       </a>
+    }
+    @if (canAccessPath('/purchase-list')) {
+      <a mat-menu-item routerLink="/purchase-list" routerLinkActive="header-link-active">
+        <mat-icon>shopping_cart</mat-icon>
+        <span>Purchase List</span></a>
     }
   </mat-menu>
 
