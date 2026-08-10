@@ -6,7 +6,13 @@
     </div>
 
     <div class="purchase-list-actions app-cluster">
-
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="calculateCurrentPurchaseList()" [disabled]="calculating()">
+         {{ calculating() ? 'Calculating...' : 'Calculate List' }}
+      </button>
     </div>
   </header>
 

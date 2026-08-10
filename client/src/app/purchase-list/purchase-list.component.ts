@@ -10,6 +10,8 @@ import { PurchaseListService } from "./purchase-list.service";
 
 // Types
 import type { PurchaseListItem, PurchaseListSnapshot } from "./purchase-list";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatButtonModule } from "@angular/material/button";
 
 @Component({
   selector: 'app-purchase-component',
@@ -20,13 +22,14 @@ import type { PurchaseListItem, PurchaseListSnapshot } from "./purchase-list";
     MatCardModule,
     MatIconModule,
     MatSortModule,
-    MatTableModule
+    MatTableModule,
+    MatButtonModule
   ],
 })
 export class PurchaseListComponent implements OnInit {
 
   private purchaseListService = inject(PurchaseListService);
-
+  private snackBar = inject(MatSnackBar);
   displayedColumns: string[] = [
     "description",
     "totalNeeded",
@@ -40,6 +43,7 @@ export class PurchaseListComponent implements OnInit {
   purchaseList = signal<PurchaseListSnapshot | null >(null);
   loading = signal(true);
   error = signal(false);
+  calculating = signal(false);
 
   constructor() {
     effect(() => {
@@ -48,7 +52,7 @@ export class PurchaseListComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  fetchPurchaseList() {
     this.purchaseListService.getPurchaseList().subscribe({
       next: purchaseList => {
         this.purchaseList.set(purchaseList);
@@ -61,5 +65,27 @@ export class PurchaseListComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  calculateCurrentPurchaseList() {
+    this.calculating.set(true);
+    this.purchaseListService.calculatePurchaseList().subscribe({
+      next: purchaseList => {
+        this.purchaseList.set(purchaseList);
+        this.calculating.set(false);
+        this.loading.set(false);
+        this.error.set(false);
+        this.snackBar.open('Calculated purchase list', 'OK', { duration: 6000 });
+      },
+      error: () => {
+        this.calculating.set(false);
+        this.loading.set(false);
+        this.snackBar.open('Failed to calculate purchase list', 'OK', { duration : 8000 });
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    this.fetchPurchaseList();
   }
 }

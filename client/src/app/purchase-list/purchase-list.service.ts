@@ -11,8 +11,13 @@ export class PurchaseListService {
   private httpClient = inject(HttpClient);
 
   readonly purchaseListUrl: string = `${environment.apiUrl}purchase-list/current`;
+  readonly calculatePurchaseListUrl: string = `${environment.apiUrl}purchase-list/calculate`;
 
   getPurchaseList(): Observable<PurchaseListSnapshot> {
     return this.httpClient.get<PurchaseListSnapshot>(this.purchaseListUrl);
+  }
+
+  calculatePurchaseList(): Observable<PurchaseListSnapshot> {
+    return this.httpClient.post<PurchaseListSnapshot>(this.calculatePurchaseListUrl, {});
   }
 }

@@ -27,6 +27,18 @@ describe('PurchaseListComponent', () => {
     ]
   };
 
+  const calculatedSnapshot: PurchaseListSnapshot = {
+    ...snapshot,
+    generatedAt: '2026-08-09T12:00:00.000Z',
+    summary: {
+      ...snapshot.summary,
+      totalUnitsToBuy: 4
+    },
+    items: [
+      purchaseItem('Glue', 'Glue sticks', 4, 60)
+    ]
+  }
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -37,7 +49,8 @@ describe('PurchaseListComponent', () => {
         {
           provide: PurchaseListService,
           useValue: {
-            getPurchaseList: () => of(snapshot)
+            getPurchaseList: () => of(snapshot),
+            calculatePurchaseList: () => of(calculatedSnapshot)
           }
         }
       ]
@@ -75,6 +88,16 @@ describe('PurchaseListComponent', () => {
     expect(sortHeaders.length).toBe(4);
     expect(sortHeaders.map(header => header.nativeElement.textContent.trim()))
       .toEqual(['Total Needed', 'On Hand', 'To Buy', 'Status']);
+  });
+
+  it('Successful calculate response updates purchase list snapshot', () => {
+    fixture.detectChanges()
+    component.calculateCurrentPurchaseList();
+    fixture.detectChanges()
+
+    expect(component.purchaseList()).toEqual(calculatedSnapshot);
+    expect(component.dataSource.data.map(item => item.item)).toEqual(['Glue']);
+
   });
 });
 

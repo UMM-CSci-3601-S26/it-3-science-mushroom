@@ -66,7 +66,7 @@ describe('PurchaseListService', () => {
     httpMock.verify();
   });
 
-  it('gets the server-computed purchase list snapshot', () => {
+  it('gets the currently saved purchase list snapshot', () => {
     let response: PurchaseListSnapshot | undefined;
 
     service.getPurchaseList().subscribe(data => {
@@ -75,6 +75,21 @@ describe('PurchaseListService', () => {
 
     const req = httpMock.expectOne(service.purchaseListUrl);
     expect(req.request.method).toBe('GET');
+    req.flush(snapshot);
+
+    expect(response).toEqual(snapshot);
+  });
+
+  it('calculates a new purchase list snapshot', () => {
+    let response: PurchaseListSnapshot | undefined;
+
+    service.calculatePurchaseList().subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(service.calculatePurchaseListUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
     req.flush(snapshot);
 
     expect(response).toEqual(snapshot);

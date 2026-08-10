@@ -1,5 +1,7 @@
 package umm3601.PurchaseList;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ import org.bson.UuidRepresentation;
 import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.ReplaceOptions;
 
 import umm3601.Common.InventoryMatcher;
 import umm3601.Family.Family;
@@ -21,6 +24,7 @@ import umm3601.Inventory.Inventory;
 import umm3601.SupplyList.SupplyList;
 
 public class PurchaseListService {
+  private static final String LATEST_SNAPSHOT_ID = "latest-purchase-list";
   private static final int PERCENT_SCALE = 100;
   private static final String FULFILLED_STATUS = "fulfilled";
   private static final String PARTIAL_STATUS = "partial";
@@ -34,6 +38,7 @@ public class PurchaseListService {
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
+  private final JacksonMongoCollection<PurchaseListSnapshot> purchaseListSnapshotCollection;
   private final InventoryMatcher inventoryMatcher;
 
   public PurchaseListService(MongoDatabase database) {
@@ -62,15 +67,57 @@ public class PurchaseListService {
       SupplyList.class,
       UuidRepresentation.STANDARD
     );
+
+    purchaseListSnapshotCollection = JacksonMongoCollection.builder().build(
+      database,
+      "purchaseListSnapshots",
+      PurchaseListSnapshot.class,
+      UuidRepresentation.STANDARD
+    );
   }
 
   public PurchaseListSnapshot getCurrentPurchaseList() {
-    List<PurchaseListItem> items = calculatePurchaseListItems();
+    PurchaseListSnapshot snapshot = purchaseListSnapshotCollection.find(eq("_id", LATEST_SNAPSHOT_ID)).first();
+    return snapshot == null ? emptyPurchaseListSnapshot() : normalizeSnapshot(snapshot);
+  }
 
+  public PurchaseListSnapshot calculateNewPurchaseList() {
+    List<PurchaseListItem> items = calculatePurchaseListItems();
+    PurchaseListSnapshot snapshot = buildSnapshot(items);
+
+    purchaseListSnapshotCollection.replaceOne(
+      eq("_id", LATEST_SNAPSHOT_ID),
+      snapshot,
+      new ReplaceOptions().upsert(true));
+
+    return snapshot;
+  }
+
+  private PurchaseListSnapshot buildSnapshot(List<PurchaseListItem> items) {
     PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
+    snapshot._id = LATEST_SNAPSHOT_ID;
     snapshot.generatedAt = Instant.now().toString();
     snapshot.summary = toPurchaseListSummary(items);
     snapshot.items = items;
+    return snapshot;
+  }
+
+  private PurchaseListSnapshot emptyPurchaseListSnapshot() {
+    PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
+    snapshot._id = LATEST_SNAPSHOT_ID;
+    snapshot.generatedAt = "";
+    snapshot.summary = toPurchaseListSummary(List.of());
+    snapshot.items = List.of();
+    return snapshot;
+  }
+
+  private PurchaseListSnapshot normalizeSnapshot(PurchaseListSnapshot snapshot) {
+    if (snapshot.summary == null) {
+      snapshot.summary = toPurchaseListSummary(List.of());
+    }
+    if (snapshot.items == null) {
+      snapshot.items = List.of();
+    }
     return snapshot;
   }
 

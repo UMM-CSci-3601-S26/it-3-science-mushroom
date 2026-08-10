@@ -32,6 +32,7 @@ class PurchaseListControllerSpec {
     RouteRegistrar.register(mockServer, purchaseListController, null);
 
     verify(mockServer).get(any(), any());
+    verify(mockServer).post(any(), any());
   }
 
   @Test
@@ -51,12 +52,45 @@ class PurchaseListControllerSpec {
   }
 
   @Test
+  void calculatePurchaseListReturnsNewSnapshot() {
+    PurchaseListService purchaseListService = mock(PurchaseListService.class);
+    Context ctx = mock(Context.class);
+    PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
+    snapshot.summary = new PurchaseListSummary();
+    snapshot.items = List.of();
+
+    when(purchaseListService.calculateNewPurchaseList()).thenReturn(snapshot);
+
+    new PurchaseListController(purchaseListService).calculatePurchaseList(ctx);
+
+    verify(ctx).json(snapshot);
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
   void rejectsNonAdminRequestsThroughSecuredRoute() throws Exception {
     PurchaseListService purchaseListService = mock(PurchaseListService.class);
     Context ctx = mock(Context.class);
     when(ctx.attribute("systemRole")).thenReturn(Role.VOLUNTEER);
 
     Method method = PurchaseListController.class.getDeclaredMethod("getCurrentPurchaseList", Context.class);
+
+    assertThrows(ForbiddenResponse.class, () ->
+        new SecuredHandler(
+            new PurchaseListController(purchaseListService),
+            method,
+            mock(PermissionsService.class))
+        .handle(ctx));
+    verifyNoInteractions(purchaseListService);
+  }
+
+  @Test
+  void rejectsNonAdminCalculateRequestsThroughSecuredRoute() throws Exception {
+    PurchaseListService purchaseListService = mock(PurchaseListService.class);
+    Context ctx = mock(Context.class);
+    when(ctx.attribute("systemRole")).thenReturn(Role.VOLUNTEER);
+
+    Method method = PurchaseListController.class.getDeclaredMethod("calculatePurchaseList", Context.class);
 
     assertThrows(ForbiddenResponse.class, () ->
         new SecuredHandler(

@@ -12,6 +12,7 @@ import umm3601.Auth.Route;
 
 public class PurchaseListController {
   private static final String API_CURRENT_PURCHASE_LIST = "/api/purchase-list/current";
+  private static final String API_CALCULATE_PURCHASE_LIST = "/api/purchase-list/calculate";
 
   private final PurchaseListService purchaseListService;
 
@@ -28,6 +29,14 @@ public class PurchaseListController {
   @RequirePermission("view_inventory")
   public void getCurrentPurchaseList(Context ctx) {
     ctx.json(purchaseListService.getCurrentPurchaseList());
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.POST, path = API_CALCULATE_PURCHASE_LIST)
+  @RequireRole(Role.ADMIN)
+  @RequirePermission("view_inventory")
+  public void calculatePurchaseList(Context ctx) {
+    ctx.json(purchaseListService.calculateNewPurchaseList());
     ctx.status(HttpStatus.OK);
   }
 }

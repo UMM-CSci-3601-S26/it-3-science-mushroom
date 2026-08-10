@@ -53,7 +53,41 @@ class PurchaseListServiceSpec {
     db.getCollection("inventory").drop();
     db.getCollection("family").drop();
     db.getCollection("supplylist").drop();
+    db.getCollection("purchaseListSnapshots").drop();
     purchaseListService = new PurchaseListService(db);
+  }
+
+  @Test
+  void getCurrentPurchaseListReturnsEmptySnapshotWhenNoSnapshotExists() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Backpack", 2));
+
+    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+
+    assertEquals("", snapshot.generatedAt);
+    assertEquals(0, snapshot.summary.totalDemandedItems);
+    assertEquals(0, snapshot.summary.itemsNeedingPurchase);
+    assertEquals(0, snapshot.summary.totalUnitsNeeded);
+    assertEquals(0, snapshot.summary.totalUnitsOnHand);
+    assertEquals(0, snapshot.summary.totalUnitsToBuy);
+    assertEquals(List.of(), snapshot.items);
+  }
+
+  @Test
+  void calculateNewPurchaseListPersistsSnapshotForLaterReads() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Backpack", 2));
+
+    PurchaseListSnapshot calculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+
+    PurchaseListSnapshot currentSnapshot = purchaseListService.getCurrentPurchaseList();
+
+    assertEquals(calculatedSnapshot.generatedAt, currentSnapshot.generatedAt);
+    assertEquals(1, currentSnapshot.items.size());
+    assertEquals(2, currentSnapshot.summary.totalUnitsNeeded);
+    assertEquals(2, currentSnapshot.summary.totalUnitsToBuy);
   }
 
   @Test
@@ -61,7 +95,7 @@ class PurchaseListServiceSpec {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Backpack", 2));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
     assertEquals(1, snapshot.summary.totalDemandedItems);
@@ -90,7 +124,7 @@ class PurchaseListServiceSpec {
     db.getCollection("inventory").insertOne(inventoryDoc("ID-00001", "Glue Stick", 3));
     db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Glue Stick", 2));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
 
@@ -112,7 +146,7 @@ class PurchaseListServiceSpec {
     db.getCollection("supplylist").insertOne(
       supplyListDoc(SCHOOL, "1", TEACHER, "Sanitizing Wipes", 1, List.of("ID-00002")));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
 
@@ -136,7 +170,7 @@ class PurchaseListServiceSpec {
       supplyListDoc(SCHOOL, "1", TEACHER, "Notebook", 1),
       supplyListDoc(SCHOOL, "2", TEACHER, "Notebook", 2)));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
 
@@ -158,7 +192,7 @@ class PurchaseListServiceSpec {
       supplyListDoc(SCHOOL, "1", TEACHER, "Disinfectant Wipe", 2),
       supplyListDoc(SCHOOL, "1", TEACHER, "Sanitizing Wipes", 1, List.of("ID-00006"))));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertAll(
       () -> assertEquals(1, snapshot.items.size()),
@@ -190,7 +224,7 @@ class PurchaseListServiceSpec {
       supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 2, List.of("ID-00010", "ID-00011")),
       supplyListDoc(SCHOOL, "1", TEACHER, "Pencil", 2, List.of("ID-00011", "ID-00012"))));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertAll(
       () -> assertEquals(1, snapshot.items.size()),
@@ -220,7 +254,7 @@ class PurchaseListServiceSpec {
       .append("packageSize", 8));
     db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 1));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
     assertEquals("8 Pack of Blue Washable Crayola Marker (Plastic)", snapshot.items.get(0).description);
@@ -238,7 +272,7 @@ class PurchaseListServiceSpec {
       .append("material", attributeExactly("Plastic"))
       .append("notes", "primary classroom"));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
     assertEquals(
@@ -254,7 +288,7 @@ class PurchaseListServiceSpec {
     db.getCollection("supplylist").insertOne(
       supplyListDoc(SCHOOL, "1", TEACHER, "Binder Pencil bag", 1, List.of("ID-00005")));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
     assertEquals(
@@ -270,7 +304,7 @@ class PurchaseListServiceSpec {
       .append("material", attributeExactly("N/A"))
       .append("notes", "N/A"));
 
-    PurchaseListSnapshot snapshot = purchaseListService.getCurrentPurchaseList();
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
     assertEquals("1x Folder", snapshot.items.get(0).description);
