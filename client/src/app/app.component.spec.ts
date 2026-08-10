@@ -18,6 +18,7 @@ describe('AppComponent', () => {
   const routes: Routes = [
     { path: '', component: DummyComponent, title: 'Home' },
     { path: 'settings', component: DummyComponent, data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_settings'] } },
+    { path: 'purchase-list', component: DummyComponent, data: { roles: ['ADMIN'] } },
     { path: 'users', component: DummyComponent, data: { roles: ['ADMIN'] } },
     { path: 'public', component: DummyComponent }
   ];

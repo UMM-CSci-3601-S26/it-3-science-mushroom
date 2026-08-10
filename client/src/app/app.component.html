@@ -153,6 +153,12 @@
         <span>Family Schedule</span>
       </a>
     }
+    @if (canAccessPath('/purchase-list')) {
+      <a mat-menu-item routerLink="/purchase-list">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Purchase List</span>
+      </a>
+    }
   </mat-menu>
 
   <mat-menu #accountMenu="matMenu" class="account-menu">
