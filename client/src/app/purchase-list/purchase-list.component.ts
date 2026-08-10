@@ -27,7 +27,13 @@ export class PurchaseListComponent implements OnInit {
 
   private purchaseListService = inject(PurchaseListService);
 
-  displayedColumns: string[] = ["description", "quantityToBuy", "fulfillmentPercent"];
+  displayedColumns: string[] = [
+    "description",
+    "totalNeeded",
+    "quantityOnHand",
+    "quantityToBuy",
+    "fulfillmentPercent"
+  ];
   dataSource = new MatTableDataSource<PurchaseListItem>([]);
   readonly sort = viewChild<MatSort>(MatSort);
 

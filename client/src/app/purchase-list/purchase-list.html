@@ -45,6 +45,32 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="totalNeeded">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                sortActionDescription="Sort by total units needed">
+                Total Needed
+              </th>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">
+                {{ item.totalNeeded }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="quantityOnHand">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                sortActionDescription="Sort by units on hand">
+                On Hand
+              </th>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">
+                {{ item.quantityOnHand }}
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="quantityToBuy">
               <th
                 mat-header-cell

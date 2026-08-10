@@ -50,7 +50,13 @@ describe('PurchaseListComponent', () => {
   it('loads purchase list items into the Material table data source', () => {
     fixture.detectChanges();
 
-    expect(component.displayedColumns).toEqual(['description', 'quantityToBuy', 'fulfillmentPercent']);
+    expect(component.displayedColumns).toEqual([
+      'description',
+      'totalNeeded',
+      'quantityOnHand',
+      'quantityToBuy',
+      'fulfillmentPercent'
+    ]);
     expect(component.dataSource.data.map(item => item.item)).toEqual(['Markers', 'Pencils', 'Folders']);
   });
 
@@ -61,14 +67,14 @@ describe('PurchaseListComponent', () => {
     expect(component.dataSource.sort).toBe(component.sort());
   });
 
-  it('uses native Material sort headers for to buy and status columns', () => {
+  it('uses native Material sort headers for quantity and status columns', () => {
     fixture.detectChanges();
 
     const sortHeaders = fixture.debugElement.queryAll(By.css('[mat-sort-header]'));
 
-    expect(sortHeaders.length).toBe(2);
+    expect(sortHeaders.length).toBe(4);
     expect(sortHeaders.map(header => header.nativeElement.textContent.trim()))
-      .toEqual(['To Buy', 'Status']);
+      .toEqual(['Total Needed', 'On Hand', 'To Buy', 'Status']);
   });
 });
 

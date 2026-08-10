@@ -53,6 +53,16 @@
   width: 7rem;
 }
 
+.purchase-table th.mat-column-totalNeeded,
+.purchase-table td.mat-column-totalNeeded {
+  width: 8.5rem;
+}
+
+.purchase-table th.mat-column-quantityOnHand,
+.purchase-table td.mat-column-quantityOnHand {
+  width: 7.5rem;
+}
+
 .purchase-table th.mat-column-fulfillmentPercent,
 .purchase-table td.mat-column-fulfillmentPercent {
   width: 9rem;
@@ -90,6 +100,6 @@
   }
 
   .purchase-table {
-    min-width: 28rem;
+    min-width: 43rem;
   }
 }
