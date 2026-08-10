@@ -129,9 +129,10 @@ public class PurchaseListService {
     List<String> linkedInventoryIds = validInternalIds(supplyList);
     if (!linkedInventoryIds.isEmpty()) {
       return new InventoryFulfillment(
-        linkedInventoryKey(linkedInventoryIds),
+        inventoryGroupKey(linkedInventoryIds),
         linkedInventoryIds,
-        firstInventory(linkedInventoryIds, inventoryByInternalId));
+        firstInventory(linkedInventoryIds, inventoryByInternalId),
+        true);
     }
 
     Inventory matchedInventory = inventoryMatcher.findBestDemandMatch(supplyList);
@@ -139,13 +140,15 @@ public class PurchaseListService {
       return new InventoryFulfillment(
         matchedInventoryKey(matchedInventory, supplyList),
         matchedInventoryIds(matchedInventory),
-        matchedInventory);
+        matchedInventory,
+        false);
     }
 
     return new InventoryFulfillment(
       supplyDemandKey(supplyList),
       List.of(),
-      null);
+      null,
+      false);
   }
 
   private boolean hasDemandInputs(SupplyList supplyList) {
@@ -292,13 +295,13 @@ public class PurchaseListService {
     return hasText(supplyDescription) ? supplyDescription : fallback(inventoryDescription, itemLabel);
   }
 
-  private String linkedInventoryKey(List<String> linkedInventoryIds) {
-    return "linked:" + String.join("|", linkedInventoryIds.stream().sorted().toList());
+  private String inventoryGroupKey(List<String> inventoryIds) {
+    return "inventory:" + String.join("|", inventoryIds.stream().sorted().toList());
   }
 
   private String matchedInventoryKey(Inventory inventory, SupplyList supplyList) {
     if (hasText(inventory.internalID)) {
-      return "inventory:" + inventory.internalID;
+      return inventoryGroupKey(List.of(inventory.internalID));
     }
     if (hasText(inventory._id)) {
       return "inventory:" + inventory._id;
@@ -525,12 +528,13 @@ public class PurchaseListService {
   }
 
   private class PurchaseListAccumulator {
-    private final String item;
-    private final String description;
+    private String item;
+    private String description;
     private final Set<String> linkedInventoryIds;
     private final List<PurchaseListSource> sources;
     private Inventory primaryInventory;
     private int totalNeeded;
+    private boolean usesManualLinkIdentity;
 
     PurchaseListAccumulator(SupplyList supplyList, InventoryFulfillment fulfillment) {
       item = supplyItemLabel(supplyList, fulfillment.primaryInventory);
@@ -538,6 +542,7 @@ public class PurchaseListService {
       primaryInventory = fulfillment.primaryInventory;
       linkedInventoryIds = new LinkedHashSet<>();
       sources = new ArrayList<>();
+      usesManualLinkIdentity = fulfillment.manuallyLinked;
     }
 
     void add(
@@ -551,6 +556,12 @@ public class PurchaseListService {
       linkedInventoryIds.addAll(fulfillment.linkedInventoryIds);
       if (primaryInventory == null && fulfillment.primaryInventory != null) {
         primaryInventory = fulfillment.primaryInventory;
+      }
+      if (fulfillment.manuallyLinked && !usesManualLinkIdentity) {
+        item = supplyItemLabel(supplyList, fulfillment.primaryInventory);
+        description = supplyItemDescription(supplyList, fulfillment.primaryInventory, item);
+        primaryInventory = fulfillment.primaryInventory;
+        usesManualLinkIdentity = true;
       }
       sources.add(toPurchaseListSource(supplyList, studentCount, quantityPerStudent, sourceTotalNeeded));
     }
@@ -584,15 +595,18 @@ public class PurchaseListService {
     private final String groupKey;
     private final List<String> linkedInventoryIds;
     private final Inventory primaryInventory;
+    private final boolean manuallyLinked;
 
     InventoryFulfillment(
         String groupKey,
         List<String> linkedInventoryIds,
-        Inventory primaryInventory
+        Inventory primaryInventory,
+        boolean manuallyLinked
     ) {
       this.groupKey = groupKey;
       this.linkedInventoryIds = List.copyOf(linkedInventoryIds);
       this.primaryInventory = primaryInventory;
+      this.manuallyLinked = manuallyLinked;
     }
   }
 }
