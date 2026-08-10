@@ -185,6 +185,45 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void countsOnlyMatchingTeacherFromGroupedStudentDemand() {
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(SCHOOL, "1st Grade", TEACHER, 2),
+      familyDoc(SCHOOL, "1st Grade", "Mr. Roe", 3),
+      familyDoc(SCHOOL, "2nd Grade", TEACHER, 4)));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Pencil", 1));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+
+    PurchaseListItem item = snapshot.items.get(0);
+    assertEquals(2, item.totalNeeded);
+    assertEquals(2, item.quantityToBuy);
+    assertEquals(1, item.sources.size());
+    assertEquals(2, item.sources.get(0).studentCount);
+  }
+
+  @Test
+  void countsAllTeachersForGradeLevelSupplyListWithoutTeacher() {
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(SCHOOL, "1", TEACHER, 2),
+      familyDoc(SCHOOL, "1", "Mr. Roe", 3),
+      familyDoc(SCHOOL, "2", TEACHER, 4),
+      familyDoc("Other Elementary", "1", TEACHER, 5)));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", "N/A", "Pencil", 1));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+
+    PurchaseListItem item = snapshot.items.get(0);
+    assertEquals(5, item.totalNeeded);
+    assertEquals(5, item.quantityToBuy);
+    assertEquals(1, item.sources.size());
+    assertEquals(5, item.sources.get(0).studentCount);
+  }
+
+  @Test
   void aggregatesLinkedAndAutoMatchedSupplyListRowsAgainstSameInventoryItem() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 2));
     db.getCollection("inventory").insertOne(inventoryDoc("ID-00006", "Disinfectant Wipe", 3));

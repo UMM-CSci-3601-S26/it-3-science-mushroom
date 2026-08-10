@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -123,7 +124,7 @@ public class PurchaseListService {
 
   private List<PurchaseListItem> calculatePurchaseListItems() {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-    List<Family.StudentInfo> students = getStudents();
+    Map<StudentDemandGroup, Integer> studentCountsByGroup = getStudentCountsByGroup();
     Map<String, Inventory> inventoryByInternalId = getInventoryByInternalId();
     List<PurchaseListAccumulator> demandByFulfillmentTarget = new ArrayList<>();
 
@@ -132,7 +133,7 @@ public class PurchaseListService {
         continue;
       }
 
-      int studentCount = studentCountForSupplyList(supplyList, students);
+      int studentCount = studentCountForSupplyList(supplyList, studentCountsByGroup);
       if (studentCount <= 0) {
         continue;
       }
@@ -246,9 +247,9 @@ public class PurchaseListService {
     return inventoryByInternalId;
   }
 
-  private List<Family.StudentInfo> getStudents() {
+  private Map<StudentDemandGroup, Integer> getStudentCountsByGroup() {
     ArrayList<Family> families = familyCollection.find().into(new ArrayList<>());
-    List<Family.StudentInfo> students = new ArrayList<>();
+    Map<StudentDemandGroup, Integer> studentCountsByGroup = new HashMap<>();
 
     for (Family family : families) {
       if (family == null || family.students == null) {
@@ -257,23 +258,31 @@ public class PurchaseListService {
 
       for (Family.StudentInfo student : family.students) {
         if (student != null) {
-          students.add(student);
+          StudentDemandGroup studentDemandGroup = new StudentDemandGroup(
+            studentSchool(student),
+            studentGrade(student),
+            studentTeacher(student));
+          studentCountsByGroup.merge(studentDemandGroup, 1, Integer::sum);
         }
       }
     }
 
-    return students;
+    return studentCountsByGroup;
   }
 
-  private int studentCountForSupplyList(SupplyList supplyList, List<Family.StudentInfo> students) {
+  private int studentCountForSupplyList(
+      SupplyList supplyList,
+      Map<StudentDemandGroup, Integer> studentCountsByGroup
+  ) {
     int studentCount = 0;
-    for (Family.StudentInfo student : students) {
+    for (Map.Entry<StudentDemandGroup, Integer> studentGroup : studentCountsByGroup.entrySet()) {
+      StudentDemandGroup group = studentGroup.getKey();
       if (inventoryMatcher.supplyListMatchesStudent(
           supplyList,
-          studentSchool(student),
-          studentGrade(student),
-          studentTeacher(student))) {
-        studentCount++;
+          group.school,
+          group.grade,
+          group.teacher)) {
+        studentCount += studentGroup.getValue();
       }
     }
 
@@ -600,6 +609,36 @@ public class PurchaseListService {
 
   private boolean hasText(String value) {
     return value != null && !value.isBlank();
+  }
+
+  private static class StudentDemandGroup {
+    private final String school;
+    private final String grade;
+    private final String teacher;
+
+    StudentDemandGroup(String school, String grade, String teacher) {
+      this.school = school;
+      this.grade = grade;
+      this.teacher = teacher;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (this == other) {
+        return true;
+      }
+      if (!(other instanceof StudentDemandGroup otherGroup)) {
+        return false;
+      }
+      return Objects.equals(school, otherGroup.school)
+        && Objects.equals(grade, otherGroup.grade)
+        && Objects.equals(teacher, otherGroup.teacher);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(school, grade, teacher);
+    }
   }
 
   private class PurchaseListAccumulator {
