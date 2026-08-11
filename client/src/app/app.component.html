@@ -36,7 +36,7 @@
       @if (canAccessPath('/admin-panel')) {
         <a mat-button routerLink="/admin-panel" routerLinkActive="header-link-active">Admin Panel</a>
       }
-      @if (canAccessPath('/supplylist') || canAccessPath('/stock-report') || canAccessPath('/family-schedule')) {
+      @if (canAccessPath('/supplylist') || canAccessPath('/stock-report') || canAccessPath('/family-schedule') || canAccessPath('/purchase-list')) {
         <button type="button" mat-button [matMenuTriggerFor]="operationsMenu">
           Operations
           <mat-icon>expand_more</mat-icon>
@@ -99,13 +99,18 @@
         <span>Family Schedule</span>
       </a>
     }
+    @if (canAccessPath('/purchase-list')) {
+      <a mat-menu-item routerLink="/purchase-list" routerLinkActive="header-link-active">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Purchase List</span></a>
+    }
   </mat-menu>
 
   <mat-menu #mobileNavigationMenu="matMenu">
-    <a mat-menu-item routerLink="/">
+    <button type="button" mat-menu-item (click)="navigateHome()">
       <mat-icon>home</mat-icon>
       <span>Home</span>
-    </a>
+    </button>
     @if (canAccessPath('/family')) {
       <a mat-menu-item routerLink="/family">
         <mat-icon>group</mat-icon>
@@ -146,6 +151,12 @@
       <a mat-menu-item routerLink="/family-schedule">
         <mat-icon>event</mat-icon>
         <span>Family Schedule</span>
+      </a>
+    }
+    @if (canAccessPath('/purchase-list')) {
+      <a mat-menu-item routerLink="/purchase-list">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Purchase List</span>
       </a>
     }
   </mat-menu>

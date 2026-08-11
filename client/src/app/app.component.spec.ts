@@ -18,6 +18,7 @@ describe('AppComponent', () => {
   const routes: Routes = [
     { path: '', component: DummyComponent, title: 'Home' },
     { path: 'settings', component: DummyComponent, data: { roles: ['ADMIN', 'VOLUNTEER'], permissions: ['view_settings'] } },
+    { path: 'purchase-list', component: DummyComponent, data: { roles: ['ADMIN'] } },
     { path: 'users', component: DummyComponent, data: { roles: ['ADMIN'] } },
     { path: 'public', component: DummyComponent }
   ];
@@ -239,6 +240,15 @@ describe('AppComponent', () => {
     app.logout();
 
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('should navigate home from the mobile home menu action', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    app.navigateHome();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/']);
   });
 
   it('should sync access profile when the window regains focus', () => {

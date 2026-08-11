@@ -1,0 +1,105 @@
+.purchase-list-page {
+  color: var(--app-text);
+}
+
+.purchase-list-header {
+  align-items: flex-start;
+  gap: var(--app-space-md);
+}
+
+.purchase-list-title {
+  margin: 0;
+}
+
+.purchase-list-card mat-card-content {
+  display: grid;
+  gap: var(--app-space-lg);
+}
+
+.purchase-table-shell {
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+}
+
+.purchase-table {
+  width: 100%;
+  background: var(--app-surface);
+}
+
+.purchase-table th {
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--app-surface) 78%, var(--app-bg));
+}
+
+.purchase-table th,
+.purchase-table td {
+  border-bottom-color: var(--app-divider-color);
+  color: var(--app-text);
+}
+
+.purchase-table th.mat-column-description,
+.purchase-table td.mat-column-description {
+  width: auto;
+}
+
+.purchase-table th.mat-column-quantityToBuy,
+.purchase-table td.mat-column-quantityToBuy {
+  width: 7rem;
+}
+
+.purchase-table th.mat-column-totalNeeded,
+.purchase-table td.mat-column-totalNeeded {
+  width: 8.5rem;
+}
+
+.purchase-table th.mat-column-quantityOnHand,
+.purchase-table td.mat-column-quantityOnHand {
+  width: 7.5rem;
+}
+
+.purchase-table th.mat-column-fulfillmentPercent,
+.purchase-table td.mat-column-fulfillmentPercent {
+  width: 9rem;
+}
+
+.purchase-item-name,
+.quantity-cell,
+.status-cell {
+  font-weight: 700;
+}
+
+.purchase-item-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.purchase-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--app-space-sm);
+  padding: var(--app-space-xl) var(--app-space-md);
+  text-align: center;
+}
+
+.purchase-empty-state mat-icon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--app-text-muted);
+  font-size: 3rem;
+}
+
+@media (max-width: 900px) {
+  .purchase-table-shell {
+    overflow-x: auto;
+  }
+
+  .purchase-table {
+    min-width: 43rem;
+  }
+}

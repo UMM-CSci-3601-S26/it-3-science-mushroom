@@ -24,6 +24,8 @@ import umm3601.Inventory.BarcodeController;
 import umm3601.Inventory.InventoryController;
 import umm3601.Inventory.InventoryIdService;
 import umm3601.Middleware.AuthMiddleware;
+import umm3601.PurchaseList.PurchaseListController;
+import umm3601.PurchaseList.PurchaseListService;
 import umm3601.Settings.SettingsController;
 import umm3601.StockReport.StockReportController;
 import umm3601.SupplyList.SupplyListController;
@@ -101,6 +103,7 @@ public class Bootstrap {
     InventoryReservationService inventoryReservationService = new InventoryReservationService(db, inventoryMatcher);
     InventoryIdService inventoryIdService = new InventoryIdService(db);
     DemandService demandService = new DemandService(db, inventoryMatcher);
+    PurchaseListService purchaseListService = new PurchaseListService(db, inventoryMatcher);
     FamilyChecklistService familyChecklistService = new FamilyChecklistService(db, inventoryMatcher);
     FamilyController familyController = new FamilyController(
         db,
@@ -112,6 +115,7 @@ public class Bootstrap {
     return new Object[] {
         new InventoryController(db, inventoryReservationService, inventoryIdService, demandService),
         new DemandController(demandService),
+        new PurchaseListController(purchaseListService),
         new BarcodeController(db),
         familyController,
         new FamilyPortalController(familyController, settingsController, usersService),

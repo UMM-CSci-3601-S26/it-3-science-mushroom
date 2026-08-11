@@ -58,6 +58,14 @@ describe('AppRoutingModule', () => {
     expect(familyScheduleRoute?.data?.['roles']).toEqual(['ADMIN']);
   });
 
+  it('protects the purchase list as an admin-only page', () => {
+    const purchaseListRoute = router.config.find(route => route.path === 'purchase-list');
+
+    expect(purchaseListRoute?.canActivate).toEqual([AuthGuard, RoleGuard]);
+    expect(purchaseListRoute?.data?.['roles']).toEqual(['ADMIN']);
+    expect(purchaseListRoute?.data?.['permissions']).toBeUndefined();
+  });
+
   // What is the point of this test? It is just testing that the same route is defined twice, which is not a good thing.
   // If we want to test that the supply list route is defined, we should test that it is defined once, not that it is defined twice.
   // it('contains the duplicated supplylist route configuration currently defined in the module', () => {
