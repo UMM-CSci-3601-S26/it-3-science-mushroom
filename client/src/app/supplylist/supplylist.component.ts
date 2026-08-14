@@ -259,6 +259,7 @@ export class SupplyListComponent {
       data: {
         requirementLabel: this.toLabel(supply),
         selectedInventoryIds: this.normalizeInventoryIds(supply.invIDs),
+        actionLabel: saveOnClose ? 'Save Links' : 'Apply Links',
         filters: this.inventoryFiltersFromSupply(supply)
       }
     });
@@ -346,13 +347,12 @@ export class SupplyListComponent {
 
   startEdit(item: SupplyList) {
     this.editingItemId = item._id ?? null;
-    this.editingBackup = JSON.parse(JSON.stringify(item));
+    this.editingBackup = this.cloneSupplyList(item);
   }
 
   cancelEdit() {
     if (this.editingBackup) {
-      const idx = this.dataSource.data.findIndex(i => i._id === this.editingBackup!._id);
-      if (idx !== -1) this.dataSource.data[idx] = this.editingBackup;
+      this.restoreEditedItem(this.editingBackup);
     }
     this.editingItemId = null;
     this.editingBackup = null;
@@ -419,6 +419,23 @@ export class SupplyListComponent {
     }
 
     return normalized;
+  }
+
+  private restoreEditedItem(backup: SupplyList): void {
+    this.restoreItemInCollection(this.serverFilteredSupplyList(), backup);
+    this.restoreItemInCollection(this.dataSource.data, backup);
+    this.dataSource.data = [...this.dataSource.data];
+  }
+
+  private restoreItemInCollection(items: SupplyList[], backup: SupplyList): void {
+    const item = items.find(i => i._id === backup._id);
+    if (item) {
+      Object.assign(item, this.cloneSupplyList(backup));
+    }
+  }
+
+  private cloneSupplyList(item: SupplyList): SupplyList {
+    return JSON.parse(JSON.stringify(item));
   }
 }
 export { SupplyListService };
