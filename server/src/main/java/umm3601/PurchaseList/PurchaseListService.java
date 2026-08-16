@@ -662,11 +662,7 @@ public class PurchaseListService {
     }
 
     boolean matches(InventoryFulfillment fulfillment) {
-      if (fulfillment.linkedInventoryIds.isEmpty()) {
-        return groupKey.equals(fulfillment.groupKey);
-      }
-
-      return overlapsLinkedInventory(fulfillment.linkedInventoryIds);
+      return groupKey.equals(fulfillment.groupKey);
     }
 
     void add(
@@ -729,14 +725,6 @@ public class PurchaseListService {
       return inventory == null ? "" : fallback(inventory.internalID);
     }
 
-    private boolean overlapsLinkedInventory(List<String> inventoryIds) {
-      for (String inventoryId : inventoryIds) {
-        if (linkedInventoryIds.contains(inventoryId)) {
-          return true;
-        }
-      }
-      return false;
-    }
   }
 
   private static class InventoryFulfillment {

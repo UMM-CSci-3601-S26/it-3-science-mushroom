@@ -281,7 +281,7 @@ class PurchaseListServiceSpec {
   }
 
   @Test
-  void aggregatesOverlappingLinkedInventorySetsIntoOnePurchaseListItem() {
+  void keepsOverlappingLinkedInventorySetsAsSeparatePurchaseListItems() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
     db.getCollection("inventory").insertMany(List.of(
       inventoryDoc("ID-00010", "Marker", 3),
@@ -294,20 +294,29 @@ class PurchaseListServiceSpec {
     PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertAll(
-      () -> assertEquals(1, snapshot.items.size()),
-      () -> assertEquals(1, snapshot.summary.totalDemandedItems),
+      () -> assertEquals(2, snapshot.items.size()),
+      () -> assertEquals(2, snapshot.summary.totalDemandedItems),
       () -> assertEquals(20, snapshot.summary.totalUnitsNeeded),
-      () -> assertEquals(12, snapshot.summary.totalUnitsOnHand),
-      () -> assertEquals(8, snapshot.summary.totalUnitsToBuy));
+      () -> assertEquals(16, snapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(4, snapshot.summary.totalUnitsToBuy));
 
-    PurchaseListItem item = snapshot.items.get(0);
-    assertEquals(20, item.totalNeeded);
-    assertEquals(12, item.quantityOnHand);
-    assertEquals(8, item.quantityToBuy);
-    assertEquals(60, item.fulfillmentPercent);
-    assertEquals("partial", item.fulfillmentStatus);
-    assertIterableEquals(List.of("ID-00010", "ID-00011", "ID-00012"), item.linkedInventoryIds);
-    assertEquals(2, item.sources.size());
+    PurchaseListItem markerItem = snapshot.items.get(0);
+    assertEquals(10, markerItem.totalNeeded);
+    assertEquals(7, markerItem.quantityOnHand);
+    assertEquals(3, markerItem.quantityToBuy);
+    assertEquals(70, markerItem.fulfillmentPercent);
+    assertEquals("partial", markerItem.fulfillmentStatus);
+    assertIterableEquals(List.of("ID-00010", "ID-00011"), markerItem.linkedInventoryIds);
+    assertEquals(1, markerItem.sources.size());
+
+    PurchaseListItem pencilItem = snapshot.items.get(1);
+    assertEquals(10, pencilItem.totalNeeded);
+    assertEquals(9, pencilItem.quantityOnHand);
+    assertEquals(1, pencilItem.quantityToBuy);
+    assertEquals(90, pencilItem.fulfillmentPercent);
+    assertEquals("partial", pencilItem.fulfillmentStatus);
+    assertIterableEquals(List.of("ID-00011", "ID-00012"), pencilItem.linkedInventoryIds);
+    assertEquals(1, pencilItem.sources.size());
   }
 
   @Test
