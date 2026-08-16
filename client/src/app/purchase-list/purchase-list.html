@@ -25,7 +25,26 @@
     <mat-card-content>
       <div class="purchase-searchbar app-split">
         <div class="purchase-search-preview">
-
+          <mat-form-field appearance="outline" class="purchase-search-field">
+            <mat-label>Search item description</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input
+              matInput
+              type="search"
+              [value]="searchQuery()"
+              (input)="applySearch($any($event.target).value)"
+              data-cy="purchase-list-search">
+            @if (searchQuery()) {
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                aria-label="Clear purchase list search"
+                (click)="clearSearch()">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
         </div>
       </div>
 
@@ -105,6 +124,11 @@
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell purchase-no-results" [attr.colspan]="displayedColumns.length">
+                No purchase-list items match the current search.
+              </td>
+            </tr>
           </table>
         </div>
       }

@@ -16,6 +16,18 @@
   gap: var(--app-space-lg);
 }
 
+.purchase-searchbar {
+  align-items: center;
+}
+
+.purchase-search-preview {
+  width: min(100%, 28rem);
+}
+
+.purchase-search-field {
+  width: 100%;
+}
+
 .purchase-table-shell {
   overflow: hidden;
   border: 1px solid var(--app-border);
@@ -94,7 +106,18 @@
   font-size: 3rem;
 }
 
+.purchase-no-results {
+  padding: var(--app-space-lg);
+  color: var(--app-text-muted);
+  font-weight: 700;
+  text-align: center;
+}
+
 @media (max-width: 900px) {
+  .purchase-search-preview {
+    width: 100%;
+  }
+
   .purchase-table-shell {
     overflow-x: auto;
   }

@@ -1,6 +1,8 @@
 import { Component, effect, inject, OnInit, signal, viewChild } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
+import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
+import { MatInputModule } from "@angular/material/input";
 import { MatSort, MatSortModule } from "@angular/material/sort";
 import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 
@@ -20,7 +22,9 @@ import { MatButtonModule } from "@angular/material/button";
   styleUrls: ['./purchase-list.scss'],
   imports: [
     MatCardModule,
+    MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatSortModule,
     MatTableModule,
     MatButtonModule
@@ -41,14 +45,19 @@ export class PurchaseListComponent implements OnInit {
   readonly sort = viewChild<MatSort>(MatSort);
 
   purchaseList = signal<PurchaseListSnapshot | null >(null);
+  searchQuery = signal('');
   loading = signal(true);
   error = signal(false);
   calculating = signal(false);
 
   constructor() {
+    this.dataSource.filterPredicate = (item, filter) =>
+      this.searchablePurchaseItemDescription(item).includes(filter);
+
     effect(() => {
       this.dataSource.data = this.purchaseList()?.items ?? [];
       this.dataSource.sort = this.sort();
+      this.dataSource.filter = this.normalizedSearchQuery(this.searchQuery());
     });
   }
 
@@ -85,7 +94,24 @@ export class PurchaseListComponent implements OnInit {
     });
   }
 
+  applySearch(query: string): void {
+    this.searchQuery.set(query);
+    this.dataSource.filter = this.normalizedSearchQuery(query);
+  }
+
+  clearSearch(): void {
+    this.applySearch('');
+  }
+
   ngOnInit(): void {
     this.fetchPurchaseList();
+  }
+
+  private searchablePurchaseItemDescription(item: PurchaseListItem): string {
+    return item.description.toLowerCase();
+  }
+
+  private normalizedSearchQuery(query: string): string {
+    return query.trim().toLowerCase();
   }
 }

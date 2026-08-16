@@ -90,6 +90,35 @@ describe('PurchaseListComponent', () => {
       .toEqual(['Total Needed', 'On Hand', 'To Buy', 'Status']);
   });
 
+  it('filters purchase list rows by description text', () => {
+    fixture.detectChanges();
+
+    component.applySearch('no. 2');
+
+    expect(component.searchQuery()).toBe('no. 2');
+    expect(component.dataSource.filteredData.map(item => item.item)).toEqual(['Pencils']);
+  });
+
+  it('does not match non-description fields in the purchase list search', () => {
+    fixture.detectChanges();
+
+    component.applySearch('partial');
+
+    expect(component.dataSource.filteredData).toEqual([]);
+  });
+
+  it('clears the purchase list search filter', () => {
+    fixture.detectChanges();
+
+    component.applySearch('blue');
+    component.clearSearch();
+
+    expect(component.searchQuery()).toBe('');
+    expect(component.dataSource.filter).toBe('');
+    expect(component.dataSource.filteredData.map(item => item.item))
+      .toEqual(['Markers', 'Pencils', 'Folders']);
+  });
+
   it('Successful calculate response updates purchase list snapshot', () => {
     fixture.detectChanges()
     component.calculateCurrentPurchaseList();
