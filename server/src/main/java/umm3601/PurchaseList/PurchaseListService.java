@@ -717,6 +717,7 @@ public class PurchaseListService {
       itemSnapshot.fulfillmentPercent = fulfillmentPercent(currentQuantityOnHand, totalNeeded);
       itemSnapshot.fulfillmentStatus = fulfillmentStatus(currentQuantityOnHand, totalNeeded);
       itemSnapshot.linkedInventoryIds = new ArrayList<>(linkedInventoryIds);
+      itemSnapshot.selectedFulfillmentInventoryIds = new ArrayList<>();
       itemSnapshot.sources = List.copyOf(sources);
       return itemSnapshot;
     }
