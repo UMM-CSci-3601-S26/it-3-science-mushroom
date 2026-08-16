@@ -320,6 +320,47 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void keepsSingularLinkedDemandGroupedByExactInventoryItemAndAmbiguousDemandSeparate() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Marker", 12),
+      inventoryDoc("ID-00021", "Pencil", 2)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 1, List.of("ID-00020")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Dry Erase Marker", 2, List.of("ID-00020")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Pencil", 1, List.of("ID-00021")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Writing Tool", 1, List.of("ID-00020", "ID-00021"))));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertAll(
+      () -> assertEquals(3, snapshot.items.size()),
+      () -> assertEquals(3, snapshot.summary.totalDemandedItems),
+      () -> assertEquals(25, snapshot.summary.totalUnitsNeeded));
+
+    PurchaseListItem markerItem = snapshot.items.get(0);
+    assertEquals(15, markerItem.totalNeeded);
+    assertEquals(12, markerItem.quantityOnHand);
+    assertEquals(3, markerItem.quantityToBuy);
+    assertIterableEquals(List.of("ID-00020"), markerItem.linkedInventoryIds);
+    assertEquals(2, markerItem.sources.size());
+
+    PurchaseListItem pencilItem = snapshot.items.get(1);
+    assertEquals(5, pencilItem.totalNeeded);
+    assertEquals(2, pencilItem.quantityOnHand);
+    assertEquals(3, pencilItem.quantityToBuy);
+    assertIterableEquals(List.of("ID-00021"), pencilItem.linkedInventoryIds);
+    assertEquals(1, pencilItem.sources.size());
+
+    PurchaseListItem ambiguousItem = snapshot.items.get(2);
+    assertEquals(5, ambiguousItem.totalNeeded);
+    assertEquals(14, ambiguousItem.quantityOnHand);
+    assertEquals(0, ambiguousItem.quantityToBuy);
+    assertIterableEquals(List.of("ID-00020", "ID-00021"), ambiguousItem.linkedInventoryIds);
+    assertEquals(1, ambiguousItem.sources.size());
+  }
+
+  @Test
   void usesInventoryIdentityWhenMatchedSupplyListItemIsGeneric() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("inventory").insertOne(inventoryDoc("ID-00004", "Marker", 1)
