@@ -492,9 +492,15 @@ export class PurchaseListComponent implements OnInit {
   }
 
   private targetItemIndex(items: PurchaseListItem[], selectedId: string): number {
-    return items.findIndex(item =>
+    const exactTargetIndex = items.findIndex(item =>
       (item.linkedInventoryIds ?? []).length === 1
       && item.linkedInventoryIds[0] === selectedId);
+
+    if (exactTargetIndex !== -1) {
+      return exactTargetIndex;
+    }
+
+    return items.findIndex(item => (item.linkedInventoryIds ?? []).includes(selectedId));
   }
 
   private fulfillmentOptionForSelection(

@@ -232,6 +232,51 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void calculateNewPurchaseListMergesResolvedFulfillmentIntoOverlappingActiveRows() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Marker", 4),
+      inventoryDoc("ID-00021", "Pencil", 1),
+      inventoryDoc("ID-00022", "Highlighter", 2)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Writing Tool", 1, List.of("ID-00020", "ID-00021")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Classroom Tool", 1, List.of("ID-00020", "ID-00022"))));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem resolvedSourceItem = initialSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020", "ID-00021")))
+      .findFirst()
+      .orElseThrow();
+    PurchaseListItem overlappingActiveItem = initialSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020", "ID-00022")))
+      .findFirst()
+      .orElseThrow();
+    resolvedSourceItem.selectedFulfillmentInventoryIds = List.of("ID-00020");
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = List.of(overlappingActiveItem);
+    savedSnapshot.resolvedItems = List.of(resolvedSourceItem);
+    purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem recalculatedActiveItem = recalculatedSnapshot.items.get(0);
+
+    assertAll(
+      () -> assertEquals(1, recalculatedSnapshot.items.size()),
+      () -> assertEquals(List.of("ID-00020", "ID-00022"), recalculatedActiveItem.linkedInventoryIds),
+      () -> assertEquals(10, recalculatedActiveItem.totalNeeded),
+      () -> assertEquals(6, recalculatedActiveItem.quantityOnHand),
+      () -> assertEquals(4, recalculatedActiveItem.quantityToBuy),
+      () -> assertEquals(2, recalculatedActiveItem.sources.size()),
+      () -> assertEquals(1, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals(1, recalculatedSnapshot.summary.totalDemandedItems),
+      () -> assertEquals(10, recalculatedSnapshot.summary.totalUnitsNeeded),
+      () -> assertEquals(4, recalculatedSnapshot.summary.totalUnitsToBuy));
+  }
+
+  @Test
   void includesUnlinkedSupplyListDemandWhenInventoryHasNoMatch() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Backpack", 2));

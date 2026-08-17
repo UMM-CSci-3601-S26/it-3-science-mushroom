@@ -244,15 +244,20 @@ public class PurchaseListService {
   }
 
   private int targetItemIndex(List<PurchaseListItem> activeItems, String selectedId) {
+    int overlappingIndex = -1;
+
     for (int index = 0; index < activeItems.size(); index++) {
       PurchaseListItem item = activeItems.get(index);
       List<String> itemLinkedInventoryIds = linkedInventoryIds(item);
       if (itemLinkedInventoryIds.size() == 1 && Objects.equals(itemLinkedInventoryIds.get(0), selectedId)) {
         return index;
       }
+      if (overlappingIndex < 0 && itemLinkedInventoryIds.contains(selectedId)) {
+        overlappingIndex = index;
+      }
     }
 
-    return -1;
+    return overlappingIndex;
   }
 
   private PurchaseListItem itemWithResolvedDemand(

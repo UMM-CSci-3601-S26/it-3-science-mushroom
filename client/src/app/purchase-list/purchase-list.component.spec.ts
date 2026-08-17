@@ -253,6 +253,32 @@ describe('PurchaseListComponent', () => {
     expect(writingToolFulfillmentRow?.quantityToBuy).toBe(0);
   });
 
+  it('merges resolved demand into an overlapping active row before creating a new row', () => {
+    fixture.detectChanges();
+
+    const sourceItem = purchaseItem('Markers', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011']);
+    const overlappingItem = purchaseItem('Highlighters', 'Yellow highlighters', 5, 50, ['ID-00010', 'ID-00012']);
+    component.purchaseList.set({
+      ...snapshot,
+      items: [sourceItem, overlappingItem],
+      resolvedItems: []
+    });
+    fixture.detectChanges();
+
+    component.toggleExpansion(sourceItem);
+    component.toggleFulfillmentSelection(sourceItem, 'ID-00010', true);
+    component.saveFulfillmentSelection(sourceItem);
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+
+    expect(savedSnapshot.items.length).toBe(1);
+    expect(savedSnapshot.items[0].description).toBe('Yellow highlighters');
+    expect(savedSnapshot.items[0].linkedInventoryIds).toEqual(['ID-00010', 'ID-00012']);
+    expect(savedSnapshot.items[0].totalNeeded).toBe(20);
+    expect(savedSnapshot.items[0].quantityToBuy).toBe(15);
+    expect(savedSnapshot.resolvedItems[0].description).toBe('Blue markers');
+  });
+
   it('shows resolved rows in the resolved view', () => {
     fixture.detectChanges();
 
