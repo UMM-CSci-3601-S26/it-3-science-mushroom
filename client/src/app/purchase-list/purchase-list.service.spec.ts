@@ -34,6 +34,15 @@ describe('PurchaseListService', () => {
         fulfillmentStatus: 'partial',
         linkedInventoryIds: ['ID-00042'],
         selectedFulfillmentInventoryIds: [],
+        fulfillmentOptions: [
+          {
+            internalId: 'ID-00042',
+            inventoryId: '507f1f77bcf86cd799439011',
+            item: 'Markers',
+            description: 'Crayola markers',
+            quantityOnHand: 3
+          }
+        ],
         sources: [
           {
             supplyListId: 'SL-1',

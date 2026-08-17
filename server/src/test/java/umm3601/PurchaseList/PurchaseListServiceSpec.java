@@ -357,6 +357,13 @@ class PurchaseListServiceSpec {
     assertEquals(14, ambiguousItem.quantityOnHand);
     assertEquals(0, ambiguousItem.quantityToBuy);
     assertIterableEquals(List.of("ID-00020", "ID-00021"), ambiguousItem.linkedInventoryIds);
+    assertEquals(2, ambiguousItem.fulfillmentOptions.size());
+    assertEquals("ID-00020", ambiguousItem.fulfillmentOptions.get(0).internalId);
+    assertEquals("Marker", ambiguousItem.fulfillmentOptions.get(0).description);
+    assertEquals(12, ambiguousItem.fulfillmentOptions.get(0).quantityOnHand);
+    assertEquals("ID-00021", ambiguousItem.fulfillmentOptions.get(1).internalId);
+    assertEquals("Pencil", ambiguousItem.fulfillmentOptions.get(1).description);
+    assertEquals(2, ambiguousItem.fulfillmentOptions.get(1).quantityOnHand);
     assertEquals(1, ambiguousItem.sources.size());
   }
 

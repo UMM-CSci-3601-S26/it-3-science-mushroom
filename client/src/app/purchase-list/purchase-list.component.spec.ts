@@ -156,6 +156,23 @@ describe('PurchaseListComponent', () => {
     expect(expandCues[0].nativeElement.textContent.trim()).toBe('expand_more');
   });
 
+  it('shows fulfillment options when an expandable row is opened', () => {
+    fixture.detectChanges();
+
+    component.toggleExpansion(component.dataSource.data[0]);
+    fixture.detectChanges();
+
+    const optionDescriptions = fixture.debugElement.queryAll(By.css('.purchase-linked-option-description'));
+    const optionStockCounts = fixture.debugElement.queryAll(By.css('.purchase-linked-option-stock'));
+
+    expect(optionDescriptions.map(option => option.nativeElement.textContent.trim()))
+      .toEqual(['8 Pack of Washable Markers', 'General Writing Tool']);
+    expect(optionStockCounts.map(option => option.nativeElement.textContent.trim()))
+      .toEqual(['3 on hand', '4 on hand']);
+    expect(fixture.nativeElement.textContent).toContain('Internal ID');
+    expect(fixture.nativeElement.textContent).toContain('ID-00010');
+  });
+
   it('Successful calculate response updates purchase list snapshot', () => {
     fixture.detectChanges()
     component.calculateCurrentPurchaseList();
@@ -186,6 +203,13 @@ function purchaseItem(
     fulfillmentStatus: quantityToBuy === 0 ? 'fulfilled' as const : 'partial' as const,
     linkedInventoryIds,
     selectedFulfillmentInventoryIds: [],
+    fulfillmentOptions: linkedInventoryIds.map((internalId, index) => ({
+      internalId,
+      inventoryId: `inventory-${internalId}`,
+      item: index === 0 ? 'Markers' : 'Writing Tool',
+      description: index === 0 ? '8 Pack of Washable Markers' : 'General Writing Tool',
+      quantityOnHand: index === 0 ? 3 : 4
+    })),
     sources: []
   };
 }
