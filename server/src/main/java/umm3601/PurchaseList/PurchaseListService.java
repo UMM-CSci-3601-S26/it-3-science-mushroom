@@ -113,6 +113,9 @@ public class PurchaseListService {
   }
 
   private PurchaseListSnapshot normalizeSnapshot(PurchaseListSnapshot snapshot) {
+    if (snapshot.resolvedItems == null) {
+      snapshot.resolvedItems = List.of();
+    }
     if (snapshot.summary == null) {
       snapshot.summary = toPurchaseListSummary(List.of());
     }
