@@ -72,6 +72,42 @@ describe('PurchaseListFulfillmentAllocationDialogComponent', () => {
     ]);
   });
 
+  it('closes without allocations when canceled', () => {
+    component.cancel();
+
+    expect(dialogRef.close).toHaveBeenCalledWith();
+  });
+
+  it('requires each selected option to have a positive quantity', () => {
+    component.rows[0].quantity = 0;
+    component.rows[1].quantity = 20;
+
+    component.save();
+
+    expect(component.error).toBe('Each selected item needs a quantity.');
+    expect(dialogRef.close).not.toHaveBeenCalled();
+  });
+
+  it('treats non-number quantities as zero', () => {
+    component.rows[0].quantity = 'not a number';
+    component.rows[1].quantity = 20;
+
+    expect(component.allocatedTotal()).toBe(20);
+
+    component.save();
+
+    expect(component.error).toBe('Each selected item needs a quantity.');
+    expect(dialogRef.close).not.toHaveBeenCalled();
+  });
+
+  it('clears the current validation error when the quantity changes', () => {
+    component.error = 'Allocated quantity must equal 20.';
+
+    component.clearError();
+
+    expect(component.error).toBe('');
+  });
+
   it('does not close when quantities do not match the needed total', () => {
     component.rows[0].quantity = 14;
     component.rows[1].quantity = 5;

@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
-import { PurchaseListSnapshot } from './purchase-list';
+import { PurchaseListItem, PurchaseListSnapshot, PurchaseListSource } from './purchase-list';
 import { PurchaseListComponent } from './purchase-list.component';
 import { PurchaseListService } from './purchase-list.service';
 import {
@@ -135,6 +135,47 @@ describe('PurchaseListComponent', () => {
       .toEqual(['Markers', 'Pencils', 'Folders']);
   });
 
+  it('uses empty current view values when the purchase list snapshot has not loaded', () => {
+    expect(component.currentViewItems()).toEqual([]);
+    expect(component.activeItemCount()).toBe(0);
+    expect(component.resolvedItemCount()).toBe(0);
+  });
+
+  it('uses empty current view values when the active snapshot lists are missing', () => {
+    component.purchaseList.set({
+      ...snapshot,
+      items: undefined,
+      resolvedItems: undefined
+    } as unknown as PurchaseListSnapshot);
+
+    expect(component.currentViewItems()).toEqual([]);
+    expect(component.activeItemCount()).toBe(0);
+    expect(component.resolvedItemCount()).toBe(0);
+
+    component.setActiveView('resolved');
+
+    expect(component.currentViewItems()).toEqual([]);
+  });
+
+  it('warns instead of switching views while a fulfillment edit is pending', () => {
+    fixture.detectChanges();
+
+    const snackBar = TestBed.inject(MatSnackBar);
+    const snackBarSpy = spyOn(snackBar, 'open');
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.setActiveView('resolved');
+
+    expect(component.activeView()).toBe('active');
+    expect(component.expandedRow()).toBe(markerItem);
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'Save or cancel row edit before selecting another row.',
+      'OK',
+      { duration: 4000 });
+  });
+
   it('toggles expansion for rows with multiple linked inventory IDs', () => {
     fixture.detectChanges();
 
@@ -211,6 +252,22 @@ describe('PurchaseListComponent', () => {
     expect(component.expandedRow()).toBeNull();
   });
 
+  it('shows an error instead of saving fulfillment when no snapshot is available', () => {
+    const snackBar = TestBed.inject(MatSnackBar);
+    const snackBarSpy = spyOn(snackBar, 'open');
+    const markerItem = purchaseItem('Markers', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011']);
+
+    component.purchaseList.set(null);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.saveFulfillmentSelection(markerItem);
+
+    expect(purchaseListService.savePurchaseList).not.toHaveBeenCalled();
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'Unable to save fulfillment selection.',
+      'OK',
+      { duration: 4000 });
+  });
+
   it('opens an allocation dialog when multiple fulfillment options are selected', () => {
     dialog.open.and.returnValue({
       afterClosed: () => of([
@@ -251,6 +308,23 @@ describe('PurchaseListComponent', () => {
     expect(markerFulfillmentRow?.quantityToBuy).toBe(3);
     expect(writingToolFulfillmentRow?.totalNeeded).toBe(4);
     expect(writingToolFulfillmentRow?.quantityToBuy).toBe(0);
+  });
+
+  it('does not save when the allocation dialog is canceled', () => {
+    dialog.open.and.returnValue({
+      afterClosed: () => of(undefined)
+    } as MatDialogRef<PurchaseListFulfillmentAllocationDialogComponent>);
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00011', true);
+    component.saveFulfillmentSelection(markerItem);
+
+    expect(dialog.open).toHaveBeenCalled();
+    expect(purchaseListService.savePurchaseList).not.toHaveBeenCalled();
   });
 
   it('merges resolved demand into an overlapping active row before creating a new row', () => {
@@ -316,6 +390,85 @@ describe('PurchaseListComponent', () => {
     expect(savedSnapshot.items.some(item => item.internalId === 'ID-00010')).toBeFalse();
     expect(savedSnapshot.items.some(item => item.internalId === 'ID-00011')).toBeTrue();
     expect(savedSnapshot.resolvedItems[0].selectedFulfillmentInventoryIds).toEqual(['ID-00011']);
+  });
+
+  it('allows saving allocation edits on a resolved row without changing selected IDs', () => {
+    dialog.open.and.returnValue({
+      afterClosed: () => of([
+        { internalId: 'ID-00010', quantity: 7 },
+        { internalId: 'ID-00011', quantity: 3 }
+      ])
+    } as MatDialogRef<PurchaseListFulfillmentAllocationDialogComponent>);
+    fixture.detectChanges();
+
+    const resolvedItem = purchaseItem('Markers', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011']);
+    resolvedItem.selectedFulfillmentInventoryIds = ['ID-00010', 'ID-00011'];
+    resolvedItem.selectedFulfillmentAllocations = [
+      { internalId: 'ID-00010', quantity: 6 },
+      { internalId: 'ID-00011', quantity: 4 }
+    ];
+    component.purchaseList.set({
+      ...snapshot,
+      items: [],
+      resolvedItems: [resolvedItem]
+    });
+    component.setActiveView('resolved');
+    fixture.detectChanges();
+
+    component.toggleExpansion(resolvedItem);
+    component.saveFulfillmentSelection(resolvedItem);
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+
+    expect(dialog.open).toHaveBeenCalled();
+    expect(savedSnapshot.resolvedItems[0].selectedFulfillmentAllocations).toEqual([
+      { internalId: 'ID-00010', quantity: 7 },
+      { internalId: 'ID-00011', quantity: 3 }
+    ]);
+  });
+
+  it('removes only the resolved sources when a resolved selection changes', () => {
+    fixture.detectChanges();
+
+    const resolvedSource = purchaseSource('source-resolved');
+    const remainingSource = purchaseSource('source-remaining');
+    const fulfillmentTarget = purchaseItem('Markers', '8 Pack of Washable Markers', 4, 80, ['ID-00010'], [
+      resolvedSource,
+      remainingSource
+    ]);
+    fulfillmentTarget.totalNeeded = 14;
+    fulfillmentTarget.quantityOnHand = 5;
+    fulfillmentTarget.quantityToBuy = 9;
+    const resolvedItem = purchaseItem('Writing Tool', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011'], [
+      resolvedSource
+    ]);
+    resolvedItem.selectedFulfillmentInventoryIds = ['ID-00010'];
+    resolvedItem.selectedFulfillmentAllocations = [
+      { internalId: 'ID-00010', quantity: 4 }
+    ];
+
+    component.purchaseList.set({
+      ...snapshot,
+      items: [fulfillmentTarget],
+      resolvedItems: [resolvedItem]
+    });
+    component.setActiveView('resolved');
+    fixture.detectChanges();
+
+    component.toggleExpansion(resolvedItem);
+    component.toggleFulfillmentSelection(resolvedItem, 'ID-00010', false);
+    component.toggleFulfillmentSelection(resolvedItem, 'ID-00011', true);
+    component.saveFulfillmentSelection(resolvedItem);
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+    const remainingTarget = savedSnapshot.items.find(item => item.internalId === 'Markers');
+    const newTarget = savedSnapshot.items.find(item => item.internalId === 'ID-00011');
+
+    expect(remainingTarget?.totalNeeded).toBe(10);
+    expect(remainingTarget?.quantityToBuy).toBe(5);
+    expect(remainingTarget?.sources).toEqual([remainingSource]);
+    expect(newTarget?.totalNeeded).toBe(10);
+    expect(newTarget?.sources).toEqual([resolvedSource]);
   });
 
   it('moves a resolved row back to to-buy when its selection is cleared', () => {
@@ -389,8 +542,9 @@ function purchaseItem(
   description: string,
   quantityToBuy: number,
   fulfillmentPercent: number,
-  linkedInventoryIds: string[] = []
-) {
+  linkedInventoryIds: string[] = [],
+  sources: PurchaseListSource[] = []
+): PurchaseListItem {
   return {
     inventoryId: item,
     internalId: item,
@@ -411,6 +565,19 @@ function purchaseItem(
       description: index === 0 ? '8 Pack of Washable Markers' : 'General Writing Tool',
       quantityOnHand: index === 0 ? 3 : 4
     })),
-    sources: []
+    sources
+  };
+}
+
+function purchaseSource(supplyListId: string): PurchaseListSource {
+  return {
+    supplyListId,
+    school: 'Morris Elementary',
+    grade: '1',
+    teacher: 'Ms. Doe',
+    requestedItems: ['Markers'],
+    studentCount: 5,
+    quantityPerStudent: 1,
+    totalNeeded: 5
   };
 }
