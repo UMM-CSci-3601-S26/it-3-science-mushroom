@@ -15,6 +15,7 @@ public class PurchaseListItem {
   public String fulfillmentStatus;
   public List<String> linkedInventoryIds = List.of();
   public List<String> selectedFulfillmentInventoryIds = List.of();
+  public List<PurchaseListFulfillmentAllocation> selectedFulfillmentAllocations = List.of();
   public List<PurchaseListFulfillmentOption> fulfillmentOptions = List.of();
   public List<PurchaseListSource> sources = List.of();
 }

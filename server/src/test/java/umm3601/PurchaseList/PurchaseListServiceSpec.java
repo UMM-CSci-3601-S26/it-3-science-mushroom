@@ -169,6 +169,69 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void calculateNewPurchaseListPreservesMultipleResolvedFulfillmentAllocations() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Marker", 4),
+      inventoryDoc("ID-00021", "Pencil", 1)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 1, List.of("ID-00020")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Writing Tool", 1, List.of("ID-00020", "ID-00021"))));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem markerItem = initialSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020")))
+      .findFirst()
+      .orElseThrow();
+    PurchaseListItem ambiguousItem = initialSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020", "ID-00021")))
+      .findFirst()
+      .orElseThrow();
+    ambiguousItem.selectedFulfillmentInventoryIds = List.of("ID-00020", "ID-00021");
+    ambiguousItem.selectedFulfillmentAllocations = List.of(
+      fulfillmentAllocation("ID-00020", 3),
+      fulfillmentAllocation("ID-00021", 2));
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = List.of(markerItem);
+    savedSnapshot.resolvedItems = List.of(ambiguousItem);
+    purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem recalculatedMarkerItem = recalculatedSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020")))
+      .findFirst()
+      .orElseThrow();
+    PurchaseListItem recalculatedPencilItem = recalculatedSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00021")))
+      .findFirst()
+      .orElseThrow();
+
+    assertAll(
+      () -> assertEquals(2, recalculatedSnapshot.items.size()),
+      () -> assertEquals(1, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals(8, recalculatedMarkerItem.totalNeeded),
+      () -> assertEquals(4, recalculatedMarkerItem.quantityOnHand),
+      () -> assertEquals(4, recalculatedMarkerItem.quantityToBuy),
+      () -> assertEquals(2, recalculatedPencilItem.totalNeeded),
+      () -> assertEquals(1, recalculatedPencilItem.quantityOnHand),
+      () -> assertEquals(1, recalculatedPencilItem.quantityToBuy),
+      () -> assertIterableEquals(
+        List.of("ID-00020", "ID-00021"),
+        recalculatedSnapshot.resolvedItems.get(0).selectedFulfillmentInventoryIds),
+      () -> assertEquals(
+        3,
+        recalculatedSnapshot.resolvedItems.get(0).selectedFulfillmentAllocations.get(0).quantity),
+      () -> assertEquals(
+        2,
+        recalculatedSnapshot.resolvedItems.get(0).selectedFulfillmentAllocations.get(1).quantity),
+      () -> assertEquals(10, recalculatedSnapshot.summary.totalUnitsNeeded),
+      () -> assertEquals(5, recalculatedSnapshot.summary.totalUnitsToBuy));
+  }
+
+  @Test
   void includesUnlinkedSupplyListDemandWhenInventoryHasNoMatch() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Backpack", 2));
@@ -544,9 +607,17 @@ class PurchaseListServiceSpec {
     item.fulfillmentStatus = quantityOnHand >= totalNeeded ? "fulfilled" : "partial";
     item.linkedInventoryIds = List.of(internalId);
     item.selectedFulfillmentInventoryIds = List.of();
+    item.selectedFulfillmentAllocations = List.of();
     item.fulfillmentOptions = List.of();
     item.sources = List.of();
     return item;
+  }
+
+  private PurchaseListFulfillmentAllocation fulfillmentAllocation(String internalId, int quantity) {
+    PurchaseListFulfillmentAllocation allocation = new PurchaseListFulfillmentAllocation();
+    allocation.internalId = internalId;
+    allocation.quantity = quantity;
+    return allocation;
   }
 
   private Document supplyListDoc(

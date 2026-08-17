@@ -34,6 +34,7 @@ describe('PurchaseListService', () => {
         fulfillmentStatus: 'partial',
         linkedInventoryIds: ['ID-00042'],
         selectedFulfillmentInventoryIds: [],
+        selectedFulfillmentAllocations: [],
         fulfillmentOptions: [
           {
             internalId: 'ID-00042',

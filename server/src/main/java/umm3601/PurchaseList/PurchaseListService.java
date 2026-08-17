@@ -174,7 +174,12 @@ public class PurchaseListService {
       activeItems.remove(currentItem);
 
       PurchaseListItem resolvedItem = copyPurchaseListItem(currentItem);
-      resolvedItem.selectedFulfillmentInventoryIds = selectedIds;
+      resolvedItem.selectedFulfillmentAllocations = selectedFulfillmentAllocations(
+        savedResolvedItem,
+        currentItem.totalNeeded);
+      resolvedItem.selectedFulfillmentInventoryIds = resolvedItem.selectedFulfillmentAllocations.stream()
+        .map(allocation -> allocation.internalId)
+        .toList();
       resolvedItems.add(resolvedItem);
       applyResolvedFulfillment(activeItems, resolvedItem);
     }
@@ -207,26 +212,25 @@ public class PurchaseListService {
   }
 
   private void applyResolvedFulfillment(List<PurchaseListItem> activeItems, PurchaseListItem resolvedItem) {
-    List<String> selectedIds = selectedFulfillmentInventoryIds(resolvedItem);
-    if (selectedIds.size() != 1) {
-      return;
-    }
+    for (PurchaseListFulfillmentAllocation allocation : selectedFulfillmentAllocations(resolvedItem)) {
+      PurchaseListFulfillmentOption selectedOption = fulfillmentOptionForSelection(
+        resolvedItem,
+        allocation.internalId);
 
-    String selectedId = selectedIds.get(0);
-    PurchaseListFulfillmentOption selectedOption = fulfillmentOptionForSelection(resolvedItem, selectedId);
-    if (selectedOption == null) {
-      return;
-    }
+      if (selectedOption == null || allocation.quantity <= 0) {
+        continue;
+      }
 
-    int targetIndex = targetItemIndex(activeItems, selectedId);
-    if (targetIndex < 0) {
-      activeItems.add(purchaseItemFromFulfillmentOption(resolvedItem, selectedOption));
-      return;
-    }
+      int targetIndex = targetItemIndex(activeItems, allocation.internalId);
+      if (targetIndex < 0) {
+        activeItems.add(purchaseItemFromFulfillmentOption(resolvedItem, selectedOption, allocation.quantity));
+        continue;
+      }
 
-    activeItems.set(
-      targetIndex,
-      itemWithResolvedDemand(activeItems.get(targetIndex), resolvedItem));
+      activeItems.set(
+        targetIndex,
+        itemWithResolvedDemand(activeItems.get(targetIndex), resolvedItem, allocation.quantity));
+    }
   }
 
   private PurchaseListFulfillmentOption fulfillmentOptionForSelection(PurchaseListItem item, String selectedId) {
@@ -251,9 +255,13 @@ public class PurchaseListService {
     return -1;
   }
 
-  private PurchaseListItem itemWithResolvedDemand(PurchaseListItem targetItem, PurchaseListItem resolvedItem) {
+  private PurchaseListItem itemWithResolvedDemand(
+      PurchaseListItem targetItem,
+      PurchaseListItem resolvedItem,
+      int allocatedQuantity
+  ) {
     PurchaseListItem updatedItem = copyPurchaseListItem(targetItem);
-    int updatedTotalNeeded = targetItem.totalNeeded + resolvedItem.totalNeeded;
+    int updatedTotalNeeded = targetItem.totalNeeded + allocatedQuantity;
 
     updatedItem.totalNeeded = updatedTotalNeeded;
     updatedItem.quantityToBuy = Math.max(0, updatedTotalNeeded - targetItem.quantityOnHand);
@@ -266,20 +274,22 @@ public class PurchaseListService {
 
   private PurchaseListItem purchaseItemFromFulfillmentOption(
       PurchaseListItem resolvedItem,
-      PurchaseListFulfillmentOption option
+      PurchaseListFulfillmentOption option,
+      int allocatedQuantity
   ) {
     PurchaseListItem purchaseListItem = new PurchaseListItem();
     purchaseListItem.inventoryId = option.inventoryId;
     purchaseListItem.internalId = option.internalId;
     purchaseListItem.item = option.item;
     purchaseListItem.description = option.description;
-    purchaseListItem.totalNeeded = resolvedItem.totalNeeded;
+    purchaseListItem.totalNeeded = allocatedQuantity;
     purchaseListItem.quantityOnHand = option.quantityOnHand;
-    purchaseListItem.quantityToBuy = Math.max(0, resolvedItem.totalNeeded - option.quantityOnHand);
-    purchaseListItem.fulfillmentPercent = fulfillmentPercent(option.quantityOnHand, resolvedItem.totalNeeded);
-    purchaseListItem.fulfillmentStatus = fulfillmentStatus(option.quantityOnHand, resolvedItem.totalNeeded);
+    purchaseListItem.quantityToBuy = Math.max(0, allocatedQuantity - option.quantityOnHand);
+    purchaseListItem.fulfillmentPercent = fulfillmentPercent(option.quantityOnHand, allocatedQuantity);
+    purchaseListItem.fulfillmentStatus = fulfillmentStatus(option.quantityOnHand, allocatedQuantity);
     purchaseListItem.linkedInventoryIds = List.of(option.internalId);
     purchaseListItem.selectedFulfillmentInventoryIds = List.of();
+    purchaseListItem.selectedFulfillmentAllocations = List.of();
     purchaseListItem.fulfillmentOptions = List.of(option);
     purchaseListItem.sources = new ArrayList<>(sources(resolvedItem));
     return purchaseListItem;
@@ -298,6 +308,7 @@ public class PurchaseListService {
     copy.fulfillmentStatus = item.fulfillmentStatus;
     copy.linkedInventoryIds = new ArrayList<>(linkedInventoryIds(item));
     copy.selectedFulfillmentInventoryIds = new ArrayList<>(selectedFulfillmentInventoryIds(item));
+    copy.selectedFulfillmentAllocations = new ArrayList<>(selectedFulfillmentAllocations(item));
     copy.fulfillmentOptions = new ArrayList<>(fulfillmentOptions(item));
     copy.sources = new ArrayList<>(sources(item));
     return copy;
@@ -320,6 +331,36 @@ public class PurchaseListService {
       .filter(this::hasText)
       .distinct()
       .toList();
+  }
+
+  private List<PurchaseListFulfillmentAllocation> selectedFulfillmentAllocations(PurchaseListItem item) {
+    return selectedFulfillmentAllocations(item, item.totalNeeded);
+  }
+
+  private List<PurchaseListFulfillmentAllocation> selectedFulfillmentAllocations(
+      PurchaseListItem item,
+      int totalNeeded
+  ) {
+    List<PurchaseListFulfillmentAllocation> savedAllocations = item.selectedFulfillmentAllocations == null
+      ? List.of()
+      : item.selectedFulfillmentAllocations.stream()
+        .filter(Objects::nonNull)
+        .filter(allocation -> hasText(allocation.internalId) && allocation.quantity > 0)
+        .toList();
+
+    if (!savedAllocations.isEmpty()) {
+      return savedAllocations;
+    }
+
+    List<String> selectedIds = selectedFulfillmentInventoryIds(item);
+    if (selectedIds.size() != 1) {
+      return List.of();
+    }
+
+    PurchaseListFulfillmentAllocation allocation = new PurchaseListFulfillmentAllocation();
+    allocation.internalId = selectedIds.get(0);
+    allocation.quantity = totalNeeded;
+    return List.of(allocation);
   }
 
   private List<PurchaseListFulfillmentOption> fulfillmentOptions(PurchaseListItem item) {
@@ -935,6 +976,7 @@ public class PurchaseListService {
       itemSnapshot.fulfillmentStatus = fulfillmentStatus(currentQuantityOnHand, totalNeeded);
       itemSnapshot.linkedInventoryIds = new ArrayList<>(linkedInventoryIds);
       itemSnapshot.selectedFulfillmentInventoryIds = new ArrayList<>();
+      itemSnapshot.selectedFulfillmentAllocations = new ArrayList<>();
       itemSnapshot.fulfillmentOptions = new ArrayList<>();
       for (String inventoryId : linkedInventoryIds) {
         Inventory inventory = inventoryByInternalId.get(inventoryId);

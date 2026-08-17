@@ -158,13 +158,21 @@
                           [class.purchase-linked-option-selected]="isFulfillmentSelected(item, option.internalId)">
                           <div class="purchase-linked-option-main">
                             <span class="purchase-linked-option-description">{{ option.description }}</span>
-                            <span class="purchase-linked-option-stock">{{ option.quantityOnHand }} on hand</span>
+                            <span class="purchase-linked-option-stock">
+                              {{ option.quantityOnHand }} on hand
+                            </span>
                           </div>
                           <dl class="purchase-linked-option-details">
                             <div>
                               <dt>Item</dt>
                               <dd>{{ option.item }}</dd>
                             </div>
+                            @if (fulfillmentAllocationQuantity(item, option.internalId) > 0) {
+                              <div>
+                                <dt>Assigned</dt>
+                                <dd>{{ fulfillmentAllocationQuantity(item, option.internalId) }}</dd>
+                              </div>
+                            }
                             <div>
                               <dt>Internal ID</dt>
                               <dd>{{ option.internalId }}</dd>

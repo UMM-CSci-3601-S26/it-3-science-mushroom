@@ -27,6 +27,7 @@ export interface PurchaseListItem {
   fulfillmentStatus: FulfillmentStatus;
   linkedInventoryIds: string[];
   selectedFulfillmentInventoryIds: string[];
+  selectedFulfillmentAllocations: PurchaseListFulfillmentAllocation[];
   fulfillmentOptions: PurchaseListFulfillmentOption[];
   sources: PurchaseListSource[];
 }
@@ -48,4 +49,9 @@ export interface PurchaseListFulfillmentOption {
   item: string;
   description: string;
   quantityOnHand: number;
+}
+
+export interface PurchaseListFulfillmentAllocation {
+  internalId: string;
+  quantity: number;
 }

@@ -3,15 +3,20 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { PurchaseListSnapshot } from './purchase-list';
 import { PurchaseListComponent } from './purchase-list.component';
 import { PurchaseListService } from './purchase-list.service';
+import {
+  PurchaseListFulfillmentAllocationDialogComponent
+} from './purchase-list-fulfillment-allocation-dialog.component';
 
 describe('PurchaseListComponent', () => {
   let component: PurchaseListComponent;
   let fixture: ComponentFixture<PurchaseListComponent>;
   let purchaseListService: jasmine.SpyObj<PurchaseListService>;
+  let dialog: jasmine.SpyObj<MatDialog>;
 
   const snapshot: PurchaseListSnapshot = {
     generatedAt: '2026-08-08T12:00:00.000Z',
@@ -50,6 +55,7 @@ describe('PurchaseListComponent', () => {
     purchaseListService.getPurchaseList.and.returnValue(of(snapshot));
     purchaseListService.calculatePurchaseList.and.returnValue(of(calculatedSnapshot));
     purchaseListService.savePurchaseList.and.callFake(purchaseList => of(purchaseList));
+    dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -60,12 +66,14 @@ describe('PurchaseListComponent', () => {
         {
           provide: PurchaseListService,
           useValue: purchaseListService
-        }
+        },
+        { provide: MatDialog, useValue: dialog }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PurchaseListComponent);
     component = fixture.componentInstance;
+    (component as unknown as { dialog: jasmine.SpyObj<MatDialog> }).dialog = dialog;
   });
 
   it('loads purchase list items into the Material table data source', () => {
@@ -203,6 +211,48 @@ describe('PurchaseListComponent', () => {
     expect(component.expandedRow()).toBeNull();
   });
 
+  it('opens an allocation dialog when multiple fulfillment options are selected', () => {
+    dialog.open.and.returnValue({
+      afterClosed: () => of([
+        { internalId: 'ID-00010', quantity: 6 },
+        { internalId: 'ID-00011', quantity: 4 }
+      ])
+    } as MatDialogRef<PurchaseListFulfillmentAllocationDialogComponent>);
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00011', true);
+    component.saveFulfillmentSelection(markerItem);
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+    const markerFulfillmentRow = savedSnapshot.items.find(item => item.internalId === 'ID-00010');
+    const writingToolFulfillmentRow = savedSnapshot.items.find(item => item.internalId === 'ID-00011');
+
+    expect(dialog.open).toHaveBeenCalledWith(
+      PurchaseListFulfillmentAllocationDialogComponent,
+      jasmine.objectContaining({
+        width: '620px',
+        data: jasmine.objectContaining({
+          totalNeeded: 10,
+          options: markerItem.fulfillmentOptions
+        })
+      }));
+    expect(savedSnapshot.resolvedItems[0].selectedFulfillmentInventoryIds)
+      .toEqual(['ID-00010', 'ID-00011']);
+    expect(savedSnapshot.resolvedItems[0].selectedFulfillmentAllocations)
+      .toEqual([
+        { internalId: 'ID-00010', quantity: 6 },
+        { internalId: 'ID-00011', quantity: 4 }
+      ]);
+    expect(markerFulfillmentRow?.totalNeeded).toBe(6);
+    expect(markerFulfillmentRow?.quantityToBuy).toBe(3);
+    expect(writingToolFulfillmentRow?.totalNeeded).toBe(4);
+    expect(writingToolFulfillmentRow?.quantityToBuy).toBe(0);
+  });
+
   it('shows resolved rows in the resolved view', () => {
     fixture.detectChanges();
 
@@ -231,6 +281,7 @@ describe('PurchaseListComponent', () => {
     const resolvedItem = component.dataSource.data[0];
 
     component.toggleExpansion(resolvedItem);
+    component.toggleFulfillmentSelection(resolvedItem, 'ID-00010', false);
     component.toggleFulfillmentSelection(resolvedItem, 'ID-00011', true);
     component.saveFulfillmentSelection(resolvedItem);
 
@@ -326,6 +377,7 @@ function purchaseItem(
     fulfillmentStatus: quantityToBuy === 0 ? 'fulfilled' as const : 'partial' as const,
     linkedInventoryIds,
     selectedFulfillmentInventoryIds: [],
+    selectedFulfillmentAllocations: [],
     fulfillmentOptions: linkedInventoryIds.map((internalId, index) => ({
       internalId,
       inventoryId: `inventory-${internalId}`,
