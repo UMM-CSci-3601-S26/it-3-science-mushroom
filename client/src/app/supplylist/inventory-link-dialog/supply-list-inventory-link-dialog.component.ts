@@ -24,6 +24,7 @@ export interface SupplyListInventoryLinkFilters {
 export interface SupplyListInventoryLinkDialogData {
   requirementLabel: string;
   selectedInventoryIds: string[];
+  actionLabel?: string;
   filters: SupplyListInventoryLinkFilters;
 }
 
@@ -61,6 +62,7 @@ export class SupplyListInventoryLinkDialogComponent implements OnInit {
   readonly selectedInventoryIds = signal<string[]>(this.sanitizeInventoryIds(this.data.selectedInventoryIds));
   readonly loading = signal(false);
   readonly error = signal<string | undefined>(undefined);
+  readonly actionLabel = this.data.actionLabel ?? 'Save Links';
 
   ngOnInit(): void {
     this.searchInventory();
