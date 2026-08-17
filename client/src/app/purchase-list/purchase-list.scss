@@ -16,8 +16,9 @@
   gap: var(--app-space-lg);
 }
 
-.purchase-searchbar {
+.purchase-toolbar {
   align-items: center;
+  gap: var(--app-space-md);
 }
 
 .purchase-search-preview {
@@ -26,6 +27,10 @@
 
 .purchase-search-field {
   width: 100%;
+}
+
+.purchase-view-toggle {
+  flex: 0 0 auto;
 }
 
 .purchase-table-shell {
@@ -155,11 +160,17 @@
   display: grid;
   gap: var(--app-space-xs);
   min-width: 0;
+  min-height: 9rem;
   padding: var(--app-space-sm);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-sm);
   background: var(--app-surface);
   color: var(--app-text);
+}
+
+.purchase-linked-option-selected {
+  border-color: color-mix(in srgb, var(--app-primary) 62%, var(--app-border));
+  background: color-mix(in srgb, var(--app-primary) 8%, var(--app-surface));
 }
 
 .purchase-linked-option-main {
@@ -209,9 +220,21 @@
   overflow-wrap: anywhere;
 }
 
+.purchase-linked-option-actions {
+  display: flex;
+  align-self: end;
+  justify-content: flex-end;
+}
+
 .purchase-linked-options-empty {
   color: var(--app-text-muted);
   font-weight: 700;
+}
+
+.purchase-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--app-space-sm);
 }
 
 .purchase-empty-state {
@@ -238,6 +261,14 @@
 
 @media (max-width: 900px) {
   .purchase-search-preview {
+    width: 100%;
+  }
+
+  .purchase-toolbar {
+    align-items: stretch;
+  }
+
+  .purchase-view-toggle {
     width: 100%;
   }
 

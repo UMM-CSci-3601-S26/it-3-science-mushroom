@@ -18,12 +18,14 @@
 
   <mat-card class="purchase-list-card app-page-stack">
     <mat-card-header>
-      <mat-card-title>Items To Buy</mat-card-title>
-      <mat-card-subtitle>Grouped by supply-list demand</mat-card-subtitle>
+      <mat-card-title>{{ activeView() === 'resolved' ? 'Resolved Items' : 'Items To Buy' }}</mat-card-title>
+      <mat-card-subtitle>
+        {{ activeView() === 'resolved' ? 'Manually verified fulfillment choices' : 'Grouped by supply-list demand' }}
+      </mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
-      <div class="purchase-searchbar app-split">
+      <div class="purchase-toolbar app-split">
         <div class="purchase-search-preview">
           <mat-form-field appearance="outline" class="purchase-search-field">
             <mat-label>Search item description</mat-label>
@@ -46,6 +48,15 @@
             }
           </mat-form-field>
         </div>
+
+        <mat-button-toggle-group
+          class="purchase-view-toggle"
+          [value]="activeView()"
+          (change)="setActiveView($any($event).value)"
+          aria-label="Purchase list view">
+          <mat-button-toggle value="active">To Buy ({{ activeItemCount() }})</mat-button-toggle>
+          <mat-button-toggle value="resolved">Resolved ({{ resolvedItemCount() }})</mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
 
       @if (loading()) {
@@ -56,7 +67,7 @@
         <div class="purchase-empty-state">
           <mat-icon>error_outline</mat-icon>
         </div>
-      } @else if ((purchaseList()?.items?.length ?? 0) === 0) {
+      } @else if (currentViewItems().length === 0) {
         <div class="purchase-empty-state">
           <mat-icon>inventory_2</mat-icon>
         </div>
@@ -137,10 +148,14 @@
                 [attr.colspan]="displayedColumns.length">
                 @if (expandedRow() === item) {
                   <div class="purchase-detail-panel">
-                    <div class="purchase-detail-title">Possible fulfillment options</div>
+                    <div class="purchase-detail-title">
+                      {{ activeView() === 'resolved' ? 'Selected fulfillment' : 'Possible fulfillment options' }}
+                    </div>
                     <div class="purchase-linked-options">
                       @for (option of item.fulfillmentOptions; track option.internalId) {
-                        <div class="purchase-linked-option">
+                        <div
+                          class="purchase-linked-option"
+                          [class.purchase-linked-option-selected]="isFulfillmentSelected(item, option.internalId)">
                           <div class="purchase-linked-option-main">
                             <span class="purchase-linked-option-description">{{ option.description }}</span>
                             <span class="purchase-linked-option-stock">{{ option.quantityOnHand }} on hand</span>
@@ -155,12 +170,36 @@
                               <dd>{{ option.internalId }}</dd>
                             </div>
                           </dl>
+                          <div class="purchase-linked-option-actions">
+                            <mat-checkbox
+                              [checked]="isFulfillmentSelected(item, option.internalId)"
+                              (change)="toggleFulfillmentSelection(item, option.internalId, $event.checked)">
+                              Select
+                            </mat-checkbox>
+                          </div>
                         </div>
                       } @empty {
                         <div class="purchase-linked-options-empty">
                           Recalculate the purchase list to load fulfillment option details.
                         </div>
                       }
+                    </div>
+                    <div class="purchase-detail-actions">
+                      <button
+                        mat-button
+                        type="button"
+                        (click)="cancelFulfillmentEdit(item, $event)"
+                        [disabled]="savingFulfillmentSelection()">
+                        Cancel
+                      </button>
+                      <button
+                        mat-raised-button
+                        color="primary"
+                        type="button"
+                        (click)="saveFulfillmentSelection(item, $event)"
+                        [disabled]="!canSaveFulfillmentSelection(item)">
+                        {{ savingFulfillmentSelection() ? 'Saving...' : 'Save' }}
+                      </button>
                     </div>
                   </div>
                 }

@@ -105,4 +105,19 @@ describe('PurchaseListService', () => {
 
     expect(response).toEqual(snapshot);
   });
+
+  it('saves the current purchase list snapshot', () => {
+    let response: PurchaseListSnapshot | undefined;
+
+    service.savePurchaseList(snapshot).subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(service.purchaseListUrl);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(snapshot);
+    req.flush(snapshot);
+
+    expect(response).toEqual(snapshot);
+  });
 });

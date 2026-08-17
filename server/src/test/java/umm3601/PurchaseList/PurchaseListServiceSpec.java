@@ -91,6 +91,84 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void saveCurrentPurchaseListPersistsResolvedItemsAndRebuildsSummary() {
+    PurchaseListItem activeItem = purchaseListItem("ID-00030", "Marker", 8, 3);
+    PurchaseListItem resolvedItem = purchaseListItem("ID-00031", "Ambiguous marker", 4, 0);
+    resolvedItem.linkedInventoryIds = List.of("ID-00030", "ID-00031");
+    resolvedItem.selectedFulfillmentInventoryIds = List.of("ID-00030");
+
+    PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
+    snapshot.generatedAt = "2026-08-08T12:00:00.000Z";
+    snapshot.summary = new PurchaseListSummary();
+    snapshot.summary.totalUnitsToBuy = 999;
+    snapshot.items = List.of(activeItem);
+    snapshot.resolvedItems = List.of(resolvedItem);
+
+    PurchaseListSnapshot savedSnapshot = purchaseListService.saveCurrentPurchaseList(snapshot);
+    PurchaseListSnapshot currentSnapshot = purchaseListService.getCurrentPurchaseList();
+
+    assertEquals("latest-purchase-list", savedSnapshot._id);
+    assertEquals(1, currentSnapshot.items.size());
+    assertEquals(1, currentSnapshot.resolvedItems.size());
+    assertIterableEquals(
+      List.of("ID-00030"),
+      currentSnapshot.resolvedItems.get(0).selectedFulfillmentInventoryIds);
+    assertEquals(1, currentSnapshot.summary.totalDemandedItems);
+    assertEquals(8, currentSnapshot.summary.totalUnitsNeeded);
+    assertEquals(3, currentSnapshot.summary.totalUnitsOnHand);
+    assertEquals(5, currentSnapshot.summary.totalUnitsToBuy);
+  }
+
+  @Test
+  void calculateNewPurchaseListPreservesResolvedFulfillmentSelections() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Marker", 12),
+      inventoryDoc("ID-00021", "Pencil", 2)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 1, List.of("ID-00020")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Writing Tool", 1, List.of("ID-00020", "ID-00021"))));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem markerItem = initialSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020")))
+      .findFirst()
+      .orElseThrow();
+    PurchaseListItem ambiguousItem = initialSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020", "ID-00021")))
+      .findFirst()
+      .orElseThrow();
+    ambiguousItem.selectedFulfillmentInventoryIds = List.of("ID-00020");
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = List.of(markerItem);
+    savedSnapshot.resolvedItems = List.of(ambiguousItem);
+    purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem recalculatedMarkerItem = recalculatedSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020")))
+      .findFirst()
+      .orElseThrow();
+
+    assertAll(
+      () -> assertEquals(1, recalculatedSnapshot.items.size()),
+      () -> assertEquals(1, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertIterableEquals(
+        List.of("ID-00020"),
+        recalculatedSnapshot.resolvedItems.get(0).selectedFulfillmentInventoryIds),
+      () -> assertEquals(10, recalculatedMarkerItem.totalNeeded),
+      () -> assertEquals(12, recalculatedMarkerItem.quantityOnHand),
+      () -> assertEquals(0, recalculatedMarkerItem.quantityToBuy),
+      () -> assertEquals(2, recalculatedMarkerItem.sources.size()),
+      () -> assertEquals(1, recalculatedSnapshot.summary.totalDemandedItems),
+      () -> assertEquals(10, recalculatedSnapshot.summary.totalUnitsNeeded),
+      () -> assertEquals(0, recalculatedSnapshot.summary.totalUnitsToBuy));
+  }
+
+  @Test
   void includesUnlinkedSupplyListDemandWhenInventoryHasNoMatch() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Backpack", 2));
@@ -444,6 +522,31 @@ class PurchaseListServiceSpec {
       .append("packageSize", 1)
       .append("internalID", internalId)
       .append("internalBarcode", internalId);
+  }
+
+  private PurchaseListItem purchaseListItem(
+      String internalId,
+      String description,
+      int totalNeeded,
+      int quantityOnHand
+  ) {
+    PurchaseListItem item = new PurchaseListItem();
+    item.inventoryId = internalId;
+    item.internalId = internalId;
+    item.item = description;
+    item.description = description;
+    item.totalNeeded = totalNeeded;
+    item.quantityOnHand = quantityOnHand;
+    item.quantityToBuy = Math.max(0, totalNeeded - quantityOnHand);
+    item.fulfillmentPercent = totalNeeded <= 0
+      ? 100
+      : Math.min(100, (int) Math.round((double) quantityOnHand / totalNeeded * 100));
+    item.fulfillmentStatus = quantityOnHand >= totalNeeded ? "fulfilled" : "partial";
+    item.linkedInventoryIds = List.of(internalId);
+    item.selectedFulfillmentInventoryIds = List.of();
+    item.fulfillmentOptions = List.of();
+    item.sources = List.of();
+    return item;
   }
 
   private Document supplyListDoc(

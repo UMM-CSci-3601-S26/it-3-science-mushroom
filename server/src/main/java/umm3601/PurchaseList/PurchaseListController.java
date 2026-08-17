@@ -2,6 +2,7 @@ package umm3601.PurchaseList;
 
 import com.mongodb.client.MongoDatabase;
 
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import umm3601.Auth.HttpMethod;
@@ -37,6 +38,19 @@ public class PurchaseListController {
   @RequirePermission("view_inventory")
   public void calculatePurchaseList(Context ctx) {
     ctx.json(purchaseListService.calculateNewPurchaseList());
+    ctx.status(HttpStatus.OK);
+  }
+
+  @Route(method = HttpMethod.PUT, path = API_CURRENT_PURCHASE_LIST)
+  @RequireRole(Role.ADMIN)
+  @RequirePermission("edit_inventory_item")
+  public void saveCurrentPurchaseList(Context ctx) {
+    PurchaseListSnapshot snapshot = ctx.bodyAsClass(PurchaseListSnapshot.class);
+    if (snapshot == null) {
+      throw new BadRequestResponse("Purchase list snapshot is required");
+    }
+
+    ctx.json(purchaseListService.saveCurrentPurchaseList(snapshot));
     ctx.status(HttpStatus.OK);
   }
 }

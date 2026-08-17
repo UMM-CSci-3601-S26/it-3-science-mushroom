@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { PurchaseListSnapshot } from './purchase-list';
 import { PurchaseListComponent } from './purchase-list.component';
@@ -10,6 +11,7 @@ import { PurchaseListService } from './purchase-list.service';
 describe('PurchaseListComponent', () => {
   let component: PurchaseListComponent;
   let fixture: ComponentFixture<PurchaseListComponent>;
+  let purchaseListService: jasmine.SpyObj<PurchaseListService>;
 
   const snapshot: PurchaseListSnapshot = {
     generatedAt: '2026-08-08T12:00:00.000Z',
@@ -42,6 +44,13 @@ describe('PurchaseListComponent', () => {
   }
 
   beforeEach(async () => {
+    purchaseListService = jasmine.createSpyObj<PurchaseListService>(
+      'PurchaseListService',
+      ['getPurchaseList', 'calculatePurchaseList', 'savePurchaseList']);
+    purchaseListService.getPurchaseList.and.returnValue(of(snapshot));
+    purchaseListService.calculatePurchaseList.and.returnValue(of(calculatedSnapshot));
+    purchaseListService.savePurchaseList.and.callFake(purchaseList => of(purchaseList));
+
     await TestBed.configureTestingModule({
       imports: [
         PurchaseListComponent,
@@ -50,10 +59,7 @@ describe('PurchaseListComponent', () => {
       providers: [
         {
           provide: PurchaseListService,
-          useValue: {
-            getPurchaseList: () => of(snapshot),
-            calculatePurchaseList: () => of(calculatedSnapshot)
-          }
+          useValue: purchaseListService
         }
       ]
     }).compileComponents();
@@ -171,6 +177,123 @@ describe('PurchaseListComponent', () => {
       .toEqual(['3 on hand', '4 on hand']);
     expect(fixture.nativeElement.textContent).toContain('Internal ID');
     expect(fixture.nativeElement.textContent).toContain('ID-00010');
+  });
+
+  it('saves a selected fulfillment option and moves the original row to resolved items', () => {
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.saveFulfillmentSelection(markerItem);
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+    const createdFulfillmentRow = savedSnapshot.items.find(item => item.internalId === 'ID-00010');
+
+    expect(savedSnapshot.resolvedItems.length).toBe(1);
+    expect(savedSnapshot.resolvedItems[0].description).toBe('Blue markers');
+    expect(savedSnapshot.resolvedItems[0].selectedFulfillmentInventoryIds).toEqual(['ID-00010']);
+    expect(savedSnapshot.items.map(item => item.item)).toEqual(['Pencils', 'Folders', 'Markers']);
+    expect(createdFulfillmentRow?.description).toBe('8 Pack of Washable Markers');
+    expect(createdFulfillmentRow?.totalNeeded).toBe(10);
+    expect(createdFulfillmentRow?.quantityOnHand).toBe(3);
+    expect(createdFulfillmentRow?.quantityToBuy).toBe(7);
+    expect(component.purchaseList()).toEqual(savedSnapshot);
+    expect(component.expandedRow()).toBeNull();
+  });
+
+  it('shows resolved rows in the resolved view', () => {
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.saveFulfillmentSelection(markerItem);
+    component.setActiveView('resolved');
+    fixture.detectChanges();
+
+    expect(component.dataSource.data.map(item => item.description)).toEqual(['Blue markers']);
+  });
+
+  it('updates active fulfillment rows when a resolved selection changes', () => {
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.saveFulfillmentSelection(markerItem);
+    component.setActiveView('resolved');
+    fixture.detectChanges();
+
+    const resolvedItem = component.dataSource.data[0];
+
+    component.toggleExpansion(resolvedItem);
+    component.toggleFulfillmentSelection(resolvedItem, 'ID-00011', true);
+    component.saveFulfillmentSelection(resolvedItem);
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+
+    expect(savedSnapshot.items.some(item => item.internalId === 'ID-00010')).toBeFalse();
+    expect(savedSnapshot.items.some(item => item.internalId === 'ID-00011')).toBeTrue();
+    expect(savedSnapshot.resolvedItems[0].selectedFulfillmentInventoryIds).toEqual(['ID-00011']);
+  });
+
+  it('moves a resolved row back to to-buy when its selection is cleared', () => {
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.saveFulfillmentSelection(markerItem);
+    component.setActiveView('resolved');
+    fixture.detectChanges();
+
+    const resolvedItem = component.dataSource.data[0];
+
+    component.toggleExpansion(resolvedItem);
+    component.toggleFulfillmentSelection(resolvedItem, 'ID-00010', false);
+    component.saveFulfillmentSelection(resolvedItem);
+    fixture.detectChanges();
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+
+    expect(component.activeView()).toBe('active');
+    expect(savedSnapshot.resolvedItems).toEqual([]);
+    expect(savedSnapshot.items.map(item => item.description)).toEqual([
+      'No. 2 pencils',
+      'Pocket folders',
+      'Blue markers'
+    ]);
+    expect(component.dataSource.data.map(item => item.description)).toEqual([
+      'No. 2 pencils',
+      'Pocket folders',
+      'Blue markers'
+    ]);
+    expect(savedSnapshot.items.some(item => item.internalId === 'ID-00010')).toBeFalse();
+    expect(savedSnapshot.items.at(-1)?.selectedFulfillmentInventoryIds).toEqual([]);
+  });
+
+  it('warns when moving away from a row with an unsaved fulfillment edit', () => {
+    fixture.detectChanges();
+
+    const snackBar = TestBed.inject(MatSnackBar);
+    const snackBarSpy = spyOn(snackBar, 'open');
+    const markerItem = component.dataSource.data[0];
+    const otherExpandableItem = purchaseItem('Crayons', 'Crayons', 5, 50, ['ID-00020', 'ID-00021']);
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.toggleExpansion(otherExpandableItem);
+
+    expect(component.expandedRow()).toBe(markerItem);
+    expect(snackBarSpy).toHaveBeenCalledWith(
+      'Save or cancel row edit before selecting another row.',
+      'OK',
+      { duration: 4000 });
   });
 
   it('Successful calculate response updates purchase list snapshot', () => {
