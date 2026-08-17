@@ -721,6 +721,24 @@ public class PurchaseListService {
       itemSnapshot.fulfillmentStatus = fulfillmentStatus(currentQuantityOnHand, totalNeeded);
       itemSnapshot.linkedInventoryIds = new ArrayList<>(linkedInventoryIds);
       itemSnapshot.selectedFulfillmentInventoryIds = new ArrayList<>();
+      itemSnapshot.fulfillmentOptions = new ArrayList<>();
+      for (String inventoryId : linkedInventoryIds) {
+        Inventory inventory = inventoryByInternalId.get(inventoryId);
+
+        if (inventory == null) {
+          continue;
+        }
+
+        PurchaseListFulfillmentOption option = new PurchaseListFulfillmentOption();
+
+        option.inventoryId = fallback(inventory._id);
+        option.internalId = fallback(inventory.internalID);
+        option.item = fallback(inventory.item);
+        option.description = inventoryItemDisplay(inventory);
+        option.quantityOnHand = inventory.quantity;
+
+        itemSnapshot.fulfillmentOptions.add(option);
+      }
       itemSnapshot.sources = List.copyOf(sources);
       return itemSnapshot;
     }
