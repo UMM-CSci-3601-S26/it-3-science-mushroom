@@ -49,6 +49,7 @@ export class PurchaseListComponent implements OnInit {
   loading = signal(true);
   error = signal(false);
   calculating = signal(false);
+  expandedRow = signal<PurchaseListItem | null>(null);
 
   constructor() {
     this.dataSource.filterPredicate = (item, filter) =>
@@ -103,8 +104,24 @@ export class PurchaseListComponent implements OnInit {
     this.applySearch('');
   }
 
+  hasMultipleFulfillmentOptions(item: PurchaseListItem): boolean {
+    return item.linkedInventoryIds.length > 1;
+  }
+
+  toggleExpansion(row: PurchaseListItem): void {
+    if (!this.isExpandable(row)) {
+      return;
+    }
+
+    this.expandedRow.set(this.expandedRow() === row ? null : row);
+  }
+
   ngOnInit(): void {
     this.fetchPurchaseList();
+  }
+
+  private isExpandable(item: PurchaseListItem): boolean {
+    return this.hasMultipleFulfillmentOptions(item)
   }
 
   private searchablePurchaseItemDescription(item: PurchaseListItem): string {
