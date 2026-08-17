@@ -12,6 +12,7 @@ export interface PurchaseListSnapshot {
   generatedAt: string;
   summary: PurchaseListSummary;
   items: PurchaseListItem[];
+  resolvedItems: PurchaseListItem[];
 }
 
 export interface PurchaseListItem {
@@ -25,6 +26,7 @@ export interface PurchaseListItem {
   fulfillmentPercent: number;
   fulfillmentStatus: FulfillmentStatus;
   linkedInventoryIds: string[];
+  selectedFulfillmentInventoryIds: string[];
   sources: PurchaseListSource[];
 }
 
