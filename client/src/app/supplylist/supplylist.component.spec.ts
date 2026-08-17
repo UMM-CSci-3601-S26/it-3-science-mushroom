@@ -318,6 +318,7 @@ describe('SupplyList Table', () => {
       data: jasmine.objectContaining({
         requirementLabel: jasmine.stringContaining('Markers or Crayons'),
         selectedInventoryIds: ['inv-1'],
+        actionLabel: 'Apply Links',
         filters: {
           item: 'Markers',
           brand: 'Crayola',
@@ -619,6 +620,20 @@ describe('SupplyList Table', () => {
       supplylistTable.dataSource.data[0].item = ['Pencil']; // simulate in-progress edit
       supplylistTable.cancelEdit();
       expect(supplylistTable.dataSource.data[0].item).toEqual(['Crayon']);
+    });
+
+    it('restores staged inventory links in the rendered server-filtered row', () => {
+      const item = supplylistTable.serverFilteredSupplyList().find(supply => supply._id === '1');
+      expect(item).toBeDefined();
+      item!.invIDs = [];
+
+      supplylistTable.startEdit(item!);
+      item!.invIDs = ['inv-2'];
+
+      supplylistTable.cancelEdit();
+
+      expect(item!.invIDs).toEqual([]);
+      expect(supplylistTable.linkedInventorySummary(item!.invIDs)).toBe('No linked inventory');
     });
   });
 
