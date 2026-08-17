@@ -21,10 +21,11 @@ describe('PurchaseListComponent', () => {
       totalUnitsToBuy: 13
     },
     items: [
-      purchaseItem('Markers', 'Blue markers', 2, 80),
+      purchaseItem('Markers', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011']),
       purchaseItem('Pencils', 'No. 2 pencils', 10, 20),
       purchaseItem('Folders', 'Pocket folders', 1, 100)
-    ]
+    ],
+    resolvedItems: []
   };
 
   const calculatedSnapshot: PurchaseListSnapshot = {
@@ -36,7 +37,8 @@ describe('PurchaseListComponent', () => {
     },
     items: [
       purchaseItem('Glue', 'Glue sticks', 4, 60)
-    ]
+    ],
+    resolvedItems: []
   }
 
   beforeEach(async () => {
@@ -119,6 +121,41 @@ describe('PurchaseListComponent', () => {
       .toEqual(['Markers', 'Pencils', 'Folders']);
   });
 
+  it('toggles expansion for rows with multiple linked inventory IDs', () => {
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+    const pencilItem = component.dataSource.data[1];
+
+    expect(component.hasMultipleFulfillmentOptions(markerItem)).toBeTrue();
+    expect(component.hasMultipleFulfillmentOptions(pencilItem)).toBeFalse();
+
+    component.toggleExpansion(markerItem);
+    expect(component.expandedRow()).toBe(markerItem);
+
+    component.toggleExpansion(markerItem);
+    expect(component.expandedRow()).toBeNull();
+  });
+
+  it('does not expand rows with one or fewer linked inventory IDs', () => {
+    fixture.detectChanges();
+
+    const pencilItem = component.dataSource.data[1];
+
+    component.toggleExpansion(pencilItem);
+
+    expect(component.expandedRow()).toBeNull();
+  });
+
+  it('shows an expand cue only for rows with multiple linked inventory IDs', () => {
+    fixture.detectChanges();
+
+    const expandCues = fixture.debugElement.queryAll(By.css('.purchase-expand-cue'));
+
+    expect(expandCues.length).toBe(1);
+    expect(expandCues[0].nativeElement.textContent.trim()).toBe('expand_more');
+  });
+
   it('Successful calculate response updates purchase list snapshot', () => {
     fixture.detectChanges()
     component.calculateCurrentPurchaseList();
@@ -130,7 +167,13 @@ describe('PurchaseListComponent', () => {
   });
 });
 
-function purchaseItem(item: string, description: string, quantityToBuy: number, fulfillmentPercent: number) {
+function purchaseItem(
+  item: string,
+  description: string,
+  quantityToBuy: number,
+  fulfillmentPercent: number,
+  linkedInventoryIds: string[] = []
+) {
   return {
     inventoryId: item,
     internalId: item,
@@ -141,7 +184,8 @@ function purchaseItem(item: string, description: string, quantityToBuy: number, 
     quantityToBuy,
     fulfillmentPercent,
     fulfillmentStatus: quantityToBuy === 0 ? 'fulfilled' as const : 'partial' as const,
-    linkedInventoryIds: [],
+    linkedInventoryIds,
+    selectedFulfillmentInventoryIds: [],
     sources: []
   };
 }

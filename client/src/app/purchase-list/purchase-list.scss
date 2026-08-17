@@ -91,6 +91,75 @@
   overflow-wrap: anywhere;
 }
 
+.purchase-item-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-xs);
+  min-width: 0;
+}
+
+.purchase-expand-cue {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  color: var(--app-text-muted);
+  font-size: 1.25rem;
+}
+
+.purchase-expanded-row .purchase-expand-cue,
+.purchase-expandable-row:hover .purchase-expand-cue {
+  color: var(--app-text);
+}
+
+.purchase-expandable-row {
+  cursor: pointer;
+}
+
+.purchase-expandable-row:hover,
+.purchase-expanded-row {
+  background: color-mix(in srgb, var(--app-surface) 86%, var(--app-bg));
+}
+
+.purchase-detail-row {
+  height: 0;
+}
+
+.purchase-detail-cell {
+  padding: 0;
+  border-bottom: 0;
+}
+
+.purchase-detail-panel {
+  display: grid;
+  gap: var(--app-space-sm);
+  padding: var(--app-space-md) var(--app-space-lg);
+  border-bottom: 1px solid var(--app-divider-color);
+  background: color-mix(in srgb, var(--app-surface) 92%, var(--app-bg));
+}
+
+.purchase-detail-title {
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.purchase-linked-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-xs);
+}
+
+.purchase-linked-option {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface);
+  color: var(--app-text);
+  font-weight: 700;
+}
+
 .purchase-empty-state {
   display: grid;
   justify-items: center;

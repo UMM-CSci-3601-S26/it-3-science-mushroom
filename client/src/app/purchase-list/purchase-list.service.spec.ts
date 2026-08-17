@@ -33,6 +33,7 @@ describe('PurchaseListService', () => {
         fulfillmentPercent: 60,
         fulfillmentStatus: 'partial',
         linkedInventoryIds: ['ID-00042'],
+        selectedFulfillmentInventoryIds: [],
         sources: [
           {
             supplyListId: 'SL-1',
@@ -46,7 +47,8 @@ describe('PurchaseListService', () => {
           }
         ]
       }
-    ]
+    ],
+    resolvedItems: []
   };
 
   beforeEach(() => {

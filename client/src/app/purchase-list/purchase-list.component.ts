@@ -41,6 +41,9 @@ export class PurchaseListComponent implements OnInit {
     "quantityToBuy",
     "fulfillmentPercent"
   ];
+  expandedDetailColumns: string[] = [
+    "expandedDetail"
+  ];
   dataSource = new MatTableDataSource<PurchaseListItem>([]);
   readonly sort = viewChild<MatSort>(MatSort);
 
@@ -120,8 +123,8 @@ export class PurchaseListComponent implements OnInit {
     this.fetchPurchaseList();
   }
 
-  private isExpandable(item: PurchaseListItem): boolean {
-    return this.hasMultipleFulfillmentOptions(item)
+  isExpandable(item: PurchaseListItem): boolean {
+    return this.hasMultipleFulfillmentOptions(item);
   }
 
   private searchablePurchaseItemDescription(item: PurchaseListItem): string {
