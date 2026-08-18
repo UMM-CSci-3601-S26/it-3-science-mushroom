@@ -140,6 +140,26 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="sources">
+              <th mat-header-cell
+              *matHeaderCellDef
+              >
+              Sources
+              </th>
+
+              <td mat-cell *matCellDef="let item" class="sources-cell">
+                <button
+                  mat-icon-button
+                  class="purchase-source-info-button"
+                  type="button"
+                  matTooltip="View sources"
+                  [attr.aria-label]="'View sources for ' + item.description"
+                  (click)="$event.stopPropagation(); openSourceInfoDialog(item)">
+                  <mat-icon>info_outline</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="expandedDetail">
               <td
                 mat-cell

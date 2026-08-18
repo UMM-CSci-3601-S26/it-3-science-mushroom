@@ -11,6 +11,7 @@ import { PurchaseListService } from './purchase-list.service';
 import {
   PurchaseListFulfillmentAllocationDialogComponent
 } from './purchase-list-fulfillment-allocation-dialog.component';
+import { PurchaseListSourceInfoDialogComponent } from './purchase-list-source-info-dialog.component';
 
 describe('PurchaseListComponent', () => {
   let component: PurchaseListComponent;
@@ -28,7 +29,18 @@ describe('PurchaseListComponent', () => {
       totalUnitsToBuy: 13
     },
     items: [
-      purchaseItem('Markers', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011']),
+      purchaseItem('Markers', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011'], [
+        {
+          supplyListId: 'SL-1',
+          school: 'Morris Area Elementary School',
+          grade: '5',
+          teacher: 'Ms. Doe',
+          requestedItems: ['Markers'],
+          studentCount: 12,
+          quantityPerStudent: 2,
+          totalNeeded: 24
+        }
+      ]),
       purchaseItem('Pencils', 'No. 2 pencils', 10, 20),
       purchaseItem('Folders', 'Pocket folders', 1, 100)
     ],
@@ -84,7 +96,8 @@ describe('PurchaseListComponent', () => {
       'totalNeeded',
       'quantityOnHand',
       'quantityToBuy',
-      'fulfillmentPercent'
+      'fulfillmentPercent',
+      'sources'
     ]);
     expect(component.dataSource.data.map(item => item.item)).toEqual(['Markers', 'Pencils', 'Folders']);
   });
@@ -209,6 +222,27 @@ describe('PurchaseListComponent', () => {
 
     expect(expandCues.length).toBe(1);
     expect(expandCues[0].nativeElement.textContent.trim()).toBe('expand_more');
+  });
+
+  it('opens the source info dialog with the clicked row sources without expanding the row', () => {
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+    const sourceButton = fixture.debugElement.query(By.css('.purchase-source-info-button'));
+
+    sourceButton.triggerEventHandler('click', new Event('click'));
+
+    expect(dialog.open).toHaveBeenCalledWith(
+      PurchaseListSourceInfoDialogComponent,
+      jasmine.objectContaining({
+        width: '760px',
+        maxWidth: '96vw',
+        data: {
+          itemDescription: 'Blue markers',
+          sources: markerItem.sources
+        }
+      }));
+    expect(component.expandedRow()).toBeNull();
   });
 
   it('shows fulfillment options when an expandable row is opened', () => {

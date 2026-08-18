@@ -8,7 +8,8 @@ import { MatTableDataSource, MatTableModule } from "@angular/material/table";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatDialog, MatDialogModule } from "@angular/material/dialog";
-
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { PurchaseListSourceInfoDialogComponent } from "./purchase-list-source-info-dialog.component";
 
 // Services
 import { PurchaseListService } from "./purchase-list.service";
@@ -18,7 +19,7 @@ import type {
   PurchaseListFulfillmentAllocation,
   PurchaseListFulfillmentOption,
   PurchaseListItem,
-  PurchaseListSnapshot
+  PurchaseListSnapshot,
 } from "./purchase-list";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatButtonModule } from "@angular/material/button";
@@ -43,7 +44,8 @@ type PurchaseListView = 'active' | 'resolved';
     MatButtonModule,
     MatCheckboxModule,
     MatButtonToggleModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
 })
 export class PurchaseListComponent implements OnInit {
@@ -56,7 +58,8 @@ export class PurchaseListComponent implements OnInit {
     "totalNeeded",
     "quantityOnHand",
     "quantityToBuy",
-    "fulfillmentPercent"
+    "fulfillmentPercent",
+    "sources"
   ];
   expandedDetailColumns: string[] = [
     "expandedDetail"
@@ -83,6 +86,17 @@ export class PurchaseListComponent implements OnInit {
       this.dataSource.data = this.currentViewItems();
       this.dataSource.sort = this.sort();
       this.dataSource.filter = this.normalizedSearchQuery(this.searchQuery());
+    });
+  }
+
+  openSourceInfoDialog(item: PurchaseListItem): void {
+    this.dialog.open(PurchaseListSourceInfoDialogComponent, {
+      width: '760px',
+      maxWidth: '96vw',
+      data: {
+        itemDescription: item.description,
+        sources: item.sources ?? []
+      }
     });
   }
 
