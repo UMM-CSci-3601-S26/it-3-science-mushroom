@@ -16,6 +16,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
 
+import umm3601.Common.InventoryIds;
 import umm3601.Common.InventoryMatcher;
 import umm3601.Family.Family;
 import umm3601.Inventory.Inventory;
@@ -26,7 +27,6 @@ public class DemandService {
   private static final int NOT_CALCULATED_PERCENTAGE_FILLED = -1;
   private static final int INVALID_LINK_PERCENTAGE_FILLED = -2;
   private static final int PERCENT_SCALE = 100;
-  private static final String INTERNAL_INVENTORY_ID_PATTERN = "^ID-\\d{4,5}$";
   private static final String UNKNOWN_CALCULATED_STOCK_STATE = "Unknown";
   private static final String MATCHED_STATUS = "matched";
   private static final String INVALID_LINK_STATUS = "invalid-link";
@@ -93,7 +93,7 @@ public class DemandService {
         continue;
       }
 
-      List<String> linkedInventoryIds = validInternalIds(supplyList);
+      List<String> linkedInventoryIds = InventoryIds.validInternalIds(supplyList.invIDs);
       int studentCount = studentCountForSupplyList(supplyList, students);
 
       if (linkedInventoryIds.isEmpty()) {
@@ -352,26 +352,6 @@ public class DemandService {
 
   private List<String> requestedItems(SupplyList supplyList) {
     return supplyList.item == null ? List.of() : List.copyOf(supplyList.item);
-  }
-
-  private List<String> validInternalIds(SupplyList supplyList) {
-    List<String> validIds = new ArrayList<>();
-
-    for (String invID : inventoryIds(supplyList)) {
-      if (isInternalInventoryId(invID) && !validIds.contains(invID)) {
-        validIds.add(invID);
-      }
-    }
-
-    return validIds;
-  }
-
-  private List<String> inventoryIds(SupplyList supplyList) {
-    return supplyList.invIDs == null ? List.of() : supplyList.invIDs;
-  }
-
-  private boolean isInternalInventoryId(String invID) {
-    return invID != null && invID.matches(INTERNAL_INVENTORY_ID_PATTERN);
   }
 
   private class DemandAccumulator {

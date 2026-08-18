@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
-import { PurchaseListItem, PurchaseListSnapshot, PurchaseListSource } from './purchase-list';
+import { PurchaseListItem, PurchaseListSnapshot } from './purchase-list';
 import { PurchaseListComponent } from './purchase-list.component';
 import { PurchaseListService } from './purchase-list.service';
 import {
@@ -182,8 +182,8 @@ describe('PurchaseListComponent', () => {
     const markerItem = component.dataSource.data[0];
     const pencilItem = component.dataSource.data[1];
 
-    expect(component.hasMultipleFulfillmentOptions(markerItem)).toBeTrue();
-    expect(component.hasMultipleFulfillmentOptions(pencilItem)).toBeFalse();
+    expect(component.isExpandable(markerItem)).toBeTrue();
+    expect(component.isExpandable(pencilItem)).toBeFalse();
 
     component.toggleExpansion(markerItem);
     expect(component.expandedRow()).toBe(markerItem);
@@ -238,16 +238,11 @@ describe('PurchaseListComponent', () => {
     component.saveFulfillmentSelection(markerItem);
 
     const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
-    const createdFulfillmentRow = savedSnapshot.items.find(item => item.internalId === 'ID-00010');
 
     expect(savedSnapshot.resolvedItems.length).toBe(1);
     expect(savedSnapshot.resolvedItems[0].description).toBe('Blue markers');
     expect(savedSnapshot.resolvedItems[0].selectedFulfillmentInventoryIds).toEqual(['ID-00010']);
-    expect(savedSnapshot.items.map(item => item.item)).toEqual(['Pencils', 'Folders', 'Markers']);
-    expect(createdFulfillmentRow?.description).toBe('8 Pack of Washable Markers');
-    expect(createdFulfillmentRow?.totalNeeded).toBe(10);
-    expect(createdFulfillmentRow?.quantityOnHand).toBe(3);
-    expect(createdFulfillmentRow?.quantityToBuy).toBe(7);
+    expect(savedSnapshot.items.map(item => item.item)).toEqual(['Pencils', 'Folders']);
     expect(component.purchaseList()).toEqual(savedSnapshot);
     expect(component.expandedRow()).toBeNull();
   });
@@ -285,8 +280,6 @@ describe('PurchaseListComponent', () => {
     component.saveFulfillmentSelection(markerItem);
 
     const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
-    const markerFulfillmentRow = savedSnapshot.items.find(item => item.internalId === 'ID-00010');
-    const writingToolFulfillmentRow = savedSnapshot.items.find(item => item.internalId === 'ID-00011');
 
     expect(dialog.open).toHaveBeenCalledWith(
       PurchaseListFulfillmentAllocationDialogComponent,
@@ -304,10 +297,7 @@ describe('PurchaseListComponent', () => {
         { internalId: 'ID-00010', quantity: 6 },
         { internalId: 'ID-00011', quantity: 4 }
       ]);
-    expect(markerFulfillmentRow?.totalNeeded).toBe(6);
-    expect(markerFulfillmentRow?.quantityToBuy).toBe(3);
-    expect(writingToolFulfillmentRow?.totalNeeded).toBe(4);
-    expect(writingToolFulfillmentRow?.quantityToBuy).toBe(0);
+    expect(savedSnapshot.items.map(item => item.item)).toEqual(['Pencils', 'Folders']);
   });
 
   it('does not save when the allocation dialog is canceled', () => {
@@ -327,32 +317,6 @@ describe('PurchaseListComponent', () => {
     expect(purchaseListService.savePurchaseList).not.toHaveBeenCalled();
   });
 
-  it('merges resolved demand into an overlapping active row before creating a new row', () => {
-    fixture.detectChanges();
-
-    const sourceItem = purchaseItem('Markers', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011']);
-    const overlappingItem = purchaseItem('Highlighters', 'Yellow highlighters', 5, 50, ['ID-00010', 'ID-00012']);
-    component.purchaseList.set({
-      ...snapshot,
-      items: [sourceItem, overlappingItem],
-      resolvedItems: []
-    });
-    fixture.detectChanges();
-
-    component.toggleExpansion(sourceItem);
-    component.toggleFulfillmentSelection(sourceItem, 'ID-00010', true);
-    component.saveFulfillmentSelection(sourceItem);
-
-    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
-
-    expect(savedSnapshot.items.length).toBe(1);
-    expect(savedSnapshot.items[0].description).toBe('Yellow highlighters');
-    expect(savedSnapshot.items[0].linkedInventoryIds).toEqual(['ID-00010', 'ID-00012']);
-    expect(savedSnapshot.items[0].totalNeeded).toBe(20);
-    expect(savedSnapshot.items[0].quantityToBuy).toBe(15);
-    expect(savedSnapshot.resolvedItems[0].description).toBe('Blue markers');
-  });
-
   it('shows resolved rows in the resolved view', () => {
     fixture.detectChanges();
 
@@ -367,7 +331,7 @@ describe('PurchaseListComponent', () => {
     expect(component.dataSource.data.map(item => item.description)).toEqual(['Blue markers']);
   });
 
-  it('updates active fulfillment rows when a resolved selection changes', () => {
+  it('saves updated resolved selection intent without recomputing active rows', () => {
     fixture.detectChanges();
 
     const markerItem = component.dataSource.data[0];
@@ -387,8 +351,7 @@ describe('PurchaseListComponent', () => {
 
     const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
 
-    expect(savedSnapshot.items.some(item => item.internalId === 'ID-00010')).toBeFalse();
-    expect(savedSnapshot.items.some(item => item.internalId === 'ID-00011')).toBeTrue();
+    expect(savedSnapshot.items.map(item => item.item)).toEqual(['Pencils', 'Folders']);
     expect(savedSnapshot.resolvedItems[0].selectedFulfillmentInventoryIds).toEqual(['ID-00011']);
   });
 
@@ -425,50 +388,6 @@ describe('PurchaseListComponent', () => {
       { internalId: 'ID-00010', quantity: 7 },
       { internalId: 'ID-00011', quantity: 3 }
     ]);
-  });
-
-  it('removes only the resolved sources when a resolved selection changes', () => {
-    fixture.detectChanges();
-
-    const resolvedSource = purchaseSource('source-resolved');
-    const remainingSource = purchaseSource('source-remaining');
-    const fulfillmentTarget = purchaseItem('Markers', '8 Pack of Washable Markers', 4, 80, ['ID-00010'], [
-      resolvedSource,
-      remainingSource
-    ]);
-    fulfillmentTarget.totalNeeded = 14;
-    fulfillmentTarget.quantityOnHand = 5;
-    fulfillmentTarget.quantityToBuy = 9;
-    const resolvedItem = purchaseItem('Writing Tool', 'Blue markers', 2, 80, ['ID-00010', 'ID-00011'], [
-      resolvedSource
-    ]);
-    resolvedItem.selectedFulfillmentInventoryIds = ['ID-00010'];
-    resolvedItem.selectedFulfillmentAllocations = [
-      { internalId: 'ID-00010', quantity: 4 }
-    ];
-
-    component.purchaseList.set({
-      ...snapshot,
-      items: [fulfillmentTarget],
-      resolvedItems: [resolvedItem]
-    });
-    component.setActiveView('resolved');
-    fixture.detectChanges();
-
-    component.toggleExpansion(resolvedItem);
-    component.toggleFulfillmentSelection(resolvedItem, 'ID-00010', false);
-    component.toggleFulfillmentSelection(resolvedItem, 'ID-00011', true);
-    component.saveFulfillmentSelection(resolvedItem);
-
-    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
-    const remainingTarget = savedSnapshot.items.find(item => item.internalId === 'Markers');
-    const newTarget = savedSnapshot.items.find(item => item.internalId === 'ID-00011');
-
-    expect(remainingTarget?.totalNeeded).toBe(10);
-    expect(remainingTarget?.quantityToBuy).toBe(5);
-    expect(remainingTarget?.sources).toEqual([remainingSource]);
-    expect(newTarget?.totalNeeded).toBe(10);
-    expect(newTarget?.sources).toEqual([resolvedSource]);
   });
 
   it('moves a resolved row back to to-buy when its selection is cleared', () => {
@@ -543,7 +462,7 @@ function purchaseItem(
   quantityToBuy: number,
   fulfillmentPercent: number,
   linkedInventoryIds: string[] = [],
-  sources: PurchaseListSource[] = []
+  sources: PurchaseListItem['sources'] = []
 ): PurchaseListItem {
   return {
     inventoryId: item,
@@ -566,18 +485,5 @@ function purchaseItem(
       quantityOnHand: index === 0 ? 3 : 4
     })),
     sources
-  };
-}
-
-function purchaseSource(supplyListId: string): PurchaseListSource {
-  return {
-    supplyListId,
-    school: 'Morris Elementary',
-    grade: '1',
-    teacher: 'Ms. Doe',
-    requestedItems: ['Markers'],
-    studentCount: 5,
-    quantityPerStudent: 1,
-    totalNeeded: 5
   };
 }

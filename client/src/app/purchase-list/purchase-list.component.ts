@@ -15,11 +15,9 @@ import { PurchaseListService } from "./purchase-list.service";
 
 // Types
 import type {
-  FulfillmentStatus,
   PurchaseListFulfillmentAllocation,
   PurchaseListFulfillmentOption,
   PurchaseListItem,
-  PurchaseListSource,
   PurchaseListSnapshot
 } from "./purchase-list";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -162,10 +160,6 @@ export class PurchaseListComponent implements OnInit {
     return this.purchaseList()?.resolvedItems?.length ?? 0;
   }
 
-  hasMultipleFulfillmentOptions(item: PurchaseListItem): boolean {
-    return (item.linkedInventoryIds ?? []).length > 1;
-  }
-
   toggleExpansion(row: PurchaseListItem): void {
     if (!this.isExpandable(row)) {
       return;
@@ -192,15 +186,7 @@ export class PurchaseListComponent implements OnInit {
   }
 
   isExpandable(item: PurchaseListItem): boolean {
-    return this.hasMultipleFulfillmentOptions(item);
-  }
-
-  isResolved(item: PurchaseListItem): boolean {
-    return (item.selectedFulfillmentInventoryIds ?? []).length > 0;
-  }
-
-  isUnresolved(item: PurchaseListItem): boolean {
-    return !this.isResolved(item);
+    return (item.linkedInventoryIds ?? []).length > 1;
   }
 
   isFulfillmentSelected(item: PurchaseListItem, internalId: string): boolean {
@@ -390,14 +376,13 @@ export class PurchaseListComponent implements OnInit {
     };
 
     if (this.activeView() === 'resolved') {
-      const activeItems = this.itemsWithoutResolvedFulfillment(snapshot.items ?? [], item);
       const remainingResolvedItems = (snapshot.resolvedItems ?? []).filter(resolved => resolved !== item);
 
       if (selectedFulfillmentInventoryIds.length === 0) {
         return {
           ...snapshot,
           items: [
-            ...activeItems,
+            ...(snapshot.items ?? []),
             resolvedItem
           ],
           resolvedItems: remainingResolvedItems
@@ -406,7 +391,7 @@ export class PurchaseListComponent implements OnInit {
 
       return {
         ...snapshot,
-        items: this.itemsWithResolvedFulfillment(activeItems, resolvedItem),
+        items: snapshot.items ?? [],
         resolvedItems: [
           ...remainingResolvedItems,
           resolvedItem
@@ -414,93 +399,14 @@ export class PurchaseListComponent implements OnInit {
       };
     }
 
-    const activeItems = (snapshot.items ?? []).filter(activeItem => activeItem !== item);
-
     return {
       ...snapshot,
-      items: this.itemsWithResolvedFulfillment(activeItems, resolvedItem),
+      items: (snapshot.items ?? []).filter(activeItem => activeItem !== item),
       resolvedItems: [
         ...(snapshot.resolvedItems ?? []),
         resolvedItem
       ]
     };
-  }
-
-  private itemsWithResolvedFulfillment(
-    items: PurchaseListItem[],
-    resolvedItem: PurchaseListItem
-  ): PurchaseListItem[] {
-    let updatedItems = [...items];
-    for (const allocation of this.fulfillmentAllocations(resolvedItem)) {
-      const selectedOption = this.fulfillmentOptionForSelection(resolvedItem, allocation.internalId);
-
-      if (!selectedOption || allocation.quantity <= 0) {
-        continue;
-      }
-
-      const targetIndex = this.targetItemIndex(updatedItems, allocation.internalId);
-      if (targetIndex === -1) {
-        updatedItems = [
-          ...updatedItems,
-          this.purchaseItemFromFulfillmentOption(resolvedItem, selectedOption, allocation.quantity)
-        ];
-        continue;
-      }
-
-      updatedItems[targetIndex] = this.itemWithResolvedDemand(
-        updatedItems[targetIndex],
-        resolvedItem,
-        allocation.quantity);
-    }
-
-    return updatedItems;
-  }
-
-  private itemsWithoutResolvedFulfillment(
-    items: PurchaseListItem[],
-    resolvedItem: PurchaseListItem
-  ): PurchaseListItem[] {
-    let updatedItems = [...items];
-    for (const allocation of this.fulfillmentAllocations(resolvedItem)) {
-      const targetIndex = this.targetItemIndex(updatedItems, allocation.internalId);
-      if (targetIndex === -1) {
-        continue;
-      }
-
-      const targetItem = updatedItems[targetIndex];
-      const totalNeeded = Math.max(0, targetItem.totalNeeded - allocation.quantity);
-      const sources = this.sourcesWithoutResolvedDemand(
-        targetItem.sources ?? [],
-        resolvedItem.sources ?? []);
-
-      if (totalNeeded === 0 || sources.length === 0) {
-        updatedItems = updatedItems.filter((_, index) => index !== targetIndex);
-        continue;
-      }
-
-      updatedItems[targetIndex] = {
-        ...targetItem,
-        totalNeeded,
-        quantityToBuy: this.quantityToBuy(targetItem.quantityOnHand, totalNeeded),
-        fulfillmentPercent: this.fulfillmentPercent(targetItem.quantityOnHand, totalNeeded),
-        fulfillmentStatus: this.fulfillmentStatus(targetItem.quantityOnHand, totalNeeded),
-        sources
-      };
-    }
-
-    return updatedItems;
-  }
-
-  private targetItemIndex(items: PurchaseListItem[], selectedId: string): number {
-    const exactTargetIndex = items.findIndex(item =>
-      (item.linkedInventoryIds ?? []).length === 1
-      && item.linkedInventoryIds[0] === selectedId);
-
-    if (exactTargetIndex !== -1) {
-      return exactTargetIndex;
-    }
-
-    return items.findIndex(item => (item.linkedInventoryIds ?? []).includes(selectedId));
   }
 
   private fulfillmentOptionForSelection(
@@ -546,71 +452,6 @@ export class PurchaseListComponent implements OnInit {
       item.selectedFulfillmentInventoryIds ?? []);
   }
 
-  private itemWithResolvedDemand(
-    targetItem: PurchaseListItem,
-    resolvedItem: PurchaseListItem,
-    allocatedQuantity: number
-  ): PurchaseListItem {
-    const totalNeeded = targetItem.totalNeeded + allocatedQuantity;
-
-    return {
-      ...targetItem,
-      totalNeeded,
-      quantityToBuy: this.quantityToBuy(targetItem.quantityOnHand, totalNeeded),
-      fulfillmentPercent: this.fulfillmentPercent(targetItem.quantityOnHand, totalNeeded),
-      fulfillmentStatus: this.fulfillmentStatus(targetItem.quantityOnHand, totalNeeded),
-      sources: [
-        ...(targetItem.sources ?? []),
-        ...(resolvedItem.sources ?? [])
-      ]
-    };
-  }
-
-  private purchaseItemFromFulfillmentOption(
-    resolvedItem: PurchaseListItem,
-    option: PurchaseListFulfillmentOption,
-    allocatedQuantity: number
-  ): PurchaseListItem {
-    const totalNeeded = allocatedQuantity;
-
-    return {
-      inventoryId: option.inventoryId,
-      internalId: option.internalId,
-      item: option.item,
-      description: option.description,
-      totalNeeded,
-      quantityOnHand: option.quantityOnHand,
-      quantityToBuy: this.quantityToBuy(option.quantityOnHand, totalNeeded),
-      fulfillmentPercent: this.fulfillmentPercent(option.quantityOnHand, totalNeeded),
-      fulfillmentStatus: this.fulfillmentStatus(option.quantityOnHand, totalNeeded),
-      linkedInventoryIds: [option.internalId],
-      selectedFulfillmentInventoryIds: [],
-      selectedFulfillmentAllocations: [],
-      fulfillmentOptions: [option],
-      sources: [...(resolvedItem.sources ?? [])]
-    };
-  }
-
-  private quantityToBuy(quantityOnHand: number, totalNeeded: number): number {
-    return Math.max(0, totalNeeded - quantityOnHand);
-  }
-
-  private fulfillmentPercent(quantityOnHand: number, totalNeeded: number): number {
-    if (totalNeeded <= 0) {
-      return 100;
-    }
-
-    return Math.min(100, Math.round(quantityOnHand / totalNeeded * 100));
-  }
-
-  private fulfillmentStatus(quantityOnHand: number, totalNeeded: number): FulfillmentStatus {
-    if (totalNeeded <= 0 || quantityOnHand >= totalNeeded) {
-      return 'fulfilled';
-    }
-
-    return quantityOnHand <= 0 ? 'unfulfilled' : 'partial';
-  }
-
   private sameStringList(left: string[], right: string[]): boolean {
     return left.length === right.length
       && left.every((value, index) => value === right[index]);
@@ -618,21 +459,5 @@ export class PurchaseListComponent implements OnInit {
 
   private uniqueStrings(values: string[]): string[] {
     return values.filter((value, index) => value && values.indexOf(value) === index);
-  }
-
-  private sourcesWithoutResolvedDemand(
-    targetSources: PurchaseListSource[],
-    resolvedSources: PurchaseListSource[]
-  ): PurchaseListSource[] {
-    const resolvedSourceIds = new Set(
-      resolvedSources
-        .map(source => source.supplyListId)
-        .filter(sourceId => sourceId));
-
-    if (resolvedSourceIds.size === 0) {
-      return targetSources;
-    }
-
-    return targetSources.filter(source => !resolvedSourceIds.has(source.supplyListId));
   }
 }

@@ -19,6 +19,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 
+import umm3601.Common.InventoryIds;
 import umm3601.Common.InventoryMatcher;
 import umm3601.Family.Family;
 import umm3601.Inventory.Inventory;
@@ -30,7 +31,6 @@ public class PurchaseListService {
   private static final String FULFILLED_STATUS = "fulfilled";
   private static final String PARTIAL_STATUS = "partial";
   private static final String UNFULFILLED_STATUS = "unfulfilled";
-  private static final String INTERNAL_INVENTORY_ID_PATTERN = "^ID-\\d{4,5}$";
   private static final String UNKNOWN_SCHOOL = "Unknown School";
   private static final String UNKNOWN_GRADE = "Unknown Grade";
   private static final String UNKNOWN_TEACHER = "Unknown Teacher";
@@ -97,22 +97,25 @@ public class PurchaseListService {
 
   public PurchaseListSnapshot saveCurrentPurchaseList(PurchaseListSnapshot snapshot) {
     PurchaseListSnapshot normalizedSnapshot = normalizeSnapshot(snapshot);
-    normalizedSnapshot._id = LATEST_SNAPSHOT_ID;
-    if (normalizedSnapshot.generatedAt == null) {
-      normalizedSnapshot.generatedAt = Instant.now().toString();
+    List<PurchaseListItem> calculatedItems = calculatePurchaseListItems();
+    PurchaseListSnapshot snapshotToSave = calculatedItems.isEmpty()
+      ? normalizedSnapshot
+      : buildSnapshot(calculatedItems, normalizedSnapshot.resolvedItems);
+
+    snapshotToSave._id = LATEST_SNAPSHOT_ID;
+    if (normalizedSnapshot.generatedAt != null) {
+      snapshotToSave.generatedAt = normalizedSnapshot.generatedAt;
+    } else if (snapshotToSave.generatedAt == null) {
+      snapshotToSave.generatedAt = Instant.now().toString();
     }
-    normalizedSnapshot.summary = toPurchaseListSummary(normalizedSnapshot.items);
+    snapshotToSave.summary = toPurchaseListSummary(snapshotToSave.items);
 
     purchaseListSnapshotCollection.replaceOne(
       eq("_id", LATEST_SNAPSHOT_ID),
-      normalizedSnapshot,
+      snapshotToSave,
       new ReplaceOptions().upsert(true));
 
-    return normalizedSnapshot;
-  }
-
-  private PurchaseListSnapshot buildSnapshot(List<PurchaseListItem> items) {
-    return buildSnapshot(items, List.of());
+    return snapshotToSave;
   }
 
   private PurchaseListSnapshot buildSnapshot(List<PurchaseListItem> items, List<PurchaseListItem> savedResolvedItems) {
@@ -465,7 +468,7 @@ public class PurchaseListService {
       SupplyList supplyList,
       Map<String, Inventory> inventoryByInternalId
   ) {
-    List<String> linkedInventoryIds = validInternalIds(supplyList);
+    List<String> linkedInventoryIds = InventoryIds.validInternalIds(supplyList.invIDs);
     if (!linkedInventoryIds.isEmpty()) {
       return new InventoryFulfillment(
         inventoryGroupKey(linkedInventoryIds),
@@ -717,26 +720,6 @@ public class PurchaseListService {
       .filter(this::hasText)
       .map(String::trim)
       .toList();
-  }
-
-  private List<String> validInternalIds(SupplyList supplyList) {
-    List<String> validIds = new ArrayList<>();
-
-    for (String invID : inventoryIds(supplyList)) {
-      if (isInternalInventoryId(invID) && !validIds.contains(invID)) {
-        validIds.add(invID);
-      }
-    }
-
-    return validIds;
-  }
-
-  private List<String> inventoryIds(SupplyList supplyList) {
-    return supplyList.invIDs == null ? List.of() : supplyList.invIDs;
-  }
-
-  private boolean isInternalInventoryId(String invID) {
-    return invID != null && invID.matches(INTERNAL_INVENTORY_ID_PATTERN);
   }
 
   private String normalizeKey(String value) {
