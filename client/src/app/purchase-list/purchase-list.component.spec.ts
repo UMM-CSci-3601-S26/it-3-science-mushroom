@@ -68,6 +68,25 @@ describe('PurchaseListComponent', () => {
     purchaseListService.calculatePurchaseList.and.returnValue(of(calculatedSnapshot));
     purchaseListService.savePurchaseList.and.callFake(purchaseList => of(purchaseList));
     dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    dialog.open.and.callFake((_component, config) => ({
+      afterClosed: () => {
+        const dialogData = config?.data as {
+          totalNeeded?: number;
+          options?: Array<{ internalId: string }>;
+        } | undefined;
+        const firstOption = dialogData?.options?.[0];
+        if (!firstOption || dialogData?.totalNeeded === undefined) {
+          return of(undefined);
+        }
+
+        return of([
+          {
+            internalId: firstOption.internalId,
+            quantity: dialogData.totalNeeded
+          }
+        ]);
+      }
+    } as MatDialogRef<PurchaseListFulfillmentAllocationDialogComponent>));
 
     await TestBed.configureTestingModule({
       imports: [
@@ -332,6 +351,35 @@ describe('PurchaseListComponent', () => {
         { internalId: 'ID-00011', quantity: 4 }
       ]);
     expect(savedSnapshot.items.map(item => item.item)).toEqual(['Pencils', 'Folders']);
+  });
+
+  it('sends partial fulfillment allocation intent without resolving the row', () => {
+    dialog.open.and.returnValue({
+      afterClosed: () => of([
+        { internalId: 'ID-00010', quantity: 4 }
+      ])
+    } as MatDialogRef<PurchaseListFulfillmentAllocationDialogComponent>);
+    fixture.detectChanges();
+
+    const markerItem = component.dataSource.data[0];
+
+    component.toggleExpansion(markerItem);
+    component.toggleFulfillmentSelection(markerItem, 'ID-00010', true);
+    component.saveFulfillmentSelection(markerItem);
+
+    const savedSnapshot = purchaseListService.savePurchaseList.calls.mostRecent().args[0];
+
+    expect(savedSnapshot.resolvedItems).toEqual([]);
+    expect(savedSnapshot.items.map(item => item.description)).toEqual([
+      'Blue markers',
+      'No. 2 pencils',
+      'Pocket folders'
+    ]);
+    expect(savedSnapshot.items[0].totalNeeded).toBe(10);
+    expect(savedSnapshot.items[0].selectedFulfillmentInventoryIds).toEqual(['ID-00010']);
+    expect(savedSnapshot.items[0].selectedFulfillmentAllocations).toEqual([
+      { internalId: 'ID-00010', quantity: 4 }
+    ]);
   });
 
   it('does not save when the allocation dialog is canceled', () => {

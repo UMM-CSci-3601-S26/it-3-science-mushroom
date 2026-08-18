@@ -179,6 +179,7 @@ export class PurchaseListFulfillmentAllocationDialogComponent {
   }
 
   save(): void {
+    const allocatedTotal = this.allocatedTotal();
     const allocations = this.rows.map(row => ({
       internalId: row.option.internalId,
       quantity: this.normalizedQuantity(row.quantity)
@@ -189,8 +190,8 @@ export class PurchaseListFulfillmentAllocationDialogComponent {
       return;
     }
 
-    if (this.allocatedTotal() !== this.data.totalNeeded) {
-      this.error = `Allocated quantity must equal ${this.data.totalNeeded}.`;
+    if (allocatedTotal > this.data.totalNeeded) {
+      this.error = `Allocated quantity cannot exceed ${this.data.totalNeeded}.`;
       return;
     }
 

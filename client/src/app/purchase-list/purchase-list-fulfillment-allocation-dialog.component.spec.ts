@@ -60,15 +60,15 @@ describe('PurchaseListFulfillmentAllocationDialogComponent', () => {
     expect(component.allocatedTotal()).toBe(20);
   });
 
-  it('returns allocations when the entered quantities match the needed total', () => {
+  it('returns allocations when the entered quantities are under the needed total', () => {
     component.rows[0].quantity = 14;
-    component.rows[1].quantity = 6;
+    component.rows[1].quantity = 4;
 
     component.save();
 
     expect(dialogRef.close).toHaveBeenCalledWith([
       { internalId: 'ID-00001', quantity: 14 },
-      { internalId: 'ID-00002', quantity: 6 }
+      { internalId: 'ID-00002', quantity: 4 }
     ]);
   });
 
@@ -101,20 +101,20 @@ describe('PurchaseListFulfillmentAllocationDialogComponent', () => {
   });
 
   it('clears the current validation error when the quantity changes', () => {
-    component.error = 'Allocated quantity must equal 20.';
+    component.error = 'Allocated quantity cannot exceed 20.';
 
     component.clearError();
 
     expect(component.error).toBe('');
   });
 
-  it('does not close when quantities do not match the needed total', () => {
+  it('does not close when quantities exceed the needed total', () => {
     component.rows[0].quantity = 14;
-    component.rows[1].quantity = 5;
+    component.rows[1].quantity = 7;
 
     component.save();
 
-    expect(component.error).toBe('Allocated quantity must equal 20.');
+    expect(component.error).toBe('Allocated quantity cannot exceed 20.');
     expect(dialogRef.close).not.toHaveBeenCalled();
   });
 });

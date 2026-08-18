@@ -54,4 +54,5 @@ export interface PurchaseListFulfillmentOption {
 export interface PurchaseListFulfillmentAllocation {
   internalId: string;
   quantity: number;
+  sourceIds?: string[];
 }

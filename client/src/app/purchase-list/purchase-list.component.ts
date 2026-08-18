@@ -245,7 +245,7 @@ export class PurchaseListComponent implements OnInit {
     }
 
     const selectedFulfillmentInventoryIds = this.draftSelectedFulfillmentInventoryIds();
-    if (selectedFulfillmentInventoryIds.length > 1) {
+    if (selectedFulfillmentInventoryIds.length > 0) {
       this.openFulfillmentAllocationDialog(item, selectedFulfillmentInventoryIds);
       return;
     }
@@ -253,7 +253,7 @@ export class PurchaseListComponent implements OnInit {
     this.saveFulfillmentSelectionWithAllocations(
       item,
       selectedFulfillmentInventoryIds,
-      this.defaultFulfillmentAllocations(item, selectedFulfillmentInventoryIds));
+      []);
   }
 
   ngOnInit(): void {
@@ -299,12 +299,16 @@ export class PurchaseListComponent implements OnInit {
     selectedFulfillmentInventoryIds: string[],
     selectedFulfillmentAllocations: PurchaseListFulfillmentAllocation[]
   ): void {
+    const normalizedAllocations = this.normalizedAllocations(selectedFulfillmentAllocations);
     const snapshot = this.snapshotWithFulfillmentSelection(
       item,
       selectedFulfillmentInventoryIds,
-      selectedFulfillmentAllocations);
-    const clearedResolvedSelection = this.activeView() === 'resolved'
-      && selectedFulfillmentInventoryIds.length === 0;
+      normalizedAllocations);
+    const shouldSwitchToActiveView = this.activeView() === 'resolved'
+      && (
+        selectedFulfillmentInventoryIds.length === 0
+        || this.allocationTotal(normalizedAllocations) < item.totalNeeded
+      );
 
     if (!snapshot) {
       this.snackBar.open('Unable to save fulfillment selection.', 'OK', { duration: 4000 });
@@ -315,7 +319,7 @@ export class PurchaseListComponent implements OnInit {
     this.purchaseListService.savePurchaseList(snapshot).subscribe({
       next: purchaseList => {
         this.purchaseList.set(purchaseList);
-        if (clearedResolvedSelection) {
+        if (shouldSwitchToActiveView) {
           this.activeView.set('active');
         }
         this.savingFulfillmentSelection.set(false);
@@ -367,7 +371,7 @@ export class PurchaseListComponent implements OnInit {
 
   private canEditExistingAllocation(): boolean {
     return this.activeView() === 'resolved'
-      && this.draftSelectedFulfillmentInventoryIds().length > 1;
+      && this.draftSelectedFulfillmentInventoryIds().length > 0;
   }
 
   private snapshotWithFulfillmentSelection(
@@ -380,7 +384,7 @@ export class PurchaseListComponent implements OnInit {
       return null;
     }
 
-    const resolvedItem: PurchaseListItem = {
+    const updatedItem: PurchaseListItem = {
       ...item,
       linkedInventoryIds: [...(item.linkedInventoryIds ?? [])],
       selectedFulfillmentInventoryIds: [...selectedFulfillmentInventoryIds],
@@ -388,16 +392,19 @@ export class PurchaseListComponent implements OnInit {
       fulfillmentOptions: [...(item.fulfillmentOptions ?? [])],
       sources: [...(item.sources ?? [])]
     };
+    const allocationTotal = this.allocationTotal(selectedFulfillmentAllocations);
+    const shouldStayActive = selectedFulfillmentInventoryIds.length === 0
+      || allocationTotal < item.totalNeeded;
 
     if (this.activeView() === 'resolved') {
       const remainingResolvedItems = (snapshot.resolvedItems ?? []).filter(resolved => resolved !== item);
 
-      if (selectedFulfillmentInventoryIds.length === 0) {
+      if (shouldStayActive) {
         return {
           ...snapshot,
           items: [
             ...(snapshot.items ?? []),
-            resolvedItem
+            updatedItem
           ],
           resolvedItems: remainingResolvedItems
         };
@@ -408,19 +415,49 @@ export class PurchaseListComponent implements OnInit {
         items: snapshot.items ?? [],
         resolvedItems: [
           ...remainingResolvedItems,
-          resolvedItem
+          updatedItem
+        ]
+      };
+    }
+
+    if (!shouldStayActive) {
+      return {
+        ...snapshot,
+        items: (snapshot.items ?? []).filter(activeItem => activeItem !== item),
+        resolvedItems: [
+          ...(snapshot.resolvedItems ?? []),
+          updatedItem
         ]
       };
     }
 
     return {
       ...snapshot,
-      items: (snapshot.items ?? []).filter(activeItem => activeItem !== item),
-      resolvedItems: [
-        ...(snapshot.resolvedItems ?? []),
-        resolvedItem
-      ]
+      items: (snapshot.items ?? []).map(activeItem => activeItem === item ? updatedItem : activeItem),
+      resolvedItems: snapshot.resolvedItems ?? []
     };
+  }
+
+  private normalizedAllocations(
+    allocations: PurchaseListFulfillmentAllocation[]
+  ): PurchaseListFulfillmentAllocation[] {
+    return allocations
+      .map(allocation => {
+        const sourceIds = this.uniqueStrings(allocation.sourceIds ?? []);
+        const normalizedAllocation: PurchaseListFulfillmentAllocation = {
+          internalId: allocation.internalId,
+          quantity: Math.floor(allocation.quantity)
+        };
+        if (sourceIds.length > 0) {
+          normalizedAllocation.sourceIds = sourceIds;
+        }
+        return normalizedAllocation;
+      })
+      .filter(allocation => allocation.internalId && allocation.quantity > 0);
+  }
+
+  private allocationTotal(allocations: PurchaseListFulfillmentAllocation[]): number {
+    return allocations.reduce((total, allocation) => total + allocation.quantity, 0);
   }
 
   private fulfillmentOptionForSelection(

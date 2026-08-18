@@ -16,7 +16,7 @@ interface PurchaseListSourceDialogData {
     CommonModule
   ],
   template: `
-  <h2 mat-dialog-title>Sources On: {{ data.itemDescription }}</h2>
+  <h2 mat-dialog-title>Sources For {{ data.itemDescription }}</h2>
 
   <mat-dialog-content class="purchase-list-source-dialog">
     <div class="purchase-list-table-scroll">
@@ -142,7 +142,7 @@ interface PurchaseListSourceDialogData {
 
     .table-number {
       font-weight: 800;
-      text-align: right;
+      text-align: left;
     }
 
     .purchase-list-source-empty {

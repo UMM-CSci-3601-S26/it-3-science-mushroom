@@ -256,6 +256,212 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void calculateNewPurchaseListKeepsPartialFulfillmentPreferenceActiveWithRemainder() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Green Folder", 2),
+      inventoryDoc("ID-00021", "Red Folder", 1)));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Folder", 1, List.of("ID-00020", "ID-00021")));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem folderItem = initialSnapshot.items.get(0);
+    folderItem.selectedFulfillmentInventoryIds = List.of("ID-00020");
+    folderItem.selectedFulfillmentAllocations = List.of(fulfillmentAllocation("ID-00020", 2));
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = List.of(folderItem);
+    savedSnapshot.resolvedItems = List.of();
+    purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem greenFolderPreference = recalculatedSnapshot.items.get(0);
+    PurchaseListItem unresolvedFolderDemand = recalculatedSnapshot.items.get(1);
+
+    assertAll(
+      () -> assertEquals(2, recalculatedSnapshot.items.size()),
+      () -> assertEquals(0, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals("Green Folder", greenFolderPreference.description),
+      () -> assertEquals(2, greenFolderPreference.totalNeeded),
+      () -> assertIterableEquals(List.of("ID-00020"), greenFolderPreference.selectedFulfillmentInventoryIds),
+      () -> assertEquals(2, greenFolderPreference.selectedFulfillmentAllocations.get(0).quantity),
+      () -> assertEquals("1x Folder (linked to Green Folder)", unresolvedFolderDemand.description),
+      () -> assertEquals(3, unresolvedFolderDemand.totalNeeded),
+      () -> assertIterableEquals(List.of(), unresolvedFolderDemand.selectedFulfillmentInventoryIds),
+      () -> assertEquals(5, recalculatedSnapshot.summary.totalUnitsNeeded));
+  }
+
+  @Test
+  void calculateNewPurchaseListMergesPartialPreferenceIntoMatchingActiveItem() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Green Folder", 2),
+      inventoryDoc("ID-00021", "Red Folder", 1)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Green Folder", 1, List.of("ID-00020")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Folder", 1, List.of("ID-00020", "ID-00021"))));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem ambiguousFolderItem = initialSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020", "ID-00021")))
+      .findFirst()
+      .orElseThrow();
+    ambiguousFolderItem.selectedFulfillmentInventoryIds = List.of("ID-00020");
+    ambiguousFolderItem.selectedFulfillmentAllocations = List.of(fulfillmentAllocation("ID-00020", 2));
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = initialSnapshot.items;
+    savedSnapshot.resolvedItems = List.of();
+    purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem mergedGreenFolderItem = recalculatedSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020")))
+      .findFirst()
+      .orElseThrow();
+    PurchaseListItem unresolvedFolderDemand = recalculatedSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020", "ID-00021")))
+      .findFirst()
+      .orElseThrow();
+
+    assertAll(
+      () -> assertEquals(2, recalculatedSnapshot.items.size()),
+      () -> assertEquals(0, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals("1x Green Folder", mergedGreenFolderItem.description),
+      () -> assertEquals(7, mergedGreenFolderItem.totalNeeded),
+      () -> assertIterableEquals(List.of("ID-00020"), mergedGreenFolderItem.selectedFulfillmentInventoryIds),
+      () -> assertEquals(2, mergedGreenFolderItem.selectedFulfillmentAllocations.get(0).quantity),
+      () -> assertIterableEquals(
+        sourceIds(ambiguousFolderItem),
+        mergedGreenFolderItem.selectedFulfillmentAllocations.get(0).sourceIds),
+      () -> assertEquals(2, mergedGreenFolderItem.sources.size()),
+      () -> assertEquals("1x Folder (linked to Green Folder)", unresolvedFolderDemand.description),
+      () -> assertEquals(3, unresolvedFolderDemand.totalNeeded),
+      () -> assertIterableEquals(List.of(), unresolvedFolderDemand.selectedFulfillmentInventoryIds),
+      () -> assertEquals(10, recalculatedSnapshot.summary.totalUnitsNeeded));
+  }
+
+  @Test
+  void calculateNewPurchaseListCollapsesDuplicatePartialPreferencesForSameSource() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Green Folder", 2),
+      inventoryDoc("ID-00021", "Red Folder", 1)));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Folder", 1, List.of("ID-00020", "ID-00021")));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem folderItem = initialSnapshot.items.get(0);
+    List<String> folderSourceIds = sourceIds(folderItem);
+    PurchaseListItem firstPreference = savedPreferenceItem(folderItem, "ID-00020", "Green Folder", 2);
+    PurchaseListItem secondPreference = savedPreferenceItem(folderItem, "ID-00020", "Green Folder", 1);
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = List.of(firstPreference, secondPreference);
+    savedSnapshot.resolvedItems = List.of();
+    purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem greenFolderPreference = recalculatedSnapshot.items.get(0);
+    PurchaseListItem unresolvedFolderDemand = recalculatedSnapshot.items.get(1);
+
+    assertAll(
+      () -> assertEquals(2, recalculatedSnapshot.items.size()),
+      () -> assertEquals(0, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals("Green Folder", greenFolderPreference.description),
+      () -> assertEquals(3, greenFolderPreference.totalNeeded),
+      () -> assertEquals(1, greenFolderPreference.selectedFulfillmentAllocations.size()),
+      () -> assertEquals(3, greenFolderPreference.selectedFulfillmentAllocations.get(0).quantity),
+      () -> assertIterableEquals(
+        folderSourceIds,
+        greenFolderPreference.selectedFulfillmentAllocations.get(0).sourceIds),
+      () -> assertEquals(2, unresolvedFolderDemand.totalNeeded));
+  }
+
+  @Test
+  void calculateNewPurchaseListUsesOriginalTotalWhenDuplicatePreferencesResolveSource() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Green Folder", 2),
+      inventoryDoc("ID-00021", "Red Folder", 1)));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Folder", 1, List.of("ID-00020", "ID-00021")));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem folderItem = initialSnapshot.items.get(0);
+    PurchaseListItem firstPreference = savedPreferenceItem(folderItem, "ID-00020", "Green Folder", 2);
+    PurchaseListItem secondPreference = savedPreferenceItem(folderItem, "ID-00020", "Green Folder", 3);
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = List.of(firstPreference, secondPreference);
+    savedSnapshot.resolvedItems = List.of();
+    purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem resolvedFolderDemand = recalculatedSnapshot.resolvedItems.get(0);
+
+    assertAll(
+      () -> assertEquals(1, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals("1x Folder (linked to Green Folder)", resolvedFolderDemand.description),
+      () -> assertEquals(5, resolvedFolderDemand.totalNeeded),
+      () -> assertEquals(1, resolvedFolderDemand.selectedFulfillmentAllocations.size()),
+      () -> assertEquals(5, resolvedFolderDemand.selectedFulfillmentAllocations.get(0).quantity));
+  }
+
+  @Test
+  void calculateNewPurchaseListKeepsMultiplePartialFulfillmentPreferencesActive() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 8));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00020", "Green Folder", 2),
+      inventoryDoc("ID-00021", "Red Folder", 2)));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Folder", 1, List.of("ID-00020", "ID-00021")));
+
+    PurchaseListSnapshot initialSnapshot = purchaseListService.calculateNewPurchaseList();
+    PurchaseListItem folderItem = initialSnapshot.items.get(0);
+    folderItem.selectedFulfillmentInventoryIds = List.of("ID-00020", "ID-00021");
+    folderItem.selectedFulfillmentAllocations = List.of(
+      fulfillmentAllocation("ID-00020", 2),
+      fulfillmentAllocation("ID-00021", 3));
+
+    PurchaseListSnapshot savedSnapshot = new PurchaseListSnapshot();
+    savedSnapshot.generatedAt = initialSnapshot.generatedAt;
+    savedSnapshot.summary = initialSnapshot.summary;
+    savedSnapshot.items = List.of(folderItem);
+    savedSnapshot.resolvedItems = List.of();
+    PurchaseListSnapshot savedPartialSnapshot = purchaseListService.saveCurrentPurchaseList(savedSnapshot);
+
+    PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertAll(
+      () -> assertEquals(3, savedPartialSnapshot.items.size()),
+      () -> assertEquals(3, recalculatedSnapshot.items.size()),
+      () -> assertEquals(0, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals("Green Folder", recalculatedSnapshot.items.get(0).description),
+      () -> assertEquals(2, recalculatedSnapshot.items.get(0).totalNeeded),
+      () -> assertIterableEquals(
+        List.of("ID-00020"),
+        recalculatedSnapshot.items.get(0).selectedFulfillmentInventoryIds),
+      () -> assertEquals("Red Folder", recalculatedSnapshot.items.get(1).description),
+      () -> assertEquals(3, recalculatedSnapshot.items.get(1).totalNeeded),
+      () -> assertIterableEquals(
+        List.of("ID-00021"),
+        recalculatedSnapshot.items.get(1).selectedFulfillmentInventoryIds),
+      () -> assertEquals("1x Folder (linked to Green Folder)", recalculatedSnapshot.items.get(2).description),
+      () -> assertEquals(3, recalculatedSnapshot.items.get(2).totalNeeded),
+      () -> assertIterableEquals(List.of(), recalculatedSnapshot.items.get(2).selectedFulfillmentInventoryIds),
+      () -> assertEquals(8, recalculatedSnapshot.summary.totalUnitsNeeded));
+  }
+
+  @Test
   void calculateNewPurchaseListFiltersInvalidSavedResolvedAllocations() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
     db.getCollection("inventory").insertMany(List.of(
@@ -291,20 +497,29 @@ class PurchaseListServiceSpec {
     purchaseListService.saveCurrentPurchaseList(savedSnapshot);
 
     PurchaseListSnapshot recalculatedSnapshot = purchaseListService.calculateNewPurchaseList();
-    PurchaseListItem recalculatedMarkerItem = recalculatedSnapshot.items.stream()
-      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020")))
+    PurchaseListItem mergedMarkerItem = recalculatedSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020"))
+        && !item.selectedFulfillmentInventoryIds.isEmpty())
+      .findFirst()
+      .orElseThrow();
+    PurchaseListItem unresolvedWritingToolItem = recalculatedSnapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.equals(List.of("ID-00020", "ID-00021")))
       .findFirst()
       .orElseThrow();
 
     assertAll(
-      () -> assertEquals(1, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals(0, recalculatedSnapshot.resolvedItems.size()),
+      () -> assertEquals(2, recalculatedSnapshot.items.size()),
       () -> assertIterableEquals(
         List.of("ID-00020"),
-        recalculatedSnapshot.resolvedItems.get(0).selectedFulfillmentInventoryIds),
-      () -> assertEquals(1, recalculatedSnapshot.resolvedItems.get(0).selectedFulfillmentAllocations.size()),
-      () -> assertEquals(3, recalculatedSnapshot.resolvedItems.get(0).selectedFulfillmentAllocations.get(0).quantity),
-      () -> assertEquals(8, recalculatedMarkerItem.totalNeeded),
-      () -> assertEquals(4, recalculatedMarkerItem.quantityToBuy));
+        mergedMarkerItem.selectedFulfillmentInventoryIds),
+      () -> assertEquals(1, mergedMarkerItem.selectedFulfillmentAllocations.size()),
+      () -> assertEquals(3, mergedMarkerItem.selectedFulfillmentAllocations.get(0).quantity),
+      () -> assertEquals(8, mergedMarkerItem.totalNeeded),
+      () -> assertEquals(4, mergedMarkerItem.quantityToBuy),
+      () -> assertEquals(2, unresolvedWritingToolItem.totalNeeded),
+      () -> assertEquals(10, recalculatedSnapshot.summary.totalUnitsNeeded),
+      () -> assertEquals(4, recalculatedSnapshot.summary.totalUnitsToBuy));
   }
 
   @Test
@@ -811,6 +1026,37 @@ class PurchaseListServiceSpec {
     allocation.internalId = internalId;
     allocation.quantity = quantity;
     return allocation;
+  }
+
+  private PurchaseListItem savedPreferenceItem(
+      PurchaseListItem sourceItem,
+      String internalId,
+      String description,
+      int quantity
+  ) {
+    PurchaseListItem preferenceItem = purchaseListItem(internalId, description, quantity, quantity);
+    preferenceItem.sources = sourceItem.sources;
+    preferenceItem.selectedFulfillmentInventoryIds = List.of(internalId);
+    preferenceItem.selectedFulfillmentAllocations = List.of(
+      fulfillmentAllocation(internalId, quantity, sourceIds(sourceItem)));
+    return preferenceItem;
+  }
+
+  private PurchaseListFulfillmentAllocation fulfillmentAllocation(
+      String internalId,
+      int quantity,
+      List<String> sourceIds
+  ) {
+    PurchaseListFulfillmentAllocation allocation = fulfillmentAllocation(internalId, quantity);
+    allocation.sourceIds = sourceIds;
+    return allocation;
+  }
+
+  private List<String> sourceIds(PurchaseListItem item) {
+    return item.sources.stream()
+      .map(source -> source.supplyListId)
+      .sorted()
+      .toList();
   }
 
   private Document supplyListDoc(
