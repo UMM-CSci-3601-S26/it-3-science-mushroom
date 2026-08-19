@@ -127,6 +127,30 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void supplyListMatchesStudentMatchesBroadGradeCategories() {
+    SupplyList supplyList = new SupplyList();
+    supplyList.school = "Morris Elementary";
+
+    supplyList.grade = "High School";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "12th Grade", "Ms. Doe"));
+
+    supplyList.grade = "Middle School";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "7th Grade", "Ms. Doe"));
+
+    supplyList.grade = "Elementary";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "Kindergarten", "Ms. Doe"));
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(
+      supplyList,
+      "Morris Elementary",
+      "Pre Kindergarten",
+      "Ms. Doe"));
+    assertFalse(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "6th Grade", "Ms. Doe"));
+
+    supplyList.grade = "5th Grade";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "Elementary", "Ms. Doe"));
+  }
+
+  @Test
   void findBestDemandMatchDoesNotRequireEnoughAvailableStock() {
     db.getCollection("inventory").drop();
     db.getCollection("inventory").insertMany(List.of(
