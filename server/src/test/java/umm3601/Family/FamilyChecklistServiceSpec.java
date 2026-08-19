@@ -54,6 +54,7 @@ class FamilyChecklistServiceSpec {
   void setupEach() {
     db.getCollection("supplylist").drop();
     db.getCollection("inventory").drop();
+    db.getCollection("purchaseListSnapshots").drop();
 
     db.getCollection("supplylist").insertMany(List.of(
       supplyListDoc("Backpack"),
@@ -251,6 +252,76 @@ class FamilyChecklistServiceSpec {
     assertEquals("PLAIN-PENCIL", item.matchedInventoryId);
   }
 
+  @Test
+  void generateChecklistSnapshotUsesPurchaseListPreferenceBeforeLinkedInventory() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Folder", "Blue 2 Prong Folder (Plastic)", 8,
+        "ID-20000", "ITEM-20000", "EXT-20000"),
+      inventoryDoc("Folder", "Red 2 Prong Folder (Plastic)", 8,
+        "ID-20001", "ITEM-20001", "EXT-20001")));
+    String supplyListId = insertSupplyList("Folder", 2, List.of("ID-20001"));
+    insertPurchaseListPreference(supplyListId, "ID-20000", false);
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithStudent());
+    Family.ChecklistItem folder = checklist.sections.get(0).items.get(0);
+
+    assertEquals("ID-20000", folder.matchedInventoryId);
+    assertEquals("Blue 2 Prong Folder (Plastic)", folder.matchedInventoryDescription);
+  }
+
+  @Test
+  void generateChecklistSnapshotUsesResolvedPurchaseListPreference() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Folder", "Blue 2 Prong Folder (Plastic)", 8,
+        "ID-20000", "ITEM-20000", "EXT-20000"),
+      inventoryDoc("Folder", "Red 2 Prong Folder (Plastic)", 8,
+        "ID-20001", "ITEM-20001", "EXT-20001")));
+    String supplyListId = insertSupplyList("Folder", 2, List.of("ID-20001"));
+    insertPurchaseListPreference(supplyListId, "ID-20000", true);
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithStudent());
+
+    assertEquals("ID-20000", checklist.sections.get(0).items.get(0).matchedInventoryId);
+  }
+
+  @Test
+  void generateChecklistSnapshotUsesLinkedInventoryWhenPreferenceIsUnavailable() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Folder", "Blue 2 Prong Folder (Plastic)", 1,
+        "ID-20000", "ITEM-20000", "EXT-20000"),
+      inventoryDoc("Folder", "Red 2 Prong Folder (Plastic)", 8,
+        "ID-20001", "ITEM-20001", "EXT-20001")));
+    String supplyListId = insertSupplyList("Folder", 2, List.of("ID-20001"));
+    insertPurchaseListPreference(supplyListId, "ID-20000", false);
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithStudent());
+
+    assertEquals("ID-20001", checklist.sections.get(0).items.get(0).matchedInventoryId);
+  }
+
+  @Test
+  void generateChecklistSnapshotIgnoresAnotherRequestsPreferenceAndMissingLink() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Folder", "Blue 2 Prong Folder (Plastic)", 8,
+        "ID-20000", "ITEM-20000", "EXT-20000"),
+      inventoryDoc("Folder", "Red 2 Prong Folder (Plastic)", 8,
+        "ID-20001", "ITEM-20001", "EXT-20001")));
+    insertSupplyList("Folder", 2, List.of("ID-29999", "ID-20001"));
+    insertPurchaseListPreference("507f1f77bcf86cd799439011", "ID-20000", false);
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithStudent());
+
+    assertEquals("ID-20001", checklist.sections.get(0).items.get(0).matchedInventoryId);
+  }
+
   private Document supplyListDoc(String item) {
     return new Document()
       .append("district", "District 1")
@@ -259,6 +330,44 @@ class FamilyChecklistServiceSpec {
       .append("teacher", "N/A")
       .append("item", List.of(item))
       .append("quantity", 1);
+  }
+
+  private String insertSupplyList(String item, int quantity, List<String> linkedInventoryIds) {
+    Document supplyList = supplyListDoc(item)
+      .append("quantity", quantity)
+      .append("invIDs", linkedInventoryIds);
+    db.getCollection("supplylist").insertOne(supplyList);
+    return supplyList.getObjectId("_id").toHexString();
+  }
+
+  private void insertPurchaseListPreference(
+      String supplyListId,
+      String internalId,
+      boolean resolved
+  ) {
+    Document allocation = new Document()
+      .append("internalId", internalId)
+      .append("quantity", 2)
+      .append("sourceIds", List.of(supplyListId));
+    Document purchaseItem = new Document()
+      .append("selectedFulfillmentAllocations", List.of(allocation));
+    db.getCollection("purchaseListSnapshots").insertOne(new Document()
+      .append("_id", "latest-purchase-list")
+      .append("items", resolved ? List.of() : List.of(purchaseItem))
+      .append("resolvedItems", resolved ? List.of(purchaseItem) : List.of()));
+  }
+
+  private Family familyWithStudent() {
+    Family.StudentInfo student = new Family.StudentInfo();
+    student.name = "Test Student";
+    student.school = "Roosevelt";
+    student.grade = "5";
+    student.teacher = "N/A";
+
+    Family family = new Family();
+    family.guardianName = "Test Family";
+    family.students = List.of(student);
+    return family;
   }
 
   private Document inventoryDoc(String item, String description, int quantity,
@@ -283,7 +392,7 @@ class FamilyChecklistServiceSpec {
   private Family.ChecklistItem invokeBuildChecklistItemSnapshot(SupplyList supplyList, String itemId)
       throws Exception {
     return invokePrivate("buildChecklistItemSnapshot",
-      new Class<?>[] {SupplyList.class, String.class}, supplyList, itemId);
+      new Class<?>[] {SupplyList.class, String.class, List.class}, supplyList, itemId, List.of());
   }
 
   @SuppressWarnings("unchecked")

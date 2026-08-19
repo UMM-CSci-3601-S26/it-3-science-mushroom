@@ -107,7 +107,10 @@ public class Bootstrap {
         purchaseListService);
     InventoryIdService inventoryIdService = new InventoryIdService(db);
     DemandService demandService = new DemandService(db, inventoryMatcher);
-    FamilyChecklistService familyChecklistService = new FamilyChecklistService(db, inventoryMatcher);
+    FamilyChecklistService familyChecklistService = new FamilyChecklistService(
+        db,
+        inventoryMatcher,
+        purchaseListService);
     FamilyController familyController = new FamilyController(
         db,
         inventoryReservationService,
