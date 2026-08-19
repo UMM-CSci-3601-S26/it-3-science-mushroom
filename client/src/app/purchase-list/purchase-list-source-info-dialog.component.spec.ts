@@ -59,7 +59,7 @@ describe('PurchaseListSourceInfoDialogComponent', () => {
     const headers = fixture.debugElement.queryAll(By.css('thead th'))
       .map(header => header.nativeElement.textContent.trim());
 
-    expect(title).toBe('Sources On: Blue markers');
+    expect(title).toBe('Sources For Blue markers');
     expect(headers).toEqual([
       'School',
       'Grade',
