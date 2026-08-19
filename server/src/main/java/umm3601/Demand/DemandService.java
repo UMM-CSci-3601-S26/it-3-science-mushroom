@@ -3,10 +3,13 @@ package umm3601.Demand;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -87,6 +90,7 @@ public class DemandService {
     long invalidInvIDCount = 0;
     long bestMatchNullCount = 0;
     long schoolCount = 0;
+    List<String> linkedInventoryIdsFinal = new ArrayList<>();
 
     for (SupplyList supplyList : allSupplyLists) {
       if (supplyList.school == null || supplyList.grade == null) {
@@ -94,6 +98,7 @@ public class DemandService {
       }
 
       List<String> linkedInventoryIds = validInternalIds(supplyList);
+      linkedInventoryIdsFinal = Stream.concat(linkedInventoryIdsFinal.stream(), linkedInventoryIds.stream()).collect(Collectors.toList());
       int studentCount = studentCountForSupplyList(supplyList, students);
 
       if (linkedInventoryIds.isEmpty()) {
@@ -156,7 +161,8 @@ public class DemandService {
       validInvIDCount,
       invalidInvIDCount,
       bestMatchNullCount,
-      schoolCount
+      schoolCount,
+      linkedInventoryIdsFinal
     );
 
     List<DemandInventoryItem> inventoryItems = demandByInternalId.values().stream()
