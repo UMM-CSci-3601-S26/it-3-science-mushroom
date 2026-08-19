@@ -10,53 +10,41 @@
         mat-raised-button
         color="primary"
         type="button"
-        (click)="calculateCurrentPurchaseList()" [disabled]="calculating()">
-         {{ calculating() ? 'Calculating...' : 'Calculate List' }}
+        (click)="calculateCurrentPurchaseList()"
+        [disabled]="calculating()">
+        {{ calculating() ? 'Calculating...' : 'Calculate List' }}
       </button>
     </div>
   </header>
 
   <mat-card class="purchase-list-card app-page-stack">
     <mat-card-header>
-      <mat-card-title>{{ activeView() === 'resolved' ? 'Resolved Items' : 'Items To Buy' }}</mat-card-title>
-      <mat-card-subtitle>
-        {{ activeView() === 'resolved' ? 'Manually verified fulfillment choices' : 'Grouped by supply-list demand' }}
-      </mat-card-subtitle>
+      <mat-card-title>Items To Buy</mat-card-title>
+      <mat-card-subtitle>Grouped by matching inventory and supply-list demand</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
-      <div class="purchase-toolbar app-split">
-        <div class="purchase-search-preview">
-          <mat-form-field appearance="outline" class="purchase-search-field">
-            <mat-label>Search item description</mat-label>
-            <mat-icon matPrefix>search</mat-icon>
-            <input
-              matInput
-              type="search"
-              [value]="searchQuery()"
-              (input)="applySearch($any($event.target).value)"
-              data-cy="purchase-list-search">
-            @if (searchQuery()) {
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                aria-label="Clear purchase list search"
-                (click)="clearSearch()">
-                <mat-icon>close</mat-icon>
-              </button>
-            }
-          </mat-form-field>
-        </div>
-
-        <mat-button-toggle-group
-          class="purchase-view-toggle"
-          [value]="activeView()"
-          (change)="setActiveView($any($event).value)"
-          aria-label="Purchase list view">
-          <mat-button-toggle value="active">To Buy ({{ activeItemCount() }})</mat-button-toggle>
-          <mat-button-toggle value="resolved">Resolved ({{ resolvedItemCount() }})</mat-button-toggle>
-        </mat-button-toggle-group>
+      <div class="purchase-toolbar">
+        <mat-form-field appearance="outline" class="purchase-search-field">
+          <mat-label>Search item description</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input
+            matInput
+            type="search"
+            [value]="searchQuery()"
+            (input)="applySearch($any($event.target).value)"
+            data-cy="purchase-list-search">
+          @if (searchQuery()) {
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              aria-label="Clear purchase list search"
+              (click)="clearSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
       </div>
 
       @if (loading()) {
@@ -67,86 +55,42 @@
         <div class="purchase-empty-state">
           <mat-icon>error_outline</mat-icon>
         </div>
-      } @else if (currentViewItems().length === 0) {
+      } @else if ((purchaseList()?.items?.length ?? 0) === 0) {
         <div class="purchase-empty-state">
           <mat-icon>inventory_2</mat-icon>
         </div>
       } @else {
         <div class="purchase-table-shell">
-          <table mat-table [dataSource]="dataSource" matSort multiTemplateDataRows class="purchase-table">
+          <table mat-table [dataSource]="dataSource" matSort class="purchase-table">
             <ng-container matColumnDef="description">
               <th mat-header-cell *matHeaderCellDef>Item</th>
               <td mat-cell *matCellDef="let item" class="purchase-item-name">
-                <div class="purchase-item-label">
-                  @if (isExpandable(item)) {
-                    <mat-icon class="purchase-expand-cue" aria-hidden="true">
-                      {{ expandedRow() === item ? 'expand_less' : 'expand_more' }}
-                    </mat-icon>
-                  }
-                  <span>{{ item.description }}</span>
-                </div>
+                {{ item.description }}
               </td>
             </ng-container>
 
             <ng-container matColumnDef="totalNeeded">
-              <th
-                mat-header-cell
-                *matHeaderCellDef
-                mat-sort-header
-                sortActionDescription="Sort by total units needed">
-                Total Needed
-              </th>
-              <td mat-cell *matCellDef="let item" class="quantity-cell">
-                {{ item.totalNeeded }}
-              </td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Total Needed</th>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ item.totalNeeded }}</td>
             </ng-container>
 
             <ng-container matColumnDef="quantityOnHand">
-              <th
-                mat-header-cell
-                *matHeaderCellDef
-                mat-sort-header
-                sortActionDescription="Sort by units on hand">
-                On Hand
-              </th>
-              <td mat-cell *matCellDef="let item" class="quantity-cell">
-                {{ item.quantityOnHand }}
-              </td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>On Hand</th>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ item.quantityOnHand }}</td>
             </ng-container>
 
             <ng-container matColumnDef="quantityToBuy">
-              <th
-                mat-header-cell
-                *matHeaderCellDef
-                mat-sort-header
-                sortActionDescription="Sort by units to buy">
-                To Buy
-              </th>
-              <td mat-cell *matCellDef="let item" class="quantity-cell">
-                {{ item.quantityToBuy }}
-              </td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>To Buy</th>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ item.quantityToBuy }}</td>
             </ng-container>
 
             <ng-container matColumnDef="fulfillmentPercent">
-              <th
-                mat-header-cell
-                *matHeaderCellDef
-                mat-sort-header
-                sortActionDescription="Sort by percent filled">
-                Status
-              </th>
-              <td mat-cell *matCellDef="let item" class="status-cell">
-                {{ item.fulfillmentPercent }}%
-              </td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+              <td mat-cell *matCellDef="let item" class="status-cell">{{ item.fulfillmentPercent }}%</td>
             </ng-container>
 
             <ng-container matColumnDef="sources">
-              <th mat-header-cell
-              *matHeaderCellDef
-              >
-              Sources
-              </th>
-
+              <th mat-header-cell *matHeaderCellDef>Sources</th>
               <td mat-cell *matCellDef="let item" class="sources-cell">
                 <button
                   mat-icon-button
@@ -154,105 +98,14 @@
                   type="button"
                   matTooltip="View sources"
                   [attr.aria-label]="'View sources for ' + item.description"
-                  (click)="$event.stopPropagation(); openSourceInfoDialog(item)">
+                  (click)="openSourceInfoDialog(item)">
                   <mat-icon>info_outline</mat-icon>
                 </button>
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="expandedDetail">
-              <td
-                mat-cell
-                *matCellDef="let item"
-                class="purchase-detail-cell"
-                [attr.colspan]="displayedColumns.length">
-                @if (expandedRow() === item) {
-                  <div class="purchase-detail-panel">
-                    <div class="purchase-detail-title">
-                      {{ activeView() === 'resolved' ? 'Selected fulfillment' : 'Possible fulfillment options' }}
-                    </div>
-                    <div class="purchase-linked-options">
-                      @for (option of item.fulfillmentOptions; track option.internalId) {
-                        <div
-                          class="purchase-linked-option"
-                          [class.purchase-linked-option-selected]="isFulfillmentSelected(item, option.internalId)">
-                          <div class="purchase-linked-option-main">
-                            <span class="purchase-linked-option-description">{{ option.description }}</span>
-                            <span class="purchase-linked-option-stock">
-                              {{ option.quantityOnHand }} on hand
-                            </span>
-                          </div>
-                          <dl class="purchase-linked-option-details">
-                            <div>
-                              <dt>Item</dt>
-                              <dd>{{ option.item }}</dd>
-                            </div>
-                            @if (fulfillmentAllocationQuantity(item, option.internalId) > 0) {
-                              <div>
-                                <dt>Assigned</dt>
-                                <dd>{{ fulfillmentAllocationQuantity(item, option.internalId) }}</dd>
-                              </div>
-                            }
-                            <div>
-                              <dt>Internal ID</dt>
-                              <dd>{{ option.internalId }}</dd>
-                            </div>
-                          </dl>
-                          <div class="purchase-linked-option-actions">
-                            <mat-checkbox
-                              [checked]="isFulfillmentSelected(item, option.internalId)"
-                              (change)="toggleFulfillmentSelection(item, option.internalId, $event.checked)">
-                              Select
-                            </mat-checkbox>
-                          </div>
-                        </div>
-                      } @empty {
-                        <div class="purchase-linked-options-empty">
-                          Recalculate the purchase list to load fulfillment option details.
-                        </div>
-                      }
-                    </div>
-                    <div class="purchase-detail-actions">
-                      <button
-                        mat-button
-                        type="button"
-                        (click)="cancelFulfillmentEdit(item, $event)"
-                        [disabled]="savingFulfillmentSelection()">
-                        Cancel
-                      </button>
-                      <button
-                        mat-raised-button
-                        color="primary"
-                        type="button"
-                        (click)="saveFulfillmentSelection(item, $event)"
-                        [disabled]="!canSaveFulfillmentSelection(item)">
-                        {{ savingFulfillmentSelection() ? 'Saving...' : 'Save' }}
-                      </button>
-                    </div>
-                  </div>
-                }
-              </td>
-            </ng-container>
-
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr
-              mat-row
-              *matRowDef="let row; columns: displayedColumns;"
-              class="purchase-data-row"
-              [class.purchase-expandable-row]="isExpandable(row)"
-              [class.purchase-expanded-row]="expandedRow() === row"
-              [attr.aria-expanded]="isExpandable(row) ? expandedRow() === row : null"
-              [attr.tabindex]="isExpandable(row) ? 0 : null"
-              (click)="toggleExpansion(row)"
-              (keydown.enter)="toggleExpansion(row)"
-              (keydown.space)="$event.preventDefault(); toggleExpansion(row)">
-            </tr>
-            <tr
-              mat-row
-              *matRowDef="let row; columns: expandedDetailColumns;"
-              class="purchase-detail-row"
-              [class.purchase-detail-row-expanded]="expandedRow() === row">
-            </tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell purchase-no-results" [attr.colspan]="displayedColumns.length">
                 No purchase-list items match the current search.

@@ -33,17 +33,6 @@ describe('PurchaseListService', () => {
         fulfillmentPercent: 60,
         fulfillmentStatus: 'partial',
         linkedInventoryIds: ['ID-00042'],
-        selectedFulfillmentInventoryIds: [],
-        selectedFulfillmentAllocations: [],
-        fulfillmentOptions: [
-          {
-            internalId: 'ID-00042',
-            inventoryId: '507f1f77bcf86cd799439011',
-            item: 'Markers',
-            description: 'Crayola markers',
-            quantityOnHand: 3
-          }
-        ],
         sources: [
           {
             supplyListId: 'SL-1',
@@ -57,8 +46,7 @@ describe('PurchaseListService', () => {
           }
         ]
       }
-    ],
-    resolvedItems: []
+    ]
   };
 
   beforeEach(() => {
@@ -102,21 +90,6 @@ describe('PurchaseListService', () => {
     const req = httpMock.expectOne(service.calculatePurchaseListUrl);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({});
-    req.flush(snapshot);
-
-    expect(response).toEqual(snapshot);
-  });
-
-  it('saves the current purchase list snapshot', () => {
-    let response: PurchaseListSnapshot | undefined;
-
-    service.savePurchaseList(snapshot).subscribe(data => {
-      response = data;
-    });
-
-    const req = httpMock.expectOne(service.purchaseListUrl);
-    expect(req.request.method).toBe('PUT');
-    expect(req.request.body).toEqual(snapshot);
     req.flush(snapshot);
 
     expect(response).toEqual(snapshot);

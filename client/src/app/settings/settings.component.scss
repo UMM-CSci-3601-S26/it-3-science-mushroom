@@ -179,6 +179,71 @@ mat-paginator {
   }
 }
 
+// ── Item Preferences ───
+
+.supply-preference-list {
+  display: grid;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  overflow: hidden;
+}
+
+.supply-preference-row {
+  display: grid;
+  gap: var(--app-space-md);
+  padding: var(--app-space-md);
+  border-bottom: 1px solid var(--app-divider-color);
+}
+
+.supply-preference-row:last-child {
+  border-bottom: 0;
+}
+
+.supply-preference-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+}
+
+.supply-preference-heading h3,
+.supply-preference-heading p {
+  margin: 0;
+}
+
+.supply-preference-heading h3 {
+  font-size: 1rem;
+}
+
+.supply-preference-heading p,
+.preference-option-id {
+  color: var(--app-text-muted);
+  font-size: 0.8rem;
+}
+
+.supply-preference-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--app-space-xs) var(--app-space-md);
+}
+
+.supply-preference-options mat-checkbox {
+  min-width: 0;
+}
+
+.preference-option-label,
+.preference-option-id {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.preference-empty-state {
+  display: grid;
+  place-items: center;
+  min-height: 8rem;
+  color: var(--app-text-muted);
+}
+
 // ── Drive Order ───
 
 .drive-order-columns {
@@ -355,5 +420,10 @@ mat-paginator {
 
   .order-section {
     width: 100%;
+  }
+
+  .supply-preference-heading {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

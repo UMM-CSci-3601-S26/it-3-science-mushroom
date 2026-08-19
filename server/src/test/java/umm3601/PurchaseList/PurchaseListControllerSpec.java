@@ -33,7 +33,6 @@ class PurchaseListControllerSpec {
 
     verify(mockServer).get(any(), any());
     verify(mockServer).post(any(), any());
-    verify(mockServer).put(any(), any());
   }
 
   @Test
@@ -63,23 +62,6 @@ class PurchaseListControllerSpec {
     when(purchaseListService.calculateNewPurchaseList()).thenReturn(snapshot);
 
     new PurchaseListController(purchaseListService).calculatePurchaseList(ctx);
-
-    verify(ctx).json(snapshot);
-    verify(ctx).status(HttpStatus.OK);
-  }
-
-  @Test
-  void saveCurrentPurchaseListReturnsSavedSnapshot() {
-    PurchaseListService purchaseListService = mock(PurchaseListService.class);
-    Context ctx = mock(Context.class);
-    PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
-    snapshot.summary = new PurchaseListSummary();
-    snapshot.items = List.of();
-
-    when(ctx.bodyAsClass(PurchaseListSnapshot.class)).thenReturn(snapshot);
-    when(purchaseListService.saveCurrentPurchaseList(snapshot)).thenReturn(snapshot);
-
-    new PurchaseListController(purchaseListService).saveCurrentPurchaseList(ctx);
 
     verify(ctx).json(snapshot);
     verify(ctx).status(HttpStatus.OK);
@@ -119,20 +101,4 @@ class PurchaseListControllerSpec {
     verifyNoInteractions(purchaseListService);
   }
 
-  @Test
-  void rejectsNonAdminSaveRequestsThroughSecuredRoute() throws Exception {
-    PurchaseListService purchaseListService = mock(PurchaseListService.class);
-    Context ctx = mock(Context.class);
-    when(ctx.attribute("systemRole")).thenReturn(Role.VOLUNTEER);
-
-    Method method = PurchaseListController.class.getDeclaredMethod("saveCurrentPurchaseList", Context.class);
-
-    assertThrows(ForbiddenResponse.class, () ->
-        new SecuredHandler(
-            new PurchaseListController(purchaseListService),
-            method,
-            mock(PermissionsService.class))
-        .handle(ctx));
-    verifyNoInteractions(purchaseListService);
-  }
 }

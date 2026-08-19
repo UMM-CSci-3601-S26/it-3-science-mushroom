@@ -577,7 +577,8 @@ public class SupplyListControllerSpec {
           "notes": "N/A",
           "type": {"exactly": "dry erase", "anyOf": []},
           "material": {"exactly": "plastic", "anyOf": []},
-          "invIDs": [" ID-0232 ", "", "ID-0232", "ID-00001"]
+          "invIDs": [" ID-0232 ", "", "ID-0232", "ID-00001"],
+          "preferredInventoryIds": ["ID-00001", "ID-99999", "ID-00001"]
         }
         """;
 
@@ -594,6 +595,7 @@ public class SupplyListControllerSpec {
       .first();
     verify(ctx).status(HttpStatus.CREATED);
     assertEquals(List.of("ID-0232", "ID-00001"), created.getList("invIDs", String.class));
+    assertEquals(List.of("ID-00001"), created.getList("preferredInventoryIds", String.class));
     assertEquals(-1, created.getInteger("percentageFilled"));
   }
 
@@ -1290,7 +1292,8 @@ public class SupplyListControllerSpec {
           "notes": "Plain colors only",
           "type": {"exactly": "shoulder bag", "anyOf": []},
           "material": {"exactly": "fabric", "anyOf": []},
-          "invIDs": ["ID-0232", " ", "ID-0232", "ID-00001"]
+          "invIDs": ["ID-0232", " ", "ID-0232", "ID-00001"],
+          "preferredInventoryIds": ["ID-00001", "ID-0999", "ID-00001"]
         }
         """;
 
@@ -1308,6 +1311,7 @@ public class SupplyListControllerSpec {
       .first();
     verify(ctx).status(HttpStatus.OK);
     assertEquals(List.of("ID-0232", "ID-00001"), updated.getList("invIDs", String.class));
+    assertEquals(List.of("ID-00001"), updated.getList("preferredInventoryIds", String.class));
     assertEquals(-1, updated.getInteger("percentageFilled"));
   }
 

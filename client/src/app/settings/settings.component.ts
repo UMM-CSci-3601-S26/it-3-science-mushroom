@@ -13,6 +13,7 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -48,6 +49,8 @@ import { TermsService } from '../terms/terms.service';
 import { InventoryService } from '../inventory/inventory.service';
 //import { InventoryIndex } from '../inventory/inventory-index';
 import { Inventory, SelectOption } from '../inventory/inventory';
+import { SupplyListService } from '../supplylist/supplylist.service';
+import { SupplyList } from '../supplylist/supplylist';
 //import { InventoryComponent } from '../inventory/inventory.component';
 
 // Dialog Imports
@@ -64,6 +67,7 @@ import { DialogService } from '../shared/dialog/dialog.service';
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatCardModule,
+    MatCheckboxModule,
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -84,6 +88,7 @@ export class SettingsComponent implements OnInit {
   private settingsService = inject(SettingsService);
   private termsService = inject(TermsService);
   private inventoryService = inject(InventoryService);
+  private supplyListService = inject(SupplyListService);
   private dialogService = inject(DialogService);
   //private inventoryIndex = inject(InventoryIndex);
   //private inventoryComponent = inject(InventoryComponent);
@@ -99,6 +104,7 @@ export class SettingsComponent implements OnInit {
     'time-availability',
     'drive-day',
     'barcode-printing',
+    'item-preferences',
     'drive-order',
     'inventory-management'
   ] as const;
@@ -114,6 +120,10 @@ export class SettingsComponent implements OnInit {
 
   get canEditSupplyOrder(): boolean {
     return this.authService.hasPermission('edit_supply_order');
+  }
+
+  get canEditSupplyPreferences(): boolean {
+    return this.authService.hasPermission('edit_supply_list');
   }
 
   get canEditDriveDay(): boolean {
@@ -276,6 +286,11 @@ export class SettingsComponent implements OnInit {
   unstagedTerms: string[] = []; // included in the drive, appended after staged items
   notGivenTerms: string[] = []; // excluded from checklists entirely
 
+  supplyPreferenceRows = signal<SupplyList[]>([]);
+  preferenceInventoryById = signal<Map<string, Inventory>>(new Map());
+  loadingSupplyPreferences = signal(false);
+  savingSupplyPreferenceIds = signal<Set<string>>(new Set());
+
   //loads values from backend
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
@@ -308,6 +323,7 @@ export class SettingsComponent implements OnInit {
     });
 
     this.loadDriveOrder();
+    this.loadSupplyPreferences();
   }
 
   selectSettingsTab(index: number): void {
@@ -356,6 +372,125 @@ export class SettingsComponent implements OnInit {
         .filter(t => !stagedTermSet.has(t) && !notGivenTermSet.has(t))
         .sort((a, b) => a.localeCompare(b));
     });
+  }
+
+  private loadSupplyPreferences(): void {
+    this.loadingSupplyPreferences.set(true);
+    forkJoin({
+      supplyLists: this.supplyListService.getSupplyList(),
+      inventory: this.inventoryService.getInventory({})
+    }).subscribe({
+      next: ({ supplyLists, inventory }) => {
+        const inventoryById = new Map<string, Inventory>();
+        for (const item of inventory) {
+          if (item.internalID) {
+            inventoryById.set(item.internalID, item);
+          }
+        }
+
+        const rows = supplyLists
+          .filter(supplyList => this.linkedInventoryIds(supplyList).length > 0)
+          .map(supplyList => ({
+            ...supplyList,
+            preferredInventoryIds: this.validPreferredInventoryIds(supplyList)
+          }))
+          .sort((left, right) => this.supplyPreferenceLabel(left).localeCompare(this.supplyPreferenceLabel(right)));
+
+        this.preferenceInventoryById.set(inventoryById);
+        this.supplyPreferenceRows.set(rows);
+        this.loadingSupplyPreferences.set(false);
+      },
+      error: () => {
+        this.loadingSupplyPreferences.set(false);
+        this.snackBar.open('Failed to load item preferences', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  linkedInventoryIds(supplyList: SupplyList): string[] {
+    return this.uniqueStrings(supplyList.invIDs ?? []);
+  }
+
+  isPreferredInventory(supplyList: SupplyList, internalId: string): boolean {
+    return this.validPreferredInventoryIds(supplyList).includes(internalId);
+  }
+
+  toggleInventoryPreference(supplyList: SupplyList, internalId: string, checked: boolean): void {
+    const selectedIds = new Set(this.validPreferredInventoryIds(supplyList));
+    if (checked) {
+      selectedIds.add(internalId);
+    } else {
+      selectedIds.delete(internalId);
+    }
+
+    this.supplyPreferenceRows.update(rows => rows.map(row => row._id === supplyList._id
+      ? {
+        ...row,
+        preferredInventoryIds: this.linkedInventoryIds(row).filter(id => selectedIds.has(id))
+      }
+      : row));
+  }
+
+  saveInventoryPreferences(supplyList: SupplyList): void {
+    if (!this.canEditSupplyPreferences || this.savingSupplyPreferenceIds().has(supplyList._id)) {
+      return;
+    }
+
+    this.savingSupplyPreferenceIds.update(ids => new Set(ids).add(supplyList._id));
+    this.supplyListService.editSupplyList(supplyList._id, {
+      ...supplyList,
+      preferredInventoryIds: this.validPreferredInventoryIds(supplyList)
+    }).subscribe({
+      next: () => {
+        this.finishSavingSupplyPreference(supplyList._id);
+        this.snackBar.open('Item preference saved', 'OK', { duration: 2000 });
+      },
+      error: () => {
+        this.finishSavingSupplyPreference(supplyList._id);
+        this.snackBar.open('Failed to save item preference', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  isSavingSupplyPreference(supplyListId: string): boolean {
+    return this.savingSupplyPreferenceIds().has(supplyListId);
+  }
+
+  supplyPreferenceLabel(supplyList: SupplyList): string {
+    const quantity = supplyList.quantity > 0 ? `${supplyList.quantity}x ` : '';
+    return `${quantity}${supplyList.item.join(' / ')}`;
+  }
+
+  inventoryPreferenceLabel(internalId: string): string {
+    const inventory = this.preferenceInventoryById().get(internalId);
+    if (!inventory) {
+      return internalId;
+    }
+
+    return inventory.description?.trim() || [inventory.color, inventory.type, inventory.item]
+      .filter(value => !!value)
+      .join(' ')
+      || internalId;
+  }
+
+  private validPreferredInventoryIds(supplyList: SupplyList): string[] {
+    const linkedIds = this.linkedInventoryIds(supplyList);
+    const selectedIds = new Set(this.uniqueStrings(supplyList.preferredInventoryIds ?? []));
+    return linkedIds.filter(internalId => selectedIds.has(internalId));
+  }
+
+  private finishSavingSupplyPreference(supplyListId: string): void {
+    this.savingSupplyPreferenceIds.update(ids => {
+      const updatedIds = new Set(ids);
+      updatedIds.delete(supplyListId);
+      return updatedIds;
+    });
+  }
+
+  private uniqueStrings(values: string[]): string[] {
+    return values
+      .map(value => value.trim())
+      .filter((value, index, allValues) => value && allValues.indexOf(value) === index);
   }
 
   // Move a term from its current list into Staged (appended at end)

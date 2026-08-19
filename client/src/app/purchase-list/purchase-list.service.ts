@@ -20,8 +20,4 @@ export class PurchaseListService {
   calculatePurchaseList(): Observable<PurchaseListSnapshot> {
     return this.httpClient.post<PurchaseListSnapshot>(this.calculatePurchaseListUrl, {});
   }
-
-  savePurchaseList(purchaseList: PurchaseListSnapshot): Observable<PurchaseListSnapshot> {
-    return this.httpClient.put<PurchaseListSnapshot>(this.purchaseListUrl, purchaseList);
-  }
 }

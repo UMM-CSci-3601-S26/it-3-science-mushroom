@@ -36,6 +36,24 @@ public class InventoryMatcher {
 
   public Inventory findBestInventoryMatch(SupplyList supplyList, int requestedQuantity) {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
+    List<String> linkedInventoryIds = InventoryIds.validInternalIds(supplyList.invIDs);
+    List<String> preferredInventoryIds = InventoryIds.validInternalIds(supplyList.preferredInventoryIds).stream()
+      .filter(linkedInventoryIds::contains)
+      .toList();
+
+    Inventory preferredMatch = firstAvailableInventory(
+      inventories,
+      preferredInventoryIds,
+      requestedQuantity);
+    if (preferredMatch != null) {
+      return preferredMatch;
+    }
+
+    Inventory linkedMatch = firstAvailableInventory(inventories, linkedInventoryIds, requestedQuantity);
+    if (linkedMatch != null) {
+      return linkedMatch;
+    }
+
     return inventories.stream()
       .filter(inventory -> unreservedQuantity(inventory) >= requestedQuantity)
       .filter(inventory -> requiredDescriptorsMatch(inventory, supplyList))
@@ -44,6 +62,22 @@ public class InventoryMatcher {
         .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
         .thenComparingInt(inventory -> -inventorySpecificityScore(inventory)))
       .orElse(null);
+  }
+
+  private Inventory firstAvailableInventory(
+      List<Inventory> inventories,
+      List<String> inventoryIds,
+      int requestedQuantity
+  ) {
+    for (String inventoryId : inventoryIds) {
+      for (Inventory inventory : inventories) {
+        if (inventoryId.equals(inventory.internalID)
+            && unreservedQuantity(inventory) >= requestedQuantity) {
+          return inventory;
+        }
+      }
+    }
+    return null;
   }
 
   public Inventory findBestDemandMatch(SupplyList supplyList) {

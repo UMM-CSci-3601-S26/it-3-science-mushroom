@@ -12,7 +12,6 @@ export interface PurchaseListSnapshot {
   generatedAt: string;
   summary: PurchaseListSummary;
   items: PurchaseListItem[];
-  resolvedItems: PurchaseListItem[];
 }
 
 export interface PurchaseListItem {
@@ -26,9 +25,6 @@ export interface PurchaseListItem {
   fulfillmentPercent: number;
   fulfillmentStatus: FulfillmentStatus;
   linkedInventoryIds: string[];
-  selectedFulfillmentInventoryIds: string[];
-  selectedFulfillmentAllocations: PurchaseListFulfillmentAllocation[];
-  fulfillmentOptions: PurchaseListFulfillmentOption[];
   sources: PurchaseListSource[];
 }
 
@@ -41,18 +37,4 @@ export interface PurchaseListSource {
   studentCount: number;
   quantityPerStudent: number;
   totalNeeded: number;
-}
-
-export interface PurchaseListFulfillmentOption {
-  internalId: string;
-  inventoryId: string;
-  item: string;
-  description: string;
-  quantityOnHand: number;
-}
-
-export interface PurchaseListFulfillmentAllocation {
-  internalId: string;
-  quantity: number;
-  sourceIds?: string[];
 }
