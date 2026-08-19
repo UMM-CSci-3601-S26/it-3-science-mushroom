@@ -74,11 +74,9 @@ export class StockReportComponent {
   private snackBar = inject(MatSnackBar);
   private authService = inject(AuthService);
 
-  private viewPreferenceChanged = false;
   viewType = signal<StockViewType>('actual');
 
   setViewType(viewType: StockViewType): void {
-    this.viewPreferenceChanged = true;
     this.viewType.set(viewType);
   }
 

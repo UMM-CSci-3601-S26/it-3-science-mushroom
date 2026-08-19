@@ -5,26 +5,70 @@
       <h4 class="action-heading">Generation Actions</h4>
       <mat-icon>add_chart</mat-icon>
     </div>
-    @if (canManageStockReports) {
-      <button type="button" color="accent" mat-raised-button (click)="savePdfReport()" data-cy="generate-pdf">
-        Generate Report as PDF
+    @if(canEditInventory) {
+      <p class="action-description">Calculate the calculatedMinQuantity and stockState for all inventory items.</p>
+      <button type="button" color="primary" mat-raised-button (click)="calculateStates()" data-cy="calculate-states">
+        Calculate States
       </button>
     }
-    @if (canViewReports) {
-      <button type="button" color="accent" mat-raised-button (click)="downloadNewPdfReport()" data-cy="generate-and-download-pdf">
-        Generate & Download Report as PDF
-      </button>
-    }
-    @if (canManageStockReports) {
-      <button type="button" color="accent" mat-raised-button (click)="saveXlsxReport()" data-cy="generate-xlsx">
-        Generate Report as XLSX
-      </button>
-    }
-    @if (canViewReports) {
-      <button type="button" color="accent" mat-raised-button (click)="downloadNewXlsxReport()" data-cy="generate-and-download-xlsx">
-        Generate & Download Report as XLSX
-      </button>
-    }
+
+    <mat-slide-toggle
+      class="view-mode-toggle"
+      [checked]="viewType() === 'actual'"
+      (change)="setViewType($event.checked ? 'actual' : 'calculated')"
+      data-test="viewTypeToggle"
+    >
+      Actual Stock Levels
+    </mat-slide-toggle>
+
+    @switch (viewType()) {
+        @case ('actual') {
+          <p class="action-description">Generate and save or download the Actual Stock Report in PDF or XLSX format.</p>
+          @if (canManageStockReports) {
+            <button type="button" color="accent" mat-raised-button (click)="savePdfReport('actual')" data-cy="generate-pdf">
+              Save Report as PDF
+            </button>
+          }
+          @if (canViewReports) {
+            <button type="button" color="accent" mat-raised-button (click)="downloadNewPdfReport('actual')" data-cy="generate-and-download-pdf">
+              Download Report as PDF
+            </button>
+          }
+          @if (canManageStockReports) {
+            <button type="button" color="accent" mat-raised-button (click)="saveXlsxReport('actual')" data-cy="generate-xlsx">
+              Save Report as XLSX
+            </button>
+          }
+          @if (canViewReports) {
+            <button type="button" color="accent" mat-raised-button (click)="downloadNewXlsxReport('actual')" data-cy="generate-and-download-xlsx">
+              Download Report as XLSX
+            </button>
+          }
+        }
+        @case ('calculated') {
+          <p class="action-description">Generate and save or download the Calculated Stock Report in PDF or XLSX format.</p>
+          @if (canManageStockReports) {
+            <button type="button" color="accent" mat-raised-button (click)="savePdfReport('calculated')" data-cy="generate-pdf">
+              Save Report as PDF
+            </button>
+          }
+          @if (canViewReports) {
+            <button type="button" color="accent" mat-raised-button (click)="downloadNewPdfReport('calculated')" data-cy="generate-and-download-pdf">
+              Download Report as PDF
+            </button>
+          }
+          @if (canManageStockReports) {
+            <button type="button" color="accent" mat-raised-button (click)="saveXlsxReport('calculated')" data-cy="generate-xlsx">
+              Save Report as XLSX
+            </button>
+          }
+          @if (canViewReports) {
+            <button type="button" color="accent" mat-raised-button (click)="downloadNewXlsxReport('calculated')" data-cy="generate-and-download-xlsx">
+              Download Report as XLSX
+            </button>
+          }
+        }
+      }
   </section>
 
   <!--Already Generated Saving Actions-->
@@ -34,6 +78,7 @@
       <mat-icon>folder_zip</mat-icon>
     </div>
     @if (canViewReports) {
+      <p class="action-description">Download all of the saved PDF and/or XLSX reports as a ZIP file.</p>
       <button type="button" color="primary" mat-raised-button (click)="downloadAllReports('All')" data-cy="download-all-reports">
         Download all Reports as ZIP
       </button>
@@ -53,6 +98,7 @@
       <mat-icon>delete_sweep</mat-icon>
     </div>
     @if (canManageStockReports) {
+      <p class="action-description">Delete all of the saved PDF and/or XLSX reports.</p>
       <button type="button" color="warn" mat-raised-button (click)="deleteAllReports('All')" data-cy="delete-all-reports">
         Delete all Reports
       </button>
