@@ -16,8 +16,13 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
 
 import io.javalin.http.BadRequestResponse;
+import umm3601.Common.InventoryIds;
 import umm3601.Common.InventoryMatcher;
 import umm3601.Inventory.Inventory;
+import umm3601.PurchaseList.PurchaseListFulfillmentAllocation;
+import umm3601.PurchaseList.PurchaseListItem;
+import umm3601.PurchaseList.PurchaseListService;
+import umm3601.PurchaseList.PurchaseListSnapshot;
 import umm3601.SupplyList.SupplyList;
 
 public class InventoryReservationService {
@@ -26,6 +31,7 @@ public class InventoryReservationService {
   private final JacksonMongoCollection<Family> familyCollection;
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
+  private final PurchaseListService purchaseListService;
   private final InventoryMatcher inventoryMatcher;
 
   public InventoryReservationService(MongoDatabase database) {
@@ -33,7 +39,16 @@ public class InventoryReservationService {
   }
 
   public InventoryReservationService(MongoDatabase database, InventoryMatcher inventoryMatcher) {
+    this(database, inventoryMatcher, new PurchaseListService(database, inventoryMatcher));
+  }
+
+  public InventoryReservationService(
+      MongoDatabase database,
+      InventoryMatcher inventoryMatcher,
+      PurchaseListService purchaseListService
+  ) {
     this.inventoryMatcher = inventoryMatcher;
+    this.purchaseListService = purchaseListService;
     familyCollection = JacksonMongoCollection.builder().build(
       database,
       "family",
@@ -55,17 +70,18 @@ public class InventoryReservationService {
   }
 
   public void rebuildInventoryReservation() {
+    PurchaseListSnapshot purchaseListSnapshot = purchaseListService.getCurrentPurchaseList();
     inventoryCollection.updateMany(new Document(), Updates.set("reservedQuantity", 0));
 
     ArrayList<Family> families = familyCollection.find().into(new ArrayList<>());
     for (Family family : families) {
       if (!STATUS_HELPED.equals(determineStatus(family))) {
-        reserveInventoryForFamily(family);
+        reserveInventoryForFamily(family, purchaseListSnapshot);
       }
     }
   }
 
-  private void reserveInventoryForFamily(Family family) {
+  private void reserveInventoryForFamily(Family family, PurchaseListSnapshot purchaseListSnapshot) {
     if (family == null) {
       return;
     }
@@ -84,13 +100,71 @@ public class InventoryReservationService {
 
       for (SupplyList supplyList : supplyLists) {
         int requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
-        Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, requestedQuantity);
+        Inventory match = findPreferredInventory(purchaseListSnapshot, supplyList, requestedQuantity);
 
+        if (match == null) {
+          match = findLinkedInventory(supplyList, requestedQuantity);
+        }
+        if (match == null) {
+          match = inventoryMatcher.findBestInventoryMatch(supplyList, requestedQuantity);
+        }
         if (match != null) {
           reserveInventory(match, requestedQuantity);
         }
       }
     }
+  }
+
+  private Inventory findPreferredInventory(
+      PurchaseListSnapshot snapshot,
+      SupplyList supplyList,
+      int requestedQuantity
+  ) {
+    Inventory match = findPreferredInventory(snapshot.items, supplyList, requestedQuantity);
+    return match != null
+      ? match
+      : findPreferredInventory(snapshot.resolvedItems, supplyList, requestedQuantity);
+  }
+
+  private Inventory findPreferredInventory(
+      List<PurchaseListItem> purchaseItems,
+      SupplyList supplyList,
+      int requestedQuantity
+  ) {
+    if (purchaseItems == null || !hasText(supplyList._id)) {
+      return null;
+    }
+
+    for (PurchaseListItem purchaseItem : purchaseItems) {
+      if (purchaseItem == null || purchaseItem.selectedFulfillmentAllocations == null) {
+        continue;
+      }
+
+      for (PurchaseListFulfillmentAllocation allocation : purchaseItem.selectedFulfillmentAllocations) {
+        if (allocation == null || !hasText(allocation.internalId)
+            || allocation.sourceIds == null || !allocation.sourceIds.contains(supplyList._id)) {
+          continue;
+        }
+
+        Inventory inventory = inventoryCollection.find(eq("internalID", allocation.internalId)).first();
+        if (inventory != null && inventoryMatcher.unreservedQuantity(inventory) >= requestedQuantity) {
+          return inventory;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private Inventory findLinkedInventory(SupplyList supplyList, int requestedQuantity) {
+    for (String internalId : InventoryIds.validInternalIds(supplyList.invIDs)) {
+      Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+      if (inventory != null && inventoryMatcher.unreservedQuantity(inventory) >= requestedQuantity) {
+        return inventory;
+      }
+    }
+
+    return null;
   }
 
   private void reserveInventoryForChecklist(Family.FamilyChecklist checklist) {

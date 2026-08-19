@@ -45,6 +45,7 @@ class InventoryReservationServiceSpec {
   void setupEach() {
     db.getCollection("family").drop();
     db.getCollection("inventory").drop();
+    db.getCollection("purchaseListSnapshots").drop();
     db.getCollection("supplylist").drop();
 
     inventoryReservationService = new InventoryReservationService(db);
@@ -140,6 +141,66 @@ class InventoryReservationServiceSpec {
     assertEquals(0, inventory.getInteger("reservedQuantity"));
   }
 
+  @Test
+  void rebuildInventoryReservationUsesPurchaseListPreferenceBeforeLinkedInventory() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", 2, "ID-00001"),
+      inventoryDoc("Pencil", 2, "ID-00002")));
+    String supplyListId = insertSupplyList("Pencil", 2, List.of("ID-00002"));
+    insertPurchaseListPreference(supplyListId, "ID-00001", false);
+    db.getCollection("family").insertOne(familyWithStudentDoc());
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    assertEquals(2, findInventoryByInternalId("ID-00001").getInteger("reservedQuantity"));
+    assertEquals(0, findInventoryByInternalId("ID-00002").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void rebuildInventoryReservationUsesResolvedPurchaseListPreference() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", 2, "ID-00001"),
+      inventoryDoc("Pencil", 2, "ID-00002")));
+    String supplyListId = insertSupplyList("Pencil", 2, List.of("ID-00002"));
+    insertPurchaseListPreference(supplyListId, "ID-00001", true);
+    db.getCollection("family").insertOne(familyWithStudentDoc());
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    assertEquals(2, findInventoryByInternalId("ID-00001").getInteger("reservedQuantity"));
+    assertEquals(0, findInventoryByInternalId("ID-00002").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void rebuildInventoryReservationUsesLinkedInventoryWhenPreferenceIsUnavailable() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", 1, "ID-00001"),
+      inventoryDoc("Pencil", 2, "ID-00002")));
+    String supplyListId = insertSupplyList("Pencil", 2, List.of("ID-00002"));
+    insertPurchaseListPreference(supplyListId, "ID-00001", false);
+    db.getCollection("family").insertOne(familyWithStudentDoc());
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    assertEquals(0, findInventoryByInternalId("ID-00001").getInteger("reservedQuantity"));
+    assertEquals(2, findInventoryByInternalId("ID-00002").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void rebuildInventoryReservationIgnoresPreferenceForAnotherSupplyListItem() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", 2, "ID-00001"),
+      inventoryDoc("Pencil", 2, "ID-00002")));
+    insertSupplyList("Pencil", 2, List.of("ID-00002"));
+    insertPurchaseListPreference("507f1f77bcf86cd799439011", "ID-00001", false);
+    db.getCollection("family").insertOne(familyWithStudentDoc());
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    assertEquals(0, findInventoryByInternalId("ID-00001").getInteger("reservedQuantity"));
+    assertEquals(2, findInventoryByInternalId("ID-00002").getInteger("reservedQuantity"));
+  }
+
   private Document inventoryDoc(String item, int quantity, String internalId) {
     return inventoryDoc(item, quantity, 0, internalId);
   }
@@ -162,6 +223,29 @@ class InventoryReservationServiceSpec {
       .append("teacher", "N/A")
       .append("item", List.of(item))
       .append("quantity", quantity);
+  }
+
+  private String insertSupplyList(String item, int quantity, List<String> linkedInventoryIds) {
+    Document supplyList = supplyListDoc(item, quantity).append("invIDs", linkedInventoryIds);
+    db.getCollection("supplylist").insertOne(supplyList);
+    return supplyList.getObjectId("_id").toHexString();
+  }
+
+  private void insertPurchaseListPreference(
+      String supplyListId,
+      String internalId,
+      boolean resolved
+  ) {
+    Document allocation = new Document()
+      .append("internalId", internalId)
+      .append("quantity", 2)
+      .append("sourceIds", List.of(supplyListId));
+    Document purchaseItem = new Document()
+      .append("selectedFulfillmentAllocations", List.of(allocation));
+    db.getCollection("purchaseListSnapshots").insertOne(new Document()
+      .append("_id", "latest-purchase-list")
+      .append("items", resolved ? List.of() : List.of(purchaseItem))
+      .append("resolvedItems", resolved ? List.of(purchaseItem) : List.of()));
   }
 
   private Document familyWithStudentDoc() {

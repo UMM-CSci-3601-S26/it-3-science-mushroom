@@ -100,10 +100,13 @@ public class Bootstrap {
         new UsersPolicy(),
         new UsersValidator(permissionsService));
     InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
-    InventoryReservationService inventoryReservationService = new InventoryReservationService(db, inventoryMatcher);
+    PurchaseListService purchaseListService = new PurchaseListService(db, inventoryMatcher);
+    InventoryReservationService inventoryReservationService = new InventoryReservationService(
+        db,
+        inventoryMatcher,
+        purchaseListService);
     InventoryIdService inventoryIdService = new InventoryIdService(db);
     DemandService demandService = new DemandService(db, inventoryMatcher);
-    PurchaseListService purchaseListService = new PurchaseListService(db, inventoryMatcher);
     FamilyChecklistService familyChecklistService = new FamilyChecklistService(db, inventoryMatcher);
     FamilyController familyController = new FamilyController(
         db,
