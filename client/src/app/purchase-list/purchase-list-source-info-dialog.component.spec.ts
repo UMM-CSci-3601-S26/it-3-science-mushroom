@@ -17,6 +17,7 @@ describe('PurchaseListSourceInfoDialogComponent', () => {
       grade: '5',
       teacher: 'Ms. Doe',
       requestedItems: ['Markers'],
+      supplyListDescription: '2x Markers',
       studentCount: 12,
       quantityPerStudent: 2,
       totalNeeded: 24
@@ -27,6 +28,7 @@ describe('PurchaseListSourceInfoDialogComponent', () => {
       grade: 'High School',
       teacher: '',
       requestedItems: ['Markers'],
+      supplyListDescription: '1x Markers',
       studentCount: 6,
       quantityPerStudent: 1,
       totalNeeded: 6
@@ -64,6 +66,7 @@ describe('PurchaseListSourceInfoDialogComponent', () => {
       'School',
       'Grade',
       'Teacher',
+      'Supply List Item',
       'Students',
       'Qty/Student',
       'Total'
@@ -81,6 +84,7 @@ describe('PurchaseListSourceInfoDialogComponent', () => {
       'Morris Area Elementary School',
       '5',
       'Ms. Doe',
+      '2x Markers',
       '12',
       '2',
       '24'
@@ -89,6 +93,7 @@ describe('PurchaseListSourceInfoDialogComponent', () => {
       'Morris Area High School',
       'High School',
       'N/A',
+      '1x Markers',
       '6',
       '1',
       '6'

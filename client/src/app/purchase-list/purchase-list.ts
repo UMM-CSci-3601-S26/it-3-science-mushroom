@@ -34,6 +34,7 @@ export interface PurchaseListSource {
   grade: string;
   teacher?: string;
   requestedItems: string[];
+  supplyListDescription: string;
   studentCount: number;
   quantityPerStudent: number;
   totalNeeded: number;

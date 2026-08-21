@@ -26,6 +26,7 @@ interface PurchaseListSourceDialogData {
             <th class="table-column-school">School</th>
             <th class="table-column-grade">Grade</th>
             <th class="table-column-teacher">Teacher</th>
+            <th class="table-column-description">Supply List Item</th>
             <th class="table-column-stdcount">Students</th>
             <th class="table-column-quantity">Qty/Student</th>
             <th class="table-column-needed">Total</th>
@@ -38,13 +39,14 @@ interface PurchaseListSourceDialogData {
               <td class="table-column-school">{{ source.school }}</td>
               <td class="table-column-grade">{{ source.grade }}</td>
               <td class="table-column-teacher">{{ source.teacher || 'N/A' }}</td>
+              <td class="table-column-description">{{ source.supplyListDescription }}</td>
               <td class="table-column-stdcount table-number">{{ source.studentCount }}</td>
               <td class="table-column-quantity table-number">{{ source.quantityPerStudent }}</td>
               <td class="table-column-needed table-number">{{ source.totalNeeded }}</td>
             </tr>
           } @empty {
             <tr>
-              <td class="purchase-list-source-empty" colspan="6">No Sources Found</td>
+              <td class="purchase-list-source-empty" colspan="7">No Sources Found</td>
             </tr>
           }
         </tbody>
@@ -123,21 +125,25 @@ interface PurchaseListSourceDialogData {
     }
 
     .table-column-school {
-      width: 28%;
+      width: 20%;
     }
 
     .table-column-grade {
-      width: 16%;
+      width: 11%;
     }
 
     .table-column-teacher {
-      width: 16%;
+      width: 13%;
+    }
+
+    .table-column-description {
+      width: 24%;
     }
 
     .table-column-stdcount,
     .table-column-quantity,
     .table-column-needed {
-      width: 13.33%;
+      width: 10.66%;
     }
 
     .table-number {

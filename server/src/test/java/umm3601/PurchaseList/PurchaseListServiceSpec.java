@@ -106,7 +106,7 @@ class PurchaseListServiceSpec {
 
     PurchaseListItem item = snapshot.items.get(0);
     assertEquals("Backpack", item.item);
-    assertEquals("2x Backpacks", item.description);
+    assertEquals("Backpacks", item.description);
     assertEquals(2, item.totalNeeded);
     assertEquals(0, item.quantityOnHand);
     assertEquals(2, item.quantityToBuy);
@@ -116,6 +116,7 @@ class PurchaseListServiceSpec {
     assertEquals(1, item.sources.size());
     assertEquals(1, item.sources.get(0).studentCount);
     assertEquals(2, item.sources.get(0).quantityPerStudent);
+    assertEquals("2x Backpacks", item.sources.get(0).supplyListDescription);
   }
 
   @Test
@@ -158,7 +159,7 @@ class PurchaseListServiceSpec {
 
     PurchaseListItem item = snapshot.items.get(0);
     assertEquals("Glue Stick", item.item);
-    assertEquals("2x Glue Sticks", item.description);
+    assertEquals("Glue Sticks", item.description);
     assertEquals(4, item.totalNeeded);
     assertEquals(3, item.quantityOnHand);
     assertEquals(1, item.quantityToBuy);
@@ -180,7 +181,7 @@ class PurchaseListServiceSpec {
 
     PurchaseListItem item = snapshot.items.get(0);
     assertEquals("Sanitizing Wipes", item.item);
-    assertEquals("1x Sanitizing Wipes (linked to Disinfectant Wipe)", item.description);
+    assertEquals("Sanitizing Wipes (linked to Disinfectant Wipe)", item.description);
     assertEquals(3, item.totalNeeded);
     assertEquals(7, item.quantityOnHand);
     assertEquals(0, item.quantityToBuy);
@@ -270,7 +271,7 @@ class PurchaseListServiceSpec {
 
     PurchaseListItem item = snapshot.items.get(0);
     assertEquals("Sanitizing Wipes", item.item);
-    assertEquals("1x Sanitizing Wipes (linked to Disinfectant Wipe)", item.description);
+    assertEquals("Sanitizing Wipes (linked to Disinfectant Wipe)", item.description);
     assertEquals(6, item.totalNeeded);
     assertEquals(3, item.quantityOnHand);
     assertEquals(3, item.quantityToBuy);
@@ -278,6 +279,8 @@ class PurchaseListServiceSpec {
     assertEquals("partial", item.fulfillmentStatus);
     assertIterableEquals(List.of("ID-00006"), item.linkedInventoryIds);
     assertEquals(2, item.sources.size());
+    assertEquals("2x Disinfectant Wipes", item.sources.get(0).supplyListDescription);
+    assertEquals("1x Sanitizing Wipes", item.sources.get(1).supplyListDescription);
   }
 
   @Test
@@ -393,8 +396,11 @@ class PurchaseListServiceSpec {
 
     assertEquals(1, snapshot.items.size());
     assertEquals(
-      "1x 24ct Blue Washable Wide Crayola/RoseArt Marker (Plastic, primary classroom)",
+      "24ct Blue Washable Wide Crayola/RoseArt Marker (Plastic, primary classroom)",
       snapshot.items.get(0).description);
+    assertEquals(
+      "1x 24ct Blue Washable Wide Crayola/RoseArt Marker (Plastic, primary classroom)",
+      snapshot.items.get(0).sources.get(0).supplyListDescription);
   }
 
   @Test
@@ -409,7 +415,7 @@ class PurchaseListServiceSpec {
 
     assertEquals(1, snapshot.items.size());
     assertEquals(
-      "1x Binder Pencil bag (linked to Reusable school pouch)",
+      "Binder Pencil bag (linked to Reusable school pouch)",
       snapshot.items.get(0).description);
   }
 
@@ -424,7 +430,7 @@ class PurchaseListServiceSpec {
     PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
-    assertEquals("1x Folder", snapshot.items.get(0).description);
+    assertEquals("Folder", snapshot.items.get(0).description);
   }
 
   private Document inventoryDoc(String internalId, String item, int quantity) {

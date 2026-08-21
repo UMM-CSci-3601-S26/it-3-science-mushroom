@@ -162,6 +162,7 @@ function purchaseItem(
         grade: '5',
         teacher: 'Ms. Doe',
         requestedItems: [item],
+        supplyListDescription: description,
         studentCount: 5,
         quantityPerStudent: 1,
         totalNeeded

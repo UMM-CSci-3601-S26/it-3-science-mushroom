@@ -351,6 +351,7 @@ public class PurchaseListService {
     source.studentCount = studentCount;
     source.quantityPerStudent = quantityPerStudent;
     source.totalNeeded = totalNeeded;
+    source.supplyListDescription = supplyListSourceDescription(supplyList);
     return source;
   }
 
@@ -373,6 +374,12 @@ public class PurchaseListService {
       return supplyDescription + " (linked to " + inventoryDescription + ")";
     }
     return hasText(supplyDescription) ? supplyDescription : fallback(inventoryDescription, itemLabel);
+  }
+
+  private String supplyListSourceDescription(SupplyList supplyList) {
+    String itemLabel = supplyItemLabel(supplyList, null);
+    String supplyDescription = supplyListItemDisplay(supplyList, itemLabel);
+    return quantityPerStudent(supplyList) + "x " + fallback(supplyDescription, itemLabel);
   }
 
   private String inventoryGroupKey(List<String> inventoryIds) {
@@ -459,9 +466,6 @@ public class PurchaseListService {
   private String supplyListItemDisplay(SupplyList supplyList, String itemLabel) {
     StringJoiner mainParts = new StringJoiner(" ");
     int quantityPerStudent = quantityPerStudent(supplyList);
-    if (quantityPerStudent > 0) {
-      mainParts.add(quantityPerStudent + "x");
-    }
     if (supplyList.packageSize != null && supplyList.packageSize > 1) {
       mainParts.add(supplyList.packageSize + "ct");
     }
@@ -527,8 +531,7 @@ public class PurchaseListService {
   }
 
   private boolean hasSupplyListDetails(SupplyList supplyList) {
-    return supplyList.quantity != null && supplyList.quantity > 1
-      || supplyList.packageSize != null && supplyList.packageSize > 1
+    return supplyList.packageSize != null && supplyList.packageSize > 1
       || hasAttributeDisplay(supplyList.brand)
       || hasAttributeDisplay(supplyList.color)
       || hasAttributeDisplay(supplyList.size)

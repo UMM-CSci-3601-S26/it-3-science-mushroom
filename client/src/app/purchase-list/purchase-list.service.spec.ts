@@ -40,6 +40,7 @@ describe('PurchaseListService', () => {
             grade: 'PreK',
             teacher: 'Ms Doe',
             requestedItems: ['Markers'],
+            supplyListDescription: '2x Markers',
             studentCount: 2,
             quantityPerStudent: 2,
             totalNeeded: 4
