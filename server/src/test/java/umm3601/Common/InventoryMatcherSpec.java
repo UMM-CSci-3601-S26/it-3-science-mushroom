@@ -153,6 +153,26 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestInventoryMatchUsesPreferredInventoryOrder() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Marker", 1, 0, "ID-10010"),
+      inventoryDoc("Marker", 1, 0, "ID-10011")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Marker");
+    supplyList.invIDs = List.of("ID-10010", "ID-10011");
+    supplyList.preferredInventoryIds = List.of("ID-10011", "ID-10010");
+
+    assertEquals("ID-10011", inventoryMatcher.findBestInventoryMatch(supplyList, 1).internalID);
+
+    db.getCollection("inventory").updateOne(
+      new Document("internalID", "ID-10011"),
+      new Document("$set", new Document("reservedQuantity", 1)));
+    assertEquals("ID-10010", inventoryMatcher.findBestInventoryMatch(supplyList, 1).internalID);
+  }
+
+  @Test
   void supplyListMatchesStudentMatchesBroadGradeCategories() {
     SupplyList supplyList = new SupplyList();
     supplyList.school = "Morris Elementary";
