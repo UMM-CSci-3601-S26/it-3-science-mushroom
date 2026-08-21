@@ -198,7 +198,7 @@ describe('SettingsComponent', () => {
       {
         ...preferenceSupply,
         invIDs: ['ID-10010', 'ID-10011', 'ID-10010'],
-        preferredInventoryIds: ['ID-10010', 'ID-99999']
+        preferredInventoryIds: ['ID-10011', 'ID-10010', 'ID-99999']
       }
     ]));
     inventoryServiceSpy.getInventory.and.returnValue(of([
@@ -215,21 +215,28 @@ describe('SettingsComponent', () => {
       .toEqual(['ID-10010', 'ID-10011']);
     expect(component.isPreferredInventory(component.supplyPreferenceRows()[0], 'ID-10010')).toBeTrue();
     expect(component.isPreferredInventory(component.supplyPreferenceRows()[0], 'ID-99999')).toBeFalse();
+    expect(component.supplyPreferenceRows()[0].preferredInventoryIds).toEqual(['ID-10011', 'ID-10010']);
+    expect(component.inventoryPreferenceRank(component.supplyPreferenceRows()[0], 'ID-10011')).toBe(1);
+    expect(component.inventoryPreferenceRankLabel(2)).toBe('2nd preference');
     expect(component.inventoryPreferenceLabel('ID-10010')).toBe('Blue 2 Prong Folder (Plastic)');
     expect(component.inventoryPreferenceLabel('ID-10011')).toBe('ID-10011');
   });
 
-  it('saves preferences in linked inventory order', () => {
-    component.supplyPreferenceRows.set([preferenceSupply]);
+  it('saves preferences in selection order', () => {
+    component.supplyPreferenceRows.set([{
+      ...preferenceSupply,
+      preferredInventoryIds: []
+    }]);
 
-    component.toggleInventoryPreference(preferenceSupply, 'ID-10011', true);
+    component.toggleInventoryPreference(component.supplyPreferenceRows()[0], 'ID-10011', true);
+    component.toggleInventoryPreference(component.supplyPreferenceRows()[0], 'ID-10010', true);
     const updatedSupply = component.supplyPreferenceRows()[0];
     component.saveInventoryPreferences(updatedSupply);
 
-    expect(updatedSupply.preferredInventoryIds).toEqual(['ID-10010', 'ID-10011']);
+    expect(updatedSupply.preferredInventoryIds).toEqual(['ID-10011', 'ID-10010']);
     expect(supplyListServiceSpy.editSupplyList).toHaveBeenCalledWith(
       'supply-1',
-      jasmine.objectContaining({ preferredInventoryIds: ['ID-10010', 'ID-10011'] }));
+      jasmine.objectContaining({ preferredInventoryIds: ['ID-10011', 'ID-10010'] }));
     expect(component.isSavingSupplyPreference('supply-1')).toBeFalse();
     expect(snackBarSpy.open).toHaveBeenCalledWith('Item preference saved', 'OK', { duration: 2000 });
   });

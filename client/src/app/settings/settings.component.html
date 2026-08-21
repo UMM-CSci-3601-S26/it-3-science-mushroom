@@ -286,6 +286,9 @@
                           [disabled]="!canEditSupplyPreferences"
                           (change)="toggleInventoryPreference(supplyList, internalId, $event.checked)">
                           <span class="preference-option-label">{{ inventoryPreferenceLabel(internalId) }}</span>
+                          @if (inventoryPreferenceRank(supplyList, internalId); as preferenceRank) {
+                            <span class="preference-option-rank">{{ inventoryPreferenceRankLabel(preferenceRank) }}</span>
+                          }
                           <span class="preference-option-id">{{ internalId }}</span>
                         </mat-checkbox>
                       }

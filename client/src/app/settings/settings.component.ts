@@ -415,19 +415,29 @@ export class SettingsComponent implements OnInit {
     return this.validPreferredInventoryIds(supplyList).includes(internalId);
   }
 
-  toggleInventoryPreference(supplyList: SupplyList, internalId: string, checked: boolean): void {
-    const selectedIds = new Set(this.validPreferredInventoryIds(supplyList));
-    if (checked) {
-      selectedIds.add(internalId);
-    } else {
-      selectedIds.delete(internalId);
-    }
+  /**
+   * Get internalId's rank in this supply list's preference order
+   * @param supplyList Supply list to check
+   * @param internalId Internal ID to get the rank for
+   * @returns Preference rank, or null if it is not preferred
+   */
+  inventoryPreferenceRank(supplyList: SupplyList, internalId: string): number | null {
+    const preferredIndex = this.validPreferredInventoryIds(supplyList).indexOf(internalId);
+    return preferredIndex === -1 ? null : preferredIndex + 1;
+  }
 
+  /**
+   * Build the label for a preference rank
+   * @param rank Rank to show
+   * @returns Label with ordinal suffix
+   */
+  inventoryPreferenceRankLabel(rank: number): string {
+    return `${this.ordinal(rank)} preference`;
+  }
+
+  toggleInventoryPreference(supplyList: SupplyList, internalId: string, checked: boolean): void {
     this.supplyPreferenceRows.update(rows => rows.map(row => row._id === supplyList._id
-      ? {
-        ...row,
-        preferredInventoryIds: this.linkedInventoryIds(row).filter(id => selectedIds.has(id))
-      }
+      ? this.updatedPreferenceRow(row, internalId, checked)
       : row));
   }
 
@@ -475,8 +485,55 @@ export class SettingsComponent implements OnInit {
 
   private validPreferredInventoryIds(supplyList: SupplyList): string[] {
     const linkedIds = this.linkedInventoryIds(supplyList);
-    const selectedIds = new Set(this.uniqueStrings(supplyList.preferredInventoryIds ?? []));
-    return linkedIds.filter(internalId => selectedIds.has(internalId));
+    const linkedIdSet = new Set(linkedIds);
+    return this.uniqueStrings(supplyList.preferredInventoryIds ?? [])
+      .filter(internalId => linkedIdSet.has(internalId));
+  }
+
+  /**
+   * Update supplyList by adding or removing internalId based on checked
+   * @param supplyList Supply list to update
+   * @param internalId Internal ID to add or remove
+   * @param checked Whether the item is selected
+   * @returns Supply list with updated preferences
+   */
+  private updatedPreferenceRow(supplyList: SupplyList, internalId: string, checked: boolean): SupplyList {
+    if (!this.linkedInventoryIds(supplyList).includes(internalId)) {
+      return supplyList;
+    }
+
+    const preferredInventoryIds = this.validPreferredInventoryIds(supplyList);
+    const updatedPreferredInventoryIds = checked
+      ? [...preferredInventoryIds.filter(id => id !== internalId), internalId]
+      : preferredInventoryIds.filter(id => id !== internalId);
+
+    return {
+      ...supplyList,
+      preferredInventoryIds: updatedPreferredInventoryIds
+    };
+  }
+
+  /**
+   * Format value with an ordinal suffix
+   * @param value Number to format
+   * @returns Number with ordinal suffix
+   */
+  private ordinal(value: number): string {
+    const remainder = value % 100;
+    if (remainder >= 11 && remainder <= 13) {
+      return `${value}th`;
+    }
+
+    switch (value % 10) {
+    case 1:
+      return `${value}st`;
+    case 2:
+      return `${value}nd`;
+    case 3:
+      return `${value}rd`;
+    default:
+      return `${value}th`;
+    }
   }
 
   private finishSavingSupplyPreference(supplyListId: string): void {

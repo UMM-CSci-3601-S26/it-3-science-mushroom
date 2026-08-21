@@ -221,6 +221,12 @@ mat-paginator {
   font-size: 0.8rem;
 }
 
+.preference-option-rank {
+  color: var(--app-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .supply-preference-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
@@ -232,6 +238,7 @@ mat-paginator {
 }
 
 .preference-option-label,
+.preference-option-rank,
 .preference-option-id {
   display: block;
   overflow-wrap: anywhere;
