@@ -103,18 +103,20 @@ export class StockReportService {
 
   /**
    * Call endpoint to generate a new XLSX report and save it to the server
+   * @param type The type of stock report to generate ('actual' or 'calculated')
    * @returns Response from the server, which should be the ID of the newly generated and saved report
    */
-  generateNewXlsxReport(): Observable<string> {
-    return this.httpClient.get<{id: string}>(`${this.stockReportUrl}/generate-and-save`).pipe(map(response => response.id));
+  generateNewXlsxReport(type: 'actual' | 'calculated'): Observable<string> {
+    return this.httpClient.get<{id: string}>(`${this.stockReportUrl}/generate-and-save`, { params: { type } }).pipe(map(response => response.id));
   }
 
   /**
    * Call endpoint to generate a new XLSX report w/o saving it to the server
+   * @param type The type of stock report to generate ('actual' or 'calculated')
    * @returns Response from the server as a Blob (the XLSX file bytes)
    */
-  generateAndDownloadXlsxReport(): Observable<Blob> {
-    return this.httpClient.get(`${this.stockReportUrl}/generate`, { responseType: 'blob' });
+  generateAndDownloadXlsxReport(type: 'actual' | 'calculated'): Observable<Blob> {
+    return this.httpClient.get(`${this.stockReportUrl}/generate`, { params: { type }, responseType: 'blob' });
   }
 
   /**

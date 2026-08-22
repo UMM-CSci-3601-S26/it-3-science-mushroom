@@ -424,7 +424,7 @@ export class ReportGeneratorComponent {
 
     if (saveXlsx) {
       // Save to server
-      this.stockReportService.generateNewXlsxReport().subscribe({
+      this.stockReportService.generateNewXlsxReport(type).subscribe({
         next: (response) => {
           console.log(`${type} XLSX report generated and saved to server with ID:`, response);
           this.stockReportService.refreshReports().subscribe();
@@ -445,7 +445,7 @@ export class ReportGeneratorComponent {
       });
     } else {
       // Download to client machine
-      this.stockReportService.generateAndDownloadXlsxReport().subscribe({
+      this.stockReportService.generateAndDownloadXlsxReport(type).subscribe({
         next: (blob) => {
           const fileName = `${type}_Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
           this.downloadFile(blob, fileName);
