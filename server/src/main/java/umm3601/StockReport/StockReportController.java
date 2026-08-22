@@ -450,7 +450,7 @@ public class StockReportController {
       if (saveToDatabase) {
         // Convert workbook to byte array and save to MongoDB
         StockReport newReport = new StockReport();
-        newReport.reportName = type + "_Stock_Report_" + timestamp + ".xlsx";
+        newReport.reportName = "Stock_Report_" + timestamp + ".xlsx";
         newReport.reportType = "XLSX";
         newReport.stockReportData = workbookBytes;
 
@@ -461,7 +461,7 @@ public class StockReportController {
         // Set response headers for XLSX download
         ctx.contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         // File name in case client doesn't properly override it
-        ctx.header("Content-Disposition", "attachment; filename=" + type + "_Stock_Report_" + timestamp + ".xlsx");
+        ctx.header("Content-Disposition", "attachment; filename=" + "Stock_Report_" + timestamp + ".xlsx");
         ctx.status(HttpStatus.OK);
         ctx.result(workbookBytes);
       }
