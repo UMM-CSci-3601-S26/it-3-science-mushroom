@@ -1,10 +1,11 @@
 // Angular Imports
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 // JS Imports
 import { catchError, of} from 'rxjs';
@@ -33,6 +34,9 @@ interface jsPDFWithAutoTable extends jsPDFClass {
   };
 }
 
+// Stock Report Type
+type StockType = 'actual' | 'calculated';
+
 /**
  * ReportGeneratorComponent is responsible for generating reports and handling all interactions related to report generation, downloading, and deletion.
  * It interacts with the StockReportService to perform these actions and uses jsPDF to generate PDF reports on the client side.
@@ -42,7 +46,7 @@ interface jsPDFWithAutoTable extends jsPDFClass {
   selector: "app-report-generator",
   templateUrl: "./report-generator.component.html",
   styleUrls: ["./report-generator.component.scss"],
-  imports: [MatButton, MatIcon],
+  imports: [MatButton, MatIcon, MatSlideToggleModule],
 })
 export class ReportGeneratorComponent {
   private inventoryService = inject(InventoryService);
@@ -55,6 +59,12 @@ export class ReportGeneratorComponent {
   private readonly pageBreakThreshold = 0.75; // Percentage of page height to trigger page break
   private readonly tablePageTopY = 15;
 
+  viewType = signal<StockType>('actual');
+
+  setViewType(viewType: StockType): void {
+    this.viewType.set(viewType);
+  }
+
   get canViewReports(): boolean {
     return this.authService.hasPermission('view_reports');
   }
@@ -63,11 +73,55 @@ export class ReportGeneratorComponent {
     return this.authService.hasPermission('manage_stock_reports');
   }
 
+  get canEditInventory(): boolean {
+    return this.authService.hasPermission('edit_inventory_item');
+  }
+
   inventory = toSignal <Inventory[]>(
     this.inventoryService.getInventory().pipe(
       catchError(() => of([]))
     )
   );
+
+  /**
+   * Uses InventoryService's calculateStates to call the API to calculate stats
+   */
+  calculateStates() {
+    if (this.canEditInventory) {
+      this.inventoryService.calculateStates().subscribe({
+        next: () => {
+          console.log("Calculated states for all inventory items.");
+          this.snackBar.open('Calculated states for all inventory items.', 'Okay', { duration: 3000 });
+        },
+        error: (error) => {
+          console.error("Error calculating states for inventory items:", error);
+          this.snackBar.open('Error calculating states for inventory items. Please try again.', 'Okay', { duration: 3000 });
+        }
+      })
+    }else {
+      this.snackBar.open('You do not have permission to calculate states.', 'Okay', { duration: 3000 });
+    }
+  }
+
+  /**
+   * Cleans up given stockState, then checks that it matches the expected stockState. Returns true if it matches, false otherwise.
+   */
+  private matchesStockState(item: Inventory, expected: string): boolean {
+    return item.stockState
+      .trim()
+      .toLowerCase()
+      .replace(/[-\s]+/g, '') === expected;
+  }
+
+  /**
+   * Cleans up given calculatedStockState, then checks that it matches the expected stockState. Returns true if it matches, false otherwise.
+   */
+  private matchesCalculatedStockState(item: Inventory, expected: string): boolean {
+    return item.calculatedStockState
+      .trim()
+      .toLowerCase()
+      .replace(/[-\s]+/g, '') === expected;
+  }
 
   // Compute arrays of items based on their stock state
   stockedItems = computed(() => {
@@ -92,6 +146,30 @@ export class ReportGeneratorComponent {
     return this.inventory()
       ?.filter(item => this.matchesStockState(item, 'understocked'))
       .map(item => [item.description, item.quantity, item.maxQuantity, item.minQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
+  });
+
+  calculatedStockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => this.matchesCalculatedStockState(item, 'stocked'))
+      .map(item => [item.description, item.quantity, item.calculatedMinQuantity, item.maxQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
+  });
+
+  calculatedOverstockItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => this.matchesCalculatedStockState(item, 'overstocked'))
+      .map(item => [item.description, item.quantity, item.calculatedMinQuantity, item.maxQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
+  });
+
+  calculatedUnderstockedItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => this.matchesCalculatedStockState(item, 'understocked'))
+      .map(item => [item.description, item.quantity, item.calculatedMinQuantity, item.maxQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
+  });
+
+  calculatedUnknownItems = computed(() => {
+    return this.inventory()
+      ?.filter(item => this.matchesCalculatedStockState(item, 'unknown'))
+      .map(item => [item.description, item.quantity, item.calculatedMinQuantity, item.maxQuantity, item.notes === "N/A" ? "" : item.notes]) ?? [];
   });
 
   /**
@@ -123,8 +201,9 @@ export class ReportGeneratorComponent {
    * Generates a PDF report of the inventory, grouped by Stock State. Each group has its own table with item description, quantity, max quantity, and min quantity.
    * The PDF is saved with the name "StockReport_MM-DD-YYYY.pdf", using formatDateTime to get the formatted date. The PDF also includes a title and description with the date.
    * @param savePdf boolean indicating whether to save PDF to server (true) or download to client machine (false)
+   * @param type The type of stock report to generate ('actual' or 'calculated')
   */
-  generatePDF(savePdf: boolean) {
+  generatePDF(savePdf: boolean, type: 'actual' | 'calculated') {
     if (savePdf && !this.canManageStockReports) {
       this.snackBar.open('You do not have permission to save stock reports.', 'Okay', { duration: 3000 });
       return;
@@ -135,19 +214,15 @@ export class ReportGeneratorComponent {
     }
 
     const doc = new jsPDF() as jsPDFWithAutoTable;
-    // Title
-    this.addText(doc, "Stock Report", 10, 10, 16, 'bold', 'normal');
-    // Description
-    this.addText(doc, `Report generated on ${this.formatDateTimeService.formatDateTime(this.dateTime)[0]}`, 10, 25, 12, 'normal', 'normal');
-    doc.line(10, 28, 200, 28); // Horizontal line under title and description
 
-    // Table Constants
+    // Control Variables
     const headers = [["Item Description", "Quantity", "Max Quantity", "Min Quantity", "Notes"]];
     const tableSpace = 20; // 20mm of space
     const titleSpace = 3; // 3mm of space
     const itemSpace = 80; // Item column width
     const quantitySpace = 20; // Quantity/Max/Min column width
-    const startY = 35; // Starting Y position for the first table
+    const typeDescriptionSpace = type === 'calculated' ? 15 : 0; // 30mm of space for the type description, if present
+    const startY = 35 + typeDescriptionSpace; // Starting Y position for the first table
     const tableX = 15; // X position for all tables
     const columnStyling = {
       0: { // Item
@@ -156,64 +231,132 @@ export class ReportGeneratorComponent {
       1: { // Quantity
         cellWidth: quantitySpace
       },
-      2: { // Max Quantity
+      2: { // Max Quantity (Actual) / Calculated Min Quantity (Calculated)
         cellWidth: quantitySpace
       },
-      3: { // Min Quantity
+      3: { // Min Quantity (Actual)
         cellWidth: quantitySpace
       }
     };
 
-    // Stocked Table
-    this.addText(doc, "Stocked Items", tableX, startY, 12, 'normal', 'normal');
-    autoTable(doc, {
-      head: headers,
-      body: this.stockedItems(),
-      startY: startY+titleSpace,
-      theme: 'striped',
-      columnStyles: columnStyling
-    });
+    // Title
+    this.addText(doc, "Stock Report - " + type, 10, 10, 16, 'bold', 'normal');
+    // Description
+    this.addText(doc, `Report generated on ${this.formatDateTimeService.formatDateTime(this.dateTime)[0]}`, 10, 25, 12, 'normal', 'normal');
+    if(type == 'calculated') {
+      this.addText(doc, `Note: This report is based on calculated stock states, which may differ from actual stock states.
+      "Min Quantity also refers to the calculated minimum.
+      This is the absolute bare minimum number of units needed to fulfill the requests linked to that item`, 10, 30, 10, 'normal', 'normal');
+    }
+    doc.line(10, 28 + typeDescriptionSpace, 200, 28 + typeDescriptionSpace); // Horizontal line under title and description
 
-    // Calculate the startY for the second table
-    // doc.lastAutoTable.finalY holds the Y-coordinate of the last drawn point of the table
-    const startY2 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY) + tableSpace);
+    if (type === 'actual') {
+      // Stocked Table
+      this.addText(doc, "Stocked Items", tableX, startY, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.stockedItems(),
+        startY: startY+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
 
-    // Out of Stock Table
-    this.addText(doc, "Out of Stock Items", tableX, startY2, 12, 'normal', 'normal');
-    autoTable(doc, {
-      head: headers,
-      body: this.outOfStockItems(),
-      startY: startY2+titleSpace,
-      theme: 'striped',
-      columnStyles: columnStyling
-    });
+      // Calculate the startY for the second table
+      // doc.lastAutoTable.finalY holds the Y-coordinate of the last drawn point of the table
+      const startY2 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY) + tableSpace);
 
-    const startY3 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY2) + tableSpace);
+      // Out of Stock Table
+      this.addText(doc, "Out of Stock Items", tableX, startY2, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.outOfStockItems(),
+        startY: startY2+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
 
-    // Overstocked Table
-    this.addText(doc, "Overstocked Items", tableX, startY3, 12, 'normal', 'normal');
-    autoTable(doc, {
-      head: headers,
-      body: this.overstockedItems(),
-      startY: startY3+titleSpace,
-      theme: 'striped',
-      columnStyles: columnStyling
-    });
+      const startY3 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY2) + tableSpace);
 
-    const startY4 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY3) + tableSpace);
+      // Overstocked Table
+      this.addText(doc, "Overstocked Items", tableX, startY3, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.overstockedItems(),
+        startY: startY3+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
 
-    // Understocked Table
-    this.addText(doc, "Understocked Items", tableX, startY4, 12, 'normal', 'normal');
-    autoTable(doc, {
-      head: headers,
-      body: this.understockedItems(),
-      startY: startY4+titleSpace,
-      theme: 'striped',
-      columnStyles: columnStyling
-    });
+      const startY4 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY3) + tableSpace);
+
+      // Understocked Table
+      this.addText(doc, "Understocked Items", tableX, startY4, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.understockedItems(),
+        startY: startY4+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
+    } else if (type === 'calculated') {
+      // Stocked Table
+      this.addText(doc, "Stocked Items", tableX, startY, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.calculatedStockedItems(),
+        startY: startY+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
+
+      // Calculate the startY for the second table
+      // doc.lastAutoTable.finalY holds the Y-coordinate of the last drawn point of the table
+      const startY2 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY) + tableSpace);
+
+      // Overstock Table
+      this.addText(doc, "Overstocked Items", tableX, startY2, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.calculatedOverstockItems(),
+        startY: startY2+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
+
+      const startY3 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY2) + tableSpace);
+
+      // Understocked Table
+      this.addText(doc, "Understocked Items", tableX, startY3, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.calculatedUnderstockedItems(),
+        startY: startY3+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
+
+      const startY4 = this.checkForPageBreak(doc, (doc.lastAutoTable?.finalY ?? startY3) + tableSpace);
+
+      // Unknown Table
+      this.addText(doc, "Unknown Items", tableX, startY4, 12, 'normal', 'normal');
+      autoTable(doc, {
+        head: headers,
+        body: this.calculatedUnknownItems(),
+        startY: startY4+titleSpace,
+        theme: 'striped',
+        columnStyles: columnStyling
+      });
+    } else {
+      console.error(`Invalid report type: ${type}`);
+      this.snackBar.open(
+        `Improper type: ${type}. Please try again.`,
+        `Okay`,
+        { duration: 2000 }
+      );
+    }
 
     // Save PDF with name to client
-    const filename = `StockReport_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.pdf`;
+    const filename = `${type}_StockReport_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.pdf`;
 
     if(savePdf) {
       // Save PDF to server
@@ -229,7 +372,7 @@ export class ReportGeneratorComponent {
           console.log("PDF report saved to server with ID:", response);
           this.stockReportService.refreshReports().subscribe();
           this.snackBar.open(
-            `Generating and saving report as PDF file to server...`,
+            `Generating and saving ${type} report as PDF file to server...`,
             `Okay`,
             { duration: 2000 }
           );
@@ -237,7 +380,7 @@ export class ReportGeneratorComponent {
         error: (error) => {
           console.error("Error saving PDF report to server:", error);
           this.snackBar.open(
-            `Error generating / saving report as PDF file. Please try again.`,
+            `Error generating / saving ${type} report as PDF file. Please try again.`,
             `Okay`,
             { duration: 2000 }
           );
@@ -247,7 +390,7 @@ export class ReportGeneratorComponent {
       // Save to client machine
       this.downloadPdfToClient(filename, doc);
       this.snackBar.open(
-        `Generating and downloading report as PDF file...`,
+        `Generating and downloading ${type} report as PDF file...`,
         `Okay`,
         { duration: 2000 }
       );
@@ -267,8 +410,9 @@ export class ReportGeneratorComponent {
    * Generate an XLSX report of the inventory, grouped by Stock State.
    * Server handles all generation, this is just for calling the service method and handling the response.
    * @param saveXlsx boolean indicating whether to save XLSX to server (true) or download to client machine (false)
+   * @param type The type of stock report to generate ('actual' or 'calculated')
    */
-  generateXlsx(saveXlsx: boolean) {
+  generateXlsx(saveXlsx: boolean, type: 'actual' | 'calculated') {
     if (saveXlsx && !this.canManageStockReports) {
       this.snackBar.open('You do not have permission to save stock reports.', 'Okay', { duration: 3000 });
       return;
@@ -280,20 +424,20 @@ export class ReportGeneratorComponent {
 
     if (saveXlsx) {
       // Save to server
-      this.stockReportService.generateNewXlsxReport().subscribe({
+      this.stockReportService.generateNewXlsxReport(type).subscribe({
         next: (response) => {
-          console.log("XLSX report generated and saved to server with ID:", response);
+          console.log(`${type} XLSX report generated and saved to server with ID:`, response);
           this.stockReportService.refreshReports().subscribe();
           this.snackBar.open(
-            `Generating and saving report as XLSX file to server...`,
+            `Generating and saving ${type} report as XLSX file to server...`,
             `Okay`,
             { duration: 2000 }
           );
         },
         error: (error) => {
-          console.error("Error generating/saving XLSX report to server:", error);
+          console.error(`Error generating/saving ${type} XLSX report to server:`, error);
           this.snackBar.open(
-            `Error generating/saving report as XLSX file. Please try again.`,
+            `Error generating/saving ${type} report as XLSX file. Please try again.`,
             `Okay`,
             { duration: 2000 }
           );
@@ -301,20 +445,20 @@ export class ReportGeneratorComponent {
       });
     } else {
       // Download to client machine
-      this.stockReportService.generateAndDownloadXlsxReport().subscribe({
+      this.stockReportService.generateAndDownloadXlsxReport(type).subscribe({
         next: (blob) => {
-          const fileName = `Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
+          const fileName = `${type}_Stock_Report_${this.formatDateTimeService.formatDateTime(this.dateTime)[1]}.xlsx`;
           this.downloadFile(blob, fileName);
           this.snackBar.open(
-            `Generating and downloading report as XLSX file...`,
+            `Generating and downloading ${type} report as XLSX file...`,
             `Okay`,
             { duration: 2000 }
           );
         },
         error: (error) => {
-          console.error("Error generating XLSX report:", error);
+          console.error(`Error generating ${type} XLSX report:`, error);
           this.snackBar.open(
-            `Error generating report as XLSX file. Please try again.`,
+            `Error generating ${type} report as XLSX file. Please try again.`,
             `Okay`,
             { duration: 2000 }
           );
@@ -324,23 +468,23 @@ export class ReportGeneratorComponent {
   }
 
   // Helper method for generating and downloading report as PDF to client
-  downloadNewPdfReport() {
-    this.generatePDF(false);
+  downloadNewPdfReport(type: 'actual' | 'calculated') {
+    this.generatePDF(false, type);
   }
 
   // Helper method for generating and saving report as PDF to server
-  savePdfReport() {
-    this.generatePDF(true);
+  savePdfReport(type: 'actual' | 'calculated') {
+    this.generatePDF(true, type);
   }
 
   // Helper method for generating and downloading report as XLSX to client
-  downloadNewXlsxReport() {
-    this.generateXlsx(false);
+  downloadNewXlsxReport(type: 'actual' | 'calculated') {
+    this.generateXlsx(false, type);
   }
 
   // Helper method for generating and saving report as XLSX to server
-  saveXlsxReport() {
-    this.generateXlsx(true);
+  saveXlsxReport(type: 'actual' | 'calculated') {
+    this.generateXlsx(true, type);
   }
 
   /**
@@ -561,12 +705,5 @@ export class ReportGeneratorComponent {
         );
       }
     });
-  }
-
-  private matchesStockState(item: Inventory, expected: string): boolean {
-    return item.stockState
-      .trim()
-      .toLowerCase()
-      .replace(/[-\s]+/g, '') === expected;
   }
 }

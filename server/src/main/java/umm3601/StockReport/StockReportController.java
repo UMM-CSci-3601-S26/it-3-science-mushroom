@@ -47,7 +47,7 @@ public class StockReportController {
   private static final String API_GENERATE_REPORT = "/api/stockreport/generate";
   private static final String API_GENERATE_REPORT_AND_SAVE = "/api/stockreport/generate-and-save";
   private static final String STOCK_STATE_CSV_HEADER =
-    "Item Description,Quantity,Max Quantity,Min Quantity,Notes,Calculated Min Quantity,Calculated Stock State\n";
+    "Item Description,Quantity,Max Quantity,Min Quantity,Notes\n";
 
   private final JacksonMongoCollection<StockReport> stockReportCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
@@ -237,15 +237,17 @@ public class StockReportController {
 
     // Separate StringBuilders for each Stock State report type
     StringBuilder stockedCSV = new StringBuilder();
-    StringBuilder outOfStockCSV = new StringBuilder();
     StringBuilder understockedCSV = new StringBuilder();
     StringBuilder overstockedCSV = new StringBuilder();
+    StringBuilder outOfStockCSV = new StringBuilder();
+    StringBuilder unknownStockCSV = new StringBuilder();
 
     // Sheet Headers
     stockedCSV.append(STOCK_STATE_CSV_HEADER);
-    outOfStockCSV.append(STOCK_STATE_CSV_HEADER);
     understockedCSV.append(STOCK_STATE_CSV_HEADER);
     overstockedCSV.append(STOCK_STATE_CSV_HEADER);
+    outOfStockCSV.append(STOCK_STATE_CSV_HEADER);
+    unknownStockCSV.append(STOCK_STATE_CSV_HEADER);
 
     // Fill rows for each report type
     for (Inventory item : inventoryItems) {
@@ -280,6 +282,9 @@ public class StockReportController {
         case "Overstocked":
           overstockedCSV.append(row);
           break;
+        case "Unknown":
+          unknownStockCSV.append(row);
+          break;
         default:
           continue; // Skip items with invalid Stock State
       }
@@ -287,9 +292,10 @@ public class StockReportController {
 
     // Return all the CSVs as one string with section headers and spacing between sections
     return "Stocked Report:\n" + stockedCSV.toString() + "\n\n"
-      + "Out of Stock Report:\n" + outOfStockCSV.toString() + "\n\n"
       + "Understocked Report:\n" + understockedCSV.toString() + "\n\n"
-      + "Overstocked Report:\n" + overstockedCSV.toString();
+      + "Overstocked Report:\n" + overstockedCSV.toString() + "\n\n"
+      + "Out of Stock Report:\n" + outOfStockCSV.toString() + "\n\n"
+      + "Unknown Stock Report:\n" + unknownStockCSV.toString();
   }
 
   /**
@@ -314,19 +320,26 @@ public class StockReportController {
   /**
    * Creates an XLSX file with a separate sheet for each Stock State report
    * Uses stockStateToCSV() to get the data for each sheet
-   * @returns byte array containing the XLSX file data
+   * @return byte array containing the XLSX file data
    * @throws IOException if there is an error writing the XLSX file
    */
-  protected byte[] createXLSXFile() throws IOException {
+  protected byte[] createXLSXFile(String type) throws IOException {
     // Try to create workbook and file output stream
     try (
       XSSFWorkbook workbook = new XSSFWorkbook();
     ) {
+
       // Make separate sheets for each Stock State
+
+      // todo: separate sheets for actual and calculated
+      // unknown stock and out of stock are the calculated and actual stock states, respectively
+      // stocked, under, and over all get calculated and actual sheets
+      // 8 sheets total, 4 actual (stocked, understocked, overstocked, out of stock) and 4 calculated (stocked, understocked, overstocked, unknown)
       XSSFSheet stockedSheet = workbook.createSheet("Stocked Items");
-      XSSFSheet outOfStockSheet = workbook.createSheet("Out of Stock Items");
       XSSFSheet understockedSheet = workbook.createSheet("Understocked Items");
       XSSFSheet overstockedSheet = workbook.createSheet("Overstocked Items");
+      XSSFSheet outOfStockSheet = workbook.createSheet("Out of Stock Items");
+      XSSFSheet unknownStockSheet = workbook.createSheet("Unknown Stock Items");
 
       // Get CSV data for each sheet
       String csvData = stockStateToCSV();
@@ -337,62 +350,77 @@ public class StockReportController {
       // All Stock State sections follow this path:
       // Fill Stocked Items sheet
       if (sections.length > 0) {
-          String[] stockedRows = sections[0].split("\n"); // Split into rows
-          for (int i = 1; i < stockedRows.length; i++) {  // Skip header row
-              if (stockedRows[i].trim().isEmpty()) {
-                continue;
-              } // Skip empty rows
-              String[] cells = stockedRows[i].split(","); // Split into cells
-              XSSFRow row = stockedSheet.createRow(i - 1); // Create row (i-1 because of header)
-              for (int j = 0; j < cells.length; j++) { // Fill cells in row
-                row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j])); // Clean CSV and set cell value
-              }
-          }
-      }
-
-      // Fill Out of Stock Items sheet
-      if (sections.length > 1) {
-          String[] outOfStockRows = sections[1].split("\n");
-          for (int i = 1; i < outOfStockRows.length; i++) {
-              if (outOfStockRows[i].trim().isEmpty()) {
-                continue;
-              }
-              String[] cells = outOfStockRows[i].split(",");
-              XSSFRow row = outOfStockSheet.createRow(i - 1);
-              for (int j = 0; j < cells.length; j++) {
-                  row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j]));
-              }
-          }
+        String[] stockedRows = sections[0].split("\n"); // Split into rows
+        for (int i = 1; i < stockedRows.length; i++) {  // Skip header row
+            if (stockedRows[i].trim().isEmpty()) {
+              continue;
+            } // Skip empty rows
+            String[] cells = stockedRows[i].split(","); // Split into cells
+            XSSFRow row = stockedSheet.createRow(i - 1); // Create row (i-1 because of header)
+            for (int j = 0; j < cells.length; j++) { // Fill cells in row
+              row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j])); // Clean CSV and set cell value
+            }
+        }
       }
 
       // Fill Understocked Items sheet
-      if (sections.length > 2) {
-          String[] understockedRows = sections[2].split("\n");
-          for (int i = 1; i < understockedRows.length; i++) {
-              if (understockedRows[i].trim().isEmpty()) {
-                continue;
-              }
-              String[] cells = understockedRows[i].split(",");
-              XSSFRow row = understockedSheet.createRow(i - 1);
-              for (int j = 0; j < cells.length; j++) {
-                  row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j]));
-              }
-          }
+      if (sections.length > 1) {
+        String[] understockedRows = sections[1].split("\n");
+        for (int i = 1; i < understockedRows.length; i++) {
+            if (understockedRows[i].trim().isEmpty()) {
+              continue;
+            }
+            String[] cells = understockedRows[i].split(",");
+            XSSFRow row = understockedSheet.createRow(i - 1);
+            for (int j = 0; j < cells.length; j++) {
+              row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j]));
+            }
+        }
       }
 
       // Fill Overstocked Items sheet
+      if (sections.length > 2) {
+        String[] overstockedRows = sections[2].split("\n");
+        for (int i = 1; i < overstockedRows.length; i++) {
+            if (overstockedRows[i].trim().isEmpty()) {
+              continue;
+            }
+            String[] cells = overstockedRows[i].split(",");
+            XSSFRow row = overstockedSheet.createRow(i - 1);
+            for (int j = 0; j < cells.length; j++) {
+              row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j]));
+            }
+        }
+      }
+
+      // Fill Out of Stock Items sheet
       if (sections.length > 3) {
-          String[] overstockedRows = sections[3].split("\n");
-          for (int i = 1; i < overstockedRows.length; i++) {
-              if (overstockedRows[i].trim().isEmpty()) {
-                continue;
-              }
-              String[] cells = overstockedRows[i].split(",");
-              XSSFRow row = overstockedSheet.createRow(i - 1);
-              for (int j = 0; j < cells.length; j++) {
-                  row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j]));
-              }
-          }
+        String[] outOfStockRows = sections[3].split("\n");
+        for (int i = 1; i < outOfStockRows.length; i++) {
+            if (outOfStockRows[i].trim().isEmpty()) {
+              continue;
+            }
+            String[] cells = outOfStockRows[i].split(",");
+            XSSFRow row = outOfStockSheet.createRow(i - 1);
+            for (int j = 0; j < cells.length; j++) {
+              row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j]));
+            }
+        }
+      }
+
+      // Fill Unknown Stock Items sheet
+      if (sections.length > 4) {
+        String[] unknownRows = sections[4].split("\n");
+        for (int i = 1; i < unknownRows.length; i++) {
+            if (unknownRows[i].trim().isEmpty()) {
+              continue;
+            }
+            String[] cells = unknownRows[i].split(",");
+            XSSFRow row = unknownStockSheet.createRow(i - 1);
+            for (int j = 0; j < cells.length; j++) {
+              row.createCell(j).setCellValue(FamilyController.cleanUpCSV(cells[j]));
+            }
+        }
       }
 
       return convertWorkbookToByteArray(workbook);
@@ -414,8 +442,9 @@ public class StockReportController {
     .format(java.time.format.DateTimeFormatter
       .ofPattern("yyyy-MM-dd_HH-mm"));
 
+    String type = ctx.formParam("type");
     try {
-      byte[] workbookBytes = createXLSXFile();
+      byte[] workbookBytes = createXLSXFile(type);
 
       // Save to database
       if (saveToDatabase) {
@@ -432,7 +461,7 @@ public class StockReportController {
         // Set response headers for XLSX download
         ctx.contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         // File name in case client doesn't properly override it
-        ctx.header("Content-Disposition", "attachment; filename=Stock_Report_" + timestamp + ".xlsx");
+        ctx.header("Content-Disposition", "attachment; filename=" + "Stock_Report_" + timestamp + ".xlsx");
         ctx.status(HttpStatus.OK);
         ctx.result(workbookBytes);
       }

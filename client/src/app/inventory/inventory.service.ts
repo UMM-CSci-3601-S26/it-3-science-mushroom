@@ -106,6 +106,13 @@ export class InventoryService {
   }
 
   /**
+   * Calculate stock states for all inventory items on the server. Updates calculatedStockState and calculatedMinQuantity
+   */
+  calculateStates(): Observable<unknown> {
+    return this.httpClient.post(`${this.inventoryUrl}/calculateStates`, {});
+  }
+
+  /**
    * Link an external barcode to an inventory item
    * @param internalID Internal ID of the item to link the barcode to
    * @param barcode Barcode to link

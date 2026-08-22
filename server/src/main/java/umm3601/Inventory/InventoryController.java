@@ -52,6 +52,7 @@ public class InventoryController {
   private static final String API_INVENTORY_CLEAR = "/api/inventory/clear";
   private static final String API_INVENTORY_RESET = "/api/inventory/resetQuantity";
   private static final String API_CALCULATE_STATES = "/api/inventory/calculateStates";
+  private static final String API_CALCULATE_STATES_TEST = "/api/inventory/calculateStatesTest";
 
   static final String ITEM_KEY = "item";
   static final String BRAND_KEY = "brand";
@@ -543,8 +544,8 @@ public class InventoryController {
     }
   }
 
-  // Endpoint to calculate states
-  @Route(method = HttpMethod.POST, path = API_CALCULATE_STATES)
+  // Endpoint to calculate states (calculatedMinQuantity and stockState) for all inventory items (test version)
+  @Route(method = HttpMethod.POST, path = API_CALCULATE_STATES_TEST)
   @RequirePermission("edit_inventory_item")
   public void calculateStatesTest(Context ctx) {
     DemandCalculationResult results = demandService.calculatePredictedStockStates();
@@ -553,8 +554,17 @@ public class InventoryController {
       "validInvIDCount", results.getValidInvIDCount(),
       "invalidInvIDCount", results.getInvalidInvIDCount(),
       "bestMatchNullCount", results.getBestMatchNullCount(),
-      "schoolCount", results.getSchoolCount()
+      "schoolCount", results.getSchoolCount(),
+      "validInvIDs", results.getValidInvIDs()
     ));
+    ctx.status(HttpStatus.OK);
+  }
+
+  // Endpoint to calculate states (calculatedMinQuantity and stockState) for all inventory items
+  @Route(method = HttpMethod.POST, path = API_CALCULATE_STATES)
+  @RequirePermission("edit_inventory_item")
+  public void calculateStates(Context ctx) {
+    demandService.calculatePredictedStockStates();
     ctx.status(HttpStatus.OK);
   }
 }
