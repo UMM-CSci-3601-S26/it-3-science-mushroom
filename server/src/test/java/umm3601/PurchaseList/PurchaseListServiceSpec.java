@@ -392,6 +392,26 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void buysSupplyPacksWhenUnmatchedDemandHasOnePackageSize() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "6", TEACHER, 2));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "6", TEACHER, "Tissue", 1)
+      .append("packageSize", 200));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+    assertEquals(400, snapshot.summary.totalUnitsToBuy);
+    PurchaseListItem item = snapshot.items.get(0);
+    assertEquals("200ct Tissue", item.description);
+    assertEquals(400, item.totalNeeded);
+    assertEquals(0, item.quantityOnHand);
+    assertEquals(2, item.quantityToBuy);
+    assertEquals("packs", item.quantityToBuyUnit);
+    assertEquals("1x 200ct Tissue", item.sources.get(0).supplyListDescription);
+    assertEquals(400, item.sources.get(0).totalNeeded);
+  }
+
+  @Test
   void keepsToBuyAsIndividualUnitsWhenLinkedInventoryPackageSizesAreMixed() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("inventory").insertMany(List.of(

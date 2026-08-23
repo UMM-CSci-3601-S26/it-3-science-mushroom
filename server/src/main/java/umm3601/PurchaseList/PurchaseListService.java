@@ -771,6 +771,10 @@ public class PurchaseListService {
       if (!linkedInventoryIds.isEmpty()) {
         return 1;
       }
+      Integer demandPackageSize = consistentDemandPackageSize();
+      if (demandPackageSize != null && demandPackageSize > 1) {
+        return demandPackageSize;
+      }
       return inventoryPackageSize(primaryInventory);
     }
 
@@ -784,6 +788,10 @@ public class PurchaseListService {
 
     private boolean hasMixedDemandPackageSizes() {
       return demandPackageSizes.size() > 1;
+    }
+
+    private Integer consistentDemandPackageSize() {
+      return demandPackageSizes.size() == 1 ? demandPackageSizes.iterator().next() : null;
     }
 
     private Integer consistentLinkedPackageSize(Map<String, Inventory> inventoryByInternalId) {
