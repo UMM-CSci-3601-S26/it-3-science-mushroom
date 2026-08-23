@@ -379,7 +379,7 @@ class PurchaseListServiceSpec {
 
     assertEquals(1, snapshot.items.size());
     PurchaseListItem item = snapshot.items.get(0);
-    assertEquals("8 Pack of Marker", item.description);
+    assertEquals("Marker (mixed package sizes)", item.description);
     assertEquals(13, item.totalNeeded);
     assertEquals(0, item.quantityOnHand);
     assertEquals(2, item.quantityToBuy);

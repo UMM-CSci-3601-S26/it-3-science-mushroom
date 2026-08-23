@@ -518,6 +518,30 @@ public class PurchaseListService {
     return fallback(inventory.item);
   }
 
+  private String inventoryItemDisplayWithoutPackageSize(Inventory inventory) {
+    if (inventory == null) {
+      return "";
+    }
+
+    StringJoiner mainParts = new StringJoiner(" ");
+    StringJoiner detailParts = new StringJoiner(", ");
+
+    addIfPresent(mainParts, inventory.color);
+    addIfPresent(mainParts, inventory.type);
+    addIfPresent(mainParts, inventory.size);
+    addIfPresent(mainParts, inventory.brand);
+    addIfPresent(mainParts, inventory.item);
+
+    addIfPresent(detailParts, inventory.material);
+
+    String main = mainParts.toString().trim();
+    String details = detailParts.toString().trim();
+    if (hasText(main) && hasText(details)) {
+      return main + " (" + details + ")";
+    }
+    return hasText(main) ? main : details;
+  }
+
   private boolean shouldUseInventoryDescription(
       SupplyList supplyList,
       Inventory inventory,
@@ -641,6 +665,7 @@ public class PurchaseListService {
     private String item;
     private String description;
     private final Set<String> linkedInventoryIds;
+    private final Set<Integer> demandPackageSizes;
     private final List<PurchaseListSource> sources;
     private Inventory primaryInventory;
     private int totalNeeded;
@@ -652,6 +677,7 @@ public class PurchaseListService {
       description = supplyItemDescription(supplyList, inventoryMatch.primaryInventory, item);
       primaryInventory = inventoryMatch.primaryInventory;
       linkedInventoryIds = new LinkedHashSet<>();
+      demandPackageSizes = new LinkedHashSet<>();
       sources = new ArrayList<>();
       usesManualLinkIdentity = inventoryMatch.manuallyLinked;
     }
@@ -678,12 +704,14 @@ public class PurchaseListService {
         primaryInventory = inventoryMatch.primaryInventory;
         usesManualLinkIdentity = true;
       }
+      demandPackageSizes.add(supplyPackageSize(supplyList));
       sources.add(toPurchaseListSource(supplyList, studentCount, quantityPerStudent, sourceTotalNeeded));
     }
 
     void mergeFrom(PurchaseListAccumulator other) {
       totalNeeded += other.totalNeeded;
       linkedInventoryIds.addAll(other.linkedInventoryIds);
+      demandPackageSizes.addAll(other.demandPackageSizes);
       if (primaryInventory == null && other.primaryInventory != null) {
         primaryInventory = other.primaryInventory;
       }
@@ -740,10 +768,15 @@ public class PurchaseListService {
     }
 
     private String purchaseDescription(Map<String, Inventory> inventoryByInternalId) {
-      if (!hasMixedLinkedPackageSizes(inventoryByInternalId)) {
+      if (!hasMixedLinkedPackageSizes(inventoryByInternalId) && !hasMixedDemandPackageSizes()) {
         return description;
       }
-      return fallback(item, description) + " (mixed package sizes)";
+      String inventoryLabel = inventoryItemDisplayWithoutPackageSize(primaryInventory);
+      return fallback(inventoryLabel, fallback(item, description)) + " (mixed package sizes)";
+    }
+
+    private boolean hasMixedDemandPackageSizes() {
+      return demandPackageSizes.size() > 1;
     }
 
     private Integer consistentLinkedPackageSize(Map<String, Inventory> inventoryByInternalId) {
