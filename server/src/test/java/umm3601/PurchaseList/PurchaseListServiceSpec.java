@@ -364,6 +364,50 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void countsSupplyPackageSizeAsIndividualUnitsAndBuysInventoryPacks() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00030", "Marker", 0)
+      .append("packageSize", 8));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 1, List.of("ID-00030")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Magic Marker", 1, List.of("ID-00030")),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Regular Crayola Marker", 1, List.of("ID-00030"))
+        .append("packageSize", 10),
+      supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 1, List.of("ID-00030"))));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+    PurchaseListItem item = snapshot.items.get(0);
+    assertEquals("8 Pack of Marker", item.description);
+    assertEquals(13, item.totalNeeded);
+    assertEquals(0, item.quantityOnHand);
+    assertEquals(2, item.quantityToBuy);
+    assertEquals(4, item.sources.size());
+    assertEquals(10, item.sources.get(2).totalNeeded);
+    assertEquals("1x 10ct Regular Crayola Marker", item.sources.get(2).supplyListDescription);
+  }
+
+  @Test
+  void keepsToBuyAsIndividualUnitsWhenLinkedInventoryPackageSizesAreMixed() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00031", "Marker", 0).append("packageSize", 8),
+      inventoryDoc("ID-00032", "Marker", 0).append("packageSize", 10)));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "1", TEACHER, "Marker", 13, List.of("ID-00031", "ID-00032")));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+    PurchaseListItem item = snapshot.items.get(0);
+    assertEquals("Marker (mixed package sizes)", item.description);
+    assertEquals(13, item.totalNeeded);
+    assertEquals(0, item.quantityOnHand);
+    assertEquals(13, item.quantityToBuy);
+  }
+
+  @Test
   void usesInventoryIdentityWhenMatchedSupplyListItemIsGeneric() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("inventory").insertOne(inventoryDoc("ID-00004", "Marker", 1)
