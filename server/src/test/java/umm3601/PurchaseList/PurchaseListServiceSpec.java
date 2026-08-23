@@ -110,6 +110,7 @@ class PurchaseListServiceSpec {
     assertEquals(2, item.totalNeeded);
     assertEquals(0, item.quantityOnHand);
     assertEquals(2, item.quantityToBuy);
+    assertEquals("units", item.quantityToBuyUnit);
     assertEquals(0, item.fulfillmentPercent);
     assertEquals("unfulfilled", item.fulfillmentStatus);
     assertEquals(List.of(), item.linkedInventoryIds);
@@ -378,11 +379,13 @@ class PurchaseListServiceSpec {
     PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
 
     assertEquals(1, snapshot.items.size());
+    assertEquals(13, snapshot.summary.totalUnitsToBuy);
     PurchaseListItem item = snapshot.items.get(0);
     assertEquals("Marker (mixed package sizes)", item.description);
     assertEquals(13, item.totalNeeded);
     assertEquals(0, item.quantityOnHand);
     assertEquals(2, item.quantityToBuy);
+    assertEquals("packs", item.quantityToBuyUnit);
     assertEquals(4, item.sources.size());
     assertEquals(10, item.sources.get(2).totalNeeded);
     assertEquals("1x 10ct Regular Crayola Marker", item.sources.get(2).supplyListDescription);
@@ -405,6 +408,7 @@ class PurchaseListServiceSpec {
     assertEquals(13, item.totalNeeded);
     assertEquals(0, item.quantityOnHand);
     assertEquals(13, item.quantityToBuy);
+    assertEquals("units", item.quantityToBuyUnit);
   }
 
   @Test

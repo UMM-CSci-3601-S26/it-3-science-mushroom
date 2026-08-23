@@ -30,6 +30,7 @@ describe('PurchaseListService', () => {
         totalNeeded: 5,
         quantityOnHand: 3,
         quantityToBuy: 2,
+        quantityToBuyUnit: 'packs',
         fulfillmentPercent: 60,
         fulfillmentStatus: 'partial',
         linkedInventoryIds: ['ID-00042'],

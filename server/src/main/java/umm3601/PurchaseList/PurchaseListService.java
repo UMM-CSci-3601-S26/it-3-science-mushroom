@@ -188,7 +188,7 @@ public class PurchaseListService {
       }
       summary.totalUnitsNeeded += item.totalNeeded;
       summary.totalUnitsOnHand += item.quantityOnHand;
-      summary.totalUnitsToBuy += item.quantityToBuy;
+      summary.totalUnitsToBuy += Math.max(0, item.totalNeeded - item.quantityOnHand);
     }
 
     return summary;
@@ -727,6 +727,8 @@ public class PurchaseListService {
     PurchaseListItem toPurchaseListItem(Map<String, Inventory> inventoryByInternalId) {
       int currentQuantityOnHand = quantityOnHand(linkedInventoryIds, primaryInventory, inventoryByInternalId);
       int unitsToBuy = Math.max(0, totalNeeded - currentQuantityOnHand);
+      int purchasePackageSize = purchasePackageSize(inventoryByInternalId);
+      int purchaseQuantityToBuy = quantityToBuy(unitsToBuy, purchasePackageSize);
 
       PurchaseListItem itemSnapshot = new PurchaseListItem();
       itemSnapshot.inventoryId = primaryInventory == null ? "" : fallback(primaryInventory._id);
@@ -737,7 +739,8 @@ public class PurchaseListService {
       itemSnapshot.description = purchaseDescription(inventoryByInternalId);
       itemSnapshot.totalNeeded = totalNeeded;
       itemSnapshot.quantityOnHand = currentQuantityOnHand;
-      itemSnapshot.quantityToBuy = quantityToBuy(unitsToBuy, inventoryByInternalId);
+      itemSnapshot.quantityToBuy = purchaseQuantityToBuy;
+      itemSnapshot.quantityToBuyUnit = quantityToBuyUnit(purchaseQuantityToBuy, purchasePackageSize);
       itemSnapshot.fulfillmentPercent = fulfillmentPercent(currentQuantityOnHand, totalNeeded);
       itemSnapshot.fulfillmentStatus = fulfillmentStatus(currentQuantityOnHand, totalNeeded);
       itemSnapshot.linkedInventoryIds = new ArrayList<>(linkedInventoryIds);
@@ -749,11 +752,15 @@ public class PurchaseListService {
       return inventory == null ? "" : fallback(inventory.internalID);
     }
 
-    private int quantityToBuy(int unitsToBuy, Map<String, Inventory> inventoryByInternalId) {
-      int packageSize = purchasePackageSize(inventoryByInternalId);
+    private int quantityToBuy(int unitsToBuy, int packageSize) {
       return packageSize <= 1
         ? unitsToBuy
         : (int) Math.ceil((double) unitsToBuy / packageSize);
+    }
+
+    private String quantityToBuyUnit(int quantityToBuy, int packageSize) {
+      String unit = packageSize > 1 ? "pack" : "unit";
+      return quantityToBuy == 1 ? unit : unit + "s";
     }
 
     private int purchasePackageSize(Map<String, Inventory> inventoryByInternalId) {

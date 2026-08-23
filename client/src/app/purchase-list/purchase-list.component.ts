@@ -121,7 +121,19 @@ export class PurchaseListComponent implements OnInit {
     this.applySearch('');
   }
 
+  unitCountLabel(quantity: number): string {
+    return `${quantity} ${quantity === 1 ? 'unit' : 'units'}`;
+  }
+
+  quantityToBuyLabel(item: PurchaseListItem): string {
+    return `${item.quantityToBuy} ${item.quantityToBuyUnit || this.unitWord(item.quantityToBuy)}`;
+  }
+
   private normalizedSearchQuery(query: string): string {
     return query.trim().toLowerCase();
+  }
+
+  private unitWord(quantity: number): string {
+    return quantity === 1 ? 'unit' : 'units';
   }
 }

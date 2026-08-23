@@ -16,6 +16,32 @@
   gap: var(--app-space-lg);
 }
 
+.purchase-list-explainer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--app-space-sm);
+  align-items: start;
+  padding: var(--app-space-sm) var(--app-space-md);
+  border: 1px solid color-mix(in srgb, var(--app-primary) 32%, var(--app-border));
+  border-radius: var(--app-radius-sm);
+  background: color-mix(in srgb, var(--app-primary) 8%, var(--app-surface));
+  color: var(--app-text);
+}
+
+.purchase-list-explainer mat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.1rem;
+  color: var(--app-primary);
+  font-size: 1.25rem;
+}
+
+.purchase-list-explainer p {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .purchase-toolbar,
 .purchase-search-field {
   width: min(100%, 28rem);

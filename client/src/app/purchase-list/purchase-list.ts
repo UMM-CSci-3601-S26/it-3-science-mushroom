@@ -22,6 +22,7 @@ export interface PurchaseListItem {
   totalNeeded: number;
   quantityOnHand: number;
   quantityToBuy: number;
+  quantityToBuyUnit?: string;
   fulfillmentPercent: number;
   fulfillmentStatus: FulfillmentStatus;
   linkedInventoryIds: string[];

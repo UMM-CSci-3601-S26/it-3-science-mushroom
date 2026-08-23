@@ -79,7 +79,16 @@ describe('PurchaseListComponent', () => {
 
     const headers = fixture.debugElement.queryAll(By.css('[mat-sort-header]'));
     expect(headers.map(header => header.nativeElement.textContent.trim()))
-      .toEqual(['Total Needed', 'On Hand', 'To Buy', 'Status']);
+      .toEqual(['Needed Units', 'Units On Hand', 'To Buy', 'Status']);
+  });
+
+  it('labels purchase quantities by units and packs', () => {
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('5 units');
+    expect(fixture.nativeElement.textContent).toContain('3 units');
+    expect(fixture.nativeElement.textContent).toContain('2 packs');
+    expect(fixture.nativeElement.textContent).toContain('10 units');
   });
 
   it('filters and clears rows by description', () => {
@@ -152,6 +161,7 @@ function purchaseItem(
     totalNeeded,
     quantityOnHand,
     quantityToBuy: Math.max(0, totalNeeded - quantityOnHand),
+    quantityToBuyUnit: item === 'Markers' ? 'packs' : 'units',
     fulfillmentPercent: Math.min(100, Math.round(quantityOnHand / totalNeeded * 100)),
     fulfillmentStatus: quantityOnHand >= totalNeeded ? 'fulfilled' : 'partial',
     linkedInventoryIds: [],

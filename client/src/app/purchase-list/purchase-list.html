@@ -24,6 +24,14 @@
     </mat-card-header>
 
     <mat-card-content>
+      <div class="purchase-list-explainer">
+        <mat-icon>info_outline</mat-icon>
+        <p>
+          Needed and on-hand item counts are individual units. To buy shows packs when the inventory matches and
+          is not mixed with other package sizes. By default, items show units for how many you need total.
+        </p>
+      </div>
+
       <div class="purchase-toolbar">
         <mat-form-field appearance="outline" class="purchase-search-field">
           <mat-label>Search item description</mat-label>
@@ -70,18 +78,18 @@
             </ng-container>
 
             <ng-container matColumnDef="totalNeeded">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Total Needed</th>
-              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ item.totalNeeded }}</td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Needed Units</th>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ unitCountLabel(item.totalNeeded) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="quantityOnHand">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>On Hand</th>
-              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ item.quantityOnHand }}</td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Units On Hand</th>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ unitCountLabel(item.quantityOnHand) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="quantityToBuy">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>To Buy</th>
-              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ item.quantityToBuy }}</td>
+              <td mat-cell *matCellDef="let item" class="quantity-cell">{{ quantityToBuyLabel(item) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="fulfillmentPercent">
@@ -99,7 +107,7 @@
                   matTooltip="View sources"
                   [attr.aria-label]="'View sources for ' + item.description"
                   (click)="openSourceInfoDialog(item)">
-                  <mat-icon>info_outline</mat-icon>
+                  <mat-icon>list_alt</mat-icon>
                 </button>
               </td>
             </ng-container>
