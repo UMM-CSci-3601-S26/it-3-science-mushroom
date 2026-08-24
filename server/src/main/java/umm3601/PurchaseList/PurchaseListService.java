@@ -4,6 +4,7 @@ import static com.mongodb.client.model.Filters.eq;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -145,9 +146,44 @@ public class PurchaseListService {
       accumulator.add(supplyList, inventoryMatch, studentCount, quantityPerStudent, totalNeeded);
     }
 
-    return demandByInventoryMatch.stream()
-      .map(accumulator -> accumulator.toPurchaseListItem(inventoryByInternalId))
+    return toPurchaseListItems(demandByInventoryMatch, inventoryByInternalId);
+  }
+
+  private List<PurchaseListItem> toPurchaseListItems(
+      List<PurchaseListAccumulator> accumulators,
+      Map<String, Inventory> inventoryByInternalId
+  ) {
+    Map<PurchaseListAccumulator, Integer> quantityOnHandByAccumulator =
+      allocatedQuantityOnHandByAccumulator(accumulators, inventoryByInternalId);
+
+    return accumulators.stream()
+      .map(accumulator -> accumulator.toPurchaseListItem(
+        inventoryByInternalId,
+        quantityOnHandByAccumulator.getOrDefault(accumulator, 0)))
       .toList();
+  }
+
+  private Map<PurchaseListAccumulator, Integer> allocatedQuantityOnHandByAccumulator(
+      List<PurchaseListAccumulator> accumulators,
+      Map<String, Inventory> inventoryByInternalId
+  ) {
+    Map<PurchaseListAccumulator, Integer> quantityOnHandByAccumulator = new HashMap<>();
+    Map<String, Integer> remainingUnitsByInternalId = inventoryUnitsByInternalId(inventoryByInternalId);
+    Map<String, Integer> useCountsByInternalId = inventoryUseCountsByInternalId(accumulators);
+
+    List<PurchaseListAccumulator> allocationOrder = accumulators.stream()
+      .sorted(Comparator
+        .comparingInt(PurchaseListAccumulator::allocationPriority)
+        .thenComparingInt(PurchaseListAccumulator::linkedInventoryCount))
+      .toList();
+
+    for (PurchaseListAccumulator accumulator : allocationOrder) {
+      quantityOnHandByAccumulator.put(
+        accumulator,
+        allocatedQuantityOnHand(accumulator, remainingUnitsByInternalId, useCountsByInternalId));
+    }
+
+    return quantityOnHandByAccumulator;
   }
 
   private PurchaseListAccumulator accumulatorForInventoryMatch(
@@ -243,6 +279,118 @@ public class PurchaseListService {
     return inventoryByInternalId;
   }
 
+  private Map<String, Integer> inventoryUnitsByInternalId(Map<String, Inventory> inventoryByInternalId) {
+    Map<String, Integer> inventoryUnitsByInternalId = new HashMap<>();
+    for (Map.Entry<String, Inventory> inventoryEntry : inventoryByInternalId.entrySet()) {
+      inventoryUnitsByInternalId.put(inventoryEntry.getKey(), inventoryUnitsOnHand(inventoryEntry.getValue()));
+    }
+    return inventoryUnitsByInternalId;
+  }
+
+  private Map<String, Integer> inventoryUseCountsByInternalId(List<PurchaseListAccumulator> accumulators) {
+    Map<String, Integer> useCountsByInternalId = new HashMap<>();
+    for (PurchaseListAccumulator accumulator : accumulators) {
+      for (String linkedInventoryId : accumulator.linkedInventoryIds) {
+        useCountsByInternalId.merge(linkedInventoryId, 1, Integer::sum);
+      }
+    }
+    return useCountsByInternalId;
+  }
+
+  private int allocatedQuantityOnHand(
+      PurchaseListAccumulator accumulator,
+      Map<String, Integer> remainingUnitsByInternalId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    if (accumulator.linkedInventoryIds.isEmpty()) {
+      return inventoryUnitsOnHand(accumulator.primaryInventory);
+    }
+
+    int quantityOnHand = nonSharedQuantityOnHand(
+      accumulator.linkedInventoryIds,
+      remainingUnitsByInternalId,
+      useCountsByInternalId);
+
+    return quantityOnHand + sharedQuantityOnHand(
+      accumulator.linkedInventoryIds,
+      accumulator.totalNeeded,
+      quantityOnHand,
+      remainingUnitsByInternalId,
+      useCountsByInternalId);
+  }
+
+  private int nonSharedQuantityOnHand(
+      Set<String> linkedInventoryIds,
+      Map<String, Integer> remainingUnitsByInternalId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    int quantityOnHand = 0;
+    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(linkedInventoryIds, remainingUnitsByInternalId)) {
+      if (isSharedInventory(linkedInventoryId, useCountsByInternalId)) {
+        continue;
+      }
+
+      int remainingUnits = remainingInventoryUnits(linkedInventoryId, remainingUnitsByInternalId);
+      quantityOnHand += remainingUnits;
+      remainingUnitsByInternalId.put(linkedInventoryId, 0);
+    }
+    return quantityOnHand;
+  }
+
+  private int sharedQuantityOnHand(
+      Set<String> linkedInventoryIds,
+      int totalNeeded,
+      int quantityOnHand,
+      Map<String, Integer> remainingUnitsByInternalId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    int sharedQuantityOnHand = 0;
+    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(linkedInventoryIds, remainingUnitsByInternalId)) {
+      if (!isSharedInventory(linkedInventoryId, useCountsByInternalId)) {
+        continue;
+      }
+
+      int unitsNeeded = Math.max(0, totalNeeded - quantityOnHand - sharedQuantityOnHand);
+      if (unitsNeeded <= 0) {
+        break;
+      }
+
+      int remainingUnits = remainingInventoryUnits(linkedInventoryId, remainingUnitsByInternalId);
+      int unitsForItem = Math.min(remainingUnits, unitsNeeded);
+      sharedQuantityOnHand += unitsForItem;
+      remainingUnitsByInternalId.put(linkedInventoryId, remainingUnits - unitsForItem);
+    }
+    return sharedQuantityOnHand;
+  }
+
+  private boolean isSharedInventory(
+      String linkedInventoryId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    return useCountsByInternalId.getOrDefault(linkedInventoryId, 0) > 1;
+  }
+
+  private int remainingInventoryUnits(
+      String linkedInventoryId,
+      Map<String, Integer> remainingUnitsByInternalId
+  ) {
+    return Math.max(0, remainingUnitsByInternalId.getOrDefault(linkedInventoryId, 0));
+  }
+
+  private List<String> linkedInventoryIdsByRemainingUnits(
+      Set<String> linkedInventoryIds,
+      Map<String, Integer> remainingUnitsByInternalId
+  ) {
+    return linkedInventoryIds.stream()
+      .sorted(Comparator
+        .comparingInt((String linkedInventoryId) -> remainingInventoryUnits(
+          linkedInventoryId,
+          remainingUnitsByInternalId))
+        .reversed()
+        .thenComparing(linkedInventoryId -> linkedInventoryId))
+      .toList();
+  }
+
   private Map<StudentDemandGroup, Integer> getStudentCountsByGroup() {
     ArrayList<Family> families = familyCollection.find().into(new ArrayList<>());
     Map<StudentDemandGroup, Integer> studentCountsByGroup = new HashMap<>();
@@ -307,25 +455,6 @@ public class PurchaseListService {
 
   private int supplyPackageSize(SupplyList supplyList) {
     return supplyList.packageSize == null || supplyList.packageSize <= 1 ? 1 : supplyList.packageSize;
-  }
-
-  private int quantityOnHand(
-      Set<String> linkedInventoryIds,
-      Inventory primaryInventory,
-      Map<String, Inventory> inventoryByInternalId
-  ) {
-    if (linkedInventoryIds.isEmpty()) {
-      return inventoryUnitsOnHand(primaryInventory);
-    }
-
-    int linkedQuantity = 0;
-    for (String internalId : linkedInventoryIds) {
-      Inventory inventory = inventoryByInternalId.get(internalId);
-      if (inventory != null) {
-        linkedQuantity += inventoryUnitsOnHand(inventory);
-      }
-    }
-    return linkedQuantity;
   }
 
   private int inventoryUnitsOnHand(Inventory inventory) {
@@ -724,8 +853,24 @@ public class PurchaseListService {
       sources.addAll(other.sources);
     }
 
-    PurchaseListItem toPurchaseListItem(Map<String, Inventory> inventoryByInternalId) {
-      int currentQuantityOnHand = quantityOnHand(linkedInventoryIds, primaryInventory, inventoryByInternalId);
+    int linkedInventoryCount() {
+      return linkedInventoryIds.size();
+    }
+
+    int allocationPriority() {
+      if (usesManualLinkIdentity && linkedInventoryCount() > 0) {
+        return 0;
+      }
+      if (linkedInventoryCount() > 0) {
+        return 1;
+      }
+      return 2;
+    }
+
+    PurchaseListItem toPurchaseListItem(
+        Map<String, Inventory> inventoryByInternalId,
+        int currentQuantityOnHand
+    ) {
       int unitsToBuy = Math.max(0, totalNeeded - currentQuantityOnHand);
       int purchasePackageSize = purchasePackageSize(inventoryByInternalId);
       int purchaseQuantityToBuy = quantityToBuy(unitsToBuy, purchasePackageSize);

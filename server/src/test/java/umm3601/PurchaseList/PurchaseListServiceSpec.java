@@ -192,6 +192,136 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void linkedInventoryOnHandMatchesSingleInventoryQuantity() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "3", TEACHER, 10));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00040", "Folder", 6));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "3", TEACHER, "Folder", 1, List.of("ID-00040")));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+
+    PurchaseListItem item = snapshot.items.get(0);
+    assertAll(
+      () -> assertEquals(10, item.totalNeeded),
+      () -> assertEquals(6, item.quantityOnHand),
+      () -> assertEquals(4, item.quantityToBuy),
+      () -> assertEquals(6, snapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(4, snapshot.summary.totalUnitsToBuy));
+    assertIterableEquals(List.of("ID-00040"), item.linkedInventoryIds);
+  }
+
+  @Test
+  void linkedInventoryOnHandMatchesSumOfLinkedInventoryQuantities() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "4", TEACHER, 4));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00041", "Crayon", 2),
+      inventoryDoc("ID-00042", "Crayon", 5)));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "4", TEACHER, "Crayon", 3, List.of("ID-00041", "ID-00042")));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+
+    PurchaseListItem item = snapshot.items.get(0);
+    assertAll(
+      () -> assertEquals(12, item.totalNeeded),
+      () -> assertEquals(7, item.quantityOnHand),
+      () -> assertEquals(5, item.quantityToBuy),
+      () -> assertEquals(7, snapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(5, snapshot.summary.totalUnitsToBuy));
+    assertIterableEquals(List.of("ID-00041", "ID-00042"), item.linkedInventoryIds);
+  }
+
+  @Test
+  void linkedInventoryOnHandUsesInventoryPackageSizeUnits() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "5", TEACHER, 7));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00043", "Marker", 2)
+      .append("packageSize", 12));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "5", TEACHER, "Marker", 3, List.of("ID-00043")));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+
+    PurchaseListItem item = snapshot.items.get(0);
+    assertAll(
+      () -> assertEquals(21, item.totalNeeded),
+      () -> assertEquals(24, item.quantityOnHand),
+      () -> assertEquals(0, item.quantityToBuy),
+      () -> assertEquals(24, snapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(0, snapshot.summary.totalUnitsToBuy));
+    assertIterableEquals(List.of("ID-00043"), item.linkedInventoryIds);
+  }
+
+  @Test
+  void linkedInventoryDemandAllocatesBeforeFallbackMatchedDemand() {
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(SCHOOL, "6", TEACHER, 1),
+      familyDoc(SCHOOL, "7", TEACHER, 1)));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00044", "Pencil", 5),
+      inventoryDoc("ID-00045", "Binder", 0)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "6", TEACHER, "Pencil", 5),
+      supplyListDoc(SCHOOL, "7", TEACHER, "Classroom Pencil", 5, List.of("ID-00044", "ID-00045"))));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(2, snapshot.items.size());
+
+    PurchaseListItem fallbackMatchedItem = snapshot.items.get(0);
+    assertEquals("Pencil", fallbackMatchedItem.item);
+    assertEquals(0, fallbackMatchedItem.quantityOnHand);
+    assertEquals(5, fallbackMatchedItem.quantityToBuy);
+    assertIterableEquals(List.of("ID-00044"), fallbackMatchedItem.linkedInventoryIds);
+
+    PurchaseListItem linkedItem = snapshot.items.get(1);
+    assertEquals("Classroom Pencil", linkedItem.item);
+    assertEquals(5, linkedItem.quantityOnHand);
+    assertEquals(0, linkedItem.quantityToBuy);
+    assertIterableEquals(List.of("ID-00044", "ID-00045"), linkedItem.linkedInventoryIds);
+  }
+
+  @Test
+  void multiLinkedDemandUsesHighestRemainingLinkedQuantityFirst() {
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(SCHOOL, "8", TEACHER, 1),
+      familyDoc(SCHOOL, "9", TEACHER, 1),
+      familyDoc(SCHOOL, "10", TEACHER, 1),
+      familyDoc(SCHOOL, "11", TEACHER, 1)));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00046", "Small Pencil", 2),
+      inventoryDoc("ID-00047", "Large Pencil", 9),
+      inventoryDoc("ID-00048", "Backup Pencil", 0),
+      inventoryDoc("ID-00049", "Extra Pencil", 0)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "8", TEACHER, "Small Pencil", 1, List.of("ID-00046")),
+      supplyListDoc(SCHOOL, "9", TEACHER, "Large Pencil", 1, List.of("ID-00047")),
+      supplyListDoc(SCHOOL, "10", TEACHER, "Classroom Pencil", 6, List.of("ID-00046", "ID-00047")),
+      supplyListDoc(SCHOOL, "11", TEACHER, "Backup Pencil", 1, List.of("ID-00046", "ID-00048", "ID-00049"))));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(4, snapshot.items.size());
+
+    PurchaseListItem classroomPencilItem = snapshot.items.get(2);
+    assertEquals("Classroom Pencil", classroomPencilItem.item);
+    assertEquals(6, classroomPencilItem.quantityOnHand);
+    assertEquals(0, classroomPencilItem.quantityToBuy);
+    assertIterableEquals(List.of("ID-00046", "ID-00047"), classroomPencilItem.linkedInventoryIds);
+
+    PurchaseListItem backupPencilItem = snapshot.items.get(3);
+    assertEquals("Backup Pencil", backupPencilItem.item);
+    assertEquals(1, backupPencilItem.quantityOnHand);
+    assertEquals(0, backupPencilItem.quantityToBuy);
+    assertIterableEquals(List.of("ID-00046", "ID-00048", "ID-00049"), backupPencilItem.linkedInventoryIds);
+  }
+
+  @Test
   void aggregatesMultipleSupplyListRowsAgainstOneInventoryItem() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 2));
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "2", TEACHER, 1));
@@ -285,7 +415,7 @@ class PurchaseListServiceSpec {
   }
 
   @Test
-  void keepsOverlappingLinkedInventorySetsAsSeparatePurchaseListItems() {
+  void doesNotReuseOverlappingLinkedInventoryUnitsAcrossSeparatePurchaseListItems() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 5));
     db.getCollection("inventory").insertMany(List.of(
       inventoryDoc("ID-00010", "Marker", 3),
@@ -301,8 +431,8 @@ class PurchaseListServiceSpec {
       () -> assertEquals(2, snapshot.items.size()),
       () -> assertEquals(2, snapshot.summary.totalDemandedItems),
       () -> assertEquals(20, snapshot.summary.totalUnitsNeeded),
-      () -> assertEquals(16, snapshot.summary.totalUnitsOnHand),
-      () -> assertEquals(4, snapshot.summary.totalUnitsToBuy));
+      () -> assertEquals(12, snapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(8, snapshot.summary.totalUnitsToBuy));
 
     PurchaseListItem markerItem = snapshot.items.get(0);
     assertEquals(10, markerItem.totalNeeded);
@@ -315,9 +445,9 @@ class PurchaseListServiceSpec {
 
     PurchaseListItem pencilItem = snapshot.items.get(1);
     assertEquals(10, pencilItem.totalNeeded);
-    assertEquals(9, pencilItem.quantityOnHand);
-    assertEquals(1, pencilItem.quantityToBuy);
-    assertEquals(90, pencilItem.fulfillmentPercent);
+    assertEquals(5, pencilItem.quantityOnHand);
+    assertEquals(5, pencilItem.quantityToBuy);
+    assertEquals(50, pencilItem.fulfillmentPercent);
     assertEquals("partial", pencilItem.fulfillmentStatus);
     assertIterableEquals(List.of("ID-00011", "ID-00012"), pencilItem.linkedInventoryIds);
     assertEquals(1, pencilItem.sources.size());
@@ -340,7 +470,9 @@ class PurchaseListServiceSpec {
     assertAll(
       () -> assertEquals(3, snapshot.items.size()),
       () -> assertEquals(3, snapshot.summary.totalDemandedItems),
-      () -> assertEquals(25, snapshot.summary.totalUnitsNeeded));
+      () -> assertEquals(25, snapshot.summary.totalUnitsNeeded),
+      () -> assertEquals(14, snapshot.summary.totalUnitsOnHand),
+      () -> assertEquals(11, snapshot.summary.totalUnitsToBuy));
 
     PurchaseListItem markerItem = snapshot.items.get(0);
     assertEquals(15, markerItem.totalNeeded);
@@ -358,8 +490,8 @@ class PurchaseListServiceSpec {
 
     PurchaseListItem ambiguousItem = snapshot.items.get(2);
     assertEquals(5, ambiguousItem.totalNeeded);
-    assertEquals(14, ambiguousItem.quantityOnHand);
-    assertEquals(0, ambiguousItem.quantityToBuy);
+    assertEquals(0, ambiguousItem.quantityOnHand);
+    assertEquals(5, ambiguousItem.quantityToBuy);
     assertIterableEquals(List.of("ID-00020", "ID-00021"), ambiguousItem.linkedInventoryIds);
     assertEquals(1, ambiguousItem.sources.size());
   }
