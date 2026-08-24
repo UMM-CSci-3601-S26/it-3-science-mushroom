@@ -71,6 +71,7 @@ public class FamilyController {
   private static final String API_FAMILY_STATUS = "/api/family/{id}/status";
   private static final String API_FAMILY_NEEDED_ITEM_LOGS = "/api/family/needed-item-logs";
   private static final String API_FAMILY_CHECKLIST = "/api/family/{id}/checklist";
+  private static final String API_FAMILY_CURRENT_CHECKLIST = "/api/family/{id}/current-checklist";
   private static final String API_FAMILY_FINALIZED_CHECKLIST = "/api/family/{id}/finalized-checklist";
   private static final String API_FAMILY_HELP_SESSION = "/api/family/{id}/help-session";
   private static final String API_FAMILY_HELP_SESSION_START = "/api/family/{id}/help-session/start";
@@ -244,6 +245,15 @@ public class FamilyController {
     }
 
     ctx.json(family.checklist);
+  }
+
+  @Route(method = HttpMethod.GET, path = API_FAMILY_CURRENT_CHECKLIST)
+  @RequirePermission("manage_family_help_sessions")
+  public void getCurrentFamilyChecklist(Context ctx) {
+    Family family = requireFamily(ctx.pathParam("id"));
+
+    ctx.json(generateCurrentFamilyChecklist(family));
+    ctx.status(HttpStatus.OK);
   }
 
   @Route(method = HttpMethod.GET, path = API_FAMILY_NEEDED_ITEM_LOGS)

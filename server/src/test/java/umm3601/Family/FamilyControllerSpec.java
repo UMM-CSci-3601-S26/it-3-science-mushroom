@@ -400,6 +400,28 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void getCurrentFamilyChecklistGeneratesChecklistWithoutStartingSession() {
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.getCurrentFamilyChecklist(ctx);
+
+    verify(ctx).json(checklistCaptor.capture());
+    verify(ctx).status(HttpStatus.OK);
+
+    Family.FamilyChecklist checklist = checklistCaptor.getValue();
+    assertFalse(checklist.snapshot);
+    assertEquals("Bob Jones Checklist", checklist.printableTitle);
+    assertEquals(1, checklist.sections.size());
+    assertEquals("Sara", checklist.sections.get(0).title);
+    assertEquals(2, checklist.sections.get(0).items.size());
+
+    Document familyAfterPreview = db.getCollection("family").find(eq("_id", testFamilyId)).first();
+    assertEquals("not_helped", familyAfterPreview.getString("status"));
+    assertFalse(familyAfterPreview.getBoolean("helped"));
+    assertNull(familyAfterPreview.get("checklist"));
+  }
+
+  @Test
   void addNewFamily() {
     Family newFamily = new Family();
     newFamily.guardianName = "Charlie Brown";

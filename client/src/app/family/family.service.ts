@@ -107,6 +107,10 @@ export class FamilyService {
     return this.httpClient.get<FamilyChecklist>(`${this.familyUrl}/${id}/finalized-checklist`);
   }
 
+  getCurrentFamilyChecklist(id: string): Observable<FamilyChecklist> {
+    return this.httpClient.get<FamilyChecklist>(`${this.familyUrl}/${id}/current-checklist`);
+  }
+
   getNeededItemLogs(): Observable<NeededItemLog[]> {
     return this.httpClient.get<NeededItemLog[]>(`${this.familyUrl}/needed-item-logs`);
   }

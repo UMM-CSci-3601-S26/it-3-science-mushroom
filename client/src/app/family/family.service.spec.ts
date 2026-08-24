@@ -329,6 +329,28 @@ describe('FamilyService', () => {
     }));
   });
 
+  describe('When getCurrentFamilyChecklist() is given an ID', () => {
+    it('calls api/family/id/current-checklist with the correct ID', waitForAsync(() => {
+      const targetId = 'family_id';
+      const currentChecklist: FamilyChecklist = {
+        templateId: 'family-checklist-v1',
+        printableTitle: 'Checklist',
+        snapshot: false,
+        sections: []
+      };
+      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(currentChecklist));
+
+      familyService.getCurrentFamilyChecklist(targetId).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${familyService.familyUrl}/${targetId}/current-checklist`);
+      });
+    }));
+  });
+
   describe('When revertCompletedFamilyHelpSession() is given an ID', () => {
     it('calls api/family/id/help-session/revert with the correct ID', waitForAsync(() => {
       const targetFamily: Family = testFamilies[1];
