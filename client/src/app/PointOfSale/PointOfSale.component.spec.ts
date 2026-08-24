@@ -55,6 +55,9 @@ describe('PointOfSaleComponent', () => {
     familyService.getFamilies.and.returnValue(of([family]));
     familyService.revertCompletedFamilyHelpSession.and.returnValue(of(family));
     authService.isAdmin.and.returnValue(true);
+    dialog.open.and.returnValue({
+      afterClosed: () => of(undefined)
+    } as never);
     dialogService.openDialog.and.returnValue({
       afterClosed: () => of(true)
     } as never);
@@ -175,7 +178,22 @@ describe('PointOfSaleComponent', () => {
     expect(fixture.nativeElement.querySelector('[data-cy="pos-print-all-checklists-button"]')).toBeNull();
   });
 
-  it('opens the checklist print selector for all loaded families', () => {
+  it('opens the checklist print selector and prints selected students', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus')
+    } as unknown as Window;
+
+    spyOn(window, 'open').and.returnValue(popupWindow);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({
+        familySelections: [{
+          family,
+          selectedStudentIndexes: [0]
+        }]
+      })
+    } as never);
     startComponent();
 
     component.openAllChecklistPrintDialog();
@@ -187,6 +205,9 @@ describe('PointOfSaleComponent', () => {
       maxWidth: '92vw',
       maxHeight: '90vh'
     }));
+    expect(window.open).toHaveBeenCalledWith('', '_blank', 'width=900,height=700');
+    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('Student Supply Checklist');
+    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('class="cols"');
   });
 
   it('does not open the checklist print selector for non-admins', () => {
