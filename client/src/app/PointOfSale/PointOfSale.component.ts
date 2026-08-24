@@ -13,9 +13,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, map, merge, of, startWith, switchMap, tap } from 'rxjs';
 
+import { AuthService } from '../auth/auth-service';
 import { Family } from '../family/family';
 import { FamilyService } from '../family/family.service';
 import { DialogService } from '../shared/dialog/dialog.service';
+import { PointOfSaleChecklistPrintDialogComponent } from './point-of-sale-checklist-print-dialog.component';
 import { PointOfSaleFamilyCardComponent } from './point-of-sale-family-card.component';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
 
@@ -43,6 +45,7 @@ export class PointOfSaleComponent implements OnInit {
   private familyService = inject(FamilyService);
   private dialogService = inject(DialogService);
   private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
   private familyRefresh = new Subject<number>();
 
@@ -109,6 +112,14 @@ export class PointOfSaleComponent implements OnInit {
     this.statusFilter.setValue('');
   }
 
+  printableStudentCount(): number {
+    return this.families.reduce((total, family) => total + (family.students?.length ?? 0), 0);
+  }
+
+  get canPrintChecklists(): boolean {
+    return this.authService.isAdmin();
+  }
+
   openHelpFamilySession(family: Family): void {
     const dialogRef = this.dialog.open(PointOfSaleSessionDialogComponent, {
       data: { family },
@@ -123,6 +134,19 @@ export class PointOfSaleComponent implements OnInit {
       if (result?.cleared || result?.draftSaved || result?.completed) {
         this.familyRefresh.next(Date.now());
       }
+    });
+  }
+
+  openAllChecklistPrintDialog(): void {
+    if (!this.canPrintChecklists) {
+      return;
+    }
+
+    this.dialog.open(PointOfSaleChecklistPrintDialogComponent, {
+      data: { families: this.families },
+      width: '720px',
+      maxWidth: '92vw',
+      maxHeight: '90vh'
     });
   }
 

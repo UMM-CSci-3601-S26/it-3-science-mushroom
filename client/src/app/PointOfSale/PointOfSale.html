@@ -12,6 +12,19 @@
         <span class="family-count">
           {{ families.length }} {{ families.length === 1 ? 'family' : 'families' }}
         </span>
+        @if (canPrintChecklists) {
+          <button
+          type="button"
+          mat-stroked-button
+          color="primary"
+          class="print-all-checklists-button"
+            (click)="openAllChecklistPrintDialog()"
+            [disabled]="loadingFamilies || printableStudentCount() === 0"
+            data-cy="pos-print-all-checklists-button">
+            <mat-icon>print</mat-icon>
+            Print Student Checklists
+          </button>
+        }
         <button type="button"
           mat-icon-button
           class="settings-link app-corner-icon-button"

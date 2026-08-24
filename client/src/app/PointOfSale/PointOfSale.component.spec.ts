@@ -6,9 +6,11 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 
+import { AuthService } from '../auth/auth-service';
 import { Family } from '../family/family';
 import { FamilyService } from '../family/family.service';
 import { DialogService } from '../shared/dialog/dialog.service';
+import { PointOfSaleChecklistPrintDialogComponent } from './point-of-sale-checklist-print-dialog.component';
 import { PointOfSaleComponent } from './PointOfSale.component';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
 
@@ -18,6 +20,7 @@ describe('PointOfSaleComponent', () => {
   let familyService: jasmine.SpyObj<FamilyService>;
   let dialog: jasmine.SpyObj<MatDialog>;
   let dialogService: jasmine.SpyObj<DialogService>;
+  let authService: jasmine.SpyObj<AuthService>;
 
   const family: Family = {
     _id: 'family-1',
@@ -47,9 +50,11 @@ describe('PointOfSaleComponent', () => {
     ]);
     dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
     dialogService = jasmine.createSpyObj<DialogService>('DialogService', ['openDialog']);
+    authService = jasmine.createSpyObj<AuthService>('AuthService', ['isAdmin']);
 
     familyService.getFamilies.and.returnValue(of([family]));
     familyService.revertCompletedFamilyHelpSession.and.returnValue(of(family));
+    authService.isAdmin.and.returnValue(true);
     dialogService.openDialog.and.returnValue({
       afterClosed: () => of(true)
     } as never);
@@ -62,7 +67,8 @@ describe('PointOfSaleComponent', () => {
         provideRouter([]),
         { provide: FamilyService, useValue: familyService },
         { provide: MatDialog, useValue: dialog },
-        { provide: DialogService, useValue: dialogService }
+        { provide: DialogService, useValue: dialogService },
+        { provide: AuthService, useValue: authService }
       ]
     }).compileComponents();
 
@@ -156,6 +162,40 @@ describe('PointOfSaleComponent', () => {
       guardianName: '',
       status: ''
     });
+  });
+
+  it('shows the checklist print action only to admins', () => {
+    startComponent();
+
+    expect(fixture.nativeElement.querySelector('[data-cy="pos-print-all-checklists-button"]')).not.toBeNull();
+
+    authService.isAdmin.and.returnValue(false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-cy="pos-print-all-checklists-button"]')).toBeNull();
+  });
+
+  it('opens the checklist print selector for all loaded families', () => {
+    startComponent();
+
+    component.openAllChecklistPrintDialog();
+
+    expect(component.printableStudentCount()).toBe(1);
+    expect(dialog.open).toHaveBeenCalledWith(PointOfSaleChecklistPrintDialogComponent, jasmine.objectContaining({
+      data: { families: [family] },
+      width: '720px',
+      maxWidth: '92vw',
+      maxHeight: '90vh'
+    }));
+  });
+
+  it('does not open the checklist print selector for non-admins', () => {
+    authService.isAdmin.and.returnValue(false);
+    startComponent();
+
+    component.openAllChecklistPrintDialog();
+
+    expect(dialog.open).not.toHaveBeenCalled();
   });
 
   it('skips revert when the family has no id or the user cancels', () => {

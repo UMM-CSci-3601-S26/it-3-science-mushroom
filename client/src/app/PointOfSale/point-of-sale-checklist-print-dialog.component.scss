@@ -1,0 +1,88 @@
+:host {
+  display: block;
+  max-height: 95vh;
+  overflow: hidden;
+  padding: 0 28px 20px;
+  background: color-mix(in srgb, var(--app-primary) 8%, var(--app-surface));
+  color: var(--app-text);
+}
+
+h2[mat-dialog-title] {
+  margin: 0;
+  padding: 18px 0 8px;
+}
+
+.checklist-print-dialog-panel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--app-surface);
+}
+
+.checklist-print-content {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+.family-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-sm);
+}
+
+.family-label,
+.family-summary span:last-child,
+.student-details,
+.empty-student-message {
+  color: var(--app-text-muted);
+}
+
+.checklist-print-dialog-panel,
+.student-list-frame {
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+}
+
+.student-list-frame {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--app-surface-muted) 46%, var(--app-surface));
+}
+
+.student-row {
+  padding: 0.65rem 0.75rem;
+}
+
+.student-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+}
+
+.family-summary strong,
+.student-name,
+.student-details {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  :host {
+    padding: 0 18px 18px;
+  }
+
+  .family-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

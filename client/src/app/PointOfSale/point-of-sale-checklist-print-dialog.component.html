@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>Print Student Checklists</h2>
+
+<div class="checklist-print-dialog-panel">
+  <mat-dialog-content class="checklist-print-content">
+    <div class="family-summary">
+      <span class="family-label">Families</span>
+      <strong>Choose students</strong>
+      <span>{{ selectedStudentKeys.size }} selected of {{ studentCount }}</span>
+    </div>
+
+    <div class="app-action-row">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="selectAllStudents()"
+        [disabled]="studentCount === 0 || selectedStudentKeys.size === studentCount">
+        <mat-icon>done_all</mat-icon>
+        Select All
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="clearSelectedStudents()"
+        [disabled]="!hasSelection">
+        <mat-icon>clear</mat-icon>
+        Clear
+      </button>
+    </div>
+
+    <div class="student-list-frame app-scroll-region">
+      @for (row of studentRows; track (row.family._id ?? row.family.guardianName) + '-' + row.studentIndex) {
+        <div class="student-row">
+          <mat-checkbox
+            [checked]="isStudentSelected(row.familyIndex, row.studentIndex)"
+            (change)="toggleStudent(row.familyIndex, row.studentIndex, $event.checked)">
+          </mat-checkbox>
+          <div class="student-info">
+            <strong class="student-name">{{ displayValue(row.student.name) }}</strong>
+            <div class="student-details">
+              {{ displayValue(row.family.guardianName) }} | {{ displayValue(row.student.school) }} | Grade {{ displayValue(row.student.grade) }} | {{ displayValue(row.student.teacher) }}
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <p class="empty-student-message">No students are available to print.</p>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="app-action-row app-action-row-end" align="end">
+    <button mat-stroked-button type="button" (click)="cancel()">
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      (click)="printSelectedStudents()"
+      [disabled]="!hasSelection">
+      Print Selected
+    </button>
+  </mat-dialog-actions>
+</div>
