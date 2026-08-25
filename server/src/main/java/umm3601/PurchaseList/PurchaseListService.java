@@ -325,7 +325,9 @@ public class PurchaseListService {
       Map<String, Integer> useCountsByInternalId
   ) {
     int quantityOnHand = 0;
-    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(linkedInventoryIds, remainingUnitsByInternalId)) {
+    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(
+        linkedInventoryIds,
+        remainingUnitsByInternalId)) {
       if (isSharedInventory(linkedInventoryId, useCountsByInternalId)) {
         continue;
       }
@@ -345,7 +347,9 @@ public class PurchaseListService {
       Map<String, Integer> useCountsByInternalId
   ) {
     int sharedQuantityOnHand = 0;
-    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(linkedInventoryIds, remainingUnitsByInternalId)) {
+    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(
+        linkedInventoryIds,
+        remainingUnitsByInternalId)) {
       if (!isSharedInventory(linkedInventoryId, useCountsByInternalId)) {
         continue;
       }
