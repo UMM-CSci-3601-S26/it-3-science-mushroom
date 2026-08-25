@@ -497,7 +497,7 @@ class PurchaseListServiceSpec {
   }
 
   @Test
-  void countsSupplyPackageSizeAsIndividualUnitsAndBuysInventoryPacks() {
+  void countsSupplyPackageSizeAsIndividualUnitsAndKeepsMixedSourceBuysAsUnits() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("inventory").insertOne(inventoryDoc("ID-00030", "Marker", 0)
       .append("packageSize", 8));
@@ -516,8 +516,8 @@ class PurchaseListServiceSpec {
     assertEquals("Marker (mixed package sizes)", item.description);
     assertEquals(13, item.totalNeeded);
     assertEquals(0, item.quantityOnHand);
-    assertEquals(2, item.quantityToBuy);
-    assertEquals("packs", item.quantityToBuyUnit);
+    assertEquals(13, item.quantityToBuy);
+    assertEquals("units", item.quantityToBuyUnit);
     assertEquals(4, item.sources.size());
     assertEquals(10, item.sources.get(2).totalNeeded);
     assertEquals("1x 10ct Regular Crayola Marker", item.sources.get(2).supplyListDescription);
@@ -541,6 +541,66 @@ class PurchaseListServiceSpec {
     assertEquals("packs", item.quantityToBuyUnit);
     assertEquals("1x 200ct Tissue", item.sources.get(0).supplyListDescription);
     assertEquals(400, item.sources.get(0).totalNeeded);
+  }
+
+  @Test
+  void singleLinkedInventoryKeepsUnitRequestsAsUnitsAndPackageRequestsAsPacks() {
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(SCHOOL, "7", TEACHER, 2),
+      familyDoc(SCHOOL, "8", TEACHER, 2)));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00033", "Pencil", 1).append("packageSize", 12),
+      inventoryDoc("ID-00034", "Crayon", 1).append("packageSize", 12)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "7", TEACHER, "Pencil", 12, List.of("ID-00033")),
+      supplyListDoc(SCHOOL, "8", TEACHER, "Crayon", 1, List.of("ID-00034"))
+        .append("packageSize", 12)));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(2, snapshot.items.size());
+    PurchaseListItem unitItem = itemLinkedTo(snapshot, "ID-00033");
+    assertEquals(24, unitItem.totalNeeded);
+    assertEquals(12, unitItem.quantityOnHand);
+    assertEquals(12, unitItem.quantityToBuy);
+    assertEquals("units", unitItem.quantityToBuyUnit);
+
+    PurchaseListItem packageItem = itemLinkedTo(snapshot, "ID-00034");
+    assertEquals(24, packageItem.totalNeeded);
+    assertEquals(12, packageItem.quantityOnHand);
+    assertEquals(1, packageItem.quantityToBuy);
+    assertEquals("pack", packageItem.quantityToBuyUnit);
+  }
+
+  @Test
+  void multipleLinkedInventoryKeepsUnitRequestsAsUnitsAndPackageRequestsAsPacks() {
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(SCHOOL, "9", TEACHER, 2),
+      familyDoc(SCHOOL, "10", TEACHER, 2)));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00035", "Pencil", 1).append("packageSize", 12),
+      inventoryDoc("ID-00036", "Pencil", 0).append("packageSize", 12),
+      inventoryDoc("ID-00037", "Crayon", 1).append("packageSize", 12),
+      inventoryDoc("ID-00038", "Crayon", 0).append("packageSize", 12)));
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc(SCHOOL, "9", TEACHER, "Pencil", 12, List.of("ID-00035", "ID-00036")),
+      supplyListDoc(SCHOOL, "10", TEACHER, "Crayon", 1, List.of("ID-00037", "ID-00038"))
+        .append("packageSize", 12)));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(2, snapshot.items.size());
+    PurchaseListItem unitItem = itemLinkedTo(snapshot, "ID-00035");
+    assertEquals(24, unitItem.totalNeeded);
+    assertEquals(12, unitItem.quantityOnHand);
+    assertEquals(12, unitItem.quantityToBuy);
+    assertEquals("units", unitItem.quantityToBuyUnit);
+
+    PurchaseListItem packageItem = itemLinkedTo(snapshot, "ID-00037");
+    assertEquals(24, packageItem.totalNeeded);
+    assertEquals(12, packageItem.quantityOnHand);
+    assertEquals(1, packageItem.quantityToBuy);
+    assertEquals("pack", packageItem.quantityToBuyUnit);
   }
 
   @Test
@@ -683,6 +743,13 @@ class PurchaseListServiceSpec {
     return new Document()
       .append("exactly", "")
       .append("anyOf", List.of(values));
+  }
+
+  private PurchaseListItem itemLinkedTo(PurchaseListSnapshot snapshot, String linkedInventoryId) {
+    return snapshot.items.stream()
+      .filter(item -> item.linkedInventoryIds.contains(linkedInventoryId))
+      .findFirst()
+      .orElseThrow();
   }
 
   private Document familyDoc(String school, String grade, String teacher, int studentCount) {

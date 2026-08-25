@@ -876,7 +876,7 @@ public class PurchaseListService {
         int currentQuantityOnHand
     ) {
       int unitsToBuy = Math.max(0, totalNeeded - currentQuantityOnHand);
-      int purchasePackageSize = purchasePackageSize(inventoryByInternalId);
+      int purchasePackageSize = purchasePackageSize();
       int purchaseQuantityToBuy = quantityToBuy(unitsToBuy, purchasePackageSize);
 
       PurchaseListItem itemSnapshot = new PurchaseListItem();
@@ -912,19 +912,12 @@ public class PurchaseListService {
       return quantityToBuy == 1 ? unit : unit + "s";
     }
 
-    private int purchasePackageSize(Map<String, Inventory> inventoryByInternalId) {
-      Integer linkedPackageSize = consistentLinkedPackageSize(inventoryByInternalId);
-      if (linkedPackageSize != null) {
-        return linkedPackageSize;
-      }
-      if (!linkedInventoryIds.isEmpty()) {
-        return 1;
-      }
+    private int purchasePackageSize() {
       Integer demandPackageSize = consistentDemandPackageSize();
-      if (demandPackageSize != null && demandPackageSize > 1) {
+      if (demandPackageSize != null) {
         return demandPackageSize;
       }
-      return inventoryPackageSize(primaryInventory);
+      return 1;
     }
 
     private String purchaseDescription(Map<String, Inventory> inventoryByInternalId) {
@@ -941,23 +934,6 @@ public class PurchaseListService {
 
     private Integer consistentDemandPackageSize() {
       return demandPackageSizes.size() == 1 ? demandPackageSizes.iterator().next() : null;
-    }
-
-    private Integer consistentLinkedPackageSize(Map<String, Inventory> inventoryByInternalId) {
-      Integer packageSize = null;
-      for (String linkedInventoryId : linkedInventoryIds) {
-        Inventory inventory = inventoryByInternalId.get(linkedInventoryId);
-        if (inventory == null) {
-          continue;
-        }
-        int inventorySize = inventoryPackageSize(inventory);
-        if (packageSize == null) {
-          packageSize = inventorySize;
-        } else if (packageSize != inventorySize) {
-          return null;
-        }
-      }
-      return packageSize;
     }
 
     private boolean hasMixedLinkedPackageSizes(Map<String, Inventory> inventoryByInternalId) {
