@@ -876,7 +876,7 @@ public class PurchaseListService {
         int currentQuantityOnHand
     ) {
       int unitsToBuy = Math.max(0, totalNeeded - currentQuantityOnHand);
-      int purchasePackageSize = purchasePackageSize();
+      int purchasePackageSize = purchasePackageSize(inventoryByInternalId);
       int purchaseQuantityToBuy = quantityToBuy(unitsToBuy, purchasePackageSize);
 
       PurchaseListItem itemSnapshot = new PurchaseListItem();
@@ -912,12 +912,17 @@ public class PurchaseListService {
       return quantityToBuy == 1 ? unit : unit + "s";
     }
 
-    private int purchasePackageSize() {
+    private int purchasePackageSize(Map<String, Inventory> inventoryByInternalId) {
       Integer demandPackageSize = consistentDemandPackageSize();
-      if (demandPackageSize != null) {
+      if (demandPackageSize == null || demandPackageSize <= 1) {
+        return 1;
+      }
+      if (linkedInventoryIds.isEmpty()) {
         return demandPackageSize;
       }
-      return 1;
+      return linkedPackageSizesMatchDemand(inventoryByInternalId, demandPackageSize)
+        ? demandPackageSize
+        : 1;
     }
 
     private String purchaseDescription(Map<String, Inventory> inventoryByInternalId) {
@@ -934,6 +939,19 @@ public class PurchaseListService {
 
     private Integer consistentDemandPackageSize() {
       return demandPackageSizes.size() == 1 ? demandPackageSizes.iterator().next() : null;
+    }
+
+    private boolean linkedPackageSizesMatchDemand(
+        Map<String, Inventory> inventoryByInternalId,
+        int demandPackageSize
+    ) {
+      for (String linkedInventoryId : linkedInventoryIds) {
+        Inventory inventory = inventoryByInternalId.get(linkedInventoryId);
+        if (inventory == null || inventoryPackageSize(inventory) != demandPackageSize) {
+          return false;
+        }
+      }
+      return true;
     }
 
     private boolean hasMixedLinkedPackageSizes(Map<String, Inventory> inventoryByInternalId) {

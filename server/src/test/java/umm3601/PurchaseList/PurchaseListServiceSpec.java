@@ -604,6 +604,44 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void singleLinkedInventoryKeepsPackageRequestAsUnitsWhenInventoryPackageSizeDiffers() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "11", TEACHER, 1));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-00039", "Pencil", 12));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "11", TEACHER, "Pencil", 1, List.of("ID-00039"))
+        .append("packageSize", 13));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+    PurchaseListItem item = itemLinkedTo(snapshot, "ID-00039");
+    assertEquals(13, item.totalNeeded);
+    assertEquals(12, item.quantityOnHand);
+    assertEquals(1, item.quantityToBuy);
+    assertEquals("unit", item.quantityToBuyUnit);
+  }
+
+  @Test
+  void multipleLinkedInventoryKeepsPackageRequestAsUnitsWhenInventoryPackageSizesDiffer() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "12", TEACHER, 1));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("ID-00040", "Pencil", 12),
+      inventoryDoc("ID-00041", "Pencil", 0)));
+    db.getCollection("supplylist").insertOne(
+      supplyListDoc(SCHOOL, "12", TEACHER, "Pencil", 1, List.of("ID-00040", "ID-00041"))
+        .append("packageSize", 13));
+
+    PurchaseListSnapshot snapshot = purchaseListService.calculateNewPurchaseList();
+
+    assertEquals(1, snapshot.items.size());
+    PurchaseListItem item = itemLinkedTo(snapshot, "ID-00040");
+    assertEquals(13, item.totalNeeded);
+    assertEquals(12, item.quantityOnHand);
+    assertEquals(1, item.quantityToBuy);
+    assertEquals("unit", item.quantityToBuyUnit);
+  }
+
+  @Test
   void keepsToBuyAsIndividualUnitsWhenLinkedInventoryPackageSizesAreMixed() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("inventory").insertMany(List.of(
