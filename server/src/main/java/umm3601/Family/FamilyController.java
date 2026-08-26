@@ -1332,10 +1332,11 @@ public class FamilyController {
 
   private void applySectionInventoryChanges(Family.ChecklistSection section) {
     for (Family.ChecklistItem item : section.items) {
-      if (hasText(item.substituteBarcode)) {
+      if (isChosenSubstitution(item)) {
         Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
         releaseInventory(item.matchedInventoryId, item.requestedQuantity);
         consumeInventory(substituteInventory.internalID, item.requestedQuantity);
+        releaseInventory(substituteInventory.internalID, item.requestedQuantity);
         item.substituteInventoryId = substituteInventory.internalID;
         item.substituteItem = substituteInventory.item;
         item.substituteDescription = substituteInventory.description;
@@ -1350,14 +1351,27 @@ public class FamilyController {
   }
 
   private void addHeldReservationTarget(Family.ChecklistItem item, Map<String, Integer> heldQuantityByInventoryId) {
-    if (!hasText(item.matchedInventoryId)) {
+    String heldInventoryId = heldInventoryIdForSave(item);
+    if (!hasText(heldInventoryId)) {
       return;
     }
 
     int requestedQuantity = item.requestedQuantity == null || item.requestedQuantity <= 0
       ? 1
       : item.requestedQuantity;
-    heldQuantityByInventoryId.merge(item.matchedInventoryId, requestedQuantity, Integer::sum);
+    heldQuantityByInventoryId.merge(heldInventoryId, requestedQuantity, Integer::sum);
+  }
+
+  private String heldInventoryIdForSave(Family.ChecklistItem item) {
+    if (isChosenSubstitution(item)) {
+      if (hasText(item.substituteInventoryId)) {
+        return item.substituteInventoryId;
+      }
+      Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
+      return substituteInventory == null ? null : substituteInventory.internalID;
+    }
+
+    return hasText(item.substituteBarcode) || hasText(item.notPickedUpReason) ? null : item.matchedInventoryId;
   }
 
   private void addRequestedInventoryTarget(
@@ -1376,7 +1390,7 @@ public class FamilyController {
   }
 
   private String targetInventoryIdForSave(Family.ChecklistItem item) {
-    if (hasText(item.substituteBarcode)) {
+    if (isChosenSubstitution(item)) {
       Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
       if (substituteInventory == null) {
         throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
@@ -1414,10 +1428,9 @@ public class FamilyController {
   private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
     for (Family.ChecklistSection section : checklist.sections) {
       for (Family.ChecklistItem item : section.items) {
-        if (REASON_SUBSTITUTED.equals(normalizeReason(item.notPickedUpReason))
-            && hasText(item.substituteInventoryId)) {
+        if (isChosenSubstitution(item) && hasText(item.substituteInventoryId)) {
           restoreInventory(item.substituteInventoryId, item.requestedQuantity);
-        } else if (hasText(item.substituteBarcode)) {
+        } else if (isChosenSubstitution(item)) {
           Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
           if (substituteInventory == null) {
             throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
@@ -1432,7 +1445,7 @@ public class FamilyController {
   }
 
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
-    boolean hasSubstitution = hasText(item.substituteBarcode);
+    boolean hasSubstitution = isChosenSubstitution(item);
     if (item.selected && !item.available && !hasSubstitution) {
       throw new BadRequestResponse("Unavailable items cannot be saved as selected.");
     }
@@ -1454,6 +1467,12 @@ public class FamilyController {
           "reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
       }
     }
+  }
+
+  private boolean isChosenSubstitution(Family.ChecklistItem item) {
+    return item != null
+      && hasText(item.substituteBarcode)
+      && (item.selected || REASON_SUBSTITUTED.equals(normalizeReason(item.notPickedUpReason)));
   }
 
   private boolean isValidNotPickedUpReason(String reason) {

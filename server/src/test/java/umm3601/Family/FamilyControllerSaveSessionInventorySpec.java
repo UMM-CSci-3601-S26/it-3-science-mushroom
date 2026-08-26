@@ -147,6 +147,47 @@ class FamilyControllerSaveSessionInventorySpec {
     assertEquals(1, substituteInventory.getInteger("quantity"));
   }
 
+  @Test
+  void saveFamilyHelpSessionAllAllowsUsingTheSessionHeldSubstituteInventory() {
+    db.getCollection("inventory").insertOne(
+      inventoryDoc("Water Bottle", "Blue Bottle", 1, "ID-20000", "SUB-20000", "EXT-20000"));
+
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items = new ArrayList<>(List.of(substituteChecklistItem("student-1-item-1")));
+    saveDraft(family);
+
+    db.getCollection("inventory").updateOne(
+      eq("internalID", "ID-20000"),
+      new Document("$set", new Document("reservedQuantity", 1)));
+
+    saveAll(family);
+
+    Document substituteInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-20000"))
+      .first();
+    assertEquals(0, substituteInventory.getInteger("quantity"));
+    assertEquals(0, substituteInventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void saveFamilyHelpSessionAllDoesNotTreatLegacySubstituteSuggestionBarcodeAsChosenSubstitution() {
+    db.getCollection("inventory").insertOne(
+      inventoryDoc("Water Bottle", "Blue Bottle", 1, "ID-20000", "SUB-20000", "EXT-20000"));
+
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items = new ArrayList<>(List.of(
+      legacySuggestedSubstituteChecklistItem("student-1-item-1")));
+
+    saveAll(family);
+
+    Document substituteInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-20000"))
+      .first();
+    assertEquals(1, substituteInventory.getInteger("quantity"));
+  }
+
   private Family startHelpSessionAndGetFamily() {
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     familyController.startFamilyHelpSession(ctx);
@@ -154,6 +195,22 @@ class FamilyControllerSaveSessionInventorySpec {
     Family family = familyCaptor.getValue();
     Mockito.clearInvocations(ctx);
     return family;
+  }
+
+  private void saveDraft(Family family) {
+    FamilyChecklistUpdateRequest request = new FamilyChecklistUpdateRequest();
+    request.setChecklist(family.checklist);
+    String json = javalinJackson.toJsonString(request, FamilyChecklistUpdateRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyChecklistUpdateRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyChecklistUpdateRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyChecklistUpdateRequest.class)));
+
+    familyController.updateFamilyChecklist(ctx);
+    Mockito.clearInvocations(ctx);
   }
 
   private void saveAll(Family family) {
@@ -190,6 +247,20 @@ class FamilyControllerSaveSessionInventorySpec {
     item.available = false;
     item.requestedQuantity = 1;
     item.substituteBarcode = "SUB-20000";
+    return item;
+  }
+
+  private Family.ChecklistItem legacySuggestedSubstituteChecklistItem(String itemId) {
+    Family.ChecklistItem item = new Family.ChecklistItem();
+    item.id = itemId;
+    item.label = "Water Bottle";
+    item.selected = false;
+    item.available = false;
+    item.requestedQuantity = 1;
+    item.substituteBarcode = "SUB-20000";
+    item.substituteInventoryId = "ID-20000";
+    item.substituteItem = "Water Bottle";
+    item.substituteDescription = "Blue Bottle";
     return item;
   }
 

@@ -107,6 +107,7 @@ class FamilyControllerRevertSessionSpec {
     section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
+    section.items.get(1).notPickedUpReason = "substituted";
     saveAllSections(family);
     Mockito.clearInvocations(ctx);
 
@@ -156,6 +157,7 @@ class FamilyControllerRevertSessionSpec {
     section.items.get(0).notPickedUpReason = "available_didnt_need";
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
+    section.items.get(1).notPickedUpReason = "substituted";
     saveAllSections(family);
     Mockito.clearInvocations(ctx);
 
@@ -247,6 +249,7 @@ class FamilyControllerRevertSessionSpec {
     section.items.get(0).notPickedUpReason = "available_didnt_need";
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
+    section.items.get(1).notPickedUpReason = "substituted";
     saveAllSections(family);
     Mockito.clearInvocations(ctx);
 
@@ -296,6 +299,7 @@ class FamilyControllerRevertSessionSpec {
     substitutedItem.selected = false;
     substitutedItem.substituteBarcode = "SUB-10001";
     substitutedItem.substituteInventoryId = null;
+    substitutedItem.notPickedUpReason = "substituted";
 
     db.getCollection("inventory").updateOne(eq("internalID", "ID-10001"), new Document(
       "$set", new Document("quantity", 3)));
@@ -358,6 +362,7 @@ class FamilyControllerRevertSessionSpec {
     backpackItem.selected = true;
     suggestedSubstituteItem.selected = false;
     suggestedSubstituteItem.substituteBarcode = "SUB-10001";
+    suggestedSubstituteItem.notPickedUpReason = "substituted";
 
     BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> saveAllSections(family));
     assertTrue(exception.getMessage().contains("Not enough unreserved stock"));
@@ -386,6 +391,7 @@ class FamilyControllerRevertSessionSpec {
     invalidItem.selected = false;
     invalidItem.requestedQuantity = 1;
     invalidItem.substituteBarcode = "SUB-10001";
+    invalidItem.notPickedUpReason = "substituted";
     invalidSection.items = List.of(invalidItem);
     family.checklist.sections.add(invalidSection);
 

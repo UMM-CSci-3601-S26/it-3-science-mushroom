@@ -906,6 +906,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     unavailableItem.selected = false;
     unavailableItem.substituteBarcode = "SUB-10001";
+    unavailableItem.notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
     request.setSectionId(section.id);
@@ -946,6 +947,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
+    section.items.get(1).notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
     request.setChecklist(family.checklist);
@@ -1017,6 +1019,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
+    section.items.get(1).notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
     request.setSectionId(section.id);
@@ -1188,6 +1191,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "UNKNOWN";
+    section.items.get(1).notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
     request.setSectionId(section.id);
