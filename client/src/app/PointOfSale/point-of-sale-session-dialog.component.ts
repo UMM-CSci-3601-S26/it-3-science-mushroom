@@ -7,7 +7,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { switchMap } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 
 import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
 import { FamilyService } from '../family/family.service';
@@ -240,6 +240,10 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
 
     this.substituteErrorMessage = '';
     this.applySubstituteInventory(item, barcode, inventory);
+  }
+
+  closeSession(): void {
+    this.dialogRef.close({ refresh: true });
   }
 
   closeAndSaveDraft(): void {
@@ -476,7 +480,11 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
       )
       : this.familyService.startFamilyHelpSession(familyId);
 
-    sessionRequest.subscribe({
+    sessionRequest.pipe(
+      switchMap(family => this.inventoryService.refreshInventory().pipe(
+        map(() => family)
+      ))
+    ).subscribe({
       next: (family) => {
         this.sessionFamily = family;
         this.captureSubstitutionSuggestions(family.checklist);

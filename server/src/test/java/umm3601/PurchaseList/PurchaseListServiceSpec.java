@@ -91,6 +91,34 @@ class PurchaseListServiceSpec {
   }
 
   @Test
+  void getCurrentPurchaseListDoesNotRefreshInventoryReservations() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-90000", "Pencil", 2));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Pencil", 2));
+
+    purchaseListService.getCurrentPurchaseList();
+
+    Document inventory = db.getCollection("inventory")
+      .find(new Document("internalID", "ID-90000"))
+      .first();
+    assertEquals(0, inventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void calculateNewPurchaseListDoesNotRefreshInventoryReservations() {
+    db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
+    db.getCollection("inventory").insertOne(inventoryDoc("ID-90001", "Pencil", 2));
+    db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Pencil", 2));
+
+    purchaseListService.calculateNewPurchaseList();
+
+    Document inventory = db.getCollection("inventory")
+      .find(new Document("internalID", "ID-90001"))
+      .first();
+    assertEquals(0, inventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
   void includesUnlinkedSupplyListDemandWhenInventoryHasNoMatch() {
     db.getCollection("family").insertOne(familyDoc(SCHOOL, "1", TEACHER, 1));
     db.getCollection("supplylist").insertOne(supplyListDoc(SCHOOL, "1", TEACHER, "Backpack", 2));

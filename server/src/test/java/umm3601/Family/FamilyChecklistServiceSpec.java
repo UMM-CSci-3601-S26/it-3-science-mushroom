@@ -207,7 +207,7 @@ class FamilyChecklistServiceSpec {
     assertFalse(item.selected);
     assertNull(item.matchedInventoryId);
     assertEquals("ID-10001", item.substituteInventoryId);
-    assertEquals("ITEM-10001", item.substituteBarcode);
+    assertNull(item.substituteBarcode);
     assertEquals("Notebook", item.substituteItem);
     assertEquals("Wide Ruled Notebook", item.substituteDescription);
   }
@@ -251,6 +251,68 @@ class FamilyChecklistServiceSpec {
     assertEquals("PLAIN-PENCIL", item.matchedInventoryId);
   }
 
+  @Test
+  void generateChecklistSnapshotDoesNotReuseOneLinkedInventoryCountAcrossRows() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("Colored Pencil", List.of("ID-10020")),
+      supplyListDoc("Graphite Pencil", List.of("ID-10020"))));
+    db.getCollection("inventory").insertOne(
+      inventoryDoc("Pencil", "Shared Pencil", 1, "ID-10020", "ITEM-10020", "EXT-10020"));
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithOneStudent());
+    List<Family.ChecklistItem> items = checklist.sections.get(0).items;
+
+    assertEquals(2, items.size());
+    assertEquals(1, items.stream().filter(item -> item.available).count());
+    assertEquals(1, items.stream().filter(item -> !item.available).count());
+    assertEquals(1, items.stream()
+      .filter(item -> "ID-10020".equals(item.matchedInventoryId))
+      .count());
+  }
+
+  @Test
+  void generateChecklistSnapshotMovesToNextLinkedInventoryWhenFirstLinkedItemIsSpent() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("Colored Pencil", List.of("ID-10020", "ID-10021")),
+      supplyListDoc("Graphite Pencil", List.of("ID-10020", "ID-10021"))));
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", "First Pencil", 1, "ID-10020", "ITEM-10020", "EXT-10020"),
+      inventoryDoc("Pencil", "Second Pencil", 1, "ID-10021", "ITEM-10021", "EXT-10021")));
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithOneStudent());
+    List<Family.ChecklistItem> items = checklist.sections.get(0).items;
+
+    assertEquals(2, items.size());
+    assertTrue(items.stream().allMatch(item -> item.available));
+    assertEquals(List.of("ID-10020", "ID-10021"), items.stream()
+      .map(item -> item.matchedInventoryId)
+      .toList());
+  }
+
+  @Test
+  void generateChecklistSnapshotSharesLinkedInventoryLedgerAcrossStudentSections() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+    db.getCollection("supplylist").insertOne(supplyListDoc("Backpack", List.of("ID-10020")));
+    db.getCollection("inventory").insertOne(
+      inventoryDoc("Backpack", "Shared Backpack", 1, "ID-10020", "ITEM-10020", "EXT-10020"));
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithTwoStudents());
+    List<Family.ChecklistItem> firstStudentItems = checklist.sections.get(0).items;
+    List<Family.ChecklistItem> secondStudentItems = checklist.sections.get(1).items;
+
+    assertEquals(1, firstStudentItems.size());
+    assertEquals(1, secondStudentItems.size());
+    assertTrue(firstStudentItems.get(0).available);
+    assertEquals("ID-10020", firstStudentItems.get(0).matchedInventoryId);
+    assertFalse(secondStudentItems.get(0).available);
+    assertNull(secondStudentItems.get(0).matchedInventoryId);
+  }
+
   private Document supplyListDoc(String item) {
     return new Document()
       .append("district", "District 1")
@@ -261,15 +323,45 @@ class FamilyChecklistServiceSpec {
       .append("quantity", 1);
   }
 
+  private Document supplyListDoc(String item, List<String> invIDs) {
+    return supplyListDoc(item)
+      .append("invIDs", invIDs);
+  }
+
   private Document inventoryDoc(String item, String description, int quantity,
       String internalId, String internalBarcode, String externalBarcode) {
     return new Document()
       .append("item", item)
       .append("description", description)
       .append("quantity", quantity)
+      .append("reservedQuantity", 0)
+      .append("packageSize", 1)
       .append("internalID", internalId)
       .append("internalBarcode", internalBarcode)
       .append("externalBarcode", List.of(externalBarcode));
+  }
+
+  private Family familyWithOneStudent() {
+    Family family = new Family();
+    family.guardianName = "Test Guardian";
+    family.students = List.of(student("Alex"));
+    return family;
+  }
+
+  private Family familyWithTwoStudents() {
+    Family family = new Family();
+    family.guardianName = "Test Guardian";
+    family.students = List.of(student("Alex"), student("Jordan"));
+    return family;
+  }
+
+  private Family.StudentInfo student(String name) {
+    Family.StudentInfo student = new Family.StudentInfo();
+    student.name = name;
+    student.school = "Roosevelt";
+    student.grade = "5";
+    student.teacher = "N/A";
+    return student;
   }
 
   private String invokeBestInventoryDescription(Inventory inventory) throws Exception {

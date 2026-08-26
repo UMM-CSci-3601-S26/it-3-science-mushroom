@@ -22,6 +22,27 @@ export class PointOfSaleFamilyCardComponent {
     return this.family().status === 'helped' || !!this.family().helped;
   }
 
+  canRevertCompletedSession(): boolean {
+    const checklist = this.family().checklist;
+    return this.isCompleted()
+      && !!checklist
+      && !checklist.snapshot
+      && checklist.sections.length > 0
+      && checklist.sections.every(section => section.saved);
+  }
+
+  canOpenHelpSession(): boolean {
+    return !this.canRevertCompletedSession();
+  }
+
+  helpSessionActionLabel(): string {
+    if (this.family().status === 'being_helped' || this.isCompleted()) {
+      return 'Continue Session';
+    }
+
+    return 'Help Family';
+  }
+
   statusLabel(): string {
     switch (this.family().status) {
     case 'helped':

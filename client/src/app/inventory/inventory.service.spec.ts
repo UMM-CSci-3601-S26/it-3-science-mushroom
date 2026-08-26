@@ -90,6 +90,22 @@ describe('InventoryService', () => {
     expect(service.inventory()).toEqual([itemA, itemB]);
   });
 
+  it('should refresh inventory and return the loaded data', () => {
+    let response: Inventory[] | undefined;
+
+    service.refreshInventory().subscribe(data => {
+      response = data;
+    });
+
+    const req = httpMock.expectOne(service.inventoryUrl);
+    expect(req.request.method).toBe('GET');
+
+    req.flush([itemA, itemB]);
+
+    expect(response).toEqual([itemA, itemB]);
+    expect(service.inventory()).toEqual([itemA, itemB]);
+  });
+
   it('should pass filters through loadInventory/getInventory', () => {
     service.loadInventory({
       item: 'Markers',

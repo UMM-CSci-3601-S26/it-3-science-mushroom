@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { Family, FamilyChecklist } from '../family/family';
 import { FamilyService } from '../family/family.service';
@@ -93,7 +93,10 @@ describe('PointOfSaleSessionDialogComponent', () => {
       'updateFamilyChecklist',
       'saveFamilyHelpSessionAll'
     ]);
-    inventoryService = jasmine.createSpyObj<InventoryService>('InventoryService', ['lookUpByBarcode']);
+    inventoryService = jasmine.createSpyObj<InventoryService>('InventoryService', [
+      'lookUpByBarcode',
+      'refreshInventory'
+    ]);
     const inventoryItems: Inventory[] = [
       {
         internalID: 'INV-2',
@@ -184,6 +187,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     familyService.clearFamilyHelpSession.and.returnValue(of(family));
     familyService.updateFamilyChecklist.and.returnValue(of(family));
     familyService.saveFamilyHelpSessionAll.and.returnValue(of(family));
+    inventoryService.refreshInventory.and.returnValue(of(inventoryItems));
     dialogService.openDialog.and.returnValue({
       afterClosed: () => of(true)
     } as never);
@@ -243,8 +247,31 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
   it('starts a help session when opened', () => {
     expect(familyService.startFamilyHelpSession).toHaveBeenCalledOnceWith('family-1');
+    expect(inventoryService.refreshInventory).toHaveBeenCalledTimes(1);
     expect(component.loading).toBeFalse();
     expect(component.sessionFamily).toEqual(family);
+  });
+
+  it('refreshes inventory before showing the started session', () => {
+    const refreshDone = new Subject<Inventory[]>();
+    familyService.startFamilyHelpSession.calls.reset();
+    inventoryService.refreshInventory.calls.reset();
+    inventoryService.refreshInventory.and.returnValue(refreshDone);
+    component.sessionFamily = undefined;
+    component.loading = true;
+
+    component.ngOnInit();
+
+    expect(familyService.startFamilyHelpSession).toHaveBeenCalledOnceWith('family-1');
+    expect(inventoryService.refreshInventory).toHaveBeenCalledTimes(1);
+    expect(component.sessionFamily).toBeUndefined();
+    expect(component.loading).toBeTrue();
+
+    refreshDone.next([]);
+    refreshDone.complete();
+
+    expect(component.sessionFamily).toEqual(family);
+    expect(component.loading).toBeFalse();
   });
 
   it('reports empty generated checklists only when every section has no items', () => {
@@ -386,6 +413,17 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
     expect(component.saving).toBeFalse();
     expect(component.errorMessage).toContain('Failed to save session draft');
+  });
+
+  it('can close without clearing or saving a stale session', () => {
+    const closeButton = fixture.nativeElement.querySelector('.close-session-button') as HTMLButtonElement;
+
+    closeButton.click();
+
+    expect(familyService.clearFamilyHelpSession).toHaveBeenCalledTimes(0);
+    expect(familyService.updateFamilyChecklist).toHaveBeenCalledTimes(0);
+    expect(familyService.saveFamilyHelpSessionAll).toHaveBeenCalledTimes(0);
+    expect(dialogRef.close).toHaveBeenCalledWith({ refresh: true });
   });
 
   it('clears a session when the user confirms the x action', () => {

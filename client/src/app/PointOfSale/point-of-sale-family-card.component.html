@@ -12,7 +12,7 @@
       <p class="family-address">{{ family().address }}</p>
     </div>
     <div class="family-actions">
-      @if (isCompleted()) {
+      @if (canRevertCompletedSession()) {
         <button
           mat-stroked-button
           color="warn"
@@ -22,7 +22,7 @@
           <mat-icon>undo</mat-icon>
           Revert Session
         </button>
-      } @else {
+      } @else if (canOpenHelpSession()) {
         <button
           mat-flat-button
           color="primary"
@@ -30,7 +30,7 @@
           class="help-family-button"
           (click)="helpFamily.emit(family())">
           <mat-icon>assignment</mat-icon>
-          Help Family
+          {{ helpSessionActionLabel() }}
         </button>
       }
     </div>

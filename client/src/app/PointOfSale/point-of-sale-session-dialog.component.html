@@ -225,6 +225,13 @@
 
   <div class="session-actions app-action-row app-action-row-end">
     <button
+      mat-button
+      type="button"
+      class="close-session-button"
+      (click)="closeSession()">
+      Close
+    </button>
+    <button
       mat-stroked-button
       type="button"
       class="clear-session-button"

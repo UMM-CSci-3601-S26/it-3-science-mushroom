@@ -6,12 +6,14 @@ import static com.mongodb.client.model.Filters.eq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 // Java Imports
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
@@ -129,6 +131,43 @@ class FamilyControllerRevertSessionSpec {
   }
 
   @Test
+  void revertCompletedFamilyHelpSessionReservesReopenedChecklistMatches() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    String matchedInventoryId = section.items.get(0).matchedInventoryId;
+    section.items.get(0).selected = true;
+    section.items.get(1).notPickedUpReason = "not_available_didnt_receive";
+    saveAllSections(family);
+    Mockito.clearInvocations(ctx);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.revertCompletedFamilyHelpSession(ctx);
+
+    Document matchedInventory = inventoryByInternalId(matchedInventoryId);
+    assertEquals(3, matchedInventory.getInteger("quantity"));
+    assertEquals(1, matchedInventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void revertCompletedFamilyHelpSessionReservesReopenedSubstitutions() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = false;
+    section.items.get(0).notPickedUpReason = "available_didnt_need";
+    section.items.get(1).selected = false;
+    section.items.get(1).substituteBarcode = "SUB-10001";
+    saveAllSections(family);
+    Mockito.clearInvocations(ctx);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.revertCompletedFamilyHelpSession(ctx);
+
+    Document substituteInventory = inventoryByInternalId("ID-10001");
+    assertEquals(4, substituteInventory.getInteger("quantity"));
+    assertEquals(1, substituteInventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
   void revertCompletedFamilyHelpSessionRejectsIncompleteSessions() {
     startHelpSessionAndGetFamily();
 
@@ -161,6 +200,92 @@ class FamilyControllerRevertSessionSpec {
   }
 
   @Test
+  void startFamilyHelpSessionAllowsLegacyHelpedFamilyToContinueIntoPosSession() {
+    db.getCollection("family").updateOne(eq("_id", testFamilyId), new Document(
+      "$set", new Document()
+        .append("status", "helped")
+        .append("helped", true)));
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.startFamilyHelpSession(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family family = familyCaptor.getValue();
+    assertEquals("being_helped", family.status);
+    assertFalse(family.helped);
+    assertNotNull(family.checklist);
+    assertTrue(family.checklist.snapshot);
+    assertEquals("helped", family.checklist.previousStatus);
+    assertTrue(family.checklist.previousHelped);
+    assertFalse(family.checklist.sections.get(0).saved);
+  }
+
+  @Test
+  void clearFamilyHelpSessionRestoresLegacyHelpedFamilyAfterContinuation() {
+    db.getCollection("family").updateOne(eq("_id", testFamilyId), new Document(
+      "$set", new Document()
+        .append("status", "helped")
+        .append("helped", true)));
+    startHelpSessionAndGetFamily();
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.clearFamilyHelpSession(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family family = familyCaptor.getValue();
+    assertEquals("helped", family.status);
+    assertTrue(family.helped);
+    assertNull(family.checklist);
+    assertEquals(0, inventoryByInternalId("ID-10000").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void clearFamilyHelpSessionRebuildsReservationsAfterDiscardingReopenedSubstitution() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = false;
+    section.items.get(0).notPickedUpReason = "available_didnt_need";
+    section.items.get(1).selected = false;
+    section.items.get(1).substituteBarcode = "SUB-10001";
+    saveAllSections(family);
+    Mockito.clearInvocations(ctx);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.revertCompletedFamilyHelpSession(ctx);
+    Mockito.clearInvocations(ctx);
+    assertEquals(1, inventoryByInternalId("ID-10001").getInteger("reservedQuantity"));
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.clearFamilyHelpSession(ctx);
+
+    assertEquals(0, inventoryByInternalId("ID-10001").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void clearFamilyHelpSessionResetsRevertedCurrentFlowToNotHelped() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    section.items.get(0).selected = true;
+    section.items.get(1).notPickedUpReason = "not_available_didnt_receive";
+    saveAllSections(family);
+    Mockito.clearInvocations(ctx);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.revertCompletedFamilyHelpSession(ctx);
+    Mockito.clearInvocations(ctx);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    familyController.clearFamilyHelpSession(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family clearedFamily = familyCaptor.getValue();
+    assertEquals("not_helped", clearedFamily.status);
+    assertFalse(clearedFamily.helped);
+    assertNull(clearedFamily.checklist);
+    assertEquals(0, inventoryByInternalId("ID-10000").getInteger("reservedQuantity"));
+  }
+
+  @Test
   void revertCompletedFamilyHelpSessionRestoresSubstituteByBarcodeWhenInventoryIdIsMissing() {
     Family family = startHelpSessionAndGetFamily();
     Family.ChecklistItem substitutedItem = family.checklist.sections.get(0).items.get(1);
@@ -189,6 +314,131 @@ class FamilyControllerRevertSessionSpec {
     assertEquals(4, inventoryByInternalId("ID-10001").getInteger("quantity"));
   }
 
+  @Test
+  void saveFamilyHelpSessionAllDoesNotTreatGeneratedSubstituteSuggestionAsChosenSubstitution() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("Backpack"),
+      supplyListDoc("Composition Notebook")));
+
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    Family.ChecklistItem backpackItem = section.items.get(0);
+    Family.ChecklistItem suggestedSubstituteItem = section.items.get(1);
+    assertFalse(suggestedSubstituteItem.available);
+    assertNotNull(suggestedSubstituteItem.substituteInventoryId);
+    assertNull(suggestedSubstituteItem.substituteBarcode);
+
+    backpackItem.selected = true;
+    suggestedSubstituteItem.selected = false;
+    suggestedSubstituteItem.notPickedUpReason = null;
+
+    saveAllSections(family);
+
+    assertEquals(4, inventoryByInternalId("ID-10001").getInteger("quantity"));
+  }
+
+  @Test
+  void saveFamilyHelpSessionAllDoesNotPartiallyMutateInventoryWhenLaterItemFails() {
+    db.getCollection("supplylist").drop();
+    db.getCollection("supplylist").insertMany(List.of(
+      supplyListDoc("Backpack"),
+      supplyListDoc("Composition Notebook")));
+
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection section = family.checklist.sections.get(0);
+    Family.ChecklistItem backpackItem = section.items.get(0);
+    Family.ChecklistItem suggestedSubstituteItem = section.items.get(1);
+    assertNotNull(suggestedSubstituteItem.substituteInventoryId);
+
+    db.getCollection("inventory").updateOne(
+      eq("internalID", "ID-10001"),
+      new Document("$set", new Document("quantity", 0)));
+
+    backpackItem.selected = true;
+    suggestedSubstituteItem.selected = false;
+    suggestedSubstituteItem.substituteBarcode = "SUB-10001";
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> saveAllSections(family));
+    assertTrue(exception.getMessage().contains("Not enough unreserved stock"));
+
+    assertEquals(3, inventoryByInternalId("ID-10000").getInteger("quantity"));
+    assertEquals(1, inventoryByInternalId("ID-10000").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void saveFamilyHelpSessionAllValidatesEverySectionBeforeMutatingInventory() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.ChecklistSection firstSection = family.checklist.sections.get(0);
+    firstSection.items.get(0).selected = true;
+    firstSection.items.get(1).notPickedUpReason = "not_available_didnt_receive";
+
+    Family.ChecklistSection invalidSection = new Family.ChecklistSection();
+    invalidSection.id = "student-2";
+    invalidSection.title = "Second Student";
+    invalidSection.printableTitle = "Second Student";
+    invalidSection.saved = false;
+
+    Family.ChecklistItem invalidItem = new Family.ChecklistItem();
+    invalidItem.id = "student-2-item-1";
+    invalidItem.label = "Composition Notebook";
+    invalidItem.available = false;
+    invalidItem.selected = false;
+    invalidItem.requestedQuantity = 1;
+    invalidItem.substituteBarcode = "SUB-10001";
+    invalidSection.items = List.of(invalidItem);
+    family.checklist.sections.add(invalidSection);
+
+    db.getCollection("inventory").updateOne(
+      eq("internalID", "ID-10001"),
+      new Document("$set", new Document("quantity", 0)));
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> saveAllSections(family));
+    assertTrue(exception.getMessage().contains("Not enough unreserved stock"));
+
+    assertEquals(3, inventoryByInternalId("ID-10000").getInteger("quantity"));
+    assertEquals(1, inventoryByInternalId("ID-10000").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void updateFamilyChecklistRejectsDraftSaveAfterSessionWasCompleted() {
+    Family family = startHelpSessionAndGetFamily();
+    family.checklist.sections.get(0).items.get(0).selected = true;
+    family.checklist.sections.get(0).items.get(1).notPickedUpReason = "not_available_didnt_receive";
+    saveAllSections(family);
+    Mockito.clearInvocations(ctx);
+
+    FamilyChecklistUpdateRequest draftRequest = new FamilyChecklistUpdateRequest();
+    draftRequest.setChecklist(family.checklist);
+    String draftJson = javalinJackson.toJsonString(draftRequest, FamilyChecklistUpdateRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyChecklistUpdateRequest.class))
+      .thenReturn(new BodyValidator<>(
+        draftJson,
+        FamilyChecklistUpdateRequest.class,
+        () -> javalinJackson.fromJsonString(draftJson, FamilyChecklistUpdateRequest.class)));
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> familyController.updateFamilyChecklist(ctx));
+    assertTrue(exception.getMessage().contains("must be started before saving checklist progress"));
+
+    Document updatedFamily = db.getCollection("family").find(eq("_id", testFamilyId)).first();
+    Document updatedChecklist = updatedFamily.get("checklist", Document.class);
+    assertEquals("helped", updatedFamily.getString("status"));
+    assertFalse(updatedChecklist.getBoolean("snapshot"));
+  }
+
+  @Test
+  void helpSessionMutationQueueClearsAfterMutationFinishes() throws Exception {
+    startHelpSessionAndGetFamily();
+
+    Field queueField = FamilyController.class.getDeclaredField("helpSessionMutationQueue");
+    queueField.setAccessible(true);
+
+    assertNull(queueField.get(familyController));
+  }
+
   private Family startHelpSessionAndGetFamily() {
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
     familyController.startFamilyHelpSession(ctx);
@@ -199,8 +449,12 @@ class FamilyControllerRevertSessionSpec {
   }
 
   private void saveAllSections(Family family) {
+    saveAllSections(family.checklist);
+  }
+
+  private void saveAllSections(Family.FamilyChecklist checklist) {
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
-    request.setChecklist(family.checklist);
+    request.setChecklist(checklist);
     String json = javalinJackson.toJsonString(request, FamilyHelpSessionSaveAllRequest.class);
 
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
@@ -257,6 +511,8 @@ class FamilyControllerRevertSessionSpec {
       .append("templateId", checklist.templateId)
       .append("printableTitle", checklist.printableTitle)
       .append("snapshot", checklist.snapshot)
+      .append("previousStatus", checklist.previousStatus)
+      .append("previousHelped", checklist.previousHelped)
       .append("sections", sections);
   }
 
