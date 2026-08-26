@@ -38,13 +38,11 @@ public class InventoryMatcher {
   public Inventory findBestInventoryMatch(SupplyList supplyList, int requestedQuantity) {
     return findBestInventoryMatch(
       supplyList,
-      requestedQuantity,
       inventory -> unreservedQuantity(inventory) >= requestedQuantity);
   }
 
   public Inventory findBestInventoryMatch(
       SupplyList supplyList,
-      int requestedQuantity,
       Predicate<Inventory> inventoryAvailable
   ) {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
@@ -106,13 +104,11 @@ public class InventoryMatcher {
   public Inventory findBestSubstitutionMatch(SupplyList supplyList, int requestedQuantity) {
     return findBestSubstitutionMatch(
       supplyList,
-      requestedQuantity,
       inventory -> unreservedQuantity(inventory) >= requestedQuantity);
   }
 
   public Inventory findBestSubstitutionMatch(
       SupplyList supplyList,
-      int requestedQuantity,
       Predicate<Inventory> inventoryAvailable
   ) {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());

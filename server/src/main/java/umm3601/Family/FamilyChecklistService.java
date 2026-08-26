@@ -122,7 +122,6 @@ public class FamilyChecklistService {
 
     Inventory match = inventoryMatcher.findBestInventoryMatch(
       supplyList,
-      checklistItem.requestedQuantity,
       inventory -> hasEnoughRemaining(inventory, checklistItem.requestedQuantity, remainingStockByInventoryId));
     checklistItem.available = match != null;
     checklistItem.selected = false;
@@ -134,7 +133,6 @@ public class FamilyChecklistService {
     if (match == null) {
       Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(
         supplyList,
-        checklistItem.requestedQuantity,
         inventory -> hasEnoughRemaining(inventory, checklistItem.requestedQuantity, remainingStockByInventoryId));
       checklistItem.substituteInventoryId = substitution != null ? substitution.internalID : null;
       checklistItem.substituteItem = substitution != null ? substitution.item : null;

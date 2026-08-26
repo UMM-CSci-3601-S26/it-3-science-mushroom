@@ -785,7 +785,7 @@ public class FamilyController {
   private Family startOrRefreshLoadedHelpSession(Family family) {
     if (family.checklist == null || !family.checklist.snapshot) {
       String previousStatus = determineStatus(family);
-      Boolean previousHelped = family.helped;
+      boolean previousHelped = family.helped;
       inventoryReservationService.rebuildInventoryReservationExcludingFamily(family._id);
       family.checklist = generateChecklistSnapshot(family);
       family.checklist.previousStatus = previousStatus;
