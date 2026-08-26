@@ -11,6 +11,7 @@ public class PurchaseListItem {
   public int totalNeeded;
   public int quantityOnHand;
   public int quantityToBuy;
+  public String quantityToBuyUnit;
   public int fulfillmentPercent;
   public String fulfillmentStatus;
   public List<String> linkedInventoryIds = List.of();

@@ -26,5 +26,6 @@ export interface SupplyList {
   notes: string;
   supplyID: string;
   invIDs: string[];
+  preferredInventoryIds?: string[];
   percentageFilled: number;
 }

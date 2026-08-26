@@ -100,4 +100,5 @@ class PurchaseListControllerSpec {
         .handle(ctx));
     verifyNoInteractions(purchaseListService);
   }
+
 }

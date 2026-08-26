@@ -2,8 +2,10 @@ package umm3601.Family;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.bson.UuidRepresentation;
 import org.mongojack.JacksonMongoCollection;
@@ -16,6 +18,7 @@ import umm3601.SupplyList.SupplyList;
 
 public class FamilyChecklistService {
   private final JacksonMongoCollection<SupplyList> supplyListCollection;
+  private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final InventoryMatcher inventoryMatcher;
 
   public FamilyChecklistService(MongoDatabase database) {
@@ -30,6 +33,12 @@ public class FamilyChecklistService {
       SupplyList.class,
       UuidRepresentation.STANDARD
     );
+    inventoryCollection = JacksonMongoCollection.builder().build(
+      database,
+      "inventory",
+      Inventory.class,
+      UuidRepresentation.STANDARD
+    );
   }
 
   public Family.FamilyChecklist generateChecklistSnapshot(Family family) {
@@ -39,6 +48,7 @@ public class FamilyChecklistService {
     checklist.snapshot = true;
     checklist.sections = new ArrayList<>();
 
+    Map<String, Integer> remainingStockByInventoryId = buildRemainingStockByInventoryId();
     int studentIndex = 1;
     for (Family.StudentInfo student : family.students) {
       Family.ChecklistSection section = new Family.ChecklistSection();
@@ -46,7 +56,7 @@ public class FamilyChecklistService {
       section.title = hasText(student.name) ? student.name : "Student " + studentIndex;
       section.printableTitle = section.title;
       section.saved = false;
-      section.items = buildChecklistItemsForStudent(student, section.id);
+      section.items = buildChecklistItemsForStudent(student, section.id, remainingStockByInventoryId);
       checklist.sections.add(section);
       studentIndex++;
     }
@@ -54,13 +64,20 @@ public class FamilyChecklistService {
     return checklist;
   }
 
-  private List<Family.ChecklistItem> buildChecklistItemsForStudent(Family.StudentInfo student, String sectionId) {
+  private List<Family.ChecklistItem> buildChecklistItemsForStudent(
+      Family.StudentInfo student,
+      String sectionId,
+      Map<String, Integer> remainingStockByInventoryId
+  ) {
     List<Family.ChecklistItem> checklistItems = new ArrayList<>();
     List<SupplyList> supplyLists = getSupplyListsForStudent(student);
 
     int itemIndex = 1;
     for (SupplyList supplyList : supplyLists) {
-      Family.ChecklistItem item = buildChecklistItemSnapshot(supplyList, sectionId + "-item-" + itemIndex);
+      Family.ChecklistItem item = buildChecklistItemSnapshot(
+        supplyList,
+        sectionId + "-item-" + itemIndex,
+        remainingStockByInventoryId);
       checklistItems.add(item);
       itemIndex++;
     }
@@ -88,6 +105,14 @@ public class FamilyChecklistService {
   }
 
   private Family.ChecklistItem buildChecklistItemSnapshot(SupplyList supplyList, String itemId) {
+    return buildChecklistItemSnapshot(supplyList, itemId, buildRemainingStockByInventoryId());
+  }
+
+  private Family.ChecklistItem buildChecklistItemSnapshot(
+      SupplyList supplyList,
+      String itemId,
+      Map<String, Integer> remainingStockByInventoryId
+  ) {
     Family.ChecklistItem checklistItem = new Family.ChecklistItem();
     checklistItem.id = itemId;
     checklistItem.label = supplyList.toString();
@@ -95,22 +120,62 @@ public class FamilyChecklistService {
     checklistItem.supplyListId = supplyList._id;
     checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
 
-    Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, checklistItem.requestedQuantity);
+    Inventory match = inventoryMatcher.findBestInventoryMatch(
+      supplyList,
+      inventory -> hasEnoughRemaining(inventory, checklistItem.requestedQuantity, remainingStockByInventoryId));
     checklistItem.available = match != null;
     checklistItem.selected = false;
     checklistItem.matchedInventoryId = match != null ? match.internalID : null;
     checklistItem.matchedInventoryItem = match != null ? match.item : null;
     checklistItem.matchedInventoryDescription = match != null ? bestInventoryDescription(match) : null;
+    spendRemaining(match, checklistItem.requestedQuantity, remainingStockByInventoryId);
 
     if (match == null) {
-      Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(supplyList, checklistItem.requestedQuantity);
+      Inventory substitution = inventoryMatcher.findBestSubstitutionMatch(
+        supplyList,
+        inventory -> hasEnoughRemaining(inventory, checklistItem.requestedQuantity, remainingStockByInventoryId));
       checklistItem.substituteInventoryId = substitution != null ? substitution.internalID : null;
-      checklistItem.substituteBarcode = substitution != null ? substitution.internalBarcode : null;
       checklistItem.substituteItem = substitution != null ? substitution.item : null;
       checklistItem.substituteDescription = substitution != null ? bestInventoryDescription(substitution) : null;
     }
 
     return checklistItem;
+  }
+
+  private Map<String, Integer> buildRemainingStockByInventoryId() {
+    Map<String, Integer> remainingStockByInventoryId = new HashMap<>();
+    ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
+
+    for (Inventory inventory : inventories) {
+      if (hasText(inventory.internalID)) {
+        remainingStockByInventoryId.put(inventory.internalID, inventoryMatcher.unreservedQuantity(inventory));
+      }
+    }
+
+    return remainingStockByInventoryId;
+  }
+
+  private boolean hasEnoughRemaining(
+      Inventory inventory,
+      int requestedQuantity,
+      Map<String, Integer> remainingStockByInventoryId
+  ) {
+    return inventory != null
+      && hasText(inventory.internalID)
+      && remainingStockByInventoryId.getOrDefault(inventory.internalID, 0) >= requestedQuantity;
+  }
+
+  private void spendRemaining(
+      Inventory inventory,
+      int requestedQuantity,
+      Map<String, Integer> remainingStockByInventoryId
+  ) {
+    if (inventory == null || !hasText(inventory.internalID)) {
+      return;
+    }
+
+    int remainingQuantity = remainingStockByInventoryId.getOrDefault(inventory.internalID, 0);
+    remainingStockByInventoryId.put(inventory.internalID, Math.max(0, remainingQuantity - requestedQuantity));
   }
 
   private String bestInventoryDescription(Inventory inventory) {

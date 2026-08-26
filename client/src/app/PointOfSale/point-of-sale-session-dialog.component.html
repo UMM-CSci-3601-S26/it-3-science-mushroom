@@ -97,7 +97,7 @@
                       </p>
                       @if (shouldShowMatchedInventory(item)) {
                         <p class="inventory-match app-badge app-badge-primary">
-                          Will remove: {{ matchedInventoryDisplay(item) }}
+                          Matched: {{ matchedInventoryDisplay(item) }}
                         </p>
                       }
                       @if (hasSubstitute(item)) {
@@ -224,6 +224,13 @@
   }
 
   <div class="session-actions app-action-row app-action-row-end">
+    <button
+      mat-button
+      type="button"
+      class="close-session-button"
+      (click)="closeSession()">
+      Close
+    </button>
     <button
       mat-stroked-button
       type="button"

@@ -51,7 +51,7 @@ class InventoryReservationServiceSpec {
   }
 
   @Test
-  void rebuildInventoryReservationReservesFullStudentDemand() {
+  void rebuildInventoryReservationDoesNotReserveFamiliesWithoutStartedSessions() {
     db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 2, "PENCIL-1"));
     db.getCollection("supplylist").insertOne(supplyListDoc("Pencil", 2));
     db.getCollection("family").insertOne(familyWithStudentDoc());
@@ -59,11 +59,11 @@ class InventoryReservationServiceSpec {
     inventoryReservationService.rebuildInventoryReservation();
 
     Document inventory = findInventoryByInternalId("PENCIL-1");
-    assertEquals(2, inventory.getInteger("reservedQuantity"));
+    assertEquals(0, inventory.getInteger("reservedQuantity"));
   }
 
   @Test
-  void rebuildInventoryReservationDoesNotPartiallyReserveStudentDemand() {
+  void rebuildInventoryReservationDoesNotReservePartialFutureStudentDemand() {
     db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 1, "PENCIL-1"));
     db.getCollection("supplylist").insertOne(supplyListDoc("Pencil", 2));
     db.getCollection("family").insertOne(familyWithStudentDoc());
@@ -83,7 +83,7 @@ class InventoryReservationServiceSpec {
     inventoryReservationService.rebuildInventoryReservation();
 
     Document inventory = findInventoryByInternalId("PENCIL-1");
-    assertEquals(1, inventory.getInteger("reservedQuantity"));
+    assertEquals(0, inventory.getInteger("reservedQuantity"));
   }
 
   @Test

@@ -3,8 +3,6 @@ package umm3601.Family;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 
 import org.bson.Document;
@@ -18,13 +16,11 @@ import com.mongodb.client.model.Updates;
 import io.javalin.http.BadRequestResponse;
 import umm3601.Common.InventoryMatcher;
 import umm3601.Inventory.Inventory;
-import umm3601.SupplyList.SupplyList;
 
 public class InventoryReservationService {
   private static final String STATUS_HELPED = "helped";
 
   private final JacksonMongoCollection<Family> familyCollection;
-  private final JacksonMongoCollection<SupplyList> supplyListCollection;
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final InventoryMatcher inventoryMatcher;
 
@@ -40,12 +36,6 @@ public class InventoryReservationService {
       Family.class,
       UuidRepresentation.STANDARD
     );
-    supplyListCollection = JacksonMongoCollection.builder().build(
-      database,
-      "supplylist",
-      SupplyList.class,
-      UuidRepresentation.STANDARD
-    );
     inventoryCollection = JacksonMongoCollection.builder().build(
       database,
       "inventory",
@@ -55,14 +45,27 @@ public class InventoryReservationService {
   }
 
   public void rebuildInventoryReservation() {
+    rebuildInventoryReservationExcludingFamily(null);
+  }
+
+  public void rebuildInventoryReservationExcludingFamily(String excludedFamilyId) {
     inventoryCollection.updateMany(new Document(), Updates.set("reservedQuantity", 0));
 
     ArrayList<Family> families = familyCollection.find().into(new ArrayList<>());
     for (Family family : families) {
+      if (isExcludedFamily(family, excludedFamilyId)) {
+        continue;
+      }
       if (!STATUS_HELPED.equals(determineStatus(family))) {
         reserveInventoryForFamily(family);
       }
     }
+  }
+
+  private boolean isExcludedFamily(Family family, String excludedFamilyId) {
+    return family != null
+      && hasText(excludedFamilyId)
+      && excludedFamilyId.equals(family._id);
   }
 
   private void reserveInventoryForFamily(Family family) {
@@ -72,24 +75,6 @@ public class InventoryReservationService {
 
     if (family.checklist != null && family.checklist.sections != null) {
       reserveInventoryForChecklist(family.checklist);
-      return;
-    }
-
-    if (family.students == null) {
-      return;
-    }
-
-    for (Family.StudentInfo student : family.students) {
-      List<SupplyList> supplyLists = getSupplyListsForStudent(student);
-
-      for (SupplyList supplyList : supplyLists) {
-        int requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
-        Inventory match = inventoryMatcher.findBestInventoryMatch(supplyList, requestedQuantity);
-
-        if (match != null) {
-          reserveInventory(match, requestedQuantity);
-        }
-      }
     }
   }
 
@@ -106,22 +91,44 @@ public class InventoryReservationService {
   }
 
   private void reserveChecklistItemMatch(Family.ChecklistItem item) {
-    if (item == null || !hasText(item.matchedInventoryId)) {
+    if (item == null) {
       return;
     }
 
-    if (hasText(item.substituteBarcode) || hasText(item.notPickedUpReason)) {
+    String inventoryIdToReserve = inventoryIdToReserve(item);
+    if (!hasText(inventoryIdToReserve)) {
       return;
     }
 
     int quantityToReserve = item.requestedQuantity == null || item.requestedQuantity <= 0
       ? 1
       : item.requestedQuantity;
-    Inventory inventory = inventoryCollection.find(eq("internalID", item.matchedInventoryId)).first();
+    Inventory inventory = inventoryCollection.find(eq("internalID", inventoryIdToReserve)).first();
 
     if (inventory != null && inventoryMatcher.unreservedQuantity(inventory) >= quantityToReserve) {
       reserveInventory(inventory, quantityToReserve);
     }
+  }
+
+  private String inventoryIdToReserve(Family.ChecklistItem item) {
+    if (isChosenSubstitution(item)) {
+      if (hasText(item.substituteInventoryId)) {
+        return item.substituteInventoryId;
+      }
+      Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
+      return substituteInventory == null ? null : substituteInventory.internalID;
+    }
+
+    if (hasText(item.substituteBarcode) || hasText(item.notPickedUpReason)) {
+      return null;
+    }
+
+    return item.matchedInventoryId;
+  }
+
+  private boolean isChosenSubstitution(Family.ChecklistItem item) {
+    return hasText(item.substituteBarcode)
+      && (item.selected || "substituted".equals(normalizeReason(item.notPickedUpReason)));
   }
 
   private void reserveInventory(Inventory inventory, int amount) {
@@ -139,25 +146,6 @@ public class InventoryReservationService {
     inventory.reservedQuantity += quantityToReserve;
   }
 
-  private List<SupplyList> getSupplyListsForStudent(Family.StudentInfo student) {
-    ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
-    ArrayList<SupplyList> matching = new ArrayList<>();
-
-    for (SupplyList supplyList : allSupplyLists) {
-      if (!inventoryMatcher.supplyListMatchesStudent(
-          supplyList,
-          student.school,
-          student.grade,
-          student.teacher)) {
-        continue;
-      }
-      matching.add(supplyList);
-    }
-
-    matching.sort(Comparator.comparing(supplyList -> supplyList.toString().toLowerCase(Locale.US)));
-    return matching;
-  }
-
   private String determineStatus(Family family) {
     if (family == null) {
       return "not_helped";
@@ -170,5 +158,15 @@ public class InventoryReservationService {
 
   private boolean hasText(String value) {
     return value != null && !value.isBlank();
+  }
+
+  private String normalizeReason(String reason) {
+    if (reason == null) {
+      return null;
+    }
+    return reason.trim()
+      .toLowerCase(Locale.US)
+      .replace("'", "")
+      .replaceAll("[\\s-]+", "_");
   }
 }

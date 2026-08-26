@@ -1,17 +1,18 @@
-import { Component, effect, inject, OnInit, signal, viewChild } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
-import { MatIconModule } from "@angular/material/icon";
-import { MatSort, MatSortModule } from "@angular/material/sort";
-import { MatTableDataSource, MatTableModule } from "@angular/material/table";
+import { Component, effect, inject, OnInit, signal, viewChild } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-
-// Services
-import { PurchaseListService } from "./purchase-list.service";
-
-// Types
-import type { PurchaseListItem, PurchaseListSnapshot } from "./purchase-list";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatButtonModule } from "@angular/material/button";
+import type { PurchaseListItem, PurchaseListSnapshot } from './purchase-list';
+import { PurchaseListService } from './purchase-list.service';
+import { PurchaseListSourceInfoDialogComponent } from './purchase-list-source-info-dialog.component';
 
 @Component({
   selector: 'app-purchase-component',
@@ -19,40 +20,66 @@ import { MatButtonModule } from "@angular/material/button";
   templateUrl: './purchase-list.html',
   styleUrls: ['./purchase-list.scss'],
   imports: [
+    MatButtonModule,
     MatCardModule,
+    MatDialogModule,
+    MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatSortModule,
     MatTableModule,
-    MatButtonModule
-  ],
+    MatTooltipModule
+  ]
 })
 export class PurchaseListComponent implements OnInit {
-
   private purchaseListService = inject(PurchaseListService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
   displayedColumns: string[] = [
-    "description",
-    "totalNeeded",
-    "quantityOnHand",
-    "quantityToBuy",
-    "fulfillmentPercent"
+    'description',
+    'totalNeeded',
+    'quantityOnHand',
+    'quantityToBuy',
+    'fulfillmentPercent',
+    'sources'
   ];
   dataSource = new MatTableDataSource<PurchaseListItem>([]);
   readonly sort = viewChild<MatSort>(MatSort);
 
-  purchaseList = signal<PurchaseListSnapshot | null >(null);
+  purchaseList = signal<PurchaseListSnapshot | null>(null);
+  searchQuery = signal('');
   loading = signal(true);
   error = signal(false);
   calculating = signal(false);
 
   constructor() {
+    this.dataSource.filterPredicate = (item, filter) =>
+      item.description.toLowerCase().includes(filter);
+
     effect(() => {
       this.dataSource.data = this.purchaseList()?.items ?? [];
       this.dataSource.sort = this.sort();
+      this.dataSource.filter = this.normalizedSearchQuery(this.searchQuery());
     });
   }
 
-  fetchPurchaseList() {
+  ngOnInit(): void {
+    this.fetchPurchaseList();
+  }
+
+  openSourceInfoDialog(item: PurchaseListItem): void {
+    this.dialog.open(PurchaseListSourceInfoDialogComponent, {
+      width: '760px',
+      maxWidth: '96vw',
+      data: {
+        itemDescription: item.description,
+        sources: item.sources ?? []
+      }
+    });
+  }
+
+  fetchPurchaseList(): void {
     this.purchaseListService.getPurchaseList().subscribe({
       next: purchaseList => {
         this.purchaseList.set(purchaseList);
@@ -67,7 +94,7 @@ export class PurchaseListComponent implements OnInit {
     });
   }
 
-  calculateCurrentPurchaseList() {
+  calculateCurrentPurchaseList(): void {
     this.calculating.set(true);
     this.purchaseListService.calculatePurchaseList().subscribe({
       next: purchaseList => {
@@ -80,12 +107,33 @@ export class PurchaseListComponent implements OnInit {
       error: () => {
         this.calculating.set(false);
         this.loading.set(false);
-        this.snackBar.open('Failed to calculate purchase list', 'OK', { duration : 8000 });
+        this.snackBar.open('Failed to calculate purchase list', 'OK', { duration: 8000 });
       }
     });
   }
 
-  ngOnInit(): void {
-    this.fetchPurchaseList();
+  applySearch(query: string): void {
+    this.searchQuery.set(query);
+    this.dataSource.filter = this.normalizedSearchQuery(query);
+  }
+
+  clearSearch(): void {
+    this.applySearch('');
+  }
+
+  unitCountLabel(quantity: number): string {
+    return `${quantity} ${quantity === 1 ? 'unit' : 'units'}`;
+  }
+
+  quantityToBuyLabel(item: PurchaseListItem): string {
+    return `${item.quantityToBuy} ${item.quantityToBuyUnit || this.unitWord(item.quantityToBuy)}`;
+  }
+
+  private normalizedSearchQuery(query: string): string {
+    return query.trim().toLowerCase();
+  }
+
+  private unitWord(quantity: number): string {
+    return quantity === 1 ? 'unit' : 'units';
   }
 }

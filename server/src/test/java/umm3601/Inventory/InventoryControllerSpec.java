@@ -576,6 +576,36 @@ public class InventoryControllerSpec {
   }
 
   @Test
+  void addInventoryDoesNotRebuildReservations() {
+    db.getCollection("inventory").drop();
+    db.getCollection("family").insertOne(new Document()
+        .append("students", List.of(new Document()
+            .append("school", "Morris")
+            .append("grade", "6")
+            .append("teacher", "N/A"))));
+    db.getCollection("supplylist").insertOne(new Document()
+        .append("school", "Morris")
+        .append("grade", "6")
+        .append("teacher", "N/A")
+        .append("item", List.of("Pencil"))
+        .append("quantity", 2));
+
+    Inventory incoming = new Inventory();
+    incoming.item = "Pencil";
+    incoming.packageSize = 1;
+    incoming.quantity = 2;
+
+    when(ctx.bodyAsClass(Inventory.class)).thenReturn(incoming);
+
+    inventoryController.addInventory(ctx);
+
+    Document stored = db.getCollection("inventory")
+      .find(new Document("internalID", "ID-00001"))
+      .first();
+    assertEquals(0, stored.getInteger("reservedQuantity"));
+  }
+
+  @Test
   void removeQuantityReducesQuantityWhenEnoughExists() {
     db.getCollection("inventory").insertOne(new Document()
         .append("internalID", "ID-00050")

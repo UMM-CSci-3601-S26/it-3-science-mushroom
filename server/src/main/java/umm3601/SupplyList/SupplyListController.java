@@ -286,6 +286,13 @@ public class SupplyListController {
     return sanitized;
   }
 
+  private List<String> sanitizePreferredInventoryIds(List<String> preferredIds, List<String> linkedIds) {
+    List<String> sanitizedLinkedIds = sanitizeInventoryIds(linkedIds);
+    return sanitizeInventoryIds(preferredIds).stream()
+      .filter(sanitizedLinkedIds::contains)
+      .toList();
+  }
+
   /**
    * Scans supply list to find the next available ID number for supplyID
    * @return The number to use
@@ -336,6 +343,9 @@ public class SupplyListController {
     newSupplyList.supplyID = generateNextID();
     newSupplyList.percentageFilled = -1; // Initialize percentageFilled to -1 to indicate it hasn't been calculated yet
     newSupplyList.invIDs = sanitizeInventoryIds(newSupplyList.invIDs);
+    newSupplyList.preferredInventoryIds = sanitizePreferredInventoryIds(
+      newSupplyList.preferredInventoryIds,
+      newSupplyList.invIDs);
     supplyListCollection.insertOne(newSupplyList);
     ctx.status(HttpStatus.CREATED);
   }
@@ -395,6 +405,9 @@ public class SupplyListController {
       // These fields are not editable, and must be preserved from the existing document
       updatedSupplyList.supplyID = existingSupplyList.supplyID;
       List<String> existingInvIDs = sanitizeInventoryIds(existingSupplyList.invIDs);
+      List<String> existingPreferredIds = sanitizePreferredInventoryIds(
+        existingSupplyList.preferredInventoryIds,
+        existingInvIDs);
       if (updatedSupplyList.invIDs == null) {
         updatedSupplyList.invIDs = existingInvIDs;
         updatedSupplyList.percentageFilled = existingSupplyList.percentageFilled;
@@ -404,6 +417,9 @@ public class SupplyListController {
           ? existingSupplyList.percentageFilled
           : -1;
       }
+      updatedSupplyList.preferredInventoryIds = updatedSupplyList.preferredInventoryIds == null
+        ? sanitizePreferredInventoryIds(existingPreferredIds, updatedSupplyList.invIDs)
+        : sanitizePreferredInventoryIds(updatedSupplyList.preferredInventoryIds, updatedSupplyList.invIDs);
 
       supplyListCollection.replaceOne(eq("_id", objectId), updatedSupplyList);
       ctx.status(HttpStatus.OK);

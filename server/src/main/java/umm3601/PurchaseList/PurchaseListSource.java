@@ -12,4 +12,5 @@ public class PurchaseListSource {
   public int studentCount;
   public int quantityPerStudent;
   public int totalNeeded;
+  public String supplyListDescription;
 }

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +24,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 // Org Imports
 import org.bson.Document;
@@ -243,6 +251,7 @@ class FamilyControllerSpec {
       .append("item", item)
       .append("description", description)
       .append("quantity", quantity)
+      .append("reservedQuantity", 0)
       .append("internalID", internalId)
       .append("internalBarcode", internalBarcode)
       .append("externalBarcode", List.of(externalBarcode));
@@ -622,6 +631,7 @@ class FamilyControllerSpec {
 
   @Test
   void updateFamilyChecklistPersistsChecklist() {
+    startHelpSessionAndGetFamily();
     Family.FamilyChecklist checklist = new Family.FamilyChecklist();
     Family.ChecklistSection section = new Family.ChecklistSection();
     section.id = "student-1";
@@ -650,6 +660,43 @@ class FamilyControllerSpec {
     assertNotNull(familyCaptor.getValue().checklist);
     assertEquals(1, familyCaptor.getValue().checklist.sections.size());
   }
+  @Test
+  void updateFamilyChecklistDoesNotRebuildReservationsForOpenDraft() {
+    Family family = startHelpSessionAndGetFamily();
+    Family.FamilyChecklist checklist = family.checklist;
+
+    Family.ChecklistSection section = new Family.ChecklistSection();
+    section.id = "student-1";
+    section.title = "Sara";
+    section.saved = false;
+
+    Family.ChecklistItem item = new Family.ChecklistItem();
+    item.id = "student-1-item-1";
+    item.label = "Backpack";
+    item.available = true;
+    item.matchedInventoryId = "ID-10000";
+    item.requestedQuantity = 1;
+    section.items = new ArrayList<>(List.of(item));
+    checklist.sections = new ArrayList<>(List.of(section));
+
+    FamilyChecklistUpdateRequest request = new FamilyChecklistUpdateRequest();
+    request.setChecklist(checklist);
+    String json = javalinJackson.toJsonString(request, FamilyChecklistUpdateRequest.class);
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+    when(ctx.bodyValidator(FamilyChecklistUpdateRequest.class))
+      .thenReturn(new BodyValidator<>(
+        json,
+        FamilyChecklistUpdateRequest.class,
+        () -> javalinJackson.fromJsonString(json, FamilyChecklistUpdateRequest.class)));
+
+    familyController.updateFamilyChecklist(ctx);
+
+    Document backpackInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10000"))
+      .first();
+    assertEquals(1, backpackInventory.getInteger("reservedQuantity"));
+  }
 
   @Test
   void startFamilyHelpSessionBuildsSnapshotChecklist() {
@@ -670,6 +717,107 @@ class FamilyControllerSpec {
   }
 
   @Test
+  void startFamilyHelpSessionRebuildsReservationsForSnapshotMatches() {
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.startFamilyHelpSession(ctx);
+
+    Document backpackInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10000"))
+      .first();
+    assertEquals(1, backpackInventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void startFamilyHelpSessionRefreshesStaleReservationsBeforeBuildingSnapshot() {
+    db.getCollection("inventory").updateOne(
+      eq("internalID", "ID-10000"),
+      new Document("$set", new Document()
+        .append("quantity", 1)
+        .append("reservedQuantity", 1)));
+
+    when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
+
+    familyController.startFamilyHelpSession(ctx);
+
+    verify(ctx).json(familyCaptor.capture());
+    Family family = familyCaptor.getValue();
+    Family.ChecklistItem backpackItem = family.checklist.sections.get(0).items.get(0);
+    assertTrue(backpackItem.available);
+    assertEquals("ID-10000", backpackItem.matchedInventoryId);
+
+    Document backpackInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10000"))
+      .first();
+    assertEquals(1, backpackInventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void startFamilyHelpSessionQueuesMultipleNearSimultaneousStarts() throws Exception {
+    db.getCollection("family").drop();
+    db.getCollection("supplylist").drop();
+    db.getCollection("inventory").drop();
+
+    ObjectId firstFamilyId = new ObjectId();
+    ObjectId secondFamilyId = new ObjectId();
+    ObjectId thirdFamilyId = new ObjectId();
+    db.getCollection("family").insertMany(List.of(
+      familyDoc(firstFamilyId, "First Family", "first@email.com", "1 Main", null, "",
+        false, false, false, false, false, "not_helped",
+        List.of(studentDoc("First Student", "5", "Roosevelt", "R"))),
+      familyDoc(secondFamilyId, "Second Family", "second@email.com", "2 Main", null, "",
+        false, false, false, false, false, "not_helped",
+        List.of(studentDoc("Second Student", "5", "Roosevelt", "R"))),
+      familyDoc(thirdFamilyId, "Third Family", "third@email.com", "3 Main", null, "",
+        false, false, false, false, false, "not_helped",
+        List.of(studentDoc("Third Student", "5", "Roosevelt", "R")))));
+    db.getCollection("supplylist").insertOne(supplyListDoc("Backpack"));
+    db.getCollection("inventory").insertOne(
+      inventoryDoc("Backpack", "Student Backpack", 2, "ID-QUEUE", "ITEM-QUEUE", "EXT-QUEUE"));
+
+    InventoryMatcher inventoryMatcher = new InventoryMatcher(db);
+    BlockingFamilyChecklistService blockingChecklistService =
+      new BlockingFamilyChecklistService(db, inventoryMatcher);
+    FamilyController queuedController = new FamilyController(
+      db,
+      new InventoryReservationService(db, inventoryMatcher),
+      inventoryMatcher,
+      blockingChecklistService);
+
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    try {
+      Future<Family> firstStart = executorService.submit(
+        () -> startHelpSessionAndReturn(queuedController, firstFamilyId));
+      assertTrue(blockingChecklistService.awaitFirstGeneration());
+
+      Future<Family> secondStart = executorService.submit(
+        () -> startHelpSessionAndReturn(queuedController, secondFamilyId));
+      Future<Family> thirdStart = executorService.submit(
+        () -> startHelpSessionAndReturn(queuedController, thirdFamilyId));
+
+      blockingChecklistService.releaseFirstGeneration();
+
+      Family firstFamily = firstStart.get(5, TimeUnit.SECONDS);
+      Family secondFamily = secondStart.get(5, TimeUnit.SECONDS);
+      Family thirdFamily = thirdStart.get(5, TimeUnit.SECONDS);
+
+      assertTrue(firstChecklistItem(firstFamily).available);
+      long availableStartCount = List.of(firstFamily, secondFamily, thirdFamily).stream()
+        .filter(family -> firstChecklistItem(family).available)
+        .count();
+      assertEquals(2, availableStartCount);
+
+      Document backpackInventory = db.getCollection("inventory")
+        .find(eq("internalID", "ID-QUEUE"))
+        .first();
+      assertEquals(2, backpackInventory.getInteger("reservedQuantity"));
+    } finally {
+      blockingChecklistService.releaseFirstGeneration();
+      executorService.shutdownNow();
+    }
+  }
+
+  @Test
   void getFamilyHelpSessionCreatesSnapshotIfMissing() {
     when(ctx.pathParam("id")).thenReturn(testFamilyId.toString());
 
@@ -678,6 +826,11 @@ class FamilyControllerSpec {
     verify(ctx).json(familyCaptor.capture());
     assertTrue(familyCaptor.getValue().checklist.snapshot);
     assertEquals("being_helped", familyCaptor.getValue().status);
+
+    Document backpackInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10000"))
+      .first();
+    assertEquals(1, backpackInventory.getInteger("reservedQuantity"));
   }
 
   @Test
@@ -753,6 +906,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     unavailableItem.selected = false;
     unavailableItem.substituteBarcode = "SUB-10001";
+    unavailableItem.notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
     request.setSectionId(section.id);
@@ -793,6 +947,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
+    section.items.get(1).notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveAllRequest request = new FamilyHelpSessionSaveAllRequest();
     request.setChecklist(family.checklist);
@@ -864,6 +1019,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "SUB-10001";
+    section.items.get(1).notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
     request.setSectionId(section.id);
@@ -1035,6 +1191,7 @@ class FamilyControllerSpec {
     section.items.get(0).selected = true;
     section.items.get(1).selected = false;
     section.items.get(1).substituteBarcode = "UNKNOWN";
+    section.items.get(1).notPickedUpReason = "substituted";
 
     FamilyHelpSessionSaveChildRequest request = new FamilyHelpSessionSaveChildRequest();
     request.setSectionId(section.id);
@@ -1650,6 +1807,60 @@ class FamilyControllerSpec {
     Family family = familyCaptor.getValue();
     Mockito.clearInvocations(ctx);
     return family;
+  }
+
+  private Family startHelpSessionAndReturn(FamilyController controller, ObjectId familyId) {
+    Context startContext = mock(Context.class);
+    AtomicReference<Family> familyResponse = new AtomicReference<>();
+    when(startContext.pathParam("id")).thenReturn(familyId.toString());
+    doAnswer(invocation -> {
+      familyResponse.set(invocation.getArgument(0));
+      return startContext;
+    }).when(startContext).json(any());
+
+    controller.startFamilyHelpSession(startContext);
+
+    return familyResponse.get();
+  }
+
+  private Family.ChecklistItem firstChecklistItem(Family family) {
+    return family.checklist.sections.get(0).items.get(0);
+  }
+
+  private static class BlockingFamilyChecklistService extends FamilyChecklistService {
+    private final CountDownLatch firstGenerationStarted = new CountDownLatch(1);
+    private final CountDownLatch releaseFirstGeneration = new CountDownLatch(1);
+    private final AtomicInteger generationCount = new AtomicInteger();
+
+    BlockingFamilyChecklistService(MongoDatabase database, InventoryMatcher inventoryMatcher) {
+      super(database, inventoryMatcher);
+    }
+
+    @Override
+    public Family.FamilyChecklist generateChecklistSnapshot(Family family) {
+      if (generationCount.incrementAndGet() == 1) {
+        firstGenerationStarted.countDown();
+        awaitRelease();
+      }
+      return super.generateChecklistSnapshot(family);
+    }
+
+    boolean awaitFirstGeneration() throws InterruptedException {
+      return firstGenerationStarted.await(5, TimeUnit.SECONDS);
+    }
+
+    void releaseFirstGeneration() {
+      releaseFirstGeneration.countDown();
+    }
+
+    private void awaitRelease() {
+      try {
+        releaseFirstGeneration.await(5, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IllegalStateException("Interrupted while blocking checklist generation", e);
+      }
+    }
   }
 
   private void addUnsavedChecklistSection(ObjectId familyId, String sectionId) {

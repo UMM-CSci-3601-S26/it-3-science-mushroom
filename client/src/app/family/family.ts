@@ -48,6 +48,8 @@ export interface FamilyChecklist {
   templateId: string;
   printableTitle: string;
   snapshot: boolean;
+  previousStatus?: string;
+  previousHelped?: boolean;
   sections: ChecklistSection[];
 }
 

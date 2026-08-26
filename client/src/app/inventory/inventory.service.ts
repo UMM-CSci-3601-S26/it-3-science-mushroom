@@ -4,6 +4,7 @@ import { inject, Injectable, signal, computed } from '@angular/core';
 
 // RxJS Imports
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 // Inventory Imports
 import { Inventory, InventoryBulkActionResponse, SelectOption } from './inventory';
@@ -38,9 +39,13 @@ export class InventoryService {
   inventory = signal<Inventory[]>([]);
 
   loadInventory(filters?: Inventory): void {
-    this.getInventory(filters).subscribe(data => {
-      this.inventory.set(data);
-    });
+    this.refreshInventory(filters).subscribe();
+  }
+
+  refreshInventory(filters?: Inventory): Observable<Inventory[]> {
+    return this.getInventory(filters).pipe(
+      tap(data => this.inventory.set(data))
+    );
   }
 
   itemOptions = computed(() =>

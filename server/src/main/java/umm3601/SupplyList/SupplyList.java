@@ -39,6 +39,7 @@ public class SupplyList {
   public String notes;
   public String supplyID; // ID of the supply item in the supply collection
   public List<String> invIDs; // List of inventory IDs associated with this supply list item
+  public List<String> preferredInventoryIds;
   public Integer percentageFilled = -1; // Percentage of the supply list item that has been filled
   // >= 0 is a "percentage" filled
   // -1 is "not calculated" (default)
