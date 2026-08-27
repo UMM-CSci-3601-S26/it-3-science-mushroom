@@ -13,6 +13,7 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -48,6 +49,8 @@ import { TermsService } from '../terms/terms.service';
 import { InventoryService } from '../inventory/inventory.service';
 //import { InventoryIndex } from '../inventory/inventory-index';
 import { Inventory, SelectOption } from '../inventory/inventory';
+import { SupplyListService } from '../supplylist/supplylist.service';
+import { SupplyList } from '../supplylist/supplylist';
 //import { InventoryComponent } from '../inventory/inventory.component';
 
 // Dialog Imports
@@ -64,6 +67,7 @@ import { DialogService } from '../shared/dialog/dialog.service';
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatCardModule,
+    MatCheckboxModule,
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -84,6 +88,7 @@ export class SettingsComponent implements OnInit {
   private settingsService = inject(SettingsService);
   private termsService = inject(TermsService);
   private inventoryService = inject(InventoryService);
+  private supplyListService = inject(SupplyListService);
   private dialogService = inject(DialogService);
   //private inventoryIndex = inject(InventoryIndex);
   //private inventoryComponent = inject(InventoryComponent);
@@ -99,6 +104,7 @@ export class SettingsComponent implements OnInit {
     'time-availability',
     'drive-day',
     'barcode-printing',
+    'item-preferences',
     'drive-order',
     'inventory-management'
   ] as const;
@@ -114,6 +120,10 @@ export class SettingsComponent implements OnInit {
 
   get canEditSupplyOrder(): boolean {
     return this.authService.hasPermission('edit_supply_order');
+  }
+
+  get canEditSupplyPreferences(): boolean {
+    return this.authService.hasPermission('edit_supply_list');
   }
 
   get canEditDriveDay(): boolean {
@@ -276,6 +286,11 @@ export class SettingsComponent implements OnInit {
   unstagedTerms: string[] = []; // included in the drive, appended after staged items
   notGivenTerms: string[] = []; // excluded from checklists entirely
 
+  supplyPreferenceRows = signal<SupplyList[]>([]);
+  preferenceInventoryById = signal<Map<string, Inventory>>(new Map());
+  loadingSupplyPreferences = signal(false);
+  savingSupplyPreferenceIds = signal<Set<string>>(new Set());
+
   //loads values from backend
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
@@ -308,6 +323,7 @@ export class SettingsComponent implements OnInit {
     });
 
     this.loadDriveOrder();
+    this.loadSupplyPreferences();
   }
 
   selectSettingsTab(index: number): void {
@@ -356,6 +372,182 @@ export class SettingsComponent implements OnInit {
         .filter(t => !stagedTermSet.has(t) && !notGivenTermSet.has(t))
         .sort((a, b) => a.localeCompare(b));
     });
+  }
+
+  private loadSupplyPreferences(): void {
+    this.loadingSupplyPreferences.set(true);
+    forkJoin({
+      supplyLists: this.supplyListService.getSupplyList(),
+      inventory: this.inventoryService.getInventory({})
+    }).subscribe({
+      next: ({ supplyLists, inventory }) => {
+        const inventoryById = new Map<string, Inventory>();
+        for (const item of inventory) {
+          if (item.internalID) {
+            inventoryById.set(item.internalID, item);
+          }
+        }
+
+        const rows = supplyLists
+          .filter(supplyList => this.linkedInventoryIds(supplyList).length > 0)
+          .map(supplyList => ({
+            ...supplyList,
+            preferredInventoryIds: this.validPreferredInventoryIds(supplyList)
+          }))
+          .sort((left, right) => this.supplyPreferenceLabel(left).localeCompare(this.supplyPreferenceLabel(right)));
+
+        this.preferenceInventoryById.set(inventoryById);
+        this.supplyPreferenceRows.set(rows);
+        this.loadingSupplyPreferences.set(false);
+      },
+      error: () => {
+        this.loadingSupplyPreferences.set(false);
+        this.snackBar.open('Failed to load item preferences', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  linkedInventoryIds(supplyList: SupplyList): string[] {
+    return this.uniqueStrings(supplyList.invIDs ?? []);
+  }
+
+  isPreferredInventory(supplyList: SupplyList, internalId: string): boolean {
+    return this.validPreferredInventoryIds(supplyList).includes(internalId);
+  }
+
+  /**
+   * Get internalId's rank in this supply list's preference order
+   * @param supplyList Supply list to check
+   * @param internalId Internal ID to get the rank for
+   * @returns Preference rank, or null if it is not preferred
+   */
+  inventoryPreferenceRank(supplyList: SupplyList, internalId: string): number | null {
+    const preferredIndex = this.validPreferredInventoryIds(supplyList).indexOf(internalId);
+    return preferredIndex === -1 ? null : preferredIndex + 1;
+  }
+
+  /**
+   * Build the label for a preference rank
+   * @param rank Rank to show
+   * @returns Label with ordinal suffix
+   */
+  inventoryPreferenceRankLabel(rank: number): string {
+    return `${this.ordinal(rank)} preference`;
+  }
+
+  toggleInventoryPreference(supplyList: SupplyList, internalId: string, checked: boolean): void {
+    this.supplyPreferenceRows.update(rows => rows.map(row => row._id === supplyList._id
+      ? this.updatedPreferenceRow(row, internalId, checked)
+      : row));
+  }
+
+  saveInventoryPreferences(supplyList: SupplyList): void {
+    if (!this.canEditSupplyPreferences || this.savingSupplyPreferenceIds().has(supplyList._id)) {
+      return;
+    }
+
+    this.savingSupplyPreferenceIds.update(ids => new Set(ids).add(supplyList._id));
+    this.supplyListService.editSupplyList(supplyList._id, {
+      ...supplyList,
+      preferredInventoryIds: this.validPreferredInventoryIds(supplyList)
+    }).subscribe({
+      next: () => {
+        this.finishSavingSupplyPreference(supplyList._id);
+        this.snackBar.open('Item preference saved', 'OK', { duration: 2000 });
+      },
+      error: () => {
+        this.finishSavingSupplyPreference(supplyList._id);
+        this.snackBar.open('Failed to save item preference', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  isSavingSupplyPreference(supplyListId: string): boolean {
+    return this.savingSupplyPreferenceIds().has(supplyListId);
+  }
+
+  supplyPreferenceLabel(supplyList: SupplyList): string {
+    const quantity = supplyList.quantity > 0 ? `${supplyList.quantity}x ` : '';
+    return `${quantity}${supplyList.item.join(' / ')}`;
+  }
+
+  inventoryPreferenceLabel(internalId: string): string {
+    const inventory = this.preferenceInventoryById().get(internalId);
+    if (!inventory) {
+      return internalId;
+    }
+
+    return inventory.description?.trim() || [inventory.color, inventory.type, inventory.item]
+      .filter(value => !!value)
+      .join(' ')
+      || internalId;
+  }
+
+  private validPreferredInventoryIds(supplyList: SupplyList): string[] {
+    const linkedIds = this.linkedInventoryIds(supplyList);
+    const linkedIdSet = new Set(linkedIds);
+    return this.uniqueStrings(supplyList.preferredInventoryIds ?? [])
+      .filter(internalId => linkedIdSet.has(internalId));
+  }
+
+  /**
+   * Update supplyList by adding or removing internalId based on checked
+   * @param supplyList Supply list to update
+   * @param internalId Internal ID to add or remove
+   * @param checked Whether the item is selected
+   * @returns Supply list with updated preferences
+   */
+  private updatedPreferenceRow(supplyList: SupplyList, internalId: string, checked: boolean): SupplyList {
+    if (!this.linkedInventoryIds(supplyList).includes(internalId)) {
+      return supplyList;
+    }
+
+    const preferredInventoryIds = this.validPreferredInventoryIds(supplyList);
+    const updatedPreferredInventoryIds = checked
+      ? [...preferredInventoryIds.filter(id => id !== internalId), internalId]
+      : preferredInventoryIds.filter(id => id !== internalId);
+
+    return {
+      ...supplyList,
+      preferredInventoryIds: updatedPreferredInventoryIds
+    };
+  }
+
+  /**
+   * Format value with an ordinal suffix
+   * @param value Number to format
+   * @returns Number with ordinal suffix
+   */
+  private ordinal(value: number): string {
+    const remainder = value % 100;
+    if (remainder >= 11 && remainder <= 13) {
+      return `${value}th`;
+    }
+
+    switch (value % 10) {
+    case 1:
+      return `${value}st`;
+    case 2:
+      return `${value}nd`;
+    case 3:
+      return `${value}rd`;
+    default:
+      return `${value}th`;
+    }
+  }
+
+  private finishSavingSupplyPreference(supplyListId: string): void {
+    this.savingSupplyPreferenceIds.update(ids => {
+      const updatedIds = new Set(ids);
+      updatedIds.delete(supplyListId);
+      return updatedIds;
+    });
+  }
+
+  private uniqueStrings(values: string[]): string[] {
+    return values
+      .map(value => value.trim())
+      .filter((value, index, allValues) => value && allValues.indexOf(value) === index);
   }
 
   // Move a term from its current list into Staged (appended at end)

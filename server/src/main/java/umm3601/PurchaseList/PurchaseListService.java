@@ -4,6 +4,7 @@ import static com.mongodb.client.model.Filters.eq;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 
+import umm3601.Common.InventoryIds;
 import umm3601.Common.InventoryMatcher;
 import umm3601.Family.Family;
 import umm3601.Inventory.Inventory;
@@ -30,7 +32,6 @@ public class PurchaseListService {
   private static final String FULFILLED_STATUS = "fulfilled";
   private static final String PARTIAL_STATUS = "partial";
   private static final String UNFULFILLED_STATUS = "unfulfilled";
-  private static final String INTERNAL_INVENTORY_ID_PATTERN = "^ID-\\d{4,5}$";
   private static final String UNKNOWN_SCHOOL = "Unknown School";
   private static final String UNKNOWN_GRADE = "Unknown Grade";
   private static final String UNKNOWN_TEACHER = "Unknown Teacher";
@@ -84,22 +85,18 @@ public class PurchaseListService {
 
   public PurchaseListSnapshot calculateNewPurchaseList() {
     List<PurchaseListItem> items = calculatePurchaseListItems();
-    PurchaseListSnapshot snapshot = buildSnapshot(items);
+
+    PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
+    snapshot._id = LATEST_SNAPSHOT_ID;
+    snapshot.generatedAt = Instant.now().toString();
+    snapshot.summary = toPurchaseListSummary(items);
+    snapshot.items = items;
 
     purchaseListSnapshotCollection.replaceOne(
       eq("_id", LATEST_SNAPSHOT_ID),
       snapshot,
       new ReplaceOptions().upsert(true));
 
-    return snapshot;
-  }
-
-  private PurchaseListSnapshot buildSnapshot(List<PurchaseListItem> items) {
-    PurchaseListSnapshot snapshot = new PurchaseListSnapshot();
-    snapshot._id = LATEST_SNAPSHOT_ID;
-    snapshot.generatedAt = Instant.now().toString();
-    snapshot.summary = toPurchaseListSummary(items);
-    snapshot.items = items;
     return snapshot;
   }
 
@@ -126,7 +123,7 @@ public class PurchaseListService {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
     Map<StudentDemandGroup, Integer> studentCountsByGroup = getStudentCountsByGroup();
     Map<String, Inventory> inventoryByInternalId = getInventoryByInternalId();
-    List<PurchaseListAccumulator> demandByFulfillmentTarget = new ArrayList<>();
+    List<PurchaseListAccumulator> demandByInventoryMatch = new ArrayList<>();
 
     for (SupplyList supplyList : allSupplyLists) {
       if (!hasDemandInputs(supplyList)) {
@@ -139,35 +136,70 @@ public class PurchaseListService {
       }
 
       int quantityPerStudent = quantityPerStudent(supplyList);
-      int totalNeeded = studentCount * quantityPerStudent;
-      InventoryFulfillment fulfillment = resolveInventoryFulfillment(supplyList, inventoryByInternalId);
+      int totalNeeded = unitsNeeded(supplyList, studentCount, quantityPerStudent);
+      InventoryMatch inventoryMatch = resolveInventoryMatch(supplyList, inventoryByInternalId);
 
-      PurchaseListAccumulator accumulator = accumulatorForFulfillmentTarget(
-        demandByFulfillmentTarget,
+      PurchaseListAccumulator accumulator = accumulatorForInventoryMatch(
+        demandByInventoryMatch,
         supplyList,
-        fulfillment);
-      accumulator.add(supplyList, fulfillment, studentCount, quantityPerStudent, totalNeeded);
+        inventoryMatch);
+      accumulator.add(supplyList, inventoryMatch, studentCount, quantityPerStudent, totalNeeded);
     }
 
-    return demandByFulfillmentTarget.stream()
-      .map(accumulator -> accumulator.toPurchaseListItem(inventoryByInternalId))
+    return toPurchaseListItems(demandByInventoryMatch, inventoryByInternalId);
+  }
+
+  private List<PurchaseListItem> toPurchaseListItems(
+      List<PurchaseListAccumulator> accumulators,
+      Map<String, Inventory> inventoryByInternalId
+  ) {
+    Map<PurchaseListAccumulator, Integer> quantityOnHandByAccumulator =
+      allocatedQuantityOnHandByAccumulator(accumulators, inventoryByInternalId);
+
+    return accumulators.stream()
+      .map(accumulator -> accumulator.toPurchaseListItem(
+        inventoryByInternalId,
+        quantityOnHandByAccumulator.getOrDefault(accumulator, 0)))
       .toList();
   }
 
-  private PurchaseListAccumulator accumulatorForFulfillmentTarget(
+  private Map<PurchaseListAccumulator, Integer> allocatedQuantityOnHandByAccumulator(
+      List<PurchaseListAccumulator> accumulators,
+      Map<String, Inventory> inventoryByInternalId
+  ) {
+    Map<PurchaseListAccumulator, Integer> quantityOnHandByAccumulator = new HashMap<>();
+    Map<String, Integer> remainingUnitsByInternalId = inventoryUnitsByInternalId(inventoryByInternalId);
+    Map<String, Integer> useCountsByInternalId = inventoryUseCountsByInternalId(accumulators);
+
+    List<PurchaseListAccumulator> allocationOrder = accumulators.stream()
+      .sorted(Comparator
+        .comparingInt(PurchaseListAccumulator::allocationPriority)
+        .thenComparingInt(PurchaseListAccumulator::linkedInventoryCount))
+      .toList();
+
+    for (PurchaseListAccumulator accumulator : allocationOrder) {
+      quantityOnHandByAccumulator.put(
+        accumulator,
+        allocatedQuantityOnHand(accumulator, remainingUnitsByInternalId, useCountsByInternalId));
+    }
+
+    return quantityOnHandByAccumulator;
+  }
+
+  private PurchaseListAccumulator accumulatorForInventoryMatch(
       List<PurchaseListAccumulator> accumulators,
       SupplyList supplyList,
-      InventoryFulfillment fulfillment
+      InventoryMatch inventoryMatch
   ) {
     List<PurchaseListAccumulator> matchingAccumulators = new ArrayList<>();
     for (PurchaseListAccumulator accumulator : accumulators) {
-      if (accumulator.matches(fulfillment)) {
+      if (accumulator.matches(inventoryMatch)) {
         matchingAccumulators.add(accumulator);
       }
     }
 
     if (matchingAccumulators.isEmpty()) {
-      PurchaseListAccumulator accumulator = new PurchaseListAccumulator(supplyList, fulfillment);
+      PurchaseListAccumulator accumulator = new PurchaseListAccumulator(supplyList, inventoryMatch);
       accumulators.add(accumulator);
       return accumulator;
     }
@@ -192,19 +224,19 @@ public class PurchaseListService {
       }
       summary.totalUnitsNeeded += item.totalNeeded;
       summary.totalUnitsOnHand += item.quantityOnHand;
-      summary.totalUnitsToBuy += item.quantityToBuy;
+      summary.totalUnitsToBuy += Math.max(0, item.totalNeeded - item.quantityOnHand);
     }
 
     return summary;
   }
 
-  private InventoryFulfillment resolveInventoryFulfillment(
+  private InventoryMatch resolveInventoryMatch(
       SupplyList supplyList,
       Map<String, Inventory> inventoryByInternalId
   ) {
-    List<String> linkedInventoryIds = validInternalIds(supplyList);
+    List<String> linkedInventoryIds = InventoryIds.validInternalIds(supplyList.invIDs);
     if (!linkedInventoryIds.isEmpty()) {
-      return new InventoryFulfillment(
+      return new InventoryMatch(
         inventoryGroupKey(linkedInventoryIds),
         linkedInventoryIds,
         firstInventory(linkedInventoryIds, inventoryByInternalId),
@@ -213,14 +245,14 @@ public class PurchaseListService {
 
     Inventory matchedInventory = inventoryMatcher.findBestDemandMatch(supplyList);
     if (matchedInventory != null) {
-      return new InventoryFulfillment(
+      return new InventoryMatch(
         matchedInventoryKey(matchedInventory, supplyList),
         matchedInventoryIds(matchedInventory),
         matchedInventory,
         false);
     }
 
-    return new InventoryFulfillment(
+    return new InventoryMatch(
       supplyDemandKey(supplyList),
       List.of(),
       null,
@@ -245,6 +277,122 @@ public class PurchaseListService {
     }
 
     return inventoryByInternalId;
+  }
+
+  private Map<String, Integer> inventoryUnitsByInternalId(Map<String, Inventory> inventoryByInternalId) {
+    Map<String, Integer> inventoryUnitsByInternalId = new HashMap<>();
+    for (Map.Entry<String, Inventory> inventoryEntry : inventoryByInternalId.entrySet()) {
+      inventoryUnitsByInternalId.put(inventoryEntry.getKey(), inventoryUnitsOnHand(inventoryEntry.getValue()));
+    }
+    return inventoryUnitsByInternalId;
+  }
+
+  private Map<String, Integer> inventoryUseCountsByInternalId(List<PurchaseListAccumulator> accumulators) {
+    Map<String, Integer> useCountsByInternalId = new HashMap<>();
+    for (PurchaseListAccumulator accumulator : accumulators) {
+      for (String linkedInventoryId : accumulator.linkedInventoryIds) {
+        useCountsByInternalId.merge(linkedInventoryId, 1, Integer::sum);
+      }
+    }
+    return useCountsByInternalId;
+  }
+
+  private int allocatedQuantityOnHand(
+      PurchaseListAccumulator accumulator,
+      Map<String, Integer> remainingUnitsByInternalId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    if (accumulator.linkedInventoryIds.isEmpty()) {
+      return inventoryUnitsOnHand(accumulator.primaryInventory);
+    }
+
+    int quantityOnHand = nonSharedQuantityOnHand(
+      accumulator.linkedInventoryIds,
+      remainingUnitsByInternalId,
+      useCountsByInternalId);
+
+    return quantityOnHand + sharedQuantityOnHand(
+      accumulator.linkedInventoryIds,
+      accumulator.totalNeeded,
+      quantityOnHand,
+      remainingUnitsByInternalId,
+      useCountsByInternalId);
+  }
+
+  private int nonSharedQuantityOnHand(
+      Set<String> linkedInventoryIds,
+      Map<String, Integer> remainingUnitsByInternalId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    int quantityOnHand = 0;
+    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(
+        linkedInventoryIds,
+        remainingUnitsByInternalId)) {
+      if (isSharedInventory(linkedInventoryId, useCountsByInternalId)) {
+        continue;
+      }
+
+      int remainingUnits = remainingInventoryUnits(linkedInventoryId, remainingUnitsByInternalId);
+      quantityOnHand += remainingUnits;
+      remainingUnitsByInternalId.put(linkedInventoryId, 0);
+    }
+    return quantityOnHand;
+  }
+
+  private int sharedQuantityOnHand(
+      Set<String> linkedInventoryIds,
+      int totalNeeded,
+      int quantityOnHand,
+      Map<String, Integer> remainingUnitsByInternalId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    int sharedQuantityOnHand = 0;
+    for (String linkedInventoryId : linkedInventoryIdsByRemainingUnits(
+        linkedInventoryIds,
+        remainingUnitsByInternalId)) {
+      if (!isSharedInventory(linkedInventoryId, useCountsByInternalId)) {
+        continue;
+      }
+
+      int unitsNeeded = Math.max(0, totalNeeded - quantityOnHand - sharedQuantityOnHand);
+      if (unitsNeeded <= 0) {
+        break;
+      }
+
+      int remainingUnits = remainingInventoryUnits(linkedInventoryId, remainingUnitsByInternalId);
+      int unitsForItem = Math.min(remainingUnits, unitsNeeded);
+      sharedQuantityOnHand += unitsForItem;
+      remainingUnitsByInternalId.put(linkedInventoryId, remainingUnits - unitsForItem);
+    }
+    return sharedQuantityOnHand;
+  }
+
+  private boolean isSharedInventory(
+      String linkedInventoryId,
+      Map<String, Integer> useCountsByInternalId
+  ) {
+    return useCountsByInternalId.getOrDefault(linkedInventoryId, 0) > 1;
+  }
+
+  private int remainingInventoryUnits(
+      String linkedInventoryId,
+      Map<String, Integer> remainingUnitsByInternalId
+  ) {
+    return Math.max(0, remainingUnitsByInternalId.getOrDefault(linkedInventoryId, 0));
+  }
+
+  private List<String> linkedInventoryIdsByRemainingUnits(
+      Set<String> linkedInventoryIds,
+      Map<String, Integer> remainingUnitsByInternalId
+  ) {
+    return linkedInventoryIds.stream()
+      .sorted(Comparator
+        .comparingInt((String linkedInventoryId) -> remainingInventoryUnits(
+          linkedInventoryId,
+          remainingUnitsByInternalId))
+        .reversed()
+        .thenComparing(linkedInventoryId -> linkedInventoryId))
+      .toList();
   }
 
   private Map<StudentDemandGroup, Integer> getStudentCountsByGroup() {
@@ -289,6 +437,10 @@ public class PurchaseListService {
     return studentCount;
   }
 
+  private int unitsNeeded(SupplyList supplyList, int studentCount, int quantityPerStudent) {
+    return studentCount * quantityPerStudent * supplyPackageSize(supplyList);
+  }
+
   private String studentSchool(Family.StudentInfo student) {
     return hasText(student.school) ? student.school : UNKNOWN_SCHOOL;
   }
@@ -305,23 +457,16 @@ public class PurchaseListService {
     return supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
   }
 
-  private int quantityOnHand(
-      Set<String> linkedInventoryIds,
-      Inventory primaryInventory,
-      Map<String, Inventory> inventoryByInternalId
-  ) {
-    if (linkedInventoryIds.isEmpty()) {
-      return primaryInventory == null ? 0 : primaryInventory.quantity;
-    }
+  private int supplyPackageSize(SupplyList supplyList) {
+    return supplyList.packageSize == null || supplyList.packageSize <= 1 ? 1 : supplyList.packageSize;
+  }
 
-    int linkedQuantity = 0;
-    for (String internalId : linkedInventoryIds) {
-      Inventory inventory = inventoryByInternalId.get(internalId);
-      if (inventory != null) {
-        linkedQuantity += inventory.quantity;
-      }
-    }
-    return linkedQuantity;
+  private int inventoryUnitsOnHand(Inventory inventory) {
+    return inventory == null ? 0 : inventory.quantity * inventoryPackageSize(inventory);
+  }
+
+  private int inventoryPackageSize(Inventory inventory) {
+    return inventory == null || inventory.packageSize <= 1 ? 1 : inventory.packageSize;
   }
 
   private int fulfillmentPercent(int quantityOnHand, int totalNeeded) {
@@ -355,6 +500,7 @@ public class PurchaseListService {
     source.studentCount = studentCount;
     source.quantityPerStudent = quantityPerStudent;
     source.totalNeeded = totalNeeded;
+    source.supplyListDescription = supplyListSourceDescription(supplyList);
     return source;
   }
 
@@ -377,6 +523,12 @@ public class PurchaseListService {
       return supplyDescription + " (linked to " + inventoryDescription + ")";
     }
     return hasText(supplyDescription) ? supplyDescription : fallback(inventoryDescription, itemLabel);
+  }
+
+  private String supplyListSourceDescription(SupplyList supplyList) {
+    String itemLabel = supplyItemLabel(supplyList, null);
+    String supplyDescription = supplyListItemDisplay(supplyList, itemLabel);
+    return quantityPerStudent(supplyList) + "x " + fallback(supplyDescription, itemLabel);
   }
 
   private String inventoryGroupKey(List<String> inventoryIds) {
@@ -456,26 +608,6 @@ public class PurchaseListService {
       .toList();
   }
 
-  private List<String> validInternalIds(SupplyList supplyList) {
-    List<String> validIds = new ArrayList<>();
-
-    for (String invID : inventoryIds(supplyList)) {
-      if (isInternalInventoryId(invID) && !validIds.contains(invID)) {
-        validIds.add(invID);
-      }
-    }
-
-    return validIds;
-  }
-
-  private List<String> inventoryIds(SupplyList supplyList) {
-    return supplyList.invIDs == null ? List.of() : supplyList.invIDs;
-  }
-
-  private boolean isInternalInventoryId(String invID) {
-    return invID != null && invID.matches(INTERNAL_INVENTORY_ID_PATTERN);
-  }
-
   private String normalizeKey(String value) {
     return value == null ? "" : value.trim().toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
   }
@@ -483,9 +615,6 @@ public class PurchaseListService {
   private String supplyListItemDisplay(SupplyList supplyList, String itemLabel) {
     StringJoiner mainParts = new StringJoiner(" ");
     int quantityPerStudent = quantityPerStudent(supplyList);
-    if (quantityPerStudent > 0) {
-      mainParts.add(quantityPerStudent + "x");
-    }
     if (supplyList.packageSize != null && supplyList.packageSize > 1) {
       mainParts.add(supplyList.packageSize + "ct");
     }
@@ -522,6 +651,30 @@ public class PurchaseListService {
     return fallback(inventory.item);
   }
 
+  private String inventoryItemDisplayWithoutPackageSize(Inventory inventory) {
+    if (inventory == null) {
+      return "";
+    }
+
+    StringJoiner mainParts = new StringJoiner(" ");
+    StringJoiner detailParts = new StringJoiner(", ");
+
+    addIfPresent(mainParts, inventory.color);
+    addIfPresent(mainParts, inventory.type);
+    addIfPresent(mainParts, inventory.size);
+    addIfPresent(mainParts, inventory.brand);
+    addIfPresent(mainParts, inventory.item);
+
+    addIfPresent(detailParts, inventory.material);
+
+    String main = mainParts.toString().trim();
+    String details = detailParts.toString().trim();
+    if (hasText(main) && hasText(details)) {
+      return main + " (" + details + ")";
+    }
+    return hasText(main) ? main : details;
+  }
+
   private boolean shouldUseInventoryDescription(
       SupplyList supplyList,
       Inventory inventory,
@@ -551,8 +704,7 @@ public class PurchaseListService {
   }
 
   private boolean hasSupplyListDetails(SupplyList supplyList) {
-    return supplyList.quantity != null && supplyList.quantity > 1
-      || supplyList.packageSize != null && supplyList.packageSize > 1
+    return supplyList.packageSize != null && supplyList.packageSize > 1
       || hasAttributeDisplay(supplyList.brand)
       || hasAttributeDisplay(supplyList.color)
       || hasAttributeDisplay(supplyList.size)
@@ -646,53 +798,53 @@ public class PurchaseListService {
     private String item;
     private String description;
     private final Set<String> linkedInventoryIds;
+    private final Set<Integer> demandPackageSizes;
     private final List<PurchaseListSource> sources;
     private Inventory primaryInventory;
     private int totalNeeded;
     private boolean usesManualLinkIdentity;
 
-    PurchaseListAccumulator(SupplyList supplyList, InventoryFulfillment fulfillment) {
-      groupKey = fulfillment.groupKey;
-      item = supplyItemLabel(supplyList, fulfillment.primaryInventory);
-      description = supplyItemDescription(supplyList, fulfillment.primaryInventory, item);
-      primaryInventory = fulfillment.primaryInventory;
+    PurchaseListAccumulator(SupplyList supplyList, InventoryMatch inventoryMatch) {
+      groupKey = inventoryMatch.groupKey;
+      item = supplyItemLabel(supplyList, inventoryMatch.primaryInventory);
+      description = supplyItemDescription(supplyList, inventoryMatch.primaryInventory, item);
+      primaryInventory = inventoryMatch.primaryInventory;
       linkedInventoryIds = new LinkedHashSet<>();
+      demandPackageSizes = new LinkedHashSet<>();
       sources = new ArrayList<>();
-      usesManualLinkIdentity = fulfillment.manuallyLinked;
+      usesManualLinkIdentity = inventoryMatch.manuallyLinked;
     }
 
-    boolean matches(InventoryFulfillment fulfillment) {
-      if (fulfillment.linkedInventoryIds.isEmpty()) {
-        return groupKey.equals(fulfillment.groupKey);
-      }
-
-      return overlapsLinkedInventory(fulfillment.linkedInventoryIds);
+    boolean matches(InventoryMatch inventoryMatch) {
+      return groupKey.equals(inventoryMatch.groupKey);
     }
 
     void add(
         SupplyList supplyList,
-        InventoryFulfillment fulfillment,
+        InventoryMatch inventoryMatch,
         int studentCount,
         int quantityPerStudent,
         int sourceTotalNeeded
     ) {
       totalNeeded += sourceTotalNeeded;
-      linkedInventoryIds.addAll(fulfillment.linkedInventoryIds);
-      if (primaryInventory == null && fulfillment.primaryInventory != null) {
-        primaryInventory = fulfillment.primaryInventory;
+      linkedInventoryIds.addAll(inventoryMatch.linkedInventoryIds);
+      if (primaryInventory == null && inventoryMatch.primaryInventory != null) {
+        primaryInventory = inventoryMatch.primaryInventory;
       }
-      if (fulfillment.manuallyLinked && !usesManualLinkIdentity) {
-        item = supplyItemLabel(supplyList, fulfillment.primaryInventory);
-        description = supplyItemDescription(supplyList, fulfillment.primaryInventory, item);
-        primaryInventory = fulfillment.primaryInventory;
+      if (inventoryMatch.manuallyLinked && !usesManualLinkIdentity) {
+        item = supplyItemLabel(supplyList, inventoryMatch.primaryInventory);
+        description = supplyItemDescription(supplyList, inventoryMatch.primaryInventory, item);
+        primaryInventory = inventoryMatch.primaryInventory;
         usesManualLinkIdentity = true;
       }
+      demandPackageSizes.add(supplyPackageSize(supplyList));
       sources.add(toPurchaseListSource(supplyList, studentCount, quantityPerStudent, sourceTotalNeeded));
     }
 
     void mergeFrom(PurchaseListAccumulator other) {
       totalNeeded += other.totalNeeded;
       linkedInventoryIds.addAll(other.linkedInventoryIds);
+      demandPackageSizes.addAll(other.demandPackageSizes);
       if (primaryInventory == null && other.primaryInventory != null) {
         primaryInventory = other.primaryInventory;
       }
@@ -705,8 +857,27 @@ public class PurchaseListService {
       sources.addAll(other.sources);
     }
 
-    PurchaseListItem toPurchaseListItem(Map<String, Inventory> inventoryByInternalId) {
-      int currentQuantityOnHand = quantityOnHand(linkedInventoryIds, primaryInventory, inventoryByInternalId);
+    int linkedInventoryCount() {
+      return linkedInventoryIds.size();
+    }
+
+    int allocationPriority() {
+      if (usesManualLinkIdentity && linkedInventoryCount() > 0) {
+        return 0;
+      }
+      if (linkedInventoryCount() > 0) {
+        return 1;
+      }
+      return 2;
+    }
+
+    PurchaseListItem toPurchaseListItem(
+        Map<String, Inventory> inventoryByInternalId,
+        int currentQuantityOnHand
+    ) {
+      int unitsToBuy = Math.max(0, totalNeeded - currentQuantityOnHand);
+      int purchasePackageSize = purchasePackageSize(inventoryByInternalId);
+      int purchaseQuantityToBuy = quantityToBuy(unitsToBuy, purchasePackageSize);
 
       PurchaseListItem itemSnapshot = new PurchaseListItem();
       itemSnapshot.inventoryId = primaryInventory == null ? "" : fallback(primaryInventory._id);
@@ -714,10 +885,11 @@ public class PurchaseListService {
         ? inventoryInternalId(primaryInventory)
         : linkedInventoryIds.iterator().next();
       itemSnapshot.item = item;
-      itemSnapshot.description = description;
+      itemSnapshot.description = purchaseDescription(inventoryByInternalId);
       itemSnapshot.totalNeeded = totalNeeded;
       itemSnapshot.quantityOnHand = currentQuantityOnHand;
-      itemSnapshot.quantityToBuy = Math.max(0, totalNeeded - currentQuantityOnHand);
+      itemSnapshot.quantityToBuy = purchaseQuantityToBuy;
+      itemSnapshot.quantityToBuyUnit = quantityToBuyUnit(purchaseQuantityToBuy, purchasePackageSize);
       itemSnapshot.fulfillmentPercent = fulfillmentPercent(currentQuantityOnHand, totalNeeded);
       itemSnapshot.fulfillmentStatus = fulfillmentStatus(currentQuantityOnHand, totalNeeded);
       itemSnapshot.linkedInventoryIds = new ArrayList<>(linkedInventoryIds);
@@ -729,23 +901,85 @@ public class PurchaseListService {
       return inventory == null ? "" : fallback(inventory.internalID);
     }
 
-    private boolean overlapsLinkedInventory(List<String> inventoryIds) {
-      for (String inventoryId : inventoryIds) {
-        if (linkedInventoryIds.contains(inventoryId)) {
+    private int quantityToBuy(int unitsToBuy, int packageSize) {
+      return packageSize <= 1
+        ? unitsToBuy
+        : (int) Math.ceil((double) unitsToBuy / packageSize);
+    }
+
+    private String quantityToBuyUnit(int quantityToBuy, int packageSize) {
+      String unit = packageSize > 1 ? "pack" : "unit";
+      return quantityToBuy == 1 ? unit : unit + "s";
+    }
+
+    private int purchasePackageSize(Map<String, Inventory> inventoryByInternalId) {
+      Integer demandPackageSize = consistentDemandPackageSize();
+      if (demandPackageSize == null || demandPackageSize <= 1) {
+        return 1;
+      }
+      if (linkedInventoryIds.isEmpty()) {
+        return demandPackageSize;
+      }
+      return linkedPackageSizesMatchDemand(inventoryByInternalId, demandPackageSize)
+        ? demandPackageSize
+        : 1;
+    }
+
+    private String purchaseDescription(Map<String, Inventory> inventoryByInternalId) {
+      if (!hasMixedLinkedPackageSizes(inventoryByInternalId) && !hasMixedDemandPackageSizes()) {
+        return description;
+      }
+      String inventoryLabel = inventoryItemDisplayWithoutPackageSize(primaryInventory);
+      return fallback(inventoryLabel, fallback(item, description)) + " (mixed package sizes)";
+    }
+
+    private boolean hasMixedDemandPackageSizes() {
+      return demandPackageSizes.size() > 1;
+    }
+
+    private Integer consistentDemandPackageSize() {
+      return demandPackageSizes.size() == 1 ? demandPackageSizes.iterator().next() : null;
+    }
+
+    private boolean linkedPackageSizesMatchDemand(
+        Map<String, Inventory> inventoryByInternalId,
+        int demandPackageSize
+    ) {
+      for (String linkedInventoryId : linkedInventoryIds) {
+        Inventory inventory = inventoryByInternalId.get(linkedInventoryId);
+        if (inventory == null || inventoryPackageSize(inventory) != demandPackageSize) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private boolean hasMixedLinkedPackageSizes(Map<String, Inventory> inventoryByInternalId) {
+      Integer packageSize = null;
+      for (String linkedInventoryId : linkedInventoryIds) {
+        Inventory inventory = inventoryByInternalId.get(linkedInventoryId);
+        if (inventory == null) {
+          continue;
+        }
+        int inventorySize = inventoryPackageSize(inventory);
+        if (packageSize == null) {
+          packageSize = inventorySize;
+        } else if (packageSize != inventorySize) {
           return true;
         }
       }
       return false;
     }
+
   }
 
-  private static class InventoryFulfillment {
+  private static class InventoryMatch {
     private final String groupKey;
     private final List<String> linkedInventoryIds;
     private final Inventory primaryInventory;
     private final boolean manuallyLinked;
 
-    InventoryFulfillment(
+    InventoryMatch(
         String groupKey,
         List<String> linkedInventoryIds,
         Inventory primaryInventory,

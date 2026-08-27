@@ -30,6 +30,7 @@ describe('PurchaseListService', () => {
         totalNeeded: 5,
         quantityOnHand: 3,
         quantityToBuy: 2,
+        quantityToBuyUnit: 'packs',
         fulfillmentPercent: 60,
         fulfillmentStatus: 'partial',
         linkedInventoryIds: ['ID-00042'],
@@ -40,6 +41,7 @@ describe('PurchaseListService', () => {
             grade: 'PreK',
             teacher: 'Ms Doe',
             requestedItems: ['Markers'],
+            supplyListDescription: '2x Markers',
             studentCount: 2,
             quantityPerStudent: 2,
             totalNeeded: 4

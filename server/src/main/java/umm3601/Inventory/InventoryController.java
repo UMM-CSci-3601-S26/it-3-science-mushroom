@@ -40,7 +40,6 @@ import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
 import umm3601.Demand.DemandCalculationResult;
 import umm3601.Demand.DemandService;
-import umm3601.Family.InventoryReservationService;
 
 
 // Controller
@@ -74,33 +73,22 @@ public class InventoryController {
   private static final int NO_MATCH_SCORE = 0;
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
-  private final InventoryReservationService inventoryReservationService;
   private final InventoryIdService inventoryIdService;
   private final DemandService demandService;
 
   public InventoryController(MongoDatabase database) {
-    this(database, new InventoryReservationService(database), new InventoryIdService(database));
+    this(database, new InventoryIdService(database));
   }
 
-  public InventoryController(MongoDatabase database, InventoryReservationService inventoryReservationService) {
-    this(database, inventoryReservationService, new InventoryIdService(database));
-  }
-
-  public InventoryController(
-      MongoDatabase database,
-      InventoryReservationService inventoryReservationService,
-      InventoryIdService inventoryIdService
-  ) {
-    this(database, inventoryReservationService, inventoryIdService, new DemandService(database));
+  public InventoryController(MongoDatabase database, InventoryIdService inventoryIdService) {
+    this(database, inventoryIdService, new DemandService(database));
   }
 
   public InventoryController(
       MongoDatabase database,
-      InventoryReservationService inventoryReservationService,
       InventoryIdService inventoryIdService,
       DemandService demandService
   ) {
-    this.inventoryReservationService = inventoryReservationService;
     this.inventoryIdService = inventoryIdService;
     this.demandService = demandService;
     inventoryCollection = JacksonMongoCollection.builder().build(
@@ -154,7 +142,6 @@ public class InventoryController {
       );
 
       exists.quantity = newQuantity;
-      inventoryReservationService.rebuildInventoryReservation();
       ctx.json(exists);
       ctx.status(HttpStatus.CREATED);
       return;
@@ -199,7 +186,6 @@ public class InventoryController {
 
     newInv.refreshDescription();
     inventoryCollection.insertOne(newInv);
-    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(newInv);
     ctx.status(HttpStatus.CREATED);
   }
@@ -239,7 +225,6 @@ public class InventoryController {
     );
 
     exists.quantity = newQuantity;
-    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(exists);
     ctx.status(HttpStatus.OK);
   }
@@ -264,7 +249,6 @@ public class InventoryController {
       throw new NotFoundResponse("The requested inventory item was not found");
     }
 
-    inventoryReservationService.rebuildInventoryReservation();
     ctx.status(HttpStatus.OK);
   }
 
@@ -283,7 +267,6 @@ public class InventoryController {
       ? "No inventory items matched the provided filters."
       : "Deleted " + matchedCount + " matching inventory item(s).";
 
-    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(Map.of("matchedCount", matchedCount, "message", message));
     ctx.status(HttpStatus.OK);
   }
@@ -295,7 +278,6 @@ public class InventoryController {
   @RequirePermission("clear_inventory")
   public void clearInventory(Context ctx) {
     inventoryCollection.deleteMany(new Document());
-    inventoryReservationService.rebuildInventoryReservation();
     ctx.status(HttpStatus.OK);
   }
 
@@ -321,7 +303,6 @@ public class InventoryController {
       ? "No inventory items matched the provided filters."
       : "Reset quantities for " + matchedCount + " matching inventory item(s).";
 
-    inventoryReservationService.rebuildInventoryReservation();
     ctx.json(Map.of("matchedCount", matchedCount, "message", message));
     ctx.status(HttpStatus.OK);
   }

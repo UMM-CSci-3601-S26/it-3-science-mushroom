@@ -92,6 +92,8 @@ public class Family {
     public String templateId;
     public String printableTitle;
     public boolean snapshot;
+    public String previousStatus;
+    public Boolean previousHelped;
     public List<ChecklistSection> sections = new ArrayList<>();
   }
 

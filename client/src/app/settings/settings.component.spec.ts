@@ -13,9 +13,11 @@ import { TermsService } from '../terms/terms.service';
 import { AppSettings } from './settings';
 import { Terms } from '../terms/terms';
 import { InventoryService } from '../inventory/inventory.service';
-import { SelectOption } from '../inventory/inventory';
+import { Inventory, SelectOption } from '../inventory/inventory';
 import { DialogService } from '../shared/dialog/dialog.service';
 import { AuthService } from '../auth/auth-service';
+import { SupplyListService } from '../supplylist/supplylist.service';
+import { SupplyList } from '../supplylist/supplylist';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
@@ -25,6 +27,7 @@ describe('SettingsComponent', () => {
   let routerSpy: jasmine.SpyObj<Router>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
+  let supplyListServiceSpy: jasmine.SpyObj<SupplyListService>;
   let dialogServiceSpy: jasmine.SpyObj<DialogService>;
   let itemOptionsSignal: WritableSignal<SelectOption[]>;
   let brandOptionsSignal: WritableSignal<SelectOption[]>;
@@ -56,6 +59,27 @@ describe('SettingsComponent', () => {
     },
     supplyOrder: [],
     barcodePrintWarningLimit: 25,
+  };
+
+  const preferenceSupply: SupplyList = {
+    _id: 'supply-1',
+    academicYear: '2026',
+    school: 'Morris Elementary',
+    grade: '5',
+    teacher: 'Ms. Doe',
+    item: ['Folder'],
+    brand: { exactly: '', anyOf: [] },
+    type: { exactly: '2 prong', anyOf: [] },
+    color: { exactly: '', anyOf: ['Blue', 'Red'] },
+    size: { exactly: '', anyOf: [] },
+    material: { exactly: 'Plastic', anyOf: [] },
+    packageSize: 1,
+    quantity: 4,
+    notes: '',
+    supplyID: 'Supply-00001',
+    invIDs: ['ID-10010', 'ID-10011'],
+    preferredInventoryIds: ['ID-10010'],
+    percentageFilled: -1
   };
 
   beforeEach(async () => {
@@ -92,6 +116,7 @@ describe('SettingsComponent', () => {
       typeOptions: typeOptionsSignal,
       materialOptions: materialOptionsSignal
     });
+    supplyListServiceSpy = jasmine.createSpyObj('SupplyListService', ['getSupplyList', 'editSupplyList']);
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['openDialog']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     routerSpy.navigate.and.returnValue(Promise.resolve(true));
@@ -105,6 +130,8 @@ describe('SettingsComponent', () => {
     authServiceSpy.hasPermission.and.returnValue(true);
     authServiceSpy.isAdmin.and.returnValue(true);
     inventoryServiceSpy.getInventory.and.returnValue(of([]));
+    supplyListServiceSpy.getSupplyList.and.returnValue(of([]));
+    supplyListServiceSpy.editSupplyList.and.returnValue(of(undefined));
     inventoryServiceSpy.removeItemQuantityById.and.returnValue(of(undefined));
     inventoryServiceSpy.deleteInventories.and.returnValue(of({
       matchedCount: 1,
@@ -126,6 +153,7 @@ describe('SettingsComponent', () => {
         { provide: SettingsService, useValue: settingsServiceSpy },
         { provide: TermsService, useValue: termsServiceSpy },
         { provide: InventoryService, useValue: inventoryServiceSpy },
+        { provide: SupplyListService, useValue: supplyListServiceSpy },
         { provide: DialogService, useValue: dialogServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
@@ -163,6 +191,62 @@ describe('SettingsComponent', () => {
       location: '',
     });
     expect(component.barcodePrintForm.value.barcodePrintWarningLimit).toBe(25);
+  });
+
+  it('loads linked supply-list inventory into the preference tab', () => {
+    supplyListServiceSpy.getSupplyList.and.returnValue(of([
+      {
+        ...preferenceSupply,
+        invIDs: ['ID-10010', 'ID-10011', 'ID-10010'],
+        preferredInventoryIds: ['ID-10011', 'ID-10010', 'ID-99999']
+      }
+    ]));
+    inventoryServiceSpy.getInventory.and.returnValue(of([
+      {
+        internalID: 'ID-10010',
+        description: 'Blue 2 Prong Folder (Plastic)'
+      } as Inventory
+    ]));
+
+    component.ngOnInit();
+
+    expect(component.supplyPreferenceRows().length).toBe(1);
+    expect(component.linkedInventoryIds(component.supplyPreferenceRows()[0]))
+      .toEqual(['ID-10010', 'ID-10011']);
+    expect(component.isPreferredInventory(component.supplyPreferenceRows()[0], 'ID-10010')).toBeTrue();
+    expect(component.isPreferredInventory(component.supplyPreferenceRows()[0], 'ID-99999')).toBeFalse();
+    expect(component.supplyPreferenceRows()[0].preferredInventoryIds).toEqual(['ID-10011', 'ID-10010']);
+    expect(component.inventoryPreferenceRank(component.supplyPreferenceRows()[0], 'ID-10011')).toBe(1);
+    expect(component.inventoryPreferenceRankLabel(2)).toBe('2nd preference');
+    expect(component.inventoryPreferenceLabel('ID-10010')).toBe('Blue 2 Prong Folder (Plastic)');
+    expect(component.inventoryPreferenceLabel('ID-10011')).toBe('ID-10011');
+  });
+
+  it('saves preferences in selection order', () => {
+    component.supplyPreferenceRows.set([{
+      ...preferenceSupply,
+      preferredInventoryIds: []
+    }]);
+
+    component.toggleInventoryPreference(component.supplyPreferenceRows()[0], 'ID-10011', true);
+    component.toggleInventoryPreference(component.supplyPreferenceRows()[0], 'ID-10010', true);
+    const updatedSupply = component.supplyPreferenceRows()[0];
+    component.saveInventoryPreferences(updatedSupply);
+
+    expect(updatedSupply.preferredInventoryIds).toEqual(['ID-10011', 'ID-10010']);
+    expect(supplyListServiceSpy.editSupplyList).toHaveBeenCalledWith(
+      'supply-1',
+      jasmine.objectContaining({ preferredInventoryIds: ['ID-10011', 'ID-10010'] }));
+    expect(component.isSavingSupplyPreference('supply-1')).toBeFalse();
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Item preference saved', 'OK', { duration: 2000 });
+  });
+
+  it('does not save item preferences without supply-list edit permission', () => {
+    authServiceSpy.hasPermission.and.callFake(permission => permission !== 'edit_supply_list');
+
+    component.saveInventoryPreferences(preferenceSupply);
+
+    expect(supplyListServiceSpy.editSupplyList).not.toHaveBeenCalled();
   });
 
   it('populates unstagedTerms with all terms when no saved order exists', () => {

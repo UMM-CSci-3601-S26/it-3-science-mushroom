@@ -127,6 +127,76 @@ class InventoryMatcherSpec {
   }
 
   @Test
+  void findBestInventoryMatchUsesPreferenceThenLinkedInventoryThenMatcher() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Binder", 1, 0, "ID-10010"),
+      inventoryDoc("Notebook", 1, 0, "ID-10011"),
+      inventoryDoc("Folder", 1, 0, "ID-10012")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Folder");
+    supplyList.invIDs = List.of("ID-10011", "ID-10010");
+    supplyList.preferredInventoryIds = List.of("ID-99999", "ID-10010");
+
+    assertEquals("ID-10010", inventoryMatcher.findBestInventoryMatch(supplyList, 1).internalID);
+
+    db.getCollection("inventory").updateOne(
+      new Document("internalID", "ID-10010"),
+      new Document("$set", new Document("reservedQuantity", 1)));
+    assertEquals("ID-10011", inventoryMatcher.findBestInventoryMatch(supplyList, 1).internalID);
+
+    db.getCollection("inventory").updateOne(
+      new Document("internalID", "ID-10011"),
+      new Document("$set", new Document("reservedQuantity", 1)));
+    assertEquals("ID-10012", inventoryMatcher.findBestInventoryMatch(supplyList, 1).internalID);
+  }
+
+  @Test
+  void findBestInventoryMatchUsesPreferredInventoryOrder() {
+    db.getCollection("inventory").drop();
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Marker", 1, 0, "ID-10010"),
+      inventoryDoc("Marker", 1, 0, "ID-10011")));
+
+    SupplyList supplyList = new SupplyList();
+    supplyList.item = List.of("Marker");
+    supplyList.invIDs = List.of("ID-10010", "ID-10011");
+    supplyList.preferredInventoryIds = List.of("ID-10011", "ID-10010");
+
+    assertEquals("ID-10011", inventoryMatcher.findBestInventoryMatch(supplyList, 1).internalID);
+
+    db.getCollection("inventory").updateOne(
+      new Document("internalID", "ID-10011"),
+      new Document("$set", new Document("reservedQuantity", 1)));
+    assertEquals("ID-10010", inventoryMatcher.findBestInventoryMatch(supplyList, 1).internalID);
+  }
+
+  @Test
+  void supplyListMatchesStudentMatchesBroadGradeCategories() {
+    SupplyList supplyList = new SupplyList();
+    supplyList.school = "Morris Elementary";
+
+    supplyList.grade = "High School";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "12th Grade", "Ms. Doe"));
+
+    supplyList.grade = "Middle School";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "7th Grade", "Ms. Doe"));
+
+    supplyList.grade = "Elementary";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "Kindergarten", "Ms. Doe"));
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(
+      supplyList,
+      "Morris Elementary",
+      "Pre Kindergarten",
+      "Ms. Doe"));
+    assertFalse(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "6th Grade", "Ms. Doe"));
+
+    supplyList.grade = "5th Grade";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "Elementary", "Ms. Doe"));
+  }
+
+  @Test
   void findBestDemandMatchDoesNotRequireEnoughAvailableStock() {
     db.getCollection("inventory").drop();
     db.getCollection("inventory").insertMany(List.of(

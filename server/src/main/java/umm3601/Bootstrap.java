@@ -113,7 +113,7 @@ public class Bootstrap {
     SettingsController settingsController = new SettingsController(db);
 
     return new Object[] {
-        new InventoryController(db, inventoryReservationService, inventoryIdService, demandService),
+        new InventoryController(db, inventoryIdService, demandService),
         new DemandController(demandService),
         new PurchaseListController(purchaseListService),
         new BarcodeController(db),

@@ -62,11 +62,66 @@ describe('PointOfSaleFamilyCardComponent', () => {
     setFamily({ ...family, status: 'helped' });
 
     expect(component.isCompleted()).toBeTrue();
+    expect(component.canRevertCompletedSession()).toBeFalse();
+    expect(component.canOpenHelpSession()).toBeTrue();
+    expect(component.helpSessionActionLabel()).toBe('Continue Session');
     expect(component.statusLabel()).toBe('Helped');
     expect(component.statusClass()).toBe('status-helped');
 
     setFamily({ ...family, helped: true });
     expect(component.isCompleted()).toBeTrue();
+  });
+
+  it('allows helped families without a completed POS checklist to continue the session', () => {
+    setFamily({ ...family, status: 'helped' });
+
+    expect(fixture.nativeElement.querySelector('.revert-session-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.help-family-button')?.textContent).toContain('Continue Session');
+  });
+
+  it('only shows revert for a completed POS checklist session', () => {
+    setFamily({
+      ...family,
+      status: 'helped',
+      checklist: {
+        templateId: 'family-help-session-v1',
+        printableTitle: 'Jane Doe Checklist',
+        snapshot: true,
+        sections: [{
+          id: 'student-1',
+          title: 'Sam',
+          printableTitle: 'Sam',
+          saved: false,
+          items: []
+        }]
+      }
+    });
+
+    expect(component.canRevertCompletedSession()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.revert-session-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.help-family-button')?.textContent).toContain('Continue Session');
+
+    setFamily({
+      ...family,
+      status: 'helped',
+      checklist: {
+        templateId: 'family-help-session-v1',
+        printableTitle: 'Jane Doe Checklist',
+        snapshot: false,
+        sections: [{
+          id: 'student-1',
+          title: 'Sam',
+          printableTitle: 'Sam',
+          saved: true,
+          items: []
+        }]
+      }
+    });
+
+    expect(component.canRevertCompletedSession()).toBeTrue();
+    expect(component.canOpenHelpSession()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.revert-session-button')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.help-family-button')).toBeNull();
   });
 
   it('emits the family for help and revert actions', () => {

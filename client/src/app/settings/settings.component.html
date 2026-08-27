@@ -248,7 +248,62 @@
           </div>
         </mat-tab>
 
-        <!-- ── Drive Order Tab ── -->
+        <!-- ── Item Preferences Tab ── -->
+        <mat-tab label="Item Preferences">
+          <div class="tab-content">
+            @if (loadingSupplyPreferences()) {
+              <div class="preference-empty-state">
+                <mat-icon>sync</mat-icon>
+              </div>
+            } @else {
+              <div class="supply-preference-list">
+                @for (supplyList of supplyPreferenceRows(); track supplyList._id) {
+                  <section class="supply-preference-row">
+                    <div class="supply-preference-heading">
+                      <div>
+                        <h3>{{ supplyPreferenceLabel(supplyList) }}</h3>
+                        <p>{{ supplyList.school }} · Grade {{ supplyList.grade }}
+                          @if (supplyList.teacher) { · {{ supplyList.teacher }} }
+                        </p>
+                      </div>
+
+                      @if (canEditSupplyPreferences) {
+                        <button
+                          mat-raised-button
+                          color="primary"
+                          type="button"
+                          [disabled]="isSavingSupplyPreference(supplyList._id)"
+                          (click)="saveInventoryPreferences(supplyList)">
+                          {{ isSavingSupplyPreference(supplyList._id) ? 'Saving...' : 'Save' }}
+                        </button>
+                      }
+                    </div>
+
+                    <div class="supply-preference-options">
+                      @for (internalId of linkedInventoryIds(supplyList); track internalId) {
+                        <mat-checkbox
+                          [checked]="isPreferredInventory(supplyList, internalId)"
+                          [disabled]="!canEditSupplyPreferences"
+                          (change)="toggleInventoryPreference(supplyList, internalId, $event.checked)">
+                          <span class="preference-option-label">{{ inventoryPreferenceLabel(internalId) }}</span>
+                          @if (inventoryPreferenceRank(supplyList, internalId); as preferenceRank) {
+                            <span class="preference-option-rank">{{ inventoryPreferenceRankLabel(preferenceRank) }}</span>
+                          }
+                          <span class="preference-option-id">{{ internalId }}</span>
+                        </mat-checkbox>
+                      }
+                    </div>
+                  </section>
+                } @empty {
+                  <div class="preference-empty-state">
+                    <mat-icon>link_off</mat-icon>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </mat-tab>
+
         <mat-tab label="Drive Order">
           <div class="tab-content">
             <p class="tab-description">

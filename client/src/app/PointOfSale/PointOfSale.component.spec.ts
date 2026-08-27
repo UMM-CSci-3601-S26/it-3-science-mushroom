@@ -142,7 +142,12 @@ describe('PointOfSaleComponent', () => {
   });
 
   it('refreshes families when a help session reports changes', () => {
-    const closed = new Subject<{ cleared?: boolean; draftSaved?: boolean; completed?: boolean } | undefined>();
+    const closed = new Subject<{
+      cleared?: boolean;
+      completed?: boolean;
+      draftSaved?: boolean;
+      refresh?: boolean;
+    } | undefined>();
     dialog.open.and.returnValue({
       afterClosed: () => closed.asObservable()
     } as never);
@@ -217,6 +222,21 @@ describe('PointOfSaleComponent', () => {
     component.openAllChecklistPrintDialog();
 
     expect(dialog.open).not.toHaveBeenCalled();
+  it('refreshes families when a help session is closed without a mutation', () => {
+    const closed = new Subject<{ refresh?: boolean } | undefined>();
+    dialog.open.and.returnValue({
+      afterClosed: () => closed.asObservable()
+    } as never);
+    startComponent();
+    familyService.getFamilies.calls.reset();
+
+    component.openHelpFamilySession(family);
+    closed.next({ refresh: true });
+
+    expect(familyService.getFamilies).toHaveBeenCalledWith({
+      guardianName: '',
+      status: ''
+    });
   });
 
   it('skips revert when the family has no id or the user cancels', () => {

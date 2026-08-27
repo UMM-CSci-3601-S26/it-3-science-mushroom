@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.bson.UuidRepresentation;
 import org.mongojack.JacksonMongoCollection;
@@ -35,15 +36,58 @@ public class InventoryMatcher {
   }
 
   public Inventory findBestInventoryMatch(SupplyList supplyList, int requestedQuantity) {
+    return findBestInventoryMatch(
+      supplyList,
+      inventory -> unreservedQuantity(inventory) >= requestedQuantity);
+  }
+
+  public Inventory findBestInventoryMatch(
+      SupplyList supplyList,
+      Predicate<Inventory> inventoryAvailable
+  ) {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
+    List<String> linkedInventoryIds = InventoryIds.validInternalIds(supplyList.invIDs);
+    List<String> preferredInventoryIds = InventoryIds.validInternalIds(supplyList.preferredInventoryIds).stream()
+      .filter(linkedInventoryIds::contains)
+      .toList();
+
+    Inventory preferredMatch = firstAvailableInventory(
+      inventories,
+      preferredInventoryIds,
+      inventoryAvailable);
+    if (preferredMatch != null) {
+      return preferredMatch;
+    }
+
+    Inventory linkedMatch = firstAvailableInventory(inventories, linkedInventoryIds, inventoryAvailable);
+    if (linkedMatch != null) {
+      return linkedMatch;
+    }
+
     return inventories.stream()
-      .filter(inventory -> unreservedQuantity(inventory) >= requestedQuantity)
+      .filter(inventoryAvailable)
       .filter(inventory -> requiredDescriptorsMatch(inventory, supplyList))
       .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
       .max(Comparator
         .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))
         .thenComparingInt(inventory -> -inventorySpecificityScore(inventory)))
       .orElse(null);
+  }
+
+  private Inventory firstAvailableInventory(
+      List<Inventory> inventories,
+      List<String> inventoryIds,
+      Predicate<Inventory> inventoryAvailable
+  ) {
+    for (String inventoryId : inventoryIds) {
+      for (Inventory inventory : inventories) {
+        if (inventoryId.equals(inventory.internalID)
+            && inventoryAvailable.test(inventory)) {
+          return inventory;
+        }
+      }
+    }
+    return null;
   }
 
   public Inventory findBestDemandMatch(SupplyList supplyList) {
@@ -58,9 +102,18 @@ public class InventoryMatcher {
   }
 
   public Inventory findBestSubstitutionMatch(SupplyList supplyList, int requestedQuantity) {
+    return findBestSubstitutionMatch(
+      supplyList,
+      inventory -> unreservedQuantity(inventory) >= requestedQuantity);
+  }
+
+  public Inventory findBestSubstitutionMatch(
+      SupplyList supplyList,
+      Predicate<Inventory> inventoryAvailable
+  ) {
     ArrayList<Inventory> inventories = inventoryCollection.find().into(new ArrayList<>());
     return inventories.stream()
-      .filter(inventory -> unreservedQuantity(inventory) >= requestedQuantity)
+      .filter(inventoryAvailable)
       .filter(inventory -> inventorySimilarityScore(inventory, supplyList) > 0)
       .max(Comparator
         .comparingInt((Inventory inventory) -> inventorySimilarityScore(inventory, supplyList))

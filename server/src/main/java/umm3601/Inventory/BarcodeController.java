@@ -23,7 +23,6 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Auth.HttpMethod;
 import umm3601.Auth.RequirePermission;
 import umm3601.Auth.Route;
-import umm3601.Family.InventoryReservationService;
 
 public class BarcodeController {
     private static final String API_BARCODE_LOOKUP = "/api/barcode/lookup/{code}"; // find barcode in internal system
@@ -32,10 +31,8 @@ public class BarcodeController {
     private static final String API_LINK_EXTERNAL_BARCODE = "/api/inventory/{internalID}/link-barcode";
 
     private final JacksonMongoCollection<Inventory> inventoryCollection;
-    private final InventoryReservationService inventoryReservationService;
 
     public BarcodeController(MongoDatabase database) {
-      this.inventoryReservationService = new InventoryReservationService(database);
       this.inventoryCollection = JacksonMongoCollection.builder().build(
           database,
           "inventory",
@@ -143,8 +140,6 @@ public class BarcodeController {
       throw new NotFoundResponse("Inventory item not found for ID: " + id);
     }
 
-    inventoryReservationService.rebuildInventoryReservation();
-
     ctx.json(updated);
     ctx.status(HttpStatus.OK);
   }
@@ -173,8 +168,6 @@ public class BarcodeController {
     if (updated == null) {
       throw new NotFoundResponse("Inventory item not found for internalID: " + internalID);
     }
-
-    inventoryReservationService.rebuildInventoryReservation();
 
     ctx.json(updated);
     ctx.status(HttpStatus.OK);

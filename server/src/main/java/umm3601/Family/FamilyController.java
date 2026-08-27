@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 // Org Imports
@@ -110,6 +111,8 @@ public class FamilyController {
   private final InventoryMatcher inventoryMatcher;
   private final FamilyChecklistService familyChecklistService;
   private final FamilySchedulingService familySchedulingService;
+  private final Object helpSessionMutationQueueMonitor = new Object();
+  private ReentrantLock helpSessionMutationQueue;
 
 
   // Database Constructor
@@ -278,7 +281,6 @@ public class FamilyController {
 
     if (existingFamily == null) {
       familyCollection.insertOne(family);
-      rebuildInventoryReservation();
       return;
     }
 
@@ -287,7 +289,6 @@ public class FamilyController {
     family.status = determineStatus(existingFamily);
     family.deleteRequest = existingFamily.deleteRequest;
     familyCollection.replaceOne(eq("_id", new ObjectId(existingFamily._id)), family);
-    rebuildInventoryReservation();
   }
 
   @Route(method = HttpMethod.POST, path = API_SCHEDULE_FAMILIES)
@@ -439,7 +440,6 @@ public class FamilyController {
     normalizeFamilyForPersistence(newFamily, null);
     newFamily.profileComplete = true;
     familyCollection.insertOne(newFamily);
-    rebuildInventoryReservation();
 
     ctx.json(Map.of("id", newFamily._id));
     ctx.status(HttpStatus.CREATED);
@@ -513,7 +513,6 @@ public class FamilyController {
     );
 
     familyCollection.updateOne(eq("_id", familyId), update);
-    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
@@ -551,7 +550,6 @@ public class FamilyController {
           + id
           + "; perhaps illegal Family ID or an ID for a Family not in the system?");
     }
-    rebuildInventoryReservation();
     ctx.status(HttpStatus.OK);
   }
 
@@ -692,7 +690,6 @@ public class FamilyController {
       .append("status", normalizedStatus));
 
     familyCollection.updateOne(eq("_id", familyId), update);
-    rebuildInventoryReservation();
 
     Family result = familyCollection.find(eq("_id", familyId)).first();
 
@@ -703,6 +700,12 @@ public class FamilyController {
   @Route(method = HttpMethod.PATCH, path = API_FAMILY_CHECKLIST)
   @RequirePermission("manage_family_help_sessions")
   public void updateFamilyChecklist(Context ctx) {
+    Family result = runInHelpSessionMutationQueue(() -> updateFamilyChecklistQueued(ctx));
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  private Family updateFamilyChecklistQueued(Context ctx) {
     String id = ctx.pathParam("id");
     ObjectId familyId;
 
@@ -722,6 +725,7 @@ public class FamilyController {
     if (checklistUpdate.getChecklist() == null) {
       throw new BadRequestResponse("A checklist payload is required.");
     }
+    ensureHelpSessionExists(existingFamily);
 
     Family.FamilyChecklist normalizedChecklist = normalizeChecklist(
       checklistUpdate.getChecklist(),
@@ -732,21 +736,16 @@ public class FamilyController {
     Bson update = new Document("$set", new Document("checklist", checklistToDocument(normalizedChecklist)));
     familyCollection.updateOne(eq("_id", familyId), update);
 
-    Family result = familyCollection.find(eq("_id", familyId)).first();
-    ctx.json(result);
-    ctx.status(HttpStatus.OK);
+    return familyCollection.find(eq("_id", familyId)).first();
   }
 
   @Route(method = HttpMethod.GET, path = API_FAMILY_HELP_SESSION)
   @RequirePermission("manage_family_help_sessions")
   public void getFamilyHelpSession(Context ctx) {
-    Family family = requireFamily(ctx.pathParam("id"));
+    String familyId = ctx.pathParam("id");
+    Family family = requireFamily(familyId);
     if (family.checklist == null || !family.checklist.snapshot) {
-      family.checklist = generateChecklistSnapshot(family);
-      family.status = STATUS_BEING_HELPED;
-      family.helped = false;
-      persistFamilyChecklistAndStatus(family);
-      family = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
+      family = startOrRefreshHelpSession(familyId);
     }
 
     ctx.json(family);
@@ -756,24 +755,70 @@ public class FamilyController {
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_START)
   @RequirePermission("manage_family_help_sessions")
   public void startFamilyHelpSession(Context ctx) {
-    Family family = requireFamily(ctx.pathParam("id"));
+    Family result = startOrRefreshHelpSession(ctx.pathParam("id"));
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
 
+  private Family startOrRefreshHelpSession(String familyId) {
+    return runInHelpSessionMutationQueue(() -> startOrRefreshLoadedHelpSession(requireFamily(familyId)));
+  }
+
+  private Family runInHelpSessionMutationQueue(HelpSessionMutation mutation) {
+    ReentrantLock queue = lockHelpSessionMutationQueue();
+    try {
+      return mutation.run();
+    } finally {
+      queue.unlock();
+      clearHelpSessionMutationQueueIfIdle(queue);
+    }
+  }
+
+  private ReentrantLock lockHelpSessionMutationQueue() {
+    synchronized (helpSessionMutationQueueMonitor) {
+      if (helpSessionMutationQueue == null) {
+        helpSessionMutationQueue = new ReentrantLock(true);
+      }
+      helpSessionMutationQueue.lock();
+      return helpSessionMutationQueue;
+    }
+  }
+
+  private void clearHelpSessionMutationQueueIfIdle(ReentrantLock queue) {
+    synchronized (helpSessionMutationQueueMonitor) {
+      if (helpSessionMutationQueue == queue && !queue.isLocked() && !queue.hasQueuedThreads()) {
+        helpSessionMutationQueue = null;
+      }
+    }
+  }
+
+  private Family startOrRefreshLoadedHelpSession(Family family) {
     if (family.checklist == null || !family.checklist.snapshot) {
+      String previousStatus = determineStatus(family);
+      boolean previousHelped = family.helped;
+      inventoryReservationService.rebuildInventoryReservationExcludingFamily(family._id);
       family.checklist = generateChecklistSnapshot(family);
+      family.checklist.previousStatus = previousStatus;
+      family.checklist.previousHelped = previousHelped;
     }
 
     family.status = STATUS_BEING_HELPED;
     family.helped = false;
     persistFamilyChecklistAndStatus(family);
+    inventoryReservationService.rebuildInventoryReservation();
 
-    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
-    ctx.json(result);
-    ctx.status(HttpStatus.OK);
+    return familyCollection.find(eq("_id", new ObjectId(family._id))).first();
   }
 
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_SAVE_CHILD)
   @RequirePermission("manage_family_help_sessions")
   public void saveFamilyHelpSessionChild(Context ctx) {
+    Family result = runInHelpSessionMutationQueue(() -> saveFamilyHelpSessionChildQueued(ctx));
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  private Family saveFamilyHelpSessionChildQueued(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
 
@@ -791,7 +836,7 @@ public class FamilyController {
     }
 
     Family.ChecklistSection normalizedSection = normalizeSectionForSave(request.getSectionId(), request.getSection());
-    commitSectionInventoryChanges(normalizedSection);
+    commitSectionInventoryChanges(normalizedSection, existingSection);
     normalizedSection.saved = true;
     replaceSection(family.checklist, normalizedSection);
 
@@ -801,18 +846,29 @@ public class FamilyController {
       family.checklist.snapshot = false;
     }
     persistFamilyChecklistAndStatus(family);
-    rebuildInventoryReservation();
 
-    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
-    ctx.json(result);
-    ctx.status(HttpStatus.OK);
+    return familyCollection.find(eq("_id", new ObjectId(family._id))).first();
   }
 
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_SAVE_ALL)
   @RequirePermission("manage_family_help_sessions")
   public void saveFamilyHelpSessionAll(Context ctx) {
+    Family result = runInHelpSessionMutationQueue(() -> saveFamilyHelpSessionAllQueued(ctx));
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  private Family saveFamilyHelpSessionAllQueued(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
+
+    List<Family.ChecklistSection> existingUnsavedSections = new ArrayList<>();
+    for (Family.ChecklistSection section : family.checklist.sections) {
+      if (!section.saved) {
+        existingUnsavedSections.add(section);
+      }
+    }
+    Map<String, Integer> heldQuantityByInventoryId = heldReservationsForSections(existingUnsavedSections);
 
     FamilyHelpSessionSaveAllRequest request = ctx.bodyValidator(FamilyHelpSessionSaveAllRequest.class).get();
     if (request.getChecklist() != null) {
@@ -820,13 +876,19 @@ public class FamilyController {
       family.checklist.snapshot = true;
     }
 
+    List<Family.ChecklistSection> normalizedUnsavedSections = new ArrayList<>();
     for (Family.ChecklistSection section : family.checklist.sections) {
       if (!section.saved) {
         Family.ChecklistSection normalizedSection = normalizeSectionForSave(section.id, section);
-        commitSectionInventoryChanges(normalizedSection);
-        normalizedSection.saved = true;
-        replaceSection(family.checklist, normalizedSection);
+        normalizedUnsavedSections.add(normalizedSection);
       }
+    }
+    validateSectionsInventoryChanges(normalizedUnsavedSections, heldQuantityByInventoryId);
+
+    for (Family.ChecklistSection normalizedSection : normalizedUnsavedSections) {
+      applySectionInventoryChanges(normalizedSection);
+      normalizedSection.saved = true;
+      replaceSection(family.checklist, normalizedSection);
     }
     familyNeededItemService.recordNeededButNotAcquiredItems(family);
 
@@ -834,11 +896,8 @@ public class FamilyController {
     family.helped = true;
     family.checklist.snapshot = false;
     persistFamilyChecklistAndStatus(family);
-    rebuildInventoryReservation();
 
-    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
-    ctx.json(result);
-    ctx.status(HttpStatus.OK);
+    return familyCollection.find(eq("_id", new ObjectId(family._id))).first();
   }
 
   private void releaseChecklistReservations(Family.FamilyChecklist checklist) {
@@ -860,25 +919,54 @@ public class FamilyController {
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_CLEAR)
   @RequirePermission("manage_family_help_sessions")
   public void clearFamilyHelpSession(Context ctx) {
+    Family result = runInHelpSessionMutationQueue(() -> clearFamilyHelpSessionQueued(ctx));
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  private Family clearFamilyHelpSessionQueued(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureHelpSessionExists(family);
+    String restoredStatus = statusAfterClearingHelpSession(family.checklist);
+    boolean restoredHelped = helpedAfterClearingHelpSession(family.checklist, restoredStatus);
 
     releaseChecklistReservations(family.checklist);
 
     family.checklist = null;
-    family.status = STATUS_NOT_HELPED;
-    family.helped = false;
+    family.status = restoredStatus;
+    family.helped = restoredHelped;
     persistFamilyChecklistAndStatus(family);
-    rebuildInventoryReservation();
+    inventoryReservationService.rebuildInventoryReservation();
 
-    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
-    ctx.json(result);
-    ctx.status(HttpStatus.OK);
+    return familyCollection.find(eq("_id", new ObjectId(family._id))).first();
+  }
+
+  private String statusAfterClearingHelpSession(Family.FamilyChecklist checklist) {
+    if (checklist == null || !hasText(checklist.previousStatus)) {
+      return STATUS_NOT_HELPED;
+    }
+
+    String previousStatus = normalizeStatusValue(checklist.previousStatus);
+    return previousStatus == null ? STATUS_NOT_HELPED : previousStatus;
+  }
+
+  private boolean helpedAfterClearingHelpSession(Family.FamilyChecklist checklist, String restoredStatus) {
+    if (checklist != null && checklist.previousHelped != null) {
+      return checklist.previousHelped;
+    }
+
+    return STATUS_HELPED.equals(restoredStatus);
   }
 
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_REVERT)
   @RequirePermission("manage_family_help_sessions")
   public void revertCompletedFamilyHelpSession(Context ctx) {
+    Family result = runInHelpSessionMutationQueue(() -> revertCompletedFamilyHelpSessionQueued(ctx));
+    ctx.json(result);
+    ctx.status(HttpStatus.OK);
+  }
+
+  private Family revertCompletedFamilyHelpSessionQueued(Context ctx) {
     Family family = requireFamily(ctx.pathParam("id"));
     ensureCompletedHelpSessionExists(family);
 
@@ -892,11 +980,9 @@ public class FamilyController {
     family.status = STATUS_BEING_HELPED;
     family.helped = false;
     persistFamilyChecklistAndStatus(family);
-    rebuildInventoryReservation();
+    inventoryReservationService.rebuildInventoryReservation();
 
-    Family result = familyCollection.find(eq("_id", new ObjectId(family._id))).first();
-    ctx.json(result);
-    ctx.status(HttpStatus.OK);
+    return familyCollection.find(eq("_id", new ObjectId(family._id))).first();
   }
 
   // GET dashboard stats
@@ -1151,10 +1237,6 @@ public class FamilyController {
     inventory.reservedQuantity = newReservedQuantity;
   }
 
-  private void rebuildInventoryReservation() {
-    inventoryReservationService.rebuildInventoryReservation();
-  }
-
   private void persistFamilyChecklistAndStatus(Family family) {
     familyCollection.updateOne(eq("_id", new ObjectId(family._id)), Updates.combine(
       Updates.set("checklist", checklistToDocument(family.checklist)),
@@ -1213,22 +1295,58 @@ public class FamilyController {
     return normalizedSection;
   }
 
-  private void commitSectionInventoryChanges(Family.ChecklistSection section) {
+  private void commitSectionInventoryChanges(
+      Family.ChecklistSection section,
+      Family.ChecklistSection existingSection
+  ) {
+    validateSectionsInventoryChanges(List.of(section), heldReservationsForSections(List.of(existingSection)));
+    applySectionInventoryChanges(section);
+  }
+
+  private Map<String, Integer> heldReservationsForSections(List<Family.ChecklistSection> sections) {
+    Map<String, Integer> heldQuantityByInventoryId = new HashMap<>();
+
+    for (Family.ChecklistSection section : sections) {
+      if (section.items == null) {
+        continue;
+      }
+      for (Family.ChecklistItem item : section.items) {
+        addHeldReservationTarget(item, heldQuantityByInventoryId);
+      }
+    }
+
+    return heldQuantityByInventoryId;
+  }
+
+  private void validateSectionsInventoryChanges(
+      List<Family.ChecklistSection> sections,
+      Map<String, Integer> heldQuantityByInventoryId
+  ) {
+    // Accumulate every target before mutating inventory so save-all cannot reuse one stock count across rows.
+    Map<String, Integer> requestedQuantityByInventoryId = new HashMap<>();
+
+    for (Family.ChecklistSection section : sections) {
+      for (Family.ChecklistItem item : section.items) {
+        validateChecklistItemForSave(item);
+        addRequestedInventoryTarget(item, requestedQuantityByInventoryId);
+      }
+    }
+
+    for (Map.Entry<String, Integer> request : requestedQuantityByInventoryId.entrySet()) {
+      validateInventoryTargetQuantity(
+        request.getKey(),
+        request.getValue(),
+        heldQuantityByInventoryId.getOrDefault(request.getKey(), 0));
+    }
+  }
+
+  private void applySectionInventoryChanges(Family.ChecklistSection section) {
     for (Family.ChecklistItem item : section.items) {
-      validateChecklistItemForSave(item);
-
-      if (hasText(item.substituteBarcode)) {
+      if (isChosenSubstitution(item)) {
         Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
-        if (substituteInventory == null) {
-          throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
-        }
-
-        if (inventoryMatcher.unreservedQuantity(substituteInventory) < item.requestedQuantity) {
-          throw new BadRequestResponse("Not enough unreserved stock available for substitute item.");
-        }
-
         releaseInventory(item.matchedInventoryId, item.requestedQuantity);
         consumeInventory(substituteInventory.internalID, item.requestedQuantity);
+        releaseInventory(substituteInventory.internalID, item.requestedQuantity);
         item.substituteInventoryId = substituteInventory.internalID;
         item.substituteItem = substituteInventory.item;
         item.substituteDescription = substituteInventory.description;
@@ -1242,12 +1360,87 @@ public class FamilyController {
     }
   }
 
+  private void addHeldReservationTarget(Family.ChecklistItem item, Map<String, Integer> heldQuantityByInventoryId) {
+    String heldInventoryId = heldInventoryIdForSave(item);
+    if (!hasText(heldInventoryId)) {
+      return;
+    }
+
+    int requestedQuantity = item.requestedQuantity == null || item.requestedQuantity <= 0
+      ? 1
+      : item.requestedQuantity;
+    heldQuantityByInventoryId.merge(heldInventoryId, requestedQuantity, Integer::sum);
+  }
+
+  private String heldInventoryIdForSave(Family.ChecklistItem item) {
+    if (isChosenSubstitution(item)) {
+      if (hasText(item.substituteInventoryId)) {
+        return item.substituteInventoryId;
+      }
+      Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
+      return substituteInventory == null ? null : substituteInventory.internalID;
+    }
+
+    return hasText(item.substituteBarcode) || hasText(item.notPickedUpReason) ? null : item.matchedInventoryId;
+  }
+
+  private void addRequestedInventoryTarget(
+      Family.ChecklistItem item,
+      Map<String, Integer> requestedQuantityByInventoryId
+  ) {
+    String targetInventoryId = targetInventoryIdForSave(item);
+    if (!hasText(targetInventoryId)) {
+      return;
+    }
+
+    int requestedQuantity = item.requestedQuantity == null || item.requestedQuantity <= 0
+      ? 1
+      : item.requestedQuantity;
+    requestedQuantityByInventoryId.merge(targetInventoryId, requestedQuantity, Integer::sum);
+  }
+
+  private String targetInventoryIdForSave(Family.ChecklistItem item) {
+    if (isChosenSubstitution(item)) {
+      Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
+      if (substituteInventory == null) {
+        throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
+      }
+      if (!hasText(substituteInventory.internalID)) {
+        throw new BadRequestResponse("A substitute checklist item is missing its inventory match.");
+      }
+      return substituteInventory.internalID;
+    }
+    if (item.selected) {
+      if (!hasText(item.matchedInventoryId)) {
+        throw new BadRequestResponse("A selected checklist item is missing its inventory match.");
+      }
+      return item.matchedInventoryId;
+    }
+    return null;
+  }
+
+  private void validateInventoryTargetQuantity(String internalId, int requestedQuantity, int heldQuantity) {
+    if (!hasText(internalId)) {
+      throw new BadRequestResponse("A selected checklist item is missing its inventory match.");
+    }
+
+    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    if (inventory == null) {
+      throw new NotFoundResponse("No item found for internalID: " + internalId);
+    }
+    int heldAvailableQuantity = Math.min(heldQuantity, inventory.reservedQuantity);
+    int availableQuantity = inventoryMatcher.unreservedQuantity(inventory) + heldAvailableQuantity;
+    if (availableQuantity < requestedQuantity) {
+      throw new BadRequestResponse("Not enough unreserved stock available for inventory item: " + internalId);
+    }
+  }
+
   private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
     for (Family.ChecklistSection section : checklist.sections) {
       for (Family.ChecklistItem item : section.items) {
-        if (hasText(item.substituteInventoryId)) {
+        if (isChosenSubstitution(item) && hasText(item.substituteInventoryId)) {
           restoreInventory(item.substituteInventoryId, item.requestedQuantity);
-        } else if (hasText(item.substituteBarcode)) {
+        } else if (isChosenSubstitution(item)) {
           Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
           if (substituteInventory == null) {
             throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
@@ -1262,7 +1455,7 @@ public class FamilyController {
   }
 
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
-    boolean hasSubstitution = hasText(item.substituteBarcode);
+    boolean hasSubstitution = isChosenSubstitution(item);
     if (item.selected && !item.available && !hasSubstitution) {
       throw new BadRequestResponse("Unavailable items cannot be saved as selected.");
     }
@@ -1284,6 +1477,12 @@ public class FamilyController {
           "reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
       }
     }
+  }
+
+  private boolean isChosenSubstitution(Family.ChecklistItem item) {
+    return item != null
+      && hasText(item.substituteBarcode)
+      && (item.selected || REASON_SUBSTITUTED.equals(normalizeReason(item.notPickedUpReason)));
   }
 
   private boolean isValidNotPickedUpReason(String reason) {
@@ -1439,7 +1638,6 @@ public class FamilyController {
     if (checklist == null) {
       normalizedChecklist.snapshot = false;
     }
-
     if (normalizedChecklist.printableTitle == null || normalizedChecklist.printableTitle.isBlank()) {
       normalizedChecklist.printableTitle = guardianName == null || guardianName.isBlank()
         ? "Family Checklist"
@@ -1604,6 +1802,8 @@ public class FamilyController {
       .append("templateId", checklist.templateId)
       .append("printableTitle", checklist.printableTitle)
       .append("snapshot", checklist.snapshot)
+      .append("previousStatus", checklist.previousStatus)
+      .append("previousHelped", checklist.previousHelped)
       .append("sections", sectionDocuments);
   }
 
@@ -1657,6 +1857,10 @@ public class FamilyController {
       return user.fullName;
     }
     return user.username;
+  }
+
+  private interface HelpSessionMutation {
+    Family run();
   }
 
 }

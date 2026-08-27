@@ -39,4 +39,5 @@ public class PurchaseListController {
     ctx.json(purchaseListService.calculateNewPurchaseList());
     ctx.status(HttpStatus.OK);
   }
+
 }
