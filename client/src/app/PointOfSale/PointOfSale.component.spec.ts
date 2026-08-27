@@ -222,6 +222,8 @@ describe('PointOfSaleComponent', () => {
     component.openAllChecklistPrintDialog();
 
     expect(dialog.open).not.toHaveBeenCalled();
+  });
+
   it('refreshes families when a help session is closed without a mutation', () => {
     const closed = new Subject<{ refresh?: boolean } | undefined>();
     dialog.open.and.returnValue({
