@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, map, merge, of, startWith, switchMap, tap } from 'rxjs';
@@ -17,13 +18,20 @@ import { AuthService } from '../auth/auth-service';
 import { Family, StudentInfo } from '../family/family';
 import { FamilyService } from '../family/family.service';
 import { DialogService } from '../shared/dialog/dialog.service';
+import { MissingSelection } from './point-of-sale-checklist-print-selection';
 import { PointOfSaleChecklistPrintDialogComponent } from './point-of-sale-checklist-print-dialog.component';
 import { PointOfSaleFamilyCardComponent } from './point-of-sale-family-card.component';
+import { PointOfSaleMissingSelectionsDialogComponent } from './point-of-sale-missing-selections-dialog.component';
 import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialog.component';
 
 interface PrintableChecklistStudent {
   family: Family;
   student: StudentInfo;
+}
+
+interface SelectedChecklistStudentsResult {
+  selectedStudents: PrintableChecklistStudent[];
+  missingSelections: MissingSelection[];
 }
 
 @Component({
@@ -53,6 +61,7 @@ export class PointOfSaleComponent implements OnInit {
   private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
   private familyRefresh = new Subject<number>();
+  private snackBar = inject(MatSnackBar);
 
   families: Family[] = [];
   familySearch = new FormControl('', { nonNullable: true });
@@ -195,9 +204,28 @@ export class PointOfSaleComponent implements OnInit {
   }
 
   private printSelectedChecklists(selections: { family: Family; selectedStudentIndexes: number[] }[]): void {
-    const sheets = this.selectedChecklistStudents(selections);
+    const { selectedStudents, missingSelections } = this.selectedChecklistStudents(selections);
 
-    if (sheets.length === 0) {
+    if (missingSelections.length > 0) {
+      const snackBarRef = this.snackBar.open(
+        'Some selected students failed to load.',
+        'Details',
+        { duration: 10000 }
+      );
+
+      snackBarRef.onAction().pipe(
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe(() => {
+        this.dialog.open(PointOfSaleMissingSelectionsDialogComponent, {
+          data: { missingSelections },
+          width: '860px',
+          maxWidth: '92vw',
+          maxHeight: '90vh'
+        });
+      });
+    }
+
+    if (selectedStudents.length === 0) {
       return;
     }
 
@@ -208,20 +236,35 @@ export class PointOfSaleComponent implements OnInit {
       return;
     }
 
-    popup.document.write(this.buildChecklistPrintDocument(sheets));
+    popup.document.write(this.buildChecklistPrintDocument(selectedStudents));
     popup.document.close();
     popup.focus();
   }
 
   private selectedChecklistStudents(
     selections: { family: Family; selectedStudentIndexes: number[] }[]
-  ): PrintableChecklistStudent[] {
-    return selections.flatMap(selection =>
-      selection.selectedStudentIndexes.flatMap(index => {
+  ): SelectedChecklistStudentsResult {
+    const selectedStudents: PrintableChecklistStudent[] = [];
+    const missingSelections: MissingSelection[] = [];
+
+    for (const selection of selections) {
+      for (const index of selection.selectedStudentIndexes) {
         const student = selection.family.students?.[index];
-        return student ? [{ family: selection.family, student }] : [];
-      })
-    );
+        if (student) {
+          selectedStudents.push({
+            family: selection.family,
+            student
+          });
+        } else {
+          missingSelections.push({
+            family: selection.family,
+            studentIndex: index
+          });
+        }
+      }
+    }
+
+    return { selectedStudents, missingSelections };
   }
 
   private buildChecklistPrintDocument(sheets: PrintableChecklistStudent[]): string {
@@ -243,10 +286,10 @@ export class PointOfSaleComponent implements OnInit {
   }
 
   private buildChecklistPrintPages(sheets: PrintableChecklistStudent[]): string {
-    return sheets.map((sheet, index) => `
-      ${index % 2 === 0 ? '<main class="page">' : ''}
+    return sheets.map(sheet => `
+      <main class="page">
       ${this.buildChecklistHalfSheet(sheet)}
-      ${index % 2 === 1 || index === sheets.length - 1 ? '</main>' : ''}
+      </main>
     `).join('');
   }
 
@@ -276,22 +319,22 @@ export class PointOfSaleComponent implements OnInit {
     const row = `
       <div class="item">
         <span>${blank}</span>
-        <span></span>
-        <span></span>
-        <span></span>
         <span>${blank}</span>
+        <span class="check-box">[ ]</span>
+        <span class="check-box">[ ]</span>
+        <span class="check-box">[ ]</span>
       </div>
     `;
-    const rows = Array.from({ length: 17 }, () => row).join('');
+    const rows = Array.from({ length: 34 }, () => row).join('');
 
     return `
       <div class="list">
         <div class="item head">
-          <span>Need</span>
-          <span>Y</span>
-          <span>N</span>
+          <span>Needed Item</span>
+          <span>Given Item</span>
+          <span>Yes</span>
+          <span>No</span>
           <span>Sub</span>
-          <span>Give</span>
         </div>
         ${rows}
       </div>
@@ -314,8 +357,6 @@ export class PointOfSaleComponent implements OnInit {
       button { margin: 12px; }
 
       .page {
-        display: grid;
-        grid-template-rows: 1fr 1fr;
         width: 8.5in;
         height: 11in;
         margin: 0 auto 12px;
@@ -325,12 +366,12 @@ export class PointOfSaleComponent implements OnInit {
       }
 
       .half {
+        display: grid;
+        grid-template-rows: auto auto auto minmax(0, 1fr);
+        height: 100%;
         overflow: hidden;
         padding: .06in 0;
-        border-bottom: 1px dashed #888;
       }
-
-      .half:last-child { border-bottom: 0; }
 
       h1 {
         margin: 0 0 .04in;
@@ -353,17 +394,23 @@ export class PointOfSaleComponent implements OnInit {
         grid-template-columns: 1fr 1fr;
         column-gap: .16in;
         margin-top: .04in;
+        min-height: 0;
       }
 
       .list {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
         min-width: 0;
+        min-height: 0;
         font-size: 7px;
       }
 
       .item {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) .18in .18in .25in .65in;
-        min-height: .22in;
+        flex: 1 1 0;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) .28in .28in .32in;
+        min-height: 0;
         align-items: center;
         border-bottom: 1px solid #ccc;
       }
@@ -378,8 +425,13 @@ export class PointOfSaleComponent implements OnInit {
         width: 100%;
       }
 
+      .check-box {
+        text-align: center;
+      }
+
       .head {
         background: #eee;
+        flex: 0 0 .22in;
         font-weight: bold;
       }
 
