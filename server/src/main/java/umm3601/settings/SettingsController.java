@@ -6,7 +6,10 @@ import static com.mongodb.client.model.Filters.eq;
 
 // Java Imports
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // Org Imports
@@ -52,6 +55,9 @@ public class SettingsController {
   private static final int DEFAULT_BARCODE_PRINT_WARNING_LIMIT = 25;
   private static final int DEFAULT_ENGLISH_FAMILY_COLUMNS = 1;
   private static final int DEFAULT_SPANISH_FAMILY_COLUMNS = 0;
+  private static final String SUPPLY_ORDER_STATUS_STAGED = "staged";
+  private static final String SUPPLY_ORDER_STATUS_UNSTAGED = "unstaged";
+  private static final String SUPPLY_ORDER_STATUS_NOT_GIVEN = "notGiven";
 
   private final JacksonMongoCollection<Settings> settingsCollection;
 
@@ -164,11 +170,7 @@ public class SettingsController {
       throw new BadRequestResponse("Request body must include a 'supplyOrder' array.");
     }
 
-    // Convert to plain BSON Documents
-    List<Document> orderDocs = body.supplyOrder.stream()
-        // Each entry must have an itemTerm and a valid status
-        .map(e -> new Document("itemTerm", e.itemTerm).append("status", e.status))
-        .collect(Collectors.toList());
+    List<Document> orderDocs = supplyOrderDocuments(body.supplyOrder);
 
     // Update the supplyOrder field in the settings document
     settingsCollection.updateOne(
@@ -177,6 +179,46 @@ public class SettingsController {
         new UpdateOptions().upsert(true));
 
     ctx.status(HttpStatus.OK);
+  }
+
+  private List<Document> supplyOrderDocuments(List<Settings.SupplyItemOrder> supplyOrder) {
+    Set<String> seenItemTerms = new HashSet<>();
+    List<Document> orderDocs = new ArrayList<>();
+
+    for (Settings.SupplyItemOrder entry : supplyOrder) {
+      validateSupplyOrderEntry(entry, seenItemTerms);
+
+      String itemTerm = entry.itemTerm.trim();
+      String status = entry.status.trim();
+      orderDocs.add(new Document("itemTerm", itemTerm).append("status", status));
+    }
+
+    return orderDocs;
+  }
+
+  private void validateSupplyOrderEntry(Settings.SupplyItemOrder entry, Set<String> seenItemTerms) {
+    if (entry == null || entry.itemTerm == null || entry.itemTerm.isBlank()) {
+      throw new BadRequestResponse("Each supplyOrder entry must include an itemTerm.");
+    }
+    if (!isValidSupplyOrderStatus(entry.status)) {
+      throw new BadRequestResponse("supplyOrder status must be staged, unstaged, or notGiven.");
+    }
+
+    String normalizedItemTerm = entry.itemTerm.trim().toLowerCase(Locale.US);
+    if (!seenItemTerms.add(normalizedItemTerm)) {
+      throw new BadRequestResponse("supplyOrder itemTerm values must be unique.");
+    }
+  }
+
+  private boolean isValidSupplyOrderStatus(String status) {
+    if (status == null || status.isBlank()) {
+      return false;
+    }
+
+    String trimmedStatus = status.trim();
+    return SUPPLY_ORDER_STATUS_STAGED.equals(trimmedStatus)
+      || SUPPLY_ORDER_STATUS_UNSTAGED.equals(trimmedStatus)
+      || SUPPLY_ORDER_STATUS_NOT_GIVEN.equals(trimmedStatus);
   }
 
   /**

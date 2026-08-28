@@ -72,6 +72,7 @@ public class FamilyController {
   private static final String API_FAMILY_STATUS = "/api/family/{id}/status";
   private static final String API_FAMILY_NEEDED_ITEM_LOGS = "/api/family/needed-item-logs";
   private static final String API_FAMILY_CHECKLIST = "/api/family/{id}/checklist";
+  private static final String API_FAMILY_CURRENT_CHECKLIST = "/api/family/{id}/current-checklist";
   private static final String API_FAMILY_FINALIZED_CHECKLIST = "/api/family/{id}/finalized-checklist";
   private static final String API_FAMILY_HELP_SESSION = "/api/family/{id}/help-session";
   private static final String API_FAMILY_HELP_SESSION_START = "/api/family/{id}/help-session/start";
@@ -247,6 +248,15 @@ public class FamilyController {
     }
 
     ctx.json(family.checklist);
+  }
+
+  @Route(method = HttpMethod.GET, path = API_FAMILY_CURRENT_CHECKLIST)
+  @RequirePermission("manage_family_help_sessions")
+  public void getCurrentFamilyChecklist(Context ctx) {
+    Family family = requireFamily(ctx.pathParam("id"));
+
+    ctx.json(generateCurrentFamilyChecklist(family));
+    ctx.status(HttpStatus.OK);
   }
 
   @Route(method = HttpMethod.GET, path = API_FAMILY_NEEDED_ITEM_LOGS)
@@ -1269,20 +1279,33 @@ public class FamilyController {
     if (normalizedSection.items == null) {
       normalizedSection.items = new ArrayList<>();
     }
+    if (normalizedSection.notGivenItems == null) {
+      normalizedSection.notGivenItems = new ArrayList<>();
+    }
 
     int itemIndex = 1;
     for (Family.ChecklistItem item : normalizedSection.items) {
-      if (!hasText(item.id)) {
-        item.id = sectionId + "-item-" + itemIndex;
-      }
-      if (item.requestedQuantity == null || item.requestedQuantity <= 0) {
-        item.requestedQuantity = 1;
-      }
-      item.notPickedUpReason = normalizeReason(item.notPickedUpReason);
+      normalizeChecklistItem(item, sectionId + "-item-" + itemIndex);
       itemIndex++;
     }
 
+    int notGivenItemIndex = 1;
+    for (Family.ChecklistItem item : normalizedSection.notGivenItems) {
+      normalizeChecklistItem(item, sectionId + "-not-given-item-" + notGivenItemIndex);
+      notGivenItemIndex++;
+    }
+
     return normalizedSection;
+  }
+
+  private void normalizeChecklistItem(Family.ChecklistItem item, String fallbackId) {
+    if (!hasText(item.id)) {
+      item.id = fallbackId;
+    }
+    if (item.requestedQuantity == null || item.requestedQuantity <= 0) {
+      item.requestedQuantity = 1;
+    }
+    item.notPickedUpReason = normalizeReason(item.notPickedUpReason);
   }
 
   private void commitSectionInventoryChanges(
@@ -1643,6 +1666,9 @@ public class FamilyController {
       if (section.items == null) {
         section.items = new ArrayList<>();
       }
+      if (section.notGivenItems == null) {
+        section.notGivenItems = new ArrayList<>();
+      }
       if (section.id == null || section.id.isBlank()) {
         section.id = "section-" + sectionIndex;
       }
@@ -1655,14 +1681,14 @@ public class FamilyController {
 
       int itemIndex = 1;
       for (Family.ChecklistItem item : section.items) {
-        if (item.id == null || item.id.isBlank()) {
-          item.id = section.id + "-item-" + itemIndex;
-        }
-        if (item.requestedQuantity == null || item.requestedQuantity <= 0) {
-          item.requestedQuantity = 1;
-        }
-        item.notPickedUpReason = normalizeReason(item.notPickedUpReason);
+        normalizeChecklistItem(item, section.id + "-item-" + itemIndex);
         itemIndex++;
+      }
+
+      int notGivenItemIndex = 1;
+      for (Family.ChecklistItem item : section.notGivenItems) {
+        normalizeChecklistItem(item, section.id + "-not-given-item-" + notGivenItemIndex);
+        notGivenItemIndex++;
       }
       sectionIndex++;
     }
@@ -1759,23 +1785,13 @@ public class FamilyController {
         List<Document> itemDocuments = new ArrayList<>();
         if (section.items != null) {
           for (Family.ChecklistItem item : section.items) {
-            itemDocuments.add(new Document()
-              .append("id", item.id)
-              .append("label", item.label)
-              .append("selected", item.selected)
-              .append("available", item.available)
-              .append("itemDescription", item.itemDescription)
-              .append("supplyListId", item.supplyListId)
-              .append("matchedInventoryId", item.matchedInventoryId)
-              .append("matchedInventoryItem", item.matchedInventoryItem)
-              .append("matchedInventoryDescription", item.matchedInventoryDescription)
-              .append("requestedQuantity", item.requestedQuantity)
-              .append("notPickedUpReason", item.notPickedUpReason)
-              .append("substituteItem", item.substituteItem)
-              .append("substituteBarcode", item.substituteBarcode)
-              .append("substituteDescription", item.substituteDescription)
-              .append("substituteInventoryId", item.substituteInventoryId)
-              .append("notes", item.notes));
+            itemDocuments.add(checklistItemToDocument(item));
+          }
+        }
+        List<Document> notGivenItemDocuments = new ArrayList<>();
+        if (section.notGivenItems != null) {
+          for (Family.ChecklistItem item : section.notGivenItems) {
+            notGivenItemDocuments.add(checklistItemToDocument(item));
           }
         }
 
@@ -1784,7 +1800,8 @@ public class FamilyController {
           .append("title", section.title)
           .append("printableTitle", section.printableTitle)
           .append("saved", section.saved)
-          .append("items", itemDocuments));
+          .append("items", itemDocuments)
+          .append("notGivenItems", notGivenItemDocuments));
       }
     }
 
@@ -1795,6 +1812,26 @@ public class FamilyController {
       .append("previousStatus", checklist.previousStatus)
       .append("previousHelped", checklist.previousHelped)
       .append("sections", sectionDocuments);
+  }
+
+  private Document checklistItemToDocument(Family.ChecklistItem item) {
+    return new Document()
+      .append("id", item.id)
+      .append("label", item.label)
+      .append("selected", item.selected)
+      .append("available", item.available)
+      .append("itemDescription", item.itemDescription)
+      .append("supplyListId", item.supplyListId)
+      .append("matchedInventoryId", item.matchedInventoryId)
+      .append("matchedInventoryItem", item.matchedInventoryItem)
+      .append("matchedInventoryDescription", item.matchedInventoryDescription)
+      .append("requestedQuantity", item.requestedQuantity)
+      .append("notPickedUpReason", item.notPickedUpReason)
+      .append("substituteItem", item.substituteItem)
+      .append("substituteBarcode", item.substituteBarcode)
+      .append("substituteDescription", item.substituteDescription)
+      .append("substituteInventoryId", item.substituteInventoryId)
+      .append("notes", item.notes);
   }
 
   private Document deleteRequestToDocument(Family.DeleteRequest deleteRequest) {

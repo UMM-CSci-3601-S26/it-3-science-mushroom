@@ -51,7 +51,7 @@
 .family-count {
   flex: 0 0 auto;
   margin-left: auto;
-  margin-right: calc(var(--app-space-lg) + 8px);
+  margin-right: 0;
   padding: 0.5rem 0.9rem;
   border: 1px solid color-mix(in srgb, var(--app-primary) 46%, var(--app-border));
   border-radius: var(--app-radius-pill);
@@ -59,6 +59,11 @@
   color: var(--app-primary);
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.print-all-checklists-button {
+  margin-right: calc(var(--app-space-lg) + 8px);
+  white-space: nowrap;
 }
 
 .settings-link {
@@ -169,6 +174,12 @@ mat-card-content {
     align-self: flex-start;
     margin-left: 0;
     margin-right: 0;
+  }
+
+  .print-all-checklists-button {
+    align-self: stretch;
+    margin-right: 0;
+    white-space: normal;
   }
 
   .filter-card {

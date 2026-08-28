@@ -350,27 +350,30 @@ export class SettingsComponent implements OnInit {
     }).subscribe(({ terms, settings }) => {
       const allTerms: string[] = terms.item ?? [];
       const savedOrder: SupplyItemOrder[] = settings.supplyOrder ?? [];
+      const availableTerms = this.uniqueTerms([
+        ...allTerms,
+        ...savedOrder.map(order => order.itemTerm)
+      ]);
 
-      // Restore staged order from saved list (skip any terms no longer in the database)
-      const stagedTermSet = new Set(
-        savedOrder.filter(o => o.status === 'staged').map(o => o.itemTerm));
-      const notGivenTermSet = new Set(
-        savedOrder.filter(o => o.status === 'notGiven').map(o => o.itemTerm));
+      const savedUnstagedTerms = this.termsWithStatus(savedOrder, 'unstaged');
 
-      // Staged: in the order saved on the server, but only if the term still exists in the database
-      this.stagedTerms = savedOrder
-        .filter(o => o.status === 'staged' && allTerms.includes(o.itemTerm))
-        .map(o => o.itemTerm);
+      // Staged: in the order saved on the server.
+      this.stagedTerms = this.termsWithStatus(savedOrder, 'staged');
 
       // Not Given: sorted alphabetically
-      this.notGivenTerms = allTerms
-        .filter(t => notGivenTermSet.has(t))
-        .sort((a, b) => a.localeCompare(b));
+      this.notGivenTerms = this.sortTerms(this.termsWithStatus(savedOrder, 'notGiven'));
 
       // Unstaged: every term not yet assigned — sorted alphabetically
-      this.unstagedTerms = allTerms
-        .filter(t => !stagedTermSet.has(t) && !notGivenTermSet.has(t))
-        .sort((a, b) => a.localeCompare(b));
+      const assignedTerms = [
+        ...this.stagedTerms,
+        ...savedUnstagedTerms,
+        ...this.notGivenTerms
+      ];
+      const newUnstagedTerms = availableTerms.filter(term => !this.hasTerm(assignedTerms, term));
+      this.unstagedTerms = this.sortTerms([
+        ...savedUnstagedTerms,
+        ...newUnstagedTerms
+      ]);
     });
   }
 
@@ -550,25 +553,96 @@ export class SettingsComponent implements OnInit {
       .filter((value, index, allValues) => value && allValues.indexOf(value) === index);
   }
 
+  private uniqueTerms(values: Array<string | undefined>): string[] {
+    const unique: string[] = [];
+
+    for (const value of values) {
+      const term = this.cleanTerm(value);
+      if (term && !this.hasTerm(unique, term)) {
+        unique.push(term);
+      }
+    }
+
+    return unique;
+  }
+
+  private termsWithStatus(order: SupplyItemOrder[], status: SupplyItemOrder['status']): string[] {
+    return this.uniqueTerms(
+      order
+        .filter(entry => entry.status === status)
+        .map(entry => entry.itemTerm)
+    );
+  }
+
+  private sortTerms(terms: string[]): string[] {
+    return this.uniqueTerms(terms).sort((left, right) => left.localeCompare(right));
+  }
+
+  private hasTerm(terms: string[], term: string): boolean {
+    const cleanTerm = this.cleanTerm(term);
+    return !!cleanTerm && terms.some(existingTerm => this.sameTerm(existingTerm, cleanTerm));
+  }
+
+  private sameTerm(left: string, right: string): boolean {
+    return left.trim().toLowerCase() === right.trim().toLowerCase();
+  }
+
+  private cleanTerm(term: string | undefined | null): string {
+    return term?.trim() ?? '';
+  }
+
+  private removeTermFromBuckets(term: string): void {
+    this.stagedTerms = this.stagedTerms.filter(existingTerm => !this.sameTerm(existingTerm, term));
+    this.unstagedTerms = this.unstagedTerms.filter(existingTerm => !this.sameTerm(existingTerm, term));
+    this.notGivenTerms = this.notGivenTerms.filter(existingTerm => !this.sameTerm(existingTerm, term));
+  }
+
+  private buildSupplyOrder(): SupplyItemOrder[] {
+    const stagedTerms = this.uniqueTerms(this.stagedTerms);
+    const unstagedTerms = this.uniqueTerms(this.unstagedTerms)
+      .filter(term => !this.hasTerm(stagedTerms, term));
+    const servedTerms = [...stagedTerms, ...unstagedTerms];
+    const notGivenTerms = this.uniqueTerms(this.notGivenTerms)
+      .filter(term => !this.hasTerm(servedTerms, term));
+
+    return [
+      ...stagedTerms.map(itemTerm => ({ itemTerm, status: 'staged' as const })),
+      ...unstagedTerms.map(itemTerm => ({ itemTerm, status: 'unstaged' as const })),
+      ...notGivenTerms.map(itemTerm => ({ itemTerm, status: 'notGiven' as const })),
+    ];
+  }
+
   // Move a term from its current list into Staged (appended at end)
   moveToStaged(term: string): void {
-    this.unstagedTerms = this.unstagedTerms.filter(t => t !== term);
-    this.notGivenTerms = this.notGivenTerms.filter(t => t !== term);
-    this.stagedTerms = [...this.stagedTerms, term];
+    const cleanTerm = this.cleanTerm(term);
+    if (!cleanTerm) {
+      return;
+    }
+
+    this.removeTermFromBuckets(cleanTerm);
+    this.stagedTerms = [...this.stagedTerms, cleanTerm];
   }
 
   // Move a term to Unstaged
   moveToUnstaged(term: string): void {
-    this.stagedTerms = this.stagedTerms.filter(t => t !== term);
-    this.notGivenTerms = this.notGivenTerms.filter(t => t !== term);
-    this.unstagedTerms = [...this.unstagedTerms, term].sort((a, b) => a.localeCompare(b));
+    const cleanTerm = this.cleanTerm(term);
+    if (!cleanTerm) {
+      return;
+    }
+
+    this.removeTermFromBuckets(cleanTerm);
+    this.unstagedTerms = this.sortTerms([...this.unstagedTerms, cleanTerm]);
   }
 
-  // Mark a term as Not Given (all supplies with this item excluded from checklists)
+  // Mark a term as not served at the drive.
   moveToNotGiven(term: string): void {
-    this.stagedTerms = this.stagedTerms.filter(t => t !== term);
-    this.unstagedTerms = this.unstagedTerms.filter(t => t !== term);
-    this.notGivenTerms = [...this.notGivenTerms, term].sort((a, b) => a.localeCompare(b));
+    const cleanTerm = this.cleanTerm(term);
+    if (!cleanTerm) {
+      return;
+    }
+
+    this.removeTermFromBuckets(cleanTerm);
+    this.notGivenTerms = this.sortTerms([...this.notGivenTerms, cleanTerm]);
   }
 
   // CDK drag-drop handler for reordering the staged list
@@ -582,11 +656,7 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    const order: SupplyItemOrder[] = [
-      ...this.stagedTerms.map(t => ({ itemTerm: t, status: 'staged' as const })),
-      ...this.unstagedTerms.map(t => ({ itemTerm: t, status: 'unstaged' as const })),
-      ...this.notGivenTerms.map(t => ({ itemTerm: t, status: 'notGiven' as const })),
-    ];
+    const order = this.buildSupplyOrder();
     this.settingsService.updateSupplyOrder(order).subscribe({
       next: () => this.snackBar.open('Drive order saved', 'OK', { duration: 2000 }),
       error: () => this.snackBar.open('Failed to save drive order', 'OK', { duration: 3000 })
@@ -623,21 +693,17 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  // Saves the drive order then navigates to the checklist page to regenerate checklists
-  saveAndGenerateChecklists(): void {
+  // Saves the drive order before the operator starts new POS sessions.
+  saveAndOpenPointOfSale(): void {
     if (!this.canEditSupplyOrder) {
       return;
     }
 
-    const order: SupplyItemOrder[] = [
-      ...this.stagedTerms.map(t => ({ itemTerm: t, status: 'staged' as const })),
-      ...this.unstagedTerms.map(t => ({ itemTerm: t, status: 'unstaged' as const })),
-      ...this.notGivenTerms.map(t => ({ itemTerm: t, status: 'notGiven' as const })),
-    ];
+    const order = this.buildSupplyOrder();
     this.settingsService.updateSupplyOrder(order).subscribe({
       next: () => {
-        this.router.navigate(['/checklists'], { queryParams: { generate: 'true' } });
-        this.snackBar.open('Successfully generated checklist', 'OK', { duration: 2000 })
+        this.router.navigate(['/point-of-sale']);
+        this.snackBar.open('Drive order saved for new POS sessions', 'OK', { duration: 2000 });
       },
       error: () => this.snackBar.open('Failed to save drive order', 'OK', { duration: 3000 })
     });

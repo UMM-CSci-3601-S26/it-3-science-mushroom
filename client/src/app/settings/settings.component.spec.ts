@@ -288,7 +288,7 @@ describe('SettingsComponent', () => {
     expect(component.unstagedTerms).toEqual(['folder', 'notebook']); // pencil excluded
   }));
 
-  it('ignores saved terms that no longer exist in the terms database', fakeAsync(() => {
+  it('preserves saved staged terms that no longer exist in the terms database', fakeAsync(() => {
     const savedSettings: AppSettings = {
       ...mockSettings,
       supplyOrder: [{ itemTerm: 'eraser', status: 'staged' }], // eraser not in mockTerms
@@ -297,7 +297,20 @@ describe('SettingsComponent', () => {
     component.ngOnInit();
     tick();
 
-    expect(component.stagedTerms).toEqual([]); // eraser dropped
+    expect(component.stagedTerms).toEqual(['eraser']);
+    expect(component.unstagedTerms).toEqual(['folder', 'notebook', 'pencil']);
+  }));
+
+  it('preserves saved notGiven terms that are not in the terms database', fakeAsync(() => {
+    const savedSettings: AppSettings = {
+      ...mockSettings,
+      supplyOrder: [{ itemTerm: 'calculator', status: 'notGiven' }],
+    };
+    settingsServiceSpy.getSettings.and.returnValue(of(savedSettings));
+    component.ngOnInit();
+    tick();
+
+    expect(component.notGivenTerms).toEqual(['calculator']);
     expect(component.unstagedTerms).toEqual(['folder', 'notebook', 'pencil']);
   }));
 
@@ -444,32 +457,30 @@ describe('SettingsComponent', () => {
     expect(settingsServiceSpy.updateSupplyOrder).toHaveBeenCalledWith([]);
   });
 
-  it('saveAndGenerateChecklists saves and navigates to /checklists?generate=true', () => {
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    // Patch the component's router with our spy
-    (component as unknown as { router: jasmine.SpyObj<Router> }).router = routerSpy;
+  it('saveAndOpenPointOfSale saves and navigates to the POS workflow', () => {
     component.stagedTerms = ['notebook'];
     component.unstagedTerms = ['folder'];
     component.notGivenTerms = ['pencil'];
     settingsServiceSpy.updateSupplyOrder.and.returnValue(of(undefined));
 
-    component.saveAndGenerateChecklists();
+    component.saveAndOpenPointOfSale();
 
     expect(settingsServiceSpy.updateSupplyOrder).toHaveBeenCalledWith([
       { itemTerm: 'notebook', status: 'staged' },
       { itemTerm: 'folder', status: 'unstaged' },
       { itemTerm: 'pencil', status: 'notGiven' },
     ]);
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/checklists'], { queryParams: { generate: 'true' } });
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/point-of-sale']);
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Drive order saved for new POS sessions', 'OK', { duration: 2000 });
   });
 
-  it('saveAndGenerateChecklists shows error snack bar on failure', () => {
+  it('saveAndOpenPointOfSale shows error snack bar on failure', () => {
     settingsServiceSpy.updateSupplyOrder.and.returnValue(throwError(() => new Error('Network error')));
     component.stagedTerms = [];
     component.unstagedTerms = [];
     component.notGivenTerms = [];
 
-    component.saveAndGenerateChecklists();
+    component.saveAndOpenPointOfSale();
 
     expect(snackBarSpy.open).toHaveBeenCalledWith('Failed to save drive order', 'OK', { duration: 3000 });
   });

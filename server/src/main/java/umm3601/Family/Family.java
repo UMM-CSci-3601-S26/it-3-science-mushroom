@@ -104,6 +104,7 @@ public class Family {
     public String printableTitle;
     public boolean saved;
     public List<ChecklistItem> items = new ArrayList<>();
+    public List<ChecklistItem> notGivenItems = new ArrayList<>();
   }
 
   @SuppressWarnings({"VisibilityModifier"})

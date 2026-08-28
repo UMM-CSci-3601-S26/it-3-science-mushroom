@@ -11,6 +11,7 @@ export interface ChecklistSection {
   printableTitle?: string;
   saved?: boolean;
   items?: ChecklistItem[];
+  notGivenItems?: ChecklistItem[];
 }
 
 export interface ChecklistItem {

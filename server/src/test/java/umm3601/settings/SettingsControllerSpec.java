@@ -536,6 +536,69 @@ class SettingsControllerSpec {
   }
 
   @Test
+  void updateSupplyOrderAllowsCustomNotGivenItems() {
+    Settings body = new Settings();
+    body.supplyOrder = List.of(
+      supplyItemOrder("Calculator", "notGiven"),
+      supplyItemOrder("Folder", "unstaged"));
+    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
+
+    settingsController.updateSupplyOrder(ctx);
+    settingsController.getSettings(ctx);
+
+    settingsCaptor = ArgumentCaptor.forClass(Settings.class);
+    verify(ctx).json(settingsCaptor.capture());
+
+    Settings saved = settingsCaptor.getValue();
+    assertEquals(2, saved.supplyOrder.size());
+    assertEquals("Calculator", saved.supplyOrder.get(0).itemTerm);
+    assertEquals("notGiven", saved.supplyOrder.get(0).status);
+    assertEquals("Folder", saved.supplyOrder.get(1).itemTerm);
+    assertEquals("unstaged", saved.supplyOrder.get(1).status);
+  }
+
+  @Test
+  void updateSupplyOrderRejectsBlankItemTerm() {
+    Settings body = new Settings();
+    body.supplyOrder = List.of(supplyItemOrder(" ", "staged"));
+    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(
+      io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateSupplyOrder(ctx));
+
+    assertEquals("Each supplyOrder entry must include an itemTerm.", exception.getMessage());
+  }
+
+  @Test
+  void updateSupplyOrderRejectsInvalidStatus() {
+    Settings body = new Settings();
+    body.supplyOrder = List.of(supplyItemOrder("Folder", "served"));
+    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(
+      io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateSupplyOrder(ctx));
+
+    assertEquals("supplyOrder status must be staged, unstaged, or notGiven.", exception.getMessage());
+  }
+
+  @Test
+  void updateSupplyOrderRejectsDuplicateItemTermsCaseInsensitively() {
+    Settings body = new Settings();
+    body.supplyOrder = List.of(
+      supplyItemOrder("Folder", "staged"),
+      supplyItemOrder(" folder ", "notGiven"));
+    when(ctx.bodyAsClass(Settings.class)).thenReturn(body);
+
+    io.javalin.http.BadRequestResponse exception = assertThrows(
+      io.javalin.http.BadRequestResponse.class,
+      () -> settingsController.updateSupplyOrder(ctx));
+
+    assertEquals("supplyOrder itemTerm values must be unique.", exception.getMessage());
+  }
+
+  @Test
   void updateSupplyOrderPersistsAndIsRetrievable() {
     // Drop and seed the real settings document
     db.getCollection("settings").drop();
@@ -627,5 +690,12 @@ class SettingsControllerSpec {
       assertEquals("barcodePrintWarningLimit must be at least 1.", e.getMessage());
     }
     assertTrue(threw);
+  }
+
+  private Settings.SupplyItemOrder supplyItemOrder(String itemTerm, String status) {
+    Settings.SupplyItemOrder entry = new Settings.SupplyItemOrder();
+    entry.itemTerm = itemTerm;
+    entry.status = status;
+    return entry;
   }
 }

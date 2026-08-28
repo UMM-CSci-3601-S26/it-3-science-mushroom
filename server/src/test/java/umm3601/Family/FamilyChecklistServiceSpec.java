@@ -54,6 +54,7 @@ class FamilyChecklistServiceSpec {
   void setupEach() {
     db.getCollection("supplylist").drop();
     db.getCollection("inventory").drop();
+    db.getCollection("settings").drop();
 
     db.getCollection("supplylist").insertMany(List.of(
       supplyListDoc("Backpack"),
@@ -313,6 +314,38 @@ class FamilyChecklistServiceSpec {
     assertNull(secondStudentItems.get(0).matchedInventoryId);
   }
 
+  @Test
+  void generateChecklistSnapshotUsesSavedDriveOrderForChecklistItems() {
+    seedSupplyOrder(
+      supplyOrderDoc("Water Bottle", "staged"),
+      supplyOrderDoc("Backpack", "unstaged"));
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithOneStudent());
+    List<String> labels = checklist.sections.get(0).items.stream()
+      .map(item -> item.label)
+      .toList();
+
+    assertEquals(List.of("1 Water Bottle", "1 Backpack"), labels);
+  }
+
+  @Test
+  void generateChecklistSnapshotExcludesNotGivenDriveOrderItems() {
+    seedSupplyOrder(supplyOrderDoc("Backpacks", "notGiven"));
+    db.getCollection("inventory").insertOne(
+      inventoryDoc("Backpack", "Extra Inventory Backpack", 5, "ID-10021", "ITEM-10021", "EXT-10021"));
+
+    Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithOneStudent());
+    List<String> labels = checklist.sections.get(0).items.stream()
+      .map(item -> item.label)
+      .toList();
+    List<String> notGivenLabels = checklist.sections.get(0).notGivenItems.stream()
+      .map(item -> item.label)
+      .toList();
+
+    assertEquals(List.of("1 Water Bottle"), labels);
+    assertEquals(List.of("1 Backpack"), notGivenLabels);
+  }
+
   private Document supplyListDoc(String item) {
     return new Document()
       .append("district", "District 1")
@@ -339,6 +372,18 @@ class FamilyChecklistServiceSpec {
       .append("internalID", internalId)
       .append("internalBarcode", internalBarcode)
       .append("externalBarcode", List.of(externalBarcode));
+  }
+
+  private void seedSupplyOrder(Document... orderEntries) {
+    db.getCollection("settings").drop();
+    db.getCollection("settings").insertOne(new Document("_id", "app-settings")
+      .append("supplyOrder", List.of(orderEntries)));
+  }
+
+  private Document supplyOrderDoc(String itemTerm, String status) {
+    return new Document()
+      .append("itemTerm", itemTerm)
+      .append("status", status);
   }
 
   private Family familyWithOneStudent() {
