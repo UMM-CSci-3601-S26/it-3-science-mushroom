@@ -310,7 +310,19 @@ export class PointOfSaleComponent implements OnInit {
           ${this.buildChecklistColumn()}
           ${this.buildChecklistColumn()}
         </div>
+        ${this.buildChecklistFooterBox()}
       </section>
+    `;
+  }
+
+  private buildChecklistFooterBox(): string {
+    return `
+      <footer class="not-given-footer-box">
+        <div class="footer-title">Not Given At Drive</div>
+        <div class="footer-original-item">
+          <span class="footer-empty-line"></span>
+        </div>
+      </footer>
     `;
   }
 
@@ -367,7 +379,7 @@ export class PointOfSaleComponent implements OnInit {
 
       .half {
         display: grid;
-        grid-template-rows: auto auto auto minmax(0, 1fr);
+        grid-template-rows: auto auto auto minmax(0, 1fr) auto;
         height: 100%;
         overflow: hidden;
         padding: .06in 0;
@@ -433,6 +445,28 @@ export class PointOfSaleComponent implements OnInit {
         background: #eee;
         flex: 0 0 .22in;
         font-weight: bold;
+      }
+
+      .not-given-footer-box {
+        border: 1px solid #333;
+        margin-top: .05in;
+        padding: .04in .06in;
+        font-size: 7px;
+      }
+
+      .footer-title {
+        font-weight: bold;
+        margin-bottom: .03in;
+      }
+
+      .footer-original-item {
+        min-height: .2in;
+      }
+
+      .footer-empty-line {
+        display: block;
+        border-bottom: 1px solid #333;
+        min-height: .1in;
       }
 
       @media print {

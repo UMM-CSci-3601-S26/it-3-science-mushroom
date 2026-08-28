@@ -213,6 +213,33 @@ describe('PointOfSaleComponent', () => {
     expect(window.open).toHaveBeenCalledWith('', '_blank', 'width=900,height=700');
     expect(documentSpy.write.calls.mostRecent().args[0]).toContain('Student Supply Checklist');
     expect(documentSpy.write.calls.mostRecent().args[0]).toContain('class="cols"');
+    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('class="not-given-footer-box"');
+  });
+
+  it('prints the not-given footer box with an empty line', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus')
+    } as unknown as Window;
+
+    spyOn(window, 'open').and.returnValue(popupWindow);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({
+        familySelections: [{
+          family,
+          selectedStudentIndexes: [0]
+        }]
+      })
+    } as never);
+    startComponent();
+
+    component.openAllChecklistPrintDialog();
+
+    const printHtml = documentSpy.write.calls.mostRecent().args[0];
+    expect(printHtml).toContain('Not Given At Drive');
+    expect(printHtml).toContain('class="footer-empty-line"');
+    expect(printHtml).not.toContain('Original Supply List Item');
   });
 
   it('does not open the checklist print selector for non-admins', () => {
