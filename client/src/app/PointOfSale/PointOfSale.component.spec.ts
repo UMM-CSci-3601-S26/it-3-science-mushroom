@@ -40,12 +40,40 @@ describe('PointOfSaleComponent', () => {
         headphones: false,
         backpack: true
       }
-    ]
+    ],
+    checklist: {
+      templateId: 'template-1',
+      printableTitle: 'Sam Supply Checklist',
+      snapshot: true,
+      sections: [{
+        id: 'student-1',
+        title: 'Sam',
+        printableTitle: 'Sam',
+        saved: true,
+        items: [
+          {
+            id: 'item-1',
+            label: '36 Pencils',
+            selected: false,
+            available: true,
+            requestedQuantity: 36
+          },
+          {
+            id: 'item-2',
+            label: '1 Folder Blue',
+            selected: false,
+            available: true,
+            requestedQuantity: 1
+          }
+        ]
+      }]
+    }
   };
 
   beforeEach(async () => {
     familyService = jasmine.createSpyObj<FamilyService>('FamilyService', [
       'getFamilies',
+      'getCurrentFamilyChecklist',
       'revertCompletedFamilyHelpSession'
     ]);
     dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
@@ -53,6 +81,7 @@ describe('PointOfSaleComponent', () => {
     authService = jasmine.createSpyObj<AuthService>('AuthService', ['isAdmin']);
 
     familyService.getFamilies.and.returnValue(of([family]));
+    familyService.getCurrentFamilyChecklist.and.returnValue(of(family.checklist!));
     familyService.revertCompletedFamilyHelpSession.and.returnValue(of(family));
     authService.isAdmin.and.returnValue(true);
     dialog.open.and.returnValue({
@@ -184,7 +213,7 @@ describe('PointOfSaleComponent', () => {
   });
 
   it('opens the checklist print selector and prints selected students', () => {
-    const documentSpy = jasmine.createSpyObj<Document>('document', ['write', 'close']);
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
     const popupWindow = {
       document: documentSpy,
       focus: jasmine.createSpy('focus')
@@ -211,13 +240,103 @@ describe('PointOfSaleComponent', () => {
       maxHeight: '90vh'
     }));
     expect(window.open).toHaveBeenCalledWith('', '_blank', 'width=900,height=700');
-    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('Student Supply Checklist');
-    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('class="cols"');
-    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('class="not-given-footer-box"');
+    const printHtml = documentSpy.write.calls.mostRecent().args[0];
+    expect(printHtml).toContain('Student Supply Checklist');
+    expect(printHtml).toContain('<b>Student:</b> Sam');
+    expect(printHtml).toContain('<b>Family Guardian:</b> Jane Doe');
+    expect(printHtml).toContain('<b>School:</b> Morris Area Elementary School');
+    expect(printHtml).toContain('<b>Teacher:</b> Ms. Test');
+    expect(printHtml).toContain('<b>Need:</b> 36 Pencils');
+    expect(printHtml).toContain('<b>Need:</b> 1 Folder Blue');
+    expect(printHtml).toContain('<div class="give-row"><b>Give:</b> <span class="line"></span></div>');
+    expect(printHtml).toContain('Y <span class="check-box">[ ]</span>');
+    expect(printHtml).toContain('class="cols"');
+    expect(printHtml).toContain('class="not-given-footer-box"');
+  });
+
+  it('loads a temporary checklist before printing when the family has no checklist yet', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus')
+    } as unknown as Window;
+    const familyWithoutChecklist: Family = {
+      ...family,
+      checklist: undefined
+    };
+    const temporaryChecklist = {
+      ...family.checklist!,
+      sections: [{
+        ...family.checklist!.sections[0],
+        items: [{
+          id: 'temp-item-1',
+          label: 'Generated Supply List Item',
+          selected: false,
+          available: true,
+          requestedQuantity: 1
+        }]
+      }]
+    };
+
+    familyService.getFamilies.and.returnValue(of([familyWithoutChecklist]));
+    familyService.getCurrentFamilyChecklist.and.returnValue(of(temporaryChecklist));
+    spyOn(window, 'open').and.returnValue(popupWindow);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({
+        familySelections: [{
+          family: familyWithoutChecklist,
+          selectedStudentIndexes: [0]
+        }]
+      })
+    } as never);
+    startComponent();
+
+    component.openAllChecklistPrintDialog();
+
+    expect(familyService.getCurrentFamilyChecklist).toHaveBeenCalledOnceWith('family-1');
+    expect(documentSpy.write.calls.first().args[0]).toContain('Preparing student checklists');
+    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('<b>Need:</b> Generated Supply List Item');
+  });
+
+  it('prints write-in lines for missing checklist header values', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus')
+    } as unknown as Window;
+    const familyWithMissingHeader: Family = {
+      ...family,
+      guardianName: '',
+      students: [{
+        ...family.students[0],
+        name: '',
+        school: 'N/A',
+        teacher: ''
+      }]
+    };
+
+    spyOn(window, 'open').and.returnValue(popupWindow);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({
+        familySelections: [{
+          family: familyWithMissingHeader,
+          selectedStudentIndexes: [0]
+        }]
+      })
+    } as never);
+    startComponent();
+
+    component.openAllChecklistPrintDialog();
+
+    const printHtml = documentSpy.write.calls.mostRecent().args[0];
+    expect(printHtml).toContain('<b>Student:</b> <span class="line"></span>');
+    expect(printHtml).toContain('<b>Family Guardian:</b> <span class="line"></span>');
+    expect(printHtml).toContain('<b>School:</b> <span class="line"></span>');
+    expect(printHtml).toContain('<b>Teacher:</b> <span class="line"></span>');
   });
 
   it('prints the not-given footer box with an empty line', () => {
-    const documentSpy = jasmine.createSpyObj<Document>('document', ['write', 'close']);
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
     const popupWindow = {
       document: documentSpy,
       focus: jasmine.createSpy('focus')

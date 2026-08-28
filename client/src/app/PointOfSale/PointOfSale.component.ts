@@ -12,10 +12,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, map, merge, of, startWith, switchMap, tap } from 'rxjs';
+import { Observable, Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, forkJoin, map, merge, of, startWith, switchMap, tap } from 'rxjs';
 
 import { AuthService } from '../auth/auth-service';
-import { Family, StudentInfo } from '../family/family';
+import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
 import { FamilyService } from '../family/family.service';
 import { DialogService } from '../shared/dialog/dialog.service';
 import { MissingSelection } from './point-of-sale-checklist-print-selection';
@@ -27,6 +27,7 @@ import { PointOfSaleSessionDialogComponent } from './point-of-sale-session-dialo
 interface PrintableChecklistStudent {
   family: Family;
   student: StudentInfo;
+  studentIndex: number;
 }
 
 interface SelectedChecklistStudentsResult {
@@ -55,6 +56,8 @@ interface SelectedChecklistStudentsResult {
   styleUrls: ['./PointOfSale.scss']
 })
 export class PointOfSaleComponent implements OnInit {
+  private static readonly minimumPrintBodyRows = 36;
+
   private familyService = inject(FamilyService);
   private dialogService = inject(DialogService);
   private dialog = inject(MatDialog);
@@ -236,9 +239,59 @@ export class PointOfSaleComponent implements OnInit {
       return;
     }
 
-    popup.document.write(this.buildChecklistPrintDocument(selectedStudents));
+    popup.document.write(this.buildChecklistPreparingDocument());
     popup.document.close();
-    popup.focus();
+
+    this.selectedStudentsWithCurrentChecklists(selectedStudents).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: printableStudents => this.writeChecklistPrintDocument(popup, printableStudents),
+      error: (err) => {
+        console.error('Failed to prepare printable checklists', err);
+        this.familyLoadError = 'Unable to prepare printable checklists right now.';
+        this.writeChecklistErrorDocument(popup);
+      }
+    });
+  }
+
+  private selectedStudentsWithCurrentChecklists(
+    selectedStudents: PrintableChecklistStudent[]
+  ): Observable<PrintableChecklistStudent[]> {
+    const checklistRequests = new Map<string, Observable<FamilyChecklist>>();
+
+    for (const { family } of selectedStudents) {
+      if (this.hasPrintableChecklist(family) || !family._id || checklistRequests.has(family._id)) {
+        continue;
+      }
+      checklistRequests.set(family._id, this.familyService.getCurrentFamilyChecklist(family._id));
+    }
+
+    if (checklistRequests.size === 0) {
+      return of(selectedStudents);
+    }
+
+    const requests = Array.from(checklistRequests.entries()).map(([familyId, request]) =>
+      request.pipe(map(checklist => ({ familyId, checklist })))
+    );
+
+    return forkJoin(requests).pipe(
+      map(checklists => {
+        const checklistsByFamilyId = new Map(
+          checklists.map(({ familyId, checklist }) => [familyId, checklist])
+        );
+
+        return selectedStudents.map(sheet => {
+          const checklist = sheet.family._id ? checklistsByFamilyId.get(sheet.family._id) : undefined;
+          return checklist
+            ? { ...sheet, family: { ...sheet.family, checklist } }
+            : sheet;
+        });
+      })
+    );
+  }
+
+  private hasPrintableChecklist(family: Family): boolean {
+    return (family.checklist?.sections?.length ?? 0) > 0;
   }
 
   private selectedChecklistStudents(
@@ -253,7 +306,8 @@ export class PointOfSaleComponent implements OnInit {
         if (student) {
           selectedStudents.push({
             family: selection.family,
-            student
+            student,
+            studentIndex: index
           });
         } else {
           missingSelections.push({
@@ -285,6 +339,43 @@ export class PointOfSaleComponent implements OnInit {
     `;
   }
 
+  private writeChecklistPrintDocument(popup: Window, sheets: PrintableChecklistStudent[]): void {
+    popup.document.open();
+    popup.document.write(this.buildChecklistPrintDocument(sheets));
+    popup.document.close();
+    popup.focus();
+  }
+
+  private buildChecklistPreparingDocument(): string {
+    return this.buildChecklistMessageDocument(
+      'Preparing Student Checklists',
+      'Preparing student checklists...'
+    );
+  }
+
+  private writeChecklistErrorDocument(popup: Window): void {
+    popup.document.open();
+    popup.document.write(this.buildChecklistMessageDocument(
+      'Student Checklist Error',
+      'Unable to prepare printable checklists right now.'
+    ));
+    popup.document.close();
+  }
+
+  private buildChecklistMessageDocument(title: string, message: string): string {
+    return `
+      <!doctype html>
+      <html>
+        <head>
+          <title>${this.escapeHtml(title)}</title>
+        </head>
+        <body>
+          <p>${this.escapeHtml(message)}</p>
+        </body>
+      </html>
+    `;
+  }
+
   private buildChecklistPrintPages(sheets: PrintableChecklistStudent[]): string {
     return sheets.map(sheet => `
       <main class="page">
@@ -293,26 +384,41 @@ export class PointOfSaleComponent implements OnInit {
     `).join('');
   }
 
-  private buildChecklistHalfSheet({ family, student }: PrintableChecklistStudent): string {
+  private buildChecklistHalfSheet(sheet: PrintableChecklistStudent): string {
+    const { family, student } = sheet;
+    const checklistItems = this.checklistItemsForStudent(sheet);
+
     return `
       <section class="half">
-        <h1>Student Supply Checklist</h1>
-        <p>
-          <b>Student:</b> ${this.printValue(student.name)}
-          <b>Family:</b> ${this.printValue(family.guardianName)}
-        </p>
-        <p>
-          <b>School:</b> ${this.printValue(student.school)}
-          <b>Grade:</b> ${this.printValue(student.grade)}
-          <b>Teacher:</b> ${this.printValue(student.teacher)}
-        </p>
+        <header class="sheet-header">
+          <h1>Student Supply Checklist</h1>
+          <div class="meta-row">
+            <span class="meta-field meta-wide"><b>Student:</b> ${this.printValue(student.name)}</span>
+            <span class="meta-field meta-wide"><b>Family Guardian:</b> ${this.printValue(family.guardianName)}</span>
+            <span class="meta-field"><b>Date:</b> <span class="line"></span></span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-field meta-wide"><b>School:</b> ${this.printValue(student.school)}</span>
+            <span class="meta-field"><b>Grade:</b> ${this.printValue(student.grade)}</span>
+            <span class="meta-field meta-wide"><b>Teacher:</b> ${this.printValue(student.teacher)}</span>
+          </div>
+        </header>
+        <div class="sheet-rule"></div>
         <div class="cols">
-          ${this.buildChecklistColumn()}
-          ${this.buildChecklistColumn()}
+          ${this.buildChecklistColumns(checklistItems)}
         </div>
         ${this.buildChecklistFooterBox()}
       </section>
     `;
+  }
+
+  private checklistItemsForStudent({ family, studentIndex }: PrintableChecklistStudent): ChecklistItem[] {
+    const sections = family.checklist?.sections ?? [];
+    const sectionId = `student-${studentIndex + 1}`;
+
+    return sections.find(section => section.id === sectionId)?.items
+      ?? sections[studentIndex]?.items
+      ?? [];
   }
 
   private buildChecklistFooterBox(): string {
@@ -326,29 +432,42 @@ export class PointOfSaleComponent implements OnInit {
     `;
   }
 
-  private buildChecklistColumn(): string {
-    const blank = '<span class="line"></span>';
-    const row = `
-      <div class="item">
-        <span>${blank}</span>
-        <span>${blank}</span>
-        <span class="check-box">[ ]</span>
-        <span class="check-box">[ ]</span>
-        <span class="check-box">[ ]</span>
-      </div>
+  private buildChecklistColumns(items: ChecklistItem[]): string {
+    const rowLabels = items.map(item => item.label);
+    while (rowLabels.length < PointOfSaleComponent.minimumPrintBodyRows) {
+      rowLabels.push('');
+    }
+
+    const midpoint = Math.ceil(rowLabels.length / 2);
+
+    return `
+      ${this.buildChecklistColumn(rowLabels.slice(0, midpoint))}
+      ${this.buildChecklistColumn(rowLabels.slice(midpoint))}
     `;
-    const rows = Array.from({ length: 34 }, () => row).join('');
+  }
+
+  private buildChecklistColumn(rowLabels: string[]): string {
+    const rows = rowLabels.map(label => this.buildChecklistItemRow(label)).join('');
 
     return `
       <div class="list">
-        <div class="item head">
-          <span>Needed Item</span>
-          <span>Given Item</span>
-          <span>Yes</span>
-          <span>No</span>
-          <span>Sub</span>
-        </div>
         ${rows}
+      </div>
+    `;
+  }
+
+  private buildChecklistItemRow(neededItem: string): string {
+    return `
+      <div class="item">
+        <div class="item-copy">
+          <div class="needed-row"><b>Need:</b> ${this.printValue(neededItem)}</div>
+          <div class="give-row"><b>Give:</b> <span class="line"></span></div>
+        </div>
+        <div class="check-options">
+          <span>Y <span class="check-box">[ ]</span></span>
+          <span>N <span class="check-box">[ ]</span></span>
+          <span>S <span class="check-box">[ ]</span></span>
+        </div>
       </div>
     `;
   }
@@ -379,7 +498,7 @@ export class PointOfSaleComponent implements OnInit {
 
       .half {
         display: grid;
-        grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
         height: 100%;
         overflow: hidden;
         padding: .06in 0;
@@ -390,9 +509,38 @@ export class PointOfSaleComponent implements OnInit {
         font-size: 12px;
       }
 
-      p {
-        margin: .02in 0;
-        font-size: 9px;
+      .sheet-header {
+        font-size: 8px;
+      }
+
+      .meta-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(.9in, .8fr);
+        gap: .12in;
+        margin: .03in 0;
+      }
+
+      .meta-field {
+        display: flex;
+        align-items: flex-end;
+        gap: .03in;
+        min-width: 0;
+        white-space: nowrap;
+      }
+
+      .meta-wide {
+        min-width: 0;
+      }
+
+      .meta-field .line {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: .55in;
+      }
+
+      .sheet-rule {
+        border-top: 1px solid #333;
+        margin: .05in 0 .04in;
       }
 
       .line {
@@ -415,13 +563,14 @@ export class PointOfSaleComponent implements OnInit {
         height: 100%;
         min-width: 0;
         min-height: 0;
-        font-size: 7px;
+        font-size: 6.8px;
       }
 
       .item {
         display: grid;
         flex: 1 1 0;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) .28in .28in .32in;
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: .06in;
         min-height: 0;
         align-items: center;
         border-bottom: 1px solid #ccc;
@@ -432,19 +581,48 @@ export class PointOfSaleComponent implements OnInit {
         padding: .02in .04in;
       }
 
-      .item .line {
-        display: block;
-        width: 100%;
+      .item-copy {
+        min-width: 0;
+      }
+
+      .needed-row,
+      .give-row {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        line-height: 1.15;
+      }
+
+      .needed-row b,
+      .give-row b {
+        font-weight: 700;
+      }
+
+      .give-row {
+        display: flex;
+        align-items: flex-end;
+        gap: .03in;
+      }
+
+      .give-row .line {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: .6in;
+      }
+
+      .check-options {
+        display: flex;
+        align-items: center;
+        gap: .035in;
+        white-space: nowrap;
+        font-size: 6.4px;
       }
 
       .check-box {
         text-align: center;
-      }
-
-      .head {
-        background: #eee;
-        flex: 0 0 .22in;
-        font-weight: bold;
+        font-size: 7.6px;
+        font-weight: 800;
       }
 
       .not-given-footer-box {
@@ -479,7 +657,7 @@ export class PointOfSaleComponent implements OnInit {
     `;
   }
 
-  private printValue(text?: string): string {
+  private printValue(text?: string | null): string {
     const trimmed = text?.trim();
     return trimmed && trimmed.toLowerCase() !== 'n/a'
       ? this.escapeHtml(trimmed)
