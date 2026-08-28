@@ -331,13 +331,19 @@ class FamilyChecklistServiceSpec {
   @Test
   void generateChecklistSnapshotExcludesNotGivenDriveOrderItems() {
     seedSupplyOrder(supplyOrderDoc("Backpacks", "notGiven"));
+    db.getCollection("inventory").insertOne(
+      inventoryDoc("Backpack", "Extra Inventory Backpack", 5, "ID-10021", "ITEM-10021", "EXT-10021"));
 
     Family.FamilyChecklist checklist = familyChecklistService.generateChecklistSnapshot(familyWithOneStudent());
     List<String> labels = checklist.sections.get(0).items.stream()
       .map(item -> item.label)
       .toList();
+    List<String> notGivenLabels = checklist.sections.get(0).notGivenItems.stream()
+      .map(item -> item.label)
+      .toList();
 
     assertEquals(List.of("1 Water Bottle"), labels);
+    assertEquals(List.of("1 Backpack"), notGivenLabels);
   }
 
   private Document supplyListDoc(String item) {

@@ -76,6 +76,7 @@ public class FamilyChecklistService {
       section.printableTitle = section.title;
       section.saved = false;
       section.items = buildChecklistItemsForStudent(student, section.id, remainingStockByInventoryId, driveOrder);
+      section.notGivenItems = buildNotGivenChecklistItemsForStudent(student, section.id, driveOrder);
       checklist.sections.add(section);
       studentIndex++;
     }
@@ -105,11 +106,45 @@ public class FamilyChecklistService {
     return checklistItems;
   }
 
+  private List<Family.ChecklistItem> buildNotGivenChecklistItemsForStudent(
+      Family.StudentInfo student,
+      String sectionId,
+      List<DriveOrderEntry> driveOrder
+  ) {
+    List<Family.ChecklistItem> checklistItems = new ArrayList<>();
+    List<SupplyList> supplyLists = getNotGivenSupplyListsForStudent(student, driveOrder);
+
+    int itemIndex = 1;
+    for (SupplyList supplyList : supplyLists) {
+      checklistItems.add(buildNotGivenChecklistItemSnapshot(
+        supplyList,
+        sectionId + "-not-given-item-" + itemIndex));
+      itemIndex++;
+    }
+
+    return checklistItems;
+  }
+
   private List<SupplyList> getSupplyListsForStudent(Family.StudentInfo student) {
     return getSupplyListsForStudent(student, driveOrderEntries(getSupplyOrder()));
   }
 
   private List<SupplyList> getSupplyListsForStudent(Family.StudentInfo student, List<DriveOrderEntry> driveOrder) {
+    return matchingSupplyListsForStudent(student, driveOrder).stream()
+      .filter(supplyList -> !isNotGiven(supplyList, driveOrder))
+      .toList();
+  }
+
+  private List<SupplyList> getNotGivenSupplyListsForStudent(
+      Family.StudentInfo student,
+      List<DriveOrderEntry> driveOrder
+  ) {
+    return matchingSupplyListsForStudent(student, driveOrder).stream()
+      .filter(supplyList -> isNotGiven(supplyList, driveOrder))
+      .toList();
+  }
+
+  private List<SupplyList> matchingSupplyListsForStudent(Family.StudentInfo student, List<DriveOrderEntry> driveOrder) {
     ArrayList<SupplyList> allSupplyLists = supplyListCollection.find().into(new ArrayList<>());
     ArrayList<SupplyList> matching = new ArrayList<>();
 
@@ -119,9 +154,6 @@ public class FamilyChecklistService {
           student.school,
           student.grade,
           student.teacher)) {
-        continue;
-      }
-      if (isNotGiven(supplyList, driveOrder)) {
         continue;
       }
       matching.add(supplyList);
@@ -244,6 +276,18 @@ public class FamilyChecklistService {
       checklistItem.substituteDescription = substitution != null ? bestInventoryDescription(substitution) : null;
     }
 
+    return checklistItem;
+  }
+
+  private Family.ChecklistItem buildNotGivenChecklistItemSnapshot(SupplyList supplyList, String itemId) {
+    Family.ChecklistItem checklistItem = new Family.ChecklistItem();
+    checklistItem.id = itemId;
+    checklistItem.label = supplyList.toString();
+    checklistItem.itemDescription = supplyList.toString();
+    checklistItem.supplyListId = supplyList._id;
+    checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
+    checklistItem.available = false;
+    checklistItem.selected = false;
     return checklistItem;
   }
 

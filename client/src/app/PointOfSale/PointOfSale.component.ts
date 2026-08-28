@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
 import { Observable, Subject, catchError, combineLatest, debounceTime, distinctUntilChanged, forkJoin, map, merge, of, startWith, switchMap, tap } from 'rxjs';
 
 import { AuthService } from '../auth/auth-service';
-import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
+import { ChecklistItem, ChecklistSection, Family, FamilyChecklist, StudentInfo } from '../family/family';
 import { FamilyService } from '../family/family.service';
 import { DialogService } from '../shared/dialog/dialog.service';
 import { MissingSelection } from './point-of-sale-checklist-print-selection';
@@ -260,7 +260,7 @@ export class PointOfSaleComponent implements OnInit {
     const checklistRequests = new Map<string, Observable<FamilyChecklist>>();
 
     for (const { family } of selectedStudents) {
-      if (this.hasPrintableChecklist(family) || !family._id || checklistRequests.has(family._id)) {
+      if (!family._id || checklistRequests.has(family._id)) {
         continue;
       }
       checklistRequests.set(family._id, this.familyService.getCurrentFamilyChecklist(family._id));
@@ -288,10 +288,6 @@ export class PointOfSaleComponent implements OnInit {
         });
       })
     );
-  }
-
-  private hasPrintableChecklist(family: Family): boolean {
-    return (family.checklist?.sections?.length ?? 0) > 0;
   }
 
   private selectedChecklistStudents(
@@ -386,7 +382,9 @@ export class PointOfSaleComponent implements OnInit {
 
   private buildChecklistHalfSheet(sheet: PrintableChecklistStudent): string {
     const { family, student } = sheet;
-    const checklistItems = this.checklistItemsForStudent(sheet);
+    const checklistSection = this.checklistSectionForStudent(sheet);
+    const checklistItems = this.validChecklistItems(checklistSection?.items);
+    const notGivenItems = this.validChecklistItems(checklistSection?.notGivenItems);
 
     return `
       <section class="half">
@@ -407,28 +405,40 @@ export class PointOfSaleComponent implements OnInit {
         <div class="cols">
           ${this.buildChecklistColumns(checklistItems)}
         </div>
-        ${this.buildChecklistFooterBox()}
+        ${this.buildChecklistFooterBox(notGivenItems)}
       </section>
     `;
   }
 
-  private checklistItemsForStudent({ family, studentIndex }: PrintableChecklistStudent): ChecklistItem[] {
+  private checklistSectionForStudent({ family, studentIndex }: PrintableChecklistStudent): ChecklistSection | undefined {
     const sections = family.checklist?.sections ?? [];
     const sectionId = `student-${studentIndex + 1}`;
 
-    return sections.find(section => section.id === sectionId)?.items
-      ?? sections[studentIndex]?.items
-      ?? [];
+    return sections.find(section => section.id === sectionId)
+      ?? sections[studentIndex];
   }
 
-  private buildChecklistFooterBox(): string {
+  private validChecklistItems(items: ChecklistItem[] | null | undefined): ChecklistItem[] {
+    return items?.filter(Boolean) ?? [];
+  }
+
+  private buildChecklistFooterBox(notGivenItems: ChecklistItem[]): string {
     return `
       <footer class="not-given-footer-box">
         <div class="footer-title">Not Given At Drive</div>
-        <div class="footer-original-item">
-          <span class="footer-empty-line"></span>
+        <span class="footer-empty-line"></span>
+        <div class="footer-items">
+          ${notGivenItems.map(item => this.buildFooterItem(item)).join('')}
         </div>
       </footer>
+    `;
+  }
+
+  private buildFooterItem(item: ChecklistItem): string {
+    return `
+      <div class="footer-item">
+        ${this.printValue(item.label)}
+      </div>
     `;
   }
 
@@ -637,14 +647,32 @@ export class PointOfSaleComponent implements OnInit {
         margin-bottom: .03in;
       }
 
-      .footer-original-item {
-        min-height: .2in;
-      }
-
       .footer-empty-line {
         display: block;
         border-bottom: 1px solid #333;
         min-height: .1in;
+      }
+
+      .footer-items {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .02in .12in;
+        margin-top: .03in;
+      }
+
+      .footer-item {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        border-bottom: 1px solid #ccc;
+        line-height: 1.2;
+        min-height: .14in;
+      }
+
+      .footer-item .line {
+        display: block;
+        width: 100%;
       }
 
       @media print {

@@ -65,7 +65,15 @@ describe('PointOfSaleComponent', () => {
             available: true,
             requestedQuantity: 1
           }
-        ]
+        ],
+        notGivenItems: [{
+          id: 'not-given-item-1',
+          label: '2 Disinfectant Wipes',
+          selected: false,
+          available: false,
+          itemDescription: '2 Disinfectant Wipes Clorox',
+          requestedQuantity: 2
+        }]
       }]
     }
   };
@@ -250,6 +258,8 @@ describe('PointOfSaleComponent', () => {
     expect(printHtml).toContain('<b>Need:</b> 1 Folder Blue');
     expect(printHtml).toContain('<div class="give-row"><b>Give:</b> <span class="line"></span></div>');
     expect(printHtml).toContain('Y <span class="check-box">[ ]</span>');
+    expect(printHtml).toContain('2 Disinfectant Wipes');
+    expect(printHtml).not.toContain('2 Disinfectant Wipes Clorox');
     expect(printHtml).toContain('class="cols"');
     expect(printHtml).toContain('class="not-given-footer-box"');
   });
@@ -274,6 +284,13 @@ describe('PointOfSaleComponent', () => {
           selected: false,
           available: true,
           requestedQuantity: 1
+        }],
+        notGivenItems: [{
+          id: 'temp-not-given-item-1',
+          label: 'Generated Footer Item',
+          selected: false,
+          available: false,
+          requestedQuantity: 1
         }]
       }]
     };
@@ -296,6 +313,115 @@ describe('PointOfSaleComponent', () => {
     expect(familyService.getCurrentFamilyChecklist).toHaveBeenCalledOnceWith('family-1');
     expect(documentSpy.write.calls.first().args[0]).toContain('Preparing student checklists');
     expect(documentSpy.write.calls.mostRecent().args[0]).toContain('<b>Need:</b> Generated Supply List Item');
+    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('Generated Footer Item');
+  });
+
+  it('loads a fresh temporary checklist instead of printing stale loaded checklist data', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus')
+    } as unknown as Window;
+    const staleFamily: Family = {
+      ...family,
+      checklist: {
+        ...family.checklist!,
+        sections: [{
+          ...family.checklist!.sections[0],
+          items: [{
+            id: 'stale-item-1',
+            label: 'Stale Supply List Item',
+            selected: false,
+            available: true,
+            requestedQuantity: 1
+          }],
+          notGivenItems: [{
+            id: 'stale-not-given-item-1',
+            label: 'Stale Footer Item',
+            selected: false,
+            available: false,
+            requestedQuantity: 1
+          }]
+        }]
+      }
+    };
+    const freshChecklist = {
+      ...family.checklist!,
+      sections: [{
+        ...family.checklist!.sections[0],
+        items: [{
+          id: 'fresh-item-1',
+          label: 'Fresh Supply List Item',
+          selected: false,
+          available: true,
+          requestedQuantity: 1
+        }],
+        notGivenItems: [{
+          id: 'fresh-not-given-item-1',
+          label: 'Fresh Footer Item',
+          selected: false,
+          available: false,
+          requestedQuantity: 1
+        }]
+      }]
+    };
+
+    familyService.getCurrentFamilyChecklist.and.returnValue(of(freshChecklist));
+    spyOn(window, 'open').and.returnValue(popupWindow);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({
+        familySelections: [{
+          family: staleFamily,
+          selectedStudentIndexes: [0]
+        }]
+      })
+    } as never);
+    startComponent();
+
+    component.openAllChecklistPrintDialog();
+
+    const printHtml = documentSpy.write.calls.mostRecent().args[0];
+    expect(familyService.getCurrentFamilyChecklist).toHaveBeenCalledWith('family-1');
+    expect(printHtml).toContain('Fresh Supply List Item');
+    expect(printHtml).toContain('Fresh Footer Item');
+    expect(printHtml).not.toContain('Stale Supply List Item');
+    expect(printHtml).not.toContain('Stale Footer Item');
+  });
+
+  it('prints without crashing when an old unsaved checklist shape is missing item arrays', () => {
+    const documentSpy = jasmine.createSpyObj<Document>('document', ['open', 'write', 'close']);
+    const popupWindow = {
+      document: documentSpy,
+      focus: jasmine.createSpy('focus')
+    } as unknown as Window;
+    const oldShapeFamily = {
+      ...family,
+      _id: undefined,
+      checklist: {
+        ...family.checklist!,
+        sections: [{
+          id: 'student-1',
+          title: 'Sam',
+          printableTitle: 'Sam',
+          saved: false
+        }]
+      }
+    } as unknown as Family;
+
+    spyOn(window, 'open').and.returnValue(popupWindow);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({
+        familySelections: [{
+          family: oldShapeFamily,
+          selectedStudentIndexes: [0]
+        }]
+      })
+    } as never);
+    startComponent();
+
+    expect(() => component.openAllChecklistPrintDialog()).not.toThrow();
+    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('Student Supply Checklist');
+    expect(documentSpy.write.calls.mostRecent().args[0]).toContain('class="footer-empty-line"');
   });
 
   it('prints write-in lines for missing checklist header values', () => {
