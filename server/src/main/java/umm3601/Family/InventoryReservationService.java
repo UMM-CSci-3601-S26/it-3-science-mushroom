@@ -95,19 +95,61 @@ public class InventoryReservationService {
       return;
     }
 
+    if (hasFulfillmentItemTargets(item)) {
+      reserveFulfillmentItems(item);
+      return;
+    }
+
     String inventoryIdToReserve = inventoryIdToReserve(item);
     if (!hasText(inventoryIdToReserve)) {
       return;
     }
 
-    int quantityToReserve = item.requestedQuantity == null || item.requestedQuantity <= 0
-      ? 1
-      : item.requestedQuantity;
+    int quantityToReserve = quantityToReserve(item.requestedQuantity);
     Inventory inventory = inventoryCollection.find(eq("internalID", inventoryIdToReserve)).first();
 
     if (inventory != null && inventoryMatcher.unreservedQuantity(inventory) >= quantityToReserve) {
       reserveInventory(inventory, quantityToReserve);
     }
+  }
+
+  private boolean hasFulfillmentItemTargets(Family.ChecklistItem item) {
+    if (item.fulfillmentItems == null) {
+      return false;
+    }
+
+    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
+      if (fulfillmentItem != null
+          && (hasText(fulfillmentItem.inventoryId) || hasText(fulfillmentItem.barcode))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private void reserveFulfillmentItems(Family.ChecklistItem item) {
+    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
+      Inventory inventory = inventoryForFulfillmentItem(fulfillmentItem);
+      int quantityToReserve = fulfillmentItem == null ? 1 : quantityToReserve(fulfillmentItem.quantity);
+
+      if (inventory != null && inventoryMatcher.unreservedQuantity(inventory) >= quantityToReserve) {
+        reserveInventory(inventory, quantityToReserve);
+      }
+    }
+  }
+
+  private Inventory inventoryForFulfillmentItem(Family.FulfillmentItem fulfillmentItem) {
+    if (fulfillmentItem == null) {
+      return null;
+    }
+    if (hasText(fulfillmentItem.inventoryId)) {
+      return inventoryCollection.find(eq("internalID", fulfillmentItem.inventoryId)).first();
+    }
+    if (hasText(fulfillmentItem.barcode)) {
+      return inventoryMatcher.findInventoryByBarcode(fulfillmentItem.barcode);
+    }
+    return null;
   }
 
   private String inventoryIdToReserve(Family.ChecklistItem item) {
@@ -124,6 +166,10 @@ public class InventoryReservationService {
     }
 
     return item.matchedInventoryId;
+  }
+
+  private int quantityToReserve(Integer quantity) {
+    return quantity == null || quantity <= 0 ? 1 : quantity;
   }
 
   private boolean isChosenSubstitution(Family.ChecklistItem item) {

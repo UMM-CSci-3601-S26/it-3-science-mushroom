@@ -98,6 +98,24 @@ class InventoryReservationServiceSpec {
   }
 
   @Test
+  void rebuildInventoryReservationReservesFulfillmentItemsInsteadOfOriginalMatch() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Pencil", 4, "PENCIL-1"),
+      inventoryDoc("Notebook", 4, "NOTEBOOK-1"),
+      inventoryDoc("Eraser", 4, "ERASER-1")));
+    db.getCollection("family").insertOne(familyWithFulfillmentChecklistDoc());
+
+    inventoryReservationService.rebuildInventoryReservation();
+
+    Document originalInventory = findInventoryByInternalId("PENCIL-1");
+    Document notebookInventory = findInventoryByInternalId("NOTEBOOK-1");
+    Document eraserInventory = findInventoryByInternalId("ERASER-1");
+    assertEquals(0, originalInventory.getInteger("reservedQuantity"));
+    assertEquals(1, notebookInventory.getInteger("reservedQuantity"));
+    assertEquals(2, eraserInventory.getInteger("reservedQuantity"));
+  }
+
+  @Test
   void rebuildInventoryReservationDoesNotReserveSubstitutedChecklistMatches() {
     db.getCollection("inventory").insertOne(inventoryDoc("Pencil", 2, "PENCIL-1"));
     db.getCollection("family").insertOne(familyWithSubstitutedChecklistDoc());
@@ -205,6 +223,29 @@ class InventoryReservationServiceSpec {
             .append("matchedInventoryId", "PENCIL-1")
             .append("substituteBarcode", "SUB-1")
             .append("requestedQuantity", 2))))));
+  }
+
+  private Document familyWithFulfillmentChecklistDoc() {
+    return new Document()
+      .append("status", "being_helped")
+      .append("helped", false)
+      .append("checklist", new Document()
+        .append("snapshot", true)
+        .append("sections", List.of(new Document()
+          .append("id", "student-1")
+          .append("saved", false)
+          .append("items", List.of(new Document()
+            .append("id", "student-1-item-1")
+            .append("selected", true)
+            .append("matchedInventoryId", "PENCIL-1")
+            .append("requestedQuantity", 3)
+            .append("fulfillmentItems", List.of(
+              new Document()
+                .append("inventoryId", "NOTEBOOK-1")
+                .append("quantity", 1),
+              new Document()
+                .append("barcode", "ERASER-1")
+                .append("quantity", 2))))))));
   }
 
   private Document familyWithUnconfirmedChecklistDoc() {

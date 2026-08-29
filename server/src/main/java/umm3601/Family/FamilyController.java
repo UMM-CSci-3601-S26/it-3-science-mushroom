@@ -735,6 +735,7 @@ public class FamilyController {
 
     Bson update = new Document("$set", new Document("checklist", checklistToDocument(normalizedChecklist)));
     familyCollection.updateOne(eq("_id", familyId), update);
+    inventoryReservationService.rebuildInventoryReservation();
 
     return familyCollection.find(eq("_id", familyId)).first();
   }

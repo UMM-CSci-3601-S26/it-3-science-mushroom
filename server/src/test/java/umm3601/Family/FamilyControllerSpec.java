@@ -683,7 +683,7 @@ class FamilyControllerSpec {
     assertEquals(1, familyCaptor.getValue().checklist.sections.size());
   }
   @Test
-  void updateFamilyChecklistDoesNotRebuildReservationsForOpenDraft() {
+  void updateFamilyChecklistRebuildsReservationsForOpenDraft() {
     Family family = startHelpSessionAndGetFamily();
     Family.FamilyChecklist checklist = family.checklist;
 
@@ -694,10 +694,10 @@ class FamilyControllerSpec {
 
     Family.ChecklistItem item = new Family.ChecklistItem();
     item.id = "student-1-item-1";
-    item.label = "Backpack";
+    item.label = "Notebook";
     item.available = true;
-    item.matchedInventoryId = "ID-10000";
-    item.requestedQuantity = 1;
+    item.matchedInventoryId = "ID-10001";
+    item.requestedQuantity = 2;
     section.items = new ArrayList<>(List.of(item));
     checklist.sections = new ArrayList<>(List.of(section));
 
@@ -717,7 +717,11 @@ class FamilyControllerSpec {
     Document backpackInventory = db.getCollection("inventory")
       .find(eq("internalID", "ID-10000"))
       .first();
-    assertEquals(1, backpackInventory.getInteger("reservedQuantity"));
+    Document notebookInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10001"))
+      .first();
+    assertEquals(0, backpackInventory.getInteger("reservedQuantity"));
+    assertEquals(2, notebookInventory.getInteger("reservedQuantity"));
   }
 
   @Test
