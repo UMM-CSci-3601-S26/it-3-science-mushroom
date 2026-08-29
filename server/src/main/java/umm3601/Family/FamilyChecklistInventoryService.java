@@ -302,6 +302,10 @@ public class FamilyChecklistInventoryService {
       if (inventory == null) {
         throw new NotFoundResponse("No item found for internalID: " + fulfillmentItem.inventoryId);
       }
+      if (hasText(fulfillmentItem.barcode) && !inventoryHasBarcode(inventory, fulfillmentItem.barcode)) {
+        throw new BadRequestResponse(
+          "Fulfillment barcode does not match inventory item: " + fulfillmentItem.barcode);
+      }
     } else if (hasText(fulfillmentItem.barcode)) {
       inventory = inventoryMatcher.findInventoryByBarcode(fulfillmentItem.barcode);
       if (inventory == null) {
@@ -382,6 +386,7 @@ public class FamilyChecklistInventoryService {
 
   private void applyFulfillmentItems(Family.ChecklistItem item, boolean restoreQuantity) {
     Inventory primaryFulfillmentInventory = null;
+    Family.FulfillmentItem primaryFulfillmentItem = null;
     for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
       Inventory inventory = requireInventoryForFulfillmentItem(item, fulfillmentItem);
       if (inventory == null) {
@@ -396,18 +401,29 @@ public class FamilyChecklistInventoryService {
       hydrateFulfillmentItem(fulfillmentItem, inventory);
       if (primaryFulfillmentInventory == null) {
         primaryFulfillmentInventory = inventory;
+        primaryFulfillmentItem = fulfillmentItem;
       }
     }
 
-    syncLegacySubstitutionFields(item, primaryFulfillmentInventory);
+    syncLegacySubstitutionFields(item, primaryFulfillmentInventory, primaryFulfillmentItem);
   }
 
-  private void syncLegacySubstitutionFields(Family.ChecklistItem item, Inventory inventory) {
-    if (isChosenSubstitution(item) && inventory != null) {
+  private void syncLegacySubstitutionFields(
+      Family.ChecklistItem item,
+      Inventory inventory,
+      Family.FulfillmentItem fulfillmentItem
+  ) {
+    if (inventory != null) {
+      item.selected = true;
+      item.substituteBarcode = fulfillmentItem != null && hasText(fulfillmentItem.barcode)
+        ? fulfillmentItem.barcode
+        : inventory.internalBarcode;
       item.substituteInventoryId = inventory.internalID;
       item.substituteItem = inventory.item;
       item.substituteDescription = inventory.description;
-      item.notPickedUpReason = substitutedReason();
+      if (!hasText(item.notPickedUpReason)) {
+        item.notPickedUpReason = substitutedReason();
+      }
     }
   }
 
@@ -463,6 +479,23 @@ public class FamilyChecklistInventoryService {
       throw new NotFoundResponse("No item found for internalID: " + internalId);
     }
     return inventory;
+  }
+
+  private boolean inventoryHasBarcode(Inventory inventory, String barcode) {
+    if (!hasText(barcode)) {
+      return false;
+    }
+    if (barcodeMatches(inventory.internalBarcode, barcode)) {
+      return true;
+    }
+    return inventory.externalBarcode != null && inventory.externalBarcode.stream()
+      .anyMatch(inventoryBarcode -> barcodeMatches(inventoryBarcode, barcode));
+  }
+
+  private boolean barcodeMatches(String inventoryBarcode, String barcode) {
+    return hasText(inventoryBarcode)
+      && hasText(barcode)
+      && inventoryBarcode.trim().equalsIgnoreCase(barcode.trim());
   }
 
   private Inventory findInventoryByInternalId(String internalId) {

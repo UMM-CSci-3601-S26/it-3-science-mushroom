@@ -455,11 +455,12 @@ public class InventoryMatcher {
   }
 
   private boolean isHighSchoolGrade(String grade) {
-    return "9".equals(grade) || "10".equals(grade) || "11".equals(grade) || "12".equals(grade);
+    return "8".equals(grade) || "9".equals(grade) || "10".equals(grade) || "11".equals(grade)
+      || "12".equals(grade);
   }
 
   private boolean isMiddleSchoolGrade(String grade) {
-    return "6".equals(grade) || "7".equals(grade) || "8".equals(grade);
+    return "6".equals(grade) || "7".equals(grade);
   }
 
   private boolean isElementaryGrade(String grade) {

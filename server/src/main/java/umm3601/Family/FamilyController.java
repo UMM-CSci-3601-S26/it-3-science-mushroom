@@ -1297,7 +1297,15 @@ public class FamilyController {
   }
 
   private void normalizeFulfillmentItem(Family.FulfillmentItem fulfillmentItem) {
+    fulfillmentItem.inventoryId = normalizeOptionalText(fulfillmentItem.inventoryId);
+    fulfillmentItem.barcode = normalizeOptionalText(fulfillmentItem.barcode);
+    fulfillmentItem.item = normalizeOptionalText(fulfillmentItem.item);
+    fulfillmentItem.description = normalizeOptionalText(fulfillmentItem.description);
     fulfillmentItem.quantity = ChecklistItemRules.quantityOrOne(fulfillmentItem.quantity);
+  }
+
+  private String normalizeOptionalText(String value) {
+    return hasText(value) ? value.trim() : null;
   }
 
   private Family.FulfillmentItem legacySubstitutionAsFulfillmentItem(Family.ChecklistItem item) {

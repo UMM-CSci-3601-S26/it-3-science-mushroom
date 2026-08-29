@@ -302,9 +302,12 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const parsedQuantity = Number.parseInt(input.value, 10);
     const quantity = Number.isFinite(parsedQuantity) ? parsedQuantity : 1;
-    const maxQuantity = this.maxFulfillmentItemQuantity(fulfillmentItem);
-    const cappedQuantity = maxQuantity === null ? quantity : Math.min(quantity, maxQuantity);
-    const normalizedQuantity = Math.max(1, cappedQuantity);
+    const normalizedQuantity = this.normalizeFulfillmentItemQuantity(fulfillmentItem, quantity);
+    if (normalizedQuantity === null) {
+      input.value = `${this.fulfillmentItemQuantity(fulfillmentItem)}`;
+      this.errorMessage = 'No unreserved quantity is available for this linked substitute.';
+      return;
+    }
 
     fulfillmentItem.quantity = normalizedQuantity;
     input.value = `${normalizedQuantity}`;
@@ -340,6 +343,11 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     const checklist = this.sessionFamily?.checklist;
     if (!familyId || !checklist) {
       this.dialogRef.close();
+      return;
+    }
+    const validationMessage = this.validateFulfillmentInventoryLimits(checklist);
+    if (validationMessage) {
+      this.errorMessage = validationMessage;
       return;
     }
 
@@ -390,7 +398,8 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     if (!familyId || !checklist) {
       return;
     }
-    const validationMessage = this.validateReadyToFinalize(checklist);
+    const validationMessage = this.validateFulfillmentInventoryLimits(checklist)
+      || this.validateReadyToFinalize(checklist);
     if (validationMessage) {
       this.errorMessage = validationMessage;
       return;
@@ -439,7 +448,14 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
 
     const existingFulfillmentItem = this.findFulfillmentItem(item, inventory, barcode);
     if (existingFulfillmentItem) {
-      existingFulfillmentItem.quantity = this.fulfillmentItemQuantity(existingFulfillmentItem) + quantityToLink;
+      const nextQuantity = this.normalizeFulfillmentItemQuantity(
+        existingFulfillmentItem,
+        this.fulfillmentItemQuantity(existingFulfillmentItem) + quantityToLink);
+      if (nextQuantity === null) {
+        this.substituteErrorMessage = 'No unreserved quantity is available for that substitute item.';
+        return;
+      }
+      existingFulfillmentItem.quantity = nextQuantity;
     } else {
       item.fulfillmentItems = [
         ...(item.fulfillmentItems ?? []),
@@ -559,6 +575,16 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     return Math.min(quantityNeededToMeetRequest, unreservedQuantity);
   }
 
+  private normalizeFulfillmentItemQuantity(fulfillmentItem: FulfillmentItem, quantity: number): number | null {
+    const maxQuantity = this.maxFulfillmentItemQuantity(fulfillmentItem);
+    if (maxQuantity !== null && maxQuantity < 1) {
+      return null;
+    }
+
+    const cappedQuantity = maxQuantity === null ? quantity : Math.min(quantity, maxQuantity);
+    return Math.max(1, cappedQuantity);
+  }
+
   private hasLegacySubstituteFields(item: ChecklistItem): boolean {
     return !!(item.substituteBarcode || item.substituteInventoryId || item.substituteItem || item.substituteDescription);
   }
@@ -568,10 +594,14 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   private inventoryForFulfillmentItem(fulfillmentItem: FulfillmentItem): Inventory | undefined {
-    return this.inventoryService.inventory().find(inventory =>
-      (!!fulfillmentItem.inventoryId && inventory.internalID === fulfillmentItem.inventoryId)
-      || (!!fulfillmentItem.barcode && this.barcodesForInventory(inventory).includes(fulfillmentItem.barcode))
-    );
+    if (fulfillmentItem.inventoryId) {
+      return this.inventoryService.inventory().find(inventory => inventory.internalID === fulfillmentItem.inventoryId);
+    }
+    if (fulfillmentItem.barcode) {
+      return this.inventoryService.inventory()
+        .find(inventory => this.barcodesForInventory(inventory).includes(fulfillmentItem.barcode ?? ''));
+    }
+    return undefined;
   }
 
   private substitutionOptionScore(item: ChecklistItem, inventory: Inventory): number {
@@ -638,6 +668,47 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     }
 
     return '';
+  }
+
+  private validateFulfillmentInventoryLimits(checklist: FamilyChecklist): string {
+    const quantityByInventoryId = new Map<string, { display: string; maxQuantity: number; quantity: number }>();
+    for (const item of this.checklistItems(checklist)) {
+      for (const fulfillmentItem of this.fulfillmentItemsFor(item)) {
+        const inventory = this.inventoryForFulfillmentItem(fulfillmentItem);
+        const display = this.fulfillmentItemDisplay(fulfillmentItem);
+        if (!inventory) {
+          return `Linked substitute "${display}" could not be matched to inventory.`;
+        }
+
+        const maxQuantity = this.unreservedQuantity(inventory);
+        if (maxQuantity < 1) {
+          return `No unreserved quantity is available for linked substitute "${display}".`;
+        }
+
+        const existingQuantity = quantityByInventoryId.get(inventory.internalID) ?? {
+          display: this.inventoryDescription(inventory),
+          maxQuantity,
+          quantity: 0
+        };
+        existingQuantity.quantity += this.fulfillmentItemQuantity(fulfillmentItem);
+        quantityByInventoryId.set(inventory.internalID, existingQuantity);
+      }
+    }
+
+    for (const inventoryQuantity of quantityByInventoryId.values()) {
+      if (inventoryQuantity.quantity > inventoryQuantity.maxQuantity) {
+        return `Reduce linked substitute "${inventoryQuantity.display}" to ${inventoryQuantity.maxQuantity} or less across this session.`;
+      }
+    }
+
+    return '';
+  }
+
+  private checklistItems(checklist: FamilyChecklist): ChecklistItem[] {
+    return checklist.sections.flatMap(section => [
+      ...section.items,
+      ...(section.notGivenItems ?? [])
+    ]);
   }
 
   private normalizeDisplayText(value: string): string {

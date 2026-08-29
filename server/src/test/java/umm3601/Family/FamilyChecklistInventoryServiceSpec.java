@@ -2,9 +2,11 @@ package umm3601.Family;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.bson.Document;
 import org.junit.jupiter.api.AfterAll;
@@ -77,6 +79,47 @@ class FamilyChecklistInventoryServiceSpec {
     assertEquals(2, eraserInventory.getInteger("quantity"));
     assertEquals("ERASER-1", updatedItem.fulfillmentItems.get(1).inventoryId);
     assertEquals("Eraser", updatedItem.fulfillmentItems.get(1).item);
+  }
+
+  @Test
+  void commitSectionInventoryChangesSyncsLegacySubstitutionFieldsFromFulfillmentItems() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Backpack", 5, 1, "BACKPACK-1", "BACKPACK-BARCODE"),
+      inventoryDoc("Notebook", 4, 0, "NOTEBOOK-1", "NOTEBOOK-BARCODE")));
+
+    Family.ChecklistSection existingSection = sectionWithMatchedItem("BACKPACK-1", 1);
+    Family.ChecklistSection updatedSection = sectionWithMatchedItem("BACKPACK-1", 1);
+    Family.ChecklistItem updatedItem = updatedSection.items.get(0);
+    updatedItem.selected = false;
+    updatedItem.fulfillmentItems = List.of(
+      fulfillmentItem("NOTEBOOK-1", "NOTEBOOK-BARCODE", 1));
+
+    inventoryService.commitSectionInventoryChanges(updatedSection, existingSection);
+
+    assertTrue(updatedItem.selected);
+    assertEquals("NOTEBOOK-BARCODE", updatedItem.substituteBarcode);
+    assertEquals("NOTEBOOK-1", updatedItem.substituteInventoryId);
+    assertEquals("Notebook", updatedItem.substituteItem);
+    assertEquals("Notebook", updatedItem.substituteDescription);
+    assertEquals("substituted", updatedItem.notPickedUpReason);
+  }
+
+  @Test
+  void validateSectionsInventoryChangesRejectsMismatchedFulfillmentInventoryIdAndBarcode() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Notebook", 4, 0, "NOTEBOOK-1", "NOTEBOOK-BARCODE"),
+      inventoryDoc("Eraser", 4, 0, "ERASER-1", "ERASER-BARCODE")));
+
+    Family.ChecklistSection section = sectionWithMatchedItem("NOTEBOOK-1", 1);
+    Family.ChecklistItem item = section.items.get(0);
+    item.selected = true;
+    item.fulfillmentItems = List.of(
+      fulfillmentItem("NOTEBOOK-1", "ERASER-BARCODE", 1));
+
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class,
+      () -> inventoryService.validateSectionsInventoryChanges(List.of(section), Map.of()));
+
+    assertEquals("Fulfillment barcode does not match inventory item: ERASER-BARCODE", exception.getMessage());
   }
 
   @Test

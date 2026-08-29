@@ -424,6 +424,28 @@ describe('PointOfSaleSessionDialogComponent', () => {
     ]);
   });
 
+  it('does not save a draft when linked substitutes exceed unreserved inventory across the session', () => {
+    checklist.sections[0].items[0].fulfillmentItems = [{
+      inventoryId: 'INV-2',
+      barcode: 'UPC-2',
+      item: 'Marker',
+      description: 'Black Marker',
+      quantity: 2
+    }];
+    checklist.sections[0].items[1].fulfillmentItems = [{
+      inventoryId: 'INV-2',
+      barcode: 'UPC-2',
+      item: 'Marker',
+      description: 'Black Marker',
+      quantity: 2
+    }];
+
+    component.closeAndSaveDraft();
+
+    expect(familyService.updateFamilyChecklist).not.toHaveBeenCalled();
+    expect(component.errorMessage).toContain('Reduce linked substitute "Black Marker" to 3 or less');
+  });
+
   it('closes without saving a draft if the family id or checklist is missing', () => {
     component.sessionFamily = { ...family, checklist: undefined };
 
@@ -650,6 +672,51 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(item.fulfillmentItems![0].quantity).toBe(3);
     expect(component.fulfilledQuantity(item)).toBe(3);
     expect(component.substituteDisplay(item)).toBe('Black Marker');
+  });
+
+  it('caps repeated links to the same substitute at unreserved inventory', () => {
+    const item = checklist.sections[0].items[0];
+    item.requestedQuantity = 10;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.applySubstituteBarcode(item, 'UPC-2');
+
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        quantity: 3
+      })
+    ]);
+    expect(component.fulfilledQuantity(item)).toBe(3);
+  });
+
+  it('does not change a linked substitute quantity when no unreserved inventory is available', () => {
+    const item = checklist.sections[0].items[0];
+    item.fulfillmentItems = [{
+      inventoryId: 'INV-3',
+      barcode: 'UPC-3',
+      item: 'Marker',
+      description: 'Blue Marker',
+      quantity: 1
+    }];
+    const input = { value: '2' } as HTMLInputElement;
+
+    component.setFulfillmentItemQuantity(item, item.fulfillmentItems[0], {
+      target: input
+    } as unknown as Event);
+
+    expect(component.maxFulfillmentItemQuantity(item.fulfillmentItems[0])).toBe(0);
+    expect(item.fulfillmentItems[0].quantity).toBe(1);
+    expect(input.value).toBe('1');
+    expect(component.errorMessage).toContain('No unreserved quantity');
+  });
+
+  it('uses the fulfillment inventory id as the source of truth for inventory quantity caps', () => {
+    expect(component.maxFulfillmentItemQuantity({
+      inventoryId: 'INV-5',
+      barcode: 'UPC-2',
+      quantity: 1
+    })).toBe(5);
   });
 
   it('shows the unreserved inventory cap for linked substitute rows', () => {

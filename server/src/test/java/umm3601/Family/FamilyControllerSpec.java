@@ -1791,13 +1791,25 @@ class FamilyControllerSpec {
   void privateNormalizeHelpersCoverDefaultBranches() throws Exception {
     Family.ChecklistSection section = new Family.ChecklistSection();
     section.printableTitle = "Printable";
-    section.items = new ArrayList<>(List.of(new Family.ChecklistItem()));
+    Family.ChecklistItem item = new Family.ChecklistItem();
+    Family.FulfillmentItem fulfillmentItem = new Family.FulfillmentItem();
+    fulfillmentItem.inventoryId = " NOTEBOOK-1 ";
+    fulfillmentItem.barcode = " NOTEBOOK-BARCODE ";
+    fulfillmentItem.item = " Notebook ";
+    fulfillmentItem.description = " Wide Ruled Notebook ";
+    item.fulfillmentItems = new ArrayList<>(List.of(fulfillmentItem));
+    section.items = new ArrayList<>(List.of(item));
 
     Family.ChecklistSection normalizedSection = invokeNormalizeSectionForSave("student-1", section);
     assertEquals("student-1", normalizedSection.id);
     assertEquals("Printable", normalizedSection.title);
     assertEquals("student-1-item-1", normalizedSection.items.get(0).id);
     assertEquals(1, normalizedSection.items.get(0).requestedQuantity);
+    Family.FulfillmentItem normalizedFulfillmentItem = normalizedSection.items.get(0).fulfillmentItems.get(0);
+    assertEquals("NOTEBOOK-1", normalizedFulfillmentItem.inventoryId);
+    assertEquals("NOTEBOOK-BARCODE", normalizedFulfillmentItem.barcode);
+    assertEquals("Notebook", normalizedFulfillmentItem.item);
+    assertEquals("Wide Ruled Notebook", normalizedFulfillmentItem.description);
 
     String beingHelped = invokeNormalizeStatusValue("being helped");
     assertEquals("being_helped", beingHelped);

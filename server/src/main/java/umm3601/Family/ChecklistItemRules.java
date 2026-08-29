@@ -103,8 +103,4 @@ final class ChecklistItemRules {
   static int quantityOrOne(Integer quantity) {
     return quantity == null || quantity <= 0 ? 1 : quantity;
   }
-
-  static int quantityOrOne(int quantity) {
-    return quantity <= 0 ? 1 : quantity;
-  }
 }

@@ -178,10 +178,12 @@ class InventoryMatcherSpec {
     supplyList.school = "Morris Elementary";
 
     supplyList.grade = "High School";
+    assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "8th Grade", "Ms. Doe"));
     assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "12th Grade", "Ms. Doe"));
 
     supplyList.grade = "Middle School";
     assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "7th Grade", "Ms. Doe"));
+    assertFalse(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "8th Grade", "Ms. Doe"));
 
     supplyList.grade = "Elementary";
     assertTrue(inventoryMatcher.supplyListMatchesStudent(supplyList, "Morris Elementary", "Kindergarten", "Ms. Doe"));
