@@ -1,9 +1,14 @@
 package umm3601.Family;
 
 import static com.mongodb.client.model.Filters.eq;
+import static umm3601.Family.ChecklistItemRules.checklistItemQuantity;
+import static umm3601.Family.ChecklistItemRules.fulfillmentItemQuantity;
+import static umm3601.Family.ChecklistItemRules.hasFulfillmentItemTargets;
+import static umm3601.Family.ChecklistItemRules.hasText;
+import static umm3601.Family.ChecklistItemRules.isChosenSubstitution;
+import static umm3601.Family.ChecklistItemRules.quantityOrOne;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -105,7 +110,7 @@ public class InventoryReservationService {
       return;
     }
 
-    int quantityToReserve = quantityToReserve(item.requestedQuantity);
+    int quantityToReserve = checklistItemQuantity(item);
     Inventory inventory = inventoryCollection.find(eq("internalID", inventoryIdToReserve)).first();
 
     if (inventory != null && inventoryMatcher.unreservedQuantity(inventory) >= quantityToReserve) {
@@ -113,25 +118,10 @@ public class InventoryReservationService {
     }
   }
 
-  private boolean hasFulfillmentItemTargets(Family.ChecklistItem item) {
-    if (item.fulfillmentItems == null) {
-      return false;
-    }
-
-    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
-      if (fulfillmentItem != null
-          && (hasText(fulfillmentItem.inventoryId) || hasText(fulfillmentItem.barcode))) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   private void reserveFulfillmentItems(Family.ChecklistItem item) {
     for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
       Inventory inventory = inventoryForFulfillmentItem(fulfillmentItem);
-      int quantityToReserve = fulfillmentItem == null ? 1 : quantityToReserve(fulfillmentItem.quantity);
+      int quantityToReserve = fulfillmentItemQuantity(fulfillmentItem);
 
       if (inventory != null && inventoryMatcher.unreservedQuantity(inventory) >= quantityToReserve) {
         reserveInventory(inventory, quantityToReserve);
@@ -168,21 +158,12 @@ public class InventoryReservationService {
     return item.matchedInventoryId;
   }
 
-  private int quantityToReserve(Integer quantity) {
-    return quantity == null || quantity <= 0 ? 1 : quantity;
-  }
-
-  private boolean isChosenSubstitution(Family.ChecklistItem item) {
-    return hasText(item.substituteBarcode)
-      && (item.selected || "substituted".equals(normalizeReason(item.notPickedUpReason)));
-  }
-
   private void reserveInventory(Inventory inventory, int amount) {
     if (inventory == null) {
       return;
     }
 
-    int quantityToReserve = amount <= 0 ? 1 : amount;
+    int quantityToReserve = quantityOrOne(amount);
     if (inventoryMatcher.unreservedQuantity(inventory) < quantityToReserve) {
       throw new BadRequestResponse("Not enough stock to reserve");
     }
@@ -200,19 +181,5 @@ public class InventoryReservationService {
       return family.status;
     }
     return family.helped ? STATUS_HELPED : "not_helped";
-  }
-
-  private boolean hasText(String value) {
-    return value != null && !value.isBlank();
-  }
-
-  private String normalizeReason(String reason) {
-    if (reason == null) {
-      return null;
-    }
-    return reason.trim()
-      .toLowerCase(Locale.US)
-      .replace("'", "")
-      .replaceAll("[\\s-]+", "_");
   }
 }

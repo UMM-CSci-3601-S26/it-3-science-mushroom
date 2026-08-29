@@ -2,11 +2,12 @@ package umm3601.Family;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static umm3601.Family.ChecklistItemRules.isNeededButNotAcquiredReason;
+import static umm3601.Family.ChecklistItemRules.isServedToFamily;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
@@ -16,9 +17,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 
 public class FamilyNeededItemService {
-  private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
-  private static final String REASON_ITEM_NOT_AVAILABLE = "item_not_available";
-  private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
   private final JacksonMongoCollection<NeededItemLog> neededItemLogCollection;
 
   public FamilyNeededItemService(MongoDatabase database) {
@@ -76,26 +74,9 @@ public class FamilyNeededItemService {
   }
 
   private boolean isNeededButNotAcquired(Family.ChecklistItem item) {
-    String reason = normalizeReason(item != null ? item.notPickedUpReason : null);
     return item != null
-      && !item.selected
-      && isNeededButNotAcquiredReason(reason);
-  }
-
-  private boolean isNeededButNotAcquiredReason(String reason) {
-    return REASON_ITEM_NOT_AVALIABLE.equals(reason)
-      || REASON_ITEM_NOT_AVAILABLE.equals(reason)
-      || REASON_NOT_AVAILABLE_DIDNT_RECEIVE.equals(reason);
-  }
-
-  private String normalizeReason(String reason) {
-    if (reason == null) {
-      return null;
-    }
-    return reason.trim()
-      .toLowerCase(Locale.US)
-      .replace("'", "")
-      .replaceAll("[\\s-]+", "_");
+      && !isServedToFamily(item)
+      && isNeededButNotAcquiredReason(item.notPickedUpReason);
   }
 
   private Bson logFilter(NeededItemLog log) {

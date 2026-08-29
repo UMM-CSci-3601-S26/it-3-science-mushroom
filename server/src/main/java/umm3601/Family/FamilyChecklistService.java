@@ -1,6 +1,8 @@
 package umm3601.Family;
 
 import static com.mongodb.client.model.Filters.eq;
+import static umm3601.Family.ChecklistItemRules.hasText;
+import static umm3601.Family.ChecklistItemRules.quantityOrOne;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -255,7 +257,7 @@ public class FamilyChecklistService {
     checklistItem.label = supplyList.toString();
     checklistItem.itemDescription = supplyList.toString();
     checklistItem.supplyListId = supplyList._id;
-    checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
+    checklistItem.requestedQuantity = quantityOrOne(supplyList.quantity);
 
     Inventory match = inventoryMatcher.findBestInventoryMatch(
       supplyList,
@@ -285,7 +287,7 @@ public class FamilyChecklistService {
     checklistItem.label = supplyList.toString();
     checklistItem.itemDescription = supplyList.toString();
     checklistItem.supplyListId = supplyList._id;
-    checklistItem.requestedQuantity = supplyList.quantity == null || supplyList.quantity <= 0 ? 1 : supplyList.quantity;
+    checklistItem.requestedQuantity = quantityOrOne(supplyList.quantity);
     checklistItem.available = false;
     checklistItem.selected = false;
     return checklistItem;
@@ -332,10 +334,6 @@ public class FamilyChecklistService {
       return inventory.description;
     }
     return inventory.toString();
-  }
-
-  private boolean hasText(String value) {
-    return value != null && !value.isBlank();
   }
 
   private static class DriveOrderEntry {

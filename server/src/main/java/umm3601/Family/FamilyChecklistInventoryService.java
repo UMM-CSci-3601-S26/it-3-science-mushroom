@@ -1,10 +1,19 @@
 package umm3601.Family;
 
 import static com.mongodb.client.model.Filters.eq;
+import static umm3601.Family.ChecklistItemRules.checklistItemQuantity;
+import static umm3601.Family.ChecklistItemRules.fulfilledQuantity;
+import static umm3601.Family.ChecklistItemRules.fulfillmentItemQuantity;
+import static umm3601.Family.ChecklistItemRules.hasFulfillmentItemTargets;
+import static umm3601.Family.ChecklistItemRules.hasText;
+import static umm3601.Family.ChecklistItemRules.isChosenSubstitution;
+import static umm3601.Family.ChecklistItemRules.isValidNotPickedUpReason;
+import static umm3601.Family.ChecklistItemRules.notAvailableDidntReceiveReason;
+import static umm3601.Family.ChecklistItemRules.quantityOrOne;
+import static umm3601.Family.ChecklistItemRules.substitutedReason;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.bson.UuidRepresentation;
@@ -20,10 +29,12 @@ import umm3601.Common.InventoryMatcher;
 import umm3601.Inventory.Inventory;
 
 public class FamilyChecklistInventoryService {
-  private static final String REASON_AVAILABLE_DIDNT_NEED = "available_didnt_need";
-  private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
-  private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
-  private static final String REASON_SUBSTITUTED = "substituted";
+  private static final String SELECTED_ITEM_MISSING_INVENTORY_MATCH =
+    "A selected checklist item is missing its inventory match.";
+  private static final String REVERTED_ITEM_MISSING_INVENTORY_MATCH =
+    "A reverted checklist item is missing its inventory match.";
+  private static final String VALID_NOT_PICKED_UP_REASON_MESSAGE =
+    "reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.";
 
   private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final InventoryMatcher inventoryMatcher;
@@ -137,7 +148,7 @@ public class FamilyChecklistInventoryService {
         item.substituteInventoryId = substituteInventory.internalID;
         item.substituteItem = substituteInventory.item;
         item.substituteDescription = substituteInventory.description;
-        item.notPickedUpReason = REASON_SUBSTITUTED;
+        item.notPickedUpReason = substitutedReason();
       } else if (item.selected) {
         consumeInventory(item.matchedInventoryId, checklistItemQuantity(item));
       }
@@ -145,20 +156,15 @@ public class FamilyChecklistInventoryService {
   }
 
   void consumeInventory(String internalId, int amount) {
-    if (!hasText(internalId)) {
-      throw new BadRequestResponse("A selected checklist item is missing its inventory match.");
-    }
-
-    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
-    if (inventory == null) {
-      throw new NotFoundResponse("No item found for internalID: " + internalId);
-    }
-    if (inventory.quantity < amount) {
+    Inventory inventory = requireInventoryByInternalId(internalId, SELECTED_ITEM_MISSING_INVENTORY_MATCH);
+    int quantityToConsume = quantityOrOne(amount);
+    if (inventory.quantity < quantityToConsume) {
       throw new BadRequestResponse("Inventory quantity is too low to fulfill checklist item: " + internalId);
     }
 
-    inventoryCollection.updateOne(eq("_id",
-     new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity - amount));
+    inventoryCollection.updateOne(
+      eq("_id", new ObjectId(inventory._id)),
+      Updates.set("quantity", inventory.quantity - quantityToConsume));
   }
 
   private void addHeldReservationTarget(Family.ChecklistItem item, Map<String, Integer> heldQuantityByInventoryId) {
@@ -252,10 +258,10 @@ public class FamilyChecklistInventoryService {
       Map<String, Integer> requestedQuantityByInventoryId
   ) {
     for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
-      String targetInventoryId = targetInventoryIdForFulfillmentItem(item, fulfillmentItem);
-      if (hasText(targetInventoryId)) {
+      Inventory inventory = requireInventoryForFulfillmentItem(item, fulfillmentItem);
+      if (inventory != null) {
         requestedQuantityByInventoryId.merge(
-          targetInventoryId,
+          inventory.internalID,
           fulfillmentItemQuantity(fulfillmentItem),
           Integer::sum);
       }
@@ -282,14 +288,6 @@ public class FamilyChecklistInventoryService {
     return null;
   }
 
-  private String targetInventoryIdForFulfillmentItem(
-      Family.ChecklistItem item,
-      Family.FulfillmentItem fulfillmentItem
-  ) {
-    Inventory inventory = requireInventoryForFulfillmentItem(item, fulfillmentItem);
-    return inventory == null ? null : inventory.internalID;
-  }
-
   private Inventory requireInventoryForFulfillmentItem(
       Family.ChecklistItem item,
       Family.FulfillmentItem fulfillmentItem
@@ -300,7 +298,7 @@ public class FamilyChecklistInventoryService {
 
     Inventory inventory = null;
     if (hasText(fulfillmentItem.inventoryId)) {
-      inventory = inventoryCollection.find(eq("internalID", fulfillmentItem.inventoryId)).first();
+      inventory = findInventoryByInternalId(fulfillmentItem.inventoryId);
       if (inventory == null) {
         throw new NotFoundResponse("No item found for internalID: " + fulfillmentItem.inventoryId);
       }
@@ -326,14 +324,7 @@ public class FamilyChecklistInventoryService {
   }
 
   private void validateInventoryTargetQuantity(String internalId, int requestedQuantity, int heldQuantity) {
-    if (!hasText(internalId)) {
-      throw new BadRequestResponse("A selected checklist item is missing its inventory match.");
-    }
-
-    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
-    if (inventory == null) {
-      throw new NotFoundResponse("No item found for internalID: " + internalId);
-    }
+    Inventory inventory = requireInventoryByInternalId(internalId, SELECTED_ITEM_MISSING_INVENTORY_MATCH);
     int heldAvailableQuantity = Math.min(heldQuantity, inventory.reservedQuantity);
     int availableQuantity = inventoryMatcher.unreservedQuantity(inventory) + heldAvailableQuantity;
     if (availableQuantity < requestedQuantity) {
@@ -356,7 +347,7 @@ public class FamilyChecklistInventoryService {
       boolean hasReason = hasText(item.notPickedUpReason);
 
       if (!item.available && !hasReason && !hasSubstitution && !hasFulfillmentItems) {
-        item.notPickedUpReason = REASON_NOT_AVAILABLE_DIDNT_RECEIVE;
+        item.notPickedUpReason = notAvailableDidntReceiveReason();
         hasReason = true;
       }
 
@@ -364,9 +355,8 @@ public class FamilyChecklistInventoryService {
         throw new BadRequestResponse("Unchecked items must include a reason or substitution barcode.");
       }
 
-      if (hasReason && !isValidNotPickedUpReason(item.notPickedUpReason)) {
-        throw new BadRequestResponse(
-          "reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
+      if (hasReason) {
+        validateNotPickedUpReason(item.notPickedUpReason);
       }
     }
   }
@@ -380,76 +370,20 @@ public class FamilyChecklistInventoryService {
     if (fulfilledQuantity < requestedQuantity && !hasText(item.notPickedUpReason)) {
       throw new BadRequestResponse("Partially fulfilled items must include a reason.");
     }
-    if (hasText(item.notPickedUpReason) && !isValidNotPickedUpReason(item.notPickedUpReason)) {
-      throw new BadRequestResponse(
-        "reason must be available_didnt_need, item_not_avaliable, not_available_didnt_receive, or substituted.");
+    if (hasText(item.notPickedUpReason)) {
+      validateNotPickedUpReason(item.notPickedUpReason);
     }
-  }
-
-  private boolean hasFulfillmentItemTargets(Family.ChecklistItem item) {
-    if (item == null || item.fulfillmentItems == null) {
-      return false;
-    }
-
-    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
-      if (fulfillmentItem != null
-          && (hasText(fulfillmentItem.inventoryId) || hasText(fulfillmentItem.barcode))) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private int fulfilledQuantity(Family.ChecklistItem item) {
-    if (item == null || item.fulfillmentItems == null) {
-      return 0;
-    }
-
-    int quantity = 0;
-    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
-      if (fulfillmentItem != null
-          && (hasText(fulfillmentItem.inventoryId) || hasText(fulfillmentItem.barcode))) {
-        quantity += fulfillmentItemQuantity(fulfillmentItem);
-      }
-    }
-    return quantity;
-  }
-
-  private int checklistItemQuantity(Family.ChecklistItem item) {
-    return item == null || item.requestedQuantity == null || item.requestedQuantity <= 0 ? 1 : item.requestedQuantity;
-  }
-
-  private int fulfillmentItemQuantity(Family.FulfillmentItem fulfillmentItem) {
-    return fulfillmentItem == null || fulfillmentItem.quantity == null || fulfillmentItem.quantity <= 0
-      ? 1
-      : fulfillmentItem.quantity;
   }
 
   private void restoreFulfillmentItems(Family.ChecklistItem item) {
-    Inventory primaryFulfillmentInventory = null;
-    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
-      Inventory inventory = requireInventoryForFulfillmentItem(item, fulfillmentItem);
-      if (inventory == null) {
-        continue;
-      }
-
-      restoreInventory(inventory.internalID, fulfillmentItemQuantity(fulfillmentItem));
-      hydrateFulfillmentItem(fulfillmentItem, inventory);
-      if (primaryFulfillmentInventory == null) {
-        primaryFulfillmentInventory = inventory;
-      }
-    }
-
-    if (isChosenSubstitution(item) && primaryFulfillmentInventory != null) {
-      item.substituteInventoryId = primaryFulfillmentInventory.internalID;
-      item.substituteItem = primaryFulfillmentInventory.item;
-      item.substituteDescription = primaryFulfillmentInventory.description;
-      item.notPickedUpReason = REASON_SUBSTITUTED;
-    }
+    applyFulfillmentItems(item, true);
   }
 
   private void consumeFulfillmentItems(Family.ChecklistItem item) {
+    applyFulfillmentItems(item, false);
+  }
+
+  private void applyFulfillmentItems(Family.ChecklistItem item, boolean restoreQuantity) {
     Inventory primaryFulfillmentInventory = null;
     for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
       Inventory inventory = requireInventoryForFulfillmentItem(item, fulfillmentItem);
@@ -457,18 +391,26 @@ public class FamilyChecklistInventoryService {
         continue;
       }
 
-      consumeInventory(inventory.internalID, fulfillmentItemQuantity(fulfillmentItem));
+      if (restoreQuantity) {
+        restoreInventory(inventory.internalID, fulfillmentItemQuantity(fulfillmentItem));
+      } else {
+        consumeInventory(inventory.internalID, fulfillmentItemQuantity(fulfillmentItem));
+      }
       hydrateFulfillmentItem(fulfillmentItem, inventory);
       if (primaryFulfillmentInventory == null) {
         primaryFulfillmentInventory = inventory;
       }
     }
 
-    if (isChosenSubstitution(item) && primaryFulfillmentInventory != null) {
-      item.substituteInventoryId = primaryFulfillmentInventory.internalID;
-      item.substituteItem = primaryFulfillmentInventory.item;
-      item.substituteDescription = primaryFulfillmentInventory.description;
-      item.notPickedUpReason = REASON_SUBSTITUTED;
+    syncLegacySubstitutionFields(item, primaryFulfillmentInventory);
+  }
+
+  private void syncLegacySubstitutionFields(Family.ChecklistItem item, Inventory inventory) {
+    if (isChosenSubstitution(item) && inventory != null) {
+      item.substituteInventoryId = inventory.internalID;
+      item.substituteItem = inventory.item;
+      item.substituteDescription = inventory.description;
+      item.notPickedUpReason = substitutedReason();
     }
   }
 
@@ -481,41 +423,17 @@ public class FamilyChecklistInventoryService {
     fulfillmentItem.description = inventory.description;
   }
 
-  private boolean isChosenSubstitution(Family.ChecklistItem item) {
-    return item != null
-      && hasText(item.substituteBarcode)
-      && (item.selected || REASON_SUBSTITUTED.equals(normalizeReason(item.notPickedUpReason)));
-  }
-
-  private boolean isValidNotPickedUpReason(String reason) {
-    String normalizedReason = normalizeReason(reason);
-    return REASON_AVAILABLE_DIDNT_NEED.equals(normalizedReason)
-      || REASON_ITEM_NOT_AVALIABLE.equals(normalizedReason)
-      || REASON_NOT_AVAILABLE_DIDNT_RECEIVE.equals(normalizedReason)
-      || REASON_SUBSTITUTED.equals(normalizedReason);
-  }
-
-  private String normalizeReason(String reason) {
-    if (reason == null) {
-      return null;
-    }
-    return reason.trim()
-      .toLowerCase(Locale.US)
-      .replace("'", "")
-      .replaceAll("[\\s-]+", "_");
-  }
-
   private void releaseInventory(String internalId, int amount) {
     if (!hasText(internalId)) {
       return;
     }
 
-    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    Inventory inventory = findInventoryByInternalId(internalId);
     if (inventory == null) {
       throw new NotFoundResponse("No item found for internalID: " + internalId);
     }
 
-    int quantityToRelease = amount <= 0 ? 1 : amount;
+    int quantityToRelease = quantityOrOne(amount);
     int newReservedQuantity = Math.max(0, inventory.reservedQuantity - quantityToRelease);
 
     inventoryCollection.updateOne(eq("_id", new ObjectId(inventory._id)),
@@ -525,21 +443,32 @@ public class FamilyChecklistInventoryService {
   }
 
   private void restoreInventory(String internalId, int amount) {
+    Inventory inventory = requireInventoryByInternalId(internalId, REVERTED_ITEM_MISSING_INVENTORY_MATCH);
+    int quantityToRestore = quantityOrOne(amount);
+    inventoryCollection.updateOne(
+      eq("_id", new ObjectId(inventory._id)),
+      Updates.set("quantity", inventory.quantity + quantityToRestore));
+  }
+
+  private void validateNotPickedUpReason(String reason) {
+    if (!isValidNotPickedUpReason(reason)) {
+      throw new BadRequestResponse(VALID_NOT_PICKED_UP_REASON_MESSAGE);
+    }
+  }
+
+  private Inventory requireInventoryByInternalId(String internalId, String missingInventoryMatchMessage) {
     if (!hasText(internalId)) {
-      throw new BadRequestResponse("A reverted checklist item is missing its inventory match.");
+      throw new BadRequestResponse(missingInventoryMatchMessage);
     }
 
-    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    Inventory inventory = findInventoryByInternalId(internalId);
     if (inventory == null) {
       throw new NotFoundResponse("No item found for internalID: " + internalId);
     }
-
-    int quantityToRestore = amount <= 0 ? 1 : amount;
-    inventoryCollection.updateOne(eq("_id",
-     new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
+    return inventory;
   }
 
-  private boolean hasText(String value) {
-    return value != null && !value.isBlank();
+  private Inventory findInventoryByInternalId(String internalId) {
+    return inventoryCollection.find(eq("internalID", internalId)).first();
   }
 }

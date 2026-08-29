@@ -6,6 +6,7 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Updates.unset;
+import static umm3601.Family.ChecklistItemRules.hasText;
 
 // Java Imports
 import java.time.Instant;
@@ -83,10 +84,6 @@ public class FamilyController {
   private static final String STATUS_HELPED = "helped";
   private static final String STATUS_NOT_HELPED = "not_helped";
   private static final String STATUS_BEING_HELPED = "being_helped";
-  private static final String REASON_AVAILABLE_DIDNT_NEED = "available_didnt_need";
-  private static final String REASON_ITEM_NOT_AVALIABLE = "item_not_avaliable";
-  private static final String REASON_NOT_AVAILABLE_DIDNT_RECEIVE = "not_available_didnt_receive";
-  private static final String REASON_SUBSTITUTED = "substituted";
 
   // Regex
   public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -1269,9 +1266,7 @@ public class FamilyController {
     if (!hasText(item.id)) {
       item.id = fallbackId;
     }
-    if (item.requestedQuantity == null || item.requestedQuantity <= 0) {
-      item.requestedQuantity = 1;
-    }
+    item.requestedQuantity = ChecklistItemRules.quantityOrOne(item.requestedQuantity);
     item.notPickedUpReason = normalizeReason(item.notPickedUpReason);
     normalizeFulfillmentItems(item);
   }
@@ -1293,7 +1288,7 @@ public class FamilyController {
 
       normalizeFulfillmentItem(fulfillmentItem);
 
-      if (hasText(fulfillmentItem.inventoryId) || hasText(fulfillmentItem.barcode)) {
+      if (ChecklistItemRules.hasFulfillmentItemTarget(fulfillmentItem)) {
         normalizedItems.add(fulfillmentItem);
       }
     }
@@ -1302,9 +1297,7 @@ public class FamilyController {
   }
 
   private void normalizeFulfillmentItem(Family.FulfillmentItem fulfillmentItem) {
-    if (fulfillmentItem.quantity == null || fulfillmentItem.quantity <= 0) {
-      fulfillmentItem.quantity = 1;
-    }
+    fulfillmentItem.quantity = ChecklistItemRules.quantityOrOne(fulfillmentItem.quantity);
   }
 
   private Family.FulfillmentItem legacySubstitutionAsFulfillmentItem(Family.ChecklistItem item) {
@@ -1333,27 +1326,15 @@ public class FamilyController {
   }
 
   private boolean isChosenSubstitution(Family.ChecklistItem item) {
-    return item != null
-      && hasText(item.substituteBarcode)
-      && (item.selected || REASON_SUBSTITUTED.equals(normalizeReason(item.notPickedUpReason)));
+    return ChecklistItemRules.isChosenSubstitution(item);
   }
 
   private boolean isValidNotPickedUpReason(String reason) {
-    String normalizedReason = normalizeReason(reason);
-    return REASON_AVAILABLE_DIDNT_NEED.equals(normalizedReason)
-      || REASON_ITEM_NOT_AVALIABLE.equals(normalizedReason)
-      || REASON_NOT_AVAILABLE_DIDNT_RECEIVE.equals(normalizedReason)
-      || REASON_SUBSTITUTED.equals(normalizedReason);
+    return ChecklistItemRules.isValidNotPickedUpReason(reason);
   }
 
   private String normalizeReason(String reason) {
-    if (reason == null) {
-      return null;
-    }
-    return reason.trim()
-      .toLowerCase(Locale.US)
-      .replace("'", "")
-      .replaceAll("[\\s-]+", "_");
+    return ChecklistItemRules.normalizeReason(reason);
   }
 
   private void consumeInventory(String internalId, int amount) {
@@ -1412,10 +1393,6 @@ public class FamilyController {
       }
     }
     return acronym.length() > 1 ? acronym.toString() : "";
-  }
-
-  private boolean hasText(String value) {
-    return value != null && !value.isBlank();
   }
 
   private void normalizeFamilyForPersistence(Family family, Family existingFamily) {

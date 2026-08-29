@@ -33,4 +33,3 @@ export interface ChecklistItem {
   notes?: string;
   fulfillmentItems?: FulfillmentItem[];
 }
-
