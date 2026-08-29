@@ -125,5 +125,14 @@ public class Family {
     public String substituteDescription;
     public String substituteInventoryId;
     public String notes;
+    public List<FulfillmentItem> fulfillmentItems = new ArrayList<>();
+  }
+
+  public static class FulfillmentItem {
+    public String inventoryId;
+    public String barcode;
+    public String item;
+    public String description;
+    public Integer quantity;
   }
 }

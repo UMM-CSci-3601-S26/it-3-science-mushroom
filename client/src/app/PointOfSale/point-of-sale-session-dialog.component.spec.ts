@@ -191,23 +191,43 @@ describe('PointOfSaleSessionDialogComponent', () => {
     dialogService.openDialog.and.returnValue({
       afterClosed: () => of(true)
     } as never);
+    checklist.sections[0].notGivenItems = undefined;
+    checklist.sections[0].items[0].label = 'Pencil';
+    checklist.sections[0].items[0].itemDescription = undefined;
+    checklist.sections[0].items[0].available = true;
+    checklist.sections[0].items[0].matchedInventoryId = 'INV-1';
+    checklist.sections[0].items[0].matchedInventoryItem = 'Yellow Pencil';
+    checklist.sections[0].items[0].matchedInventoryDescription = 'Yellow #2 Pencil';
+    checklist.sections[0].items[0].requestedQuantity = 2;
     checklist.sections[0].items[0].selected = false;
     checklist.sections[0].items[0].notPickedUpReason = undefined;
     checklist.sections[0].items[0].substituteBarcode = undefined;
     checklist.sections[0].items[0].substituteInventoryId = undefined;
     checklist.sections[0].items[0].substituteItem = undefined;
     checklist.sections[0].items[0].substituteDescription = undefined;
+    checklist.sections[0].items[0].fulfillmentItems = [];
+    checklist.sections[0].items[1].label = 'Folder';
+    checklist.sections[0].items[1].itemDescription = undefined;
+    checklist.sections[0].items[1].selected = false;
+    checklist.sections[0].items[1].available = true;
+    checklist.sections[0].items[1].requestedQuantity = 1;
     checklist.sections[0].items[1].notPickedUpReason = undefined;
     checklist.sections[0].items[1].substituteBarcode = undefined;
     checklist.sections[0].items[1].substituteInventoryId = undefined;
     checklist.sections[0].items[1].substituteItem = undefined;
     checklist.sections[0].items[1].substituteDescription = undefined;
+    checklist.sections[0].items[1].fulfillmentItems = [];
+    checklist.sections[0].items[2].label = 'Markers';
+    checklist.sections[0].items[2].itemDescription = undefined;
     checklist.sections[0].items[2].selected = false;
+    checklist.sections[0].items[2].available = false;
+    checklist.sections[0].items[2].requestedQuantity = 1;
     checklist.sections[0].items[2].notPickedUpReason = undefined;
     checklist.sections[0].items[2].substituteBarcode = 'ITEM-00002';
     checklist.sections[0].items[2].substituteInventoryId = 'INV-2';
     checklist.sections[0].items[2].substituteItem = 'Marker';
     checklist.sections[0].items[2].substituteDescription = 'Black Marker';
+    checklist.sections[0].items[2].fulfillmentItems = [];
     inventoryService.lookUpByBarcode.and.returnValue(of({
       internalID: 'INV-2',
       internalBarcode: 'ITEM-00002',
@@ -287,6 +307,13 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
     expect(component.sessionHasNoChecklistItems(emptyFamily)).toBeTrue();
     expect(component.sessionHasNoChecklistItems({ ...family, checklist: undefined })).toBeFalse();
+    expect(component.sessionHasNoChecklistItems({
+      ...family,
+      checklist: {
+        ...checklist,
+        sections: []
+      }
+    })).toBeFalse();
   });
 
   it('returns students by section index', () => {
@@ -346,6 +373,84 @@ describe('PointOfSaleSessionDialogComponent', () => {
     })).toBeFalse();
   });
 
+  it('uses linked substitute display and quantity fallbacks', () => {
+    const item = {
+      ...checklist.sections[0].items[0],
+      requestedQuantity: 0,
+      fulfillmentItems: [
+        {
+          inventoryId: 'INV-2',
+          quantity: 0
+        },
+        {
+          inventoryId: '',
+          item: 'No linked inventory target',
+          quantity: 10
+        }
+      ]
+    };
+
+    expect(component.substituteDisplay(item)).toBe('Unknown substitute item');
+    expect(component.requestedQuantity(item)).toBe(1);
+    expect(component.fulfilledQuantity(item)).toBe(1);
+    expect(component.linkedFulfillmentItemCount(item)).toBe(1);
+    expect(component.fulfillmentItemsFor({
+      ...item,
+      fulfillmentItems: undefined
+    })).toEqual([]);
+    expect(component.maxFulfillmentItemQuantity({
+      inventoryId: '',
+      barcode: 'UPC-5',
+      quantity: 1
+    })).toBe(5);
+    expect(component.fulfillmentInventoryAvailableDisplay({
+      inventoryId: '',
+      barcode: 'MISSING-BARCODE',
+      quantity: 1
+    })).toBe('Unknown');
+    expect(component.fulfillmentItemDisplay({
+      inventoryId: '',
+      item: 'Only Item',
+      quantity: 1
+    })).toBe('Only Item');
+    expect(component.fulfillmentItemDisplay({
+      inventoryId: '',
+      barcode: 'ONLY-BARCODE',
+      quantity: 1
+    })).toBe('ONLY-BARCODE');
+  });
+
+  it('uses inventory display and unreserved quantity fallbacks', () => {
+    const inventory = inventoryService.inventory()[0];
+
+    expect(component.unreservedQuantity({
+      ...inventory,
+      reservedQuantity: undefined
+    })).toBe(4);
+    expect(component.unreservedQuantity({
+      ...inventory,
+      quantity: 1,
+      reservedQuantity: 4
+    })).toBe(0);
+    expect(component.inventoryDescription({
+      ...inventory,
+      description: '',
+      item: 'Fallback Item'
+    })).toBe('Fallback Item');
+    expect(component.inventoryDescription({
+      ...inventory,
+      description: '',
+      item: '',
+      internalBarcode: 'ITEM-FALLBACK'
+    })).toBe('ITEM-FALLBACK');
+    expect(component.inventoryDescription({
+      ...inventory,
+      description: '',
+      item: '',
+      internalBarcode: ''
+    })).toBe('Unknown inventory item');
+  });
+
   it('labels substitute matches as suggestions until they are selected', () => {
     expect(component.substituteMatchLabel({
       ...checklist.sections[0].items[0],
@@ -378,6 +483,29 @@ describe('PointOfSaleSessionDialogComponent', () => {
     })).toBe('Needs review');
   });
 
+  it('labels partial substitutes and requires a reason before finalizing', () => {
+    const item = checklist.sections[0].items[0];
+    item.label = '';
+    item.itemDescription = 'Pencil Pack';
+    item.requestedQuantity = 3;
+    item.fulfillmentItems = [{
+      inventoryId: 'INV-2',
+      barcode: 'UPC-2',
+      item: 'Marker',
+      description: 'Black Marker',
+      quantity: 1
+    }];
+    checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
+
+    expect(component.itemStatusLabel(item)).toBe('Partial substitute');
+    expect(component.needsReason(item)).toBeTrue();
+
+    component.saveCompletedSession();
+
+    expect(dialogService.openDialog).not.toHaveBeenCalled();
+    expect(component.errorMessage).toContain('Pencil Pack');
+  });
+
   it('saves the current checklist as a draft when closing', () => {
     component.closeAndSaveDraft();
 
@@ -386,6 +514,132 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(savedItems.find(item => item.id === 'student-1-item-2')?.notPickedUpReason).toBeUndefined();
     expect(savedItems.find(item => item.id === 'student-1-item-3')?.notPickedUpReason).toBeUndefined();
     expect(dialogRef.close).toHaveBeenCalledWith({ draftSaved: true });
+  });
+
+  it('saves linked substitute items in the draft payload', () => {
+    const item = checklist.sections[0].items[0];
+    component.applySubstituteBarcode(item, 'UPC-2');
+
+    component.closeAndSaveDraft();
+
+    const savedChecklist = familyService.updateFamilyChecklist.calls.mostRecent().args[1];
+    const savedItem = savedChecklist.sections[0].items[0];
+    expect(savedItem.selected).toBeTrue();
+    expect(savedItem.notPickedUpReason).toBe('substituted');
+    expect(savedItem.substituteInventoryId).toBe('INV-2');
+    expect(savedItem.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        barcode: 'UPC-2',
+        quantity: 2
+      })
+    ]);
+  });
+
+  it('does not save a draft when linked substitutes exceed unreserved inventory across the session', () => {
+    checklist.sections[0].items[0].fulfillmentItems = [{
+      inventoryId: 'INV-2',
+      barcode: 'UPC-2',
+      item: 'Marker',
+      description: 'Black Marker',
+      quantity: 2
+    }];
+    checklist.sections[0].items[1].fulfillmentItems = [{
+      inventoryId: 'INV-2',
+      barcode: 'UPC-2',
+      item: 'Marker',
+      description: 'Black Marker',
+      quantity: 2
+    }];
+
+    component.closeAndSaveDraft();
+
+    expect(familyService.updateFamilyChecklist).not.toHaveBeenCalled();
+    expect(component.errorMessage).toContain('Reduce linked substitute "Black Marker" to 3 or less');
+  });
+
+  it('does not finalize when linked substitutes exceed unreserved inventory across the session', () => {
+    checklist.sections[0].items[0].fulfillmentItems = [{
+      inventoryId: 'INV-2',
+      barcode: 'UPC-2',
+      item: 'Marker',
+      description: 'Black Marker',
+      quantity: 2
+    }];
+    checklist.sections[0].items[1].fulfillmentItems = [{
+      inventoryId: 'INV-2',
+      barcode: 'UPC-2',
+      item: 'Marker',
+      description: 'Black Marker',
+      quantity: 2
+    }];
+
+    component.saveCompletedSession();
+
+    expect(dialogService.openDialog).not.toHaveBeenCalled();
+    expect(familyService.saveFamilyHelpSessionAll).not.toHaveBeenCalled();
+    expect(component.errorMessage).toContain('Reduce linked substitute "Black Marker" to 3 or less');
+  });
+
+  it('does not save a draft when a linked substitute cannot be matched to inventory', () => {
+    checklist.sections[0].items[0].fulfillmentItems = [{
+      inventoryId: 'MISSING-INV',
+      barcode: 'MISSING-BARCODE',
+      item: 'Missing Item',
+      description: 'Missing Substitute',
+      quantity: 1
+    }];
+
+    component.closeAndSaveDraft();
+
+    expect(familyService.updateFamilyChecklist).not.toHaveBeenCalled();
+    expect(component.errorMessage).toContain('Linked substitute "Missing Substitute" could not be matched');
+  });
+
+  it('does not save a draft when a linked substitute has no unreserved inventory', () => {
+    checklist.sections[0].items[0].fulfillmentItems = [{
+      inventoryId: 'INV-3',
+      barcode: 'UPC-3',
+      item: 'Marker',
+      description: 'Blue Marker',
+      quantity: 1
+    }];
+
+    component.closeAndSaveDraft();
+
+    expect(familyService.updateFamilyChecklist).not.toHaveBeenCalled();
+    expect(component.errorMessage).toContain('No unreserved quantity is available for linked substitute "Blue Marker"');
+  });
+
+  it('saves linked substitute data on not-given items and keeps an existing reason', () => {
+    checklist.sections[0].notGivenItems = [{
+      ...checklist.sections[0].items[1],
+      id: 'not-given-item',
+      selected: false,
+      available: false,
+      notPickedUpReason: 'family_declined',
+      fulfillmentItems: [{
+        inventoryId: 'INV-5',
+        barcode: 'UPC-5',
+        item: 'Marker Set',
+        description: 'Washable Marker Set',
+        quantity: 0
+      }]
+    }];
+
+    component.closeAndSaveDraft();
+
+    const savedChecklist = familyService.updateFamilyChecklist.calls.mostRecent().args[1];
+    const savedItem = savedChecklist.sections[0].notGivenItems![0];
+    expect(savedItem.selected).toBeTrue();
+    expect(savedItem.notPickedUpReason).toBe('family_declined');
+    expect(savedItem.substituteInventoryId).toBe('INV-5');
+    expect(savedItem.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-5',
+        quantity: 1
+      })
+    ]);
   });
 
   it('closes without saving a draft if the family id or checklist is missing', () => {
@@ -555,7 +809,259 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(item.substituteInventoryId).toBe('INV-2');
     expect(item.substituteItem).toBe('Marker');
     expect(item.notPickedUpReason).toBe('substituted');
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        barcode: 'UPC-2',
+        item: 'Marker',
+        description: 'Black Marker',
+        quantity: 2
+      })
+    ]);
     expect(component.substituteDisplay(item)).toBe('Black Marker');
+  });
+
+  it('links multiple substitute inventory items with separate quantities', () => {
+    const item = checklist.sections[0].items[0];
+    item.label = 'Markers';
+    item.requestedQuantity = 3;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+
+    expect(component.fulfilledQuantity(item)).toBe(3);
+    component.setFulfillmentItemQuantity(item, item.fulfillmentItems![0], {
+      target: { value: '1' }
+    } as unknown as Event);
+    component.applySubstituteOption(
+      item,
+      inventoryService.inventory().find(inventory => inventory.internalID === 'INV-5')!
+    );
+
+    expect(item.selected).toBeTrue();
+    expect(item.notPickedUpReason).toBe('substituted');
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        quantity: 1
+      }),
+      jasmine.objectContaining({
+        inventoryId: 'INV-5',
+        quantity: 2
+      })
+    ]);
+    expect(component.fulfilledQuantity(item)).toBe(3);
+    expect(component.linkedFulfillmentItemCount(item)).toBe(2);
+    expect(component.substituteDisplay(item)).toBe('Quantity: 3, linked: 2, requested: 3');
+  });
+
+  it('caps linked substitute quantities at unreserved inventory while allowing more than requested', () => {
+    const item = checklist.sections[0].items[0];
+    item.requestedQuantity = 1;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.setFulfillmentItemQuantity(item, item.fulfillmentItems![0], {
+      target: { value: '9' }
+    } as unknown as Event);
+
+    expect(component.maxFulfillmentItemQuantity(item.fulfillmentItems![0])).toBe(3);
+    expect(component.fulfillmentInventoryAvailableDisplay(item.fulfillmentItems![0])).toBe('3');
+    expect(item.fulfillmentItems![0].quantity).toBe(3);
+    expect(component.fulfilledQuantity(item)).toBe(3);
+    expect(component.substituteDisplay(item)).toBe('Black Marker');
+  });
+
+  it('caps repeated links to the same substitute at unreserved inventory', () => {
+    const item = checklist.sections[0].items[0];
+    item.requestedQuantity = 10;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.applySubstituteBarcode(item, 'UPC-2');
+
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        quantity: 3
+      })
+    ]);
+    expect(component.fulfilledQuantity(item)).toBe(3);
+  });
+
+  it('does not change a linked substitute quantity when no unreserved inventory is available', () => {
+    const item = checklist.sections[0].items[0];
+    item.fulfillmentItems = [{
+      inventoryId: 'INV-3',
+      barcode: 'UPC-3',
+      item: 'Marker',
+      description: 'Blue Marker',
+      quantity: 1
+    }];
+    const input = { value: '2' } as HTMLInputElement;
+
+    component.setFulfillmentItemQuantity(item, item.fulfillmentItems[0], {
+      target: input
+    } as unknown as Event);
+
+    expect(component.maxFulfillmentItemQuantity(item.fulfillmentItems[0])).toBe(0);
+    expect(item.fulfillmentItems[0].quantity).toBe(1);
+    expect(input.value).toBe('1');
+    expect(component.errorMessage).toContain('No unreserved quantity');
+  });
+
+  it('does not link substitute inventory with no unreserved quantity', () => {
+    const item = checklist.sections[0].items[0];
+    const unavailableInventory = inventoryService.inventory().find(inventory => inventory.internalID === 'INV-3')!;
+
+    component.applySubstituteOption(item, unavailableInventory);
+
+    expect(item.selected).toBeFalse();
+    expect(item.fulfillmentItems).toEqual([]);
+    expect(component.substituteErrorMessage).toContain('No unreserved quantity');
+  });
+
+  it('uses the fulfillment inventory id as the source of truth for inventory quantity caps', () => {
+    expect(component.maxFulfillmentItemQuantity({
+      inventoryId: 'INV-5',
+      barcode: 'UPC-2',
+      quantity: 1
+    })).toBe(5);
+  });
+
+  it('updates an existing linked substitute found by barcode', () => {
+    const item = checklist.sections[0].items[0];
+    item.requestedQuantity = 5;
+    item.fulfillmentItems = [{
+      inventoryId: '',
+      barcode: 'UPC-2',
+      description: 'Black Marker',
+      quantity: 1
+    }];
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        barcode: 'UPC-2',
+        quantity: 3
+      })
+    ]);
+    expect(component.maxFulfillmentItemQuantity(item.fulfillmentItems![0])).toBe(3);
+  });
+
+  it('shows the unreserved inventory cap for linked substitute rows', () => {
+    const item = checklist.sections[0].items[0];
+    item.requestedQuantity = 1;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    fixture.detectChanges();
+
+    const inventoryLabel = fixture.nativeElement.querySelector('.fulfillment-copy span:last-child') as HTMLElement;
+    const quantityInput = fixture.nativeElement.querySelector('.fulfillment-quantity input') as HTMLInputElement;
+    expect(inventoryLabel.textContent?.trim()).toBe('Unreserved: 3');
+    expect(quantityInput.getAttribute('max')).toBe('3');
+  });
+
+  it('shows the linked substitute summary with quantity and link count', () => {
+    const item = checklist.sections[0].items[0];
+    item.label = 'Markers';
+    item.requestedQuantity = 1;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.applySubstituteOption(
+      item,
+      inventoryService.inventory().find(inventory => inventory.internalID === 'INV-5')!
+    );
+    fixture.detectChanges();
+
+    const summary = fixture.nativeElement.querySelector('.fulfillment-summary span') as HTMLElement;
+    expect(summary.textContent?.trim()).toBe('Quantity: 2 / 1 requested; linked: 2');
+  });
+
+  it('normalizes invalid linked substitute quantities to one when unreserved inventory is available', () => {
+    const item = checklist.sections[0].items[0];
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.errorMessage = 'Old error';
+    const input = { value: 'bad quantity' } as HTMLInputElement;
+
+    component.setFulfillmentItemQuantity(item, item.fulfillmentItems![0], {
+      target: input
+    } as unknown as Event);
+
+    expect(item.fulfillmentItems![0].quantity).toBe(1);
+    expect(input.value).toBe('1');
+    expect(component.errorMessage).toBe('');
+  });
+
+  it('allows adding more substitute items after the requested amount is met', () => {
+    const item = checklist.sections[0].items[0];
+    item.label = 'Markers';
+    item.requestedQuantity = 1;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.applySubstituteOption(
+      item,
+      inventoryService.inventory().find(inventory => inventory.internalID === 'INV-5')!
+    );
+
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        quantity: 1
+      }),
+      jasmine.objectContaining({
+        inventoryId: 'INV-5',
+        quantity: 1
+      })
+    ]);
+    expect(component.fulfilledQuantity(item)).toBe(2);
+    expect(component.linkedFulfillmentItemCount(item)).toBe(2);
+    expect(component.substituteDisplay(item)).toBe('Quantity: 2, linked: 2, requested: 1');
+  });
+
+  it('removes linked substitute rows and clears the substitution when none remain', () => {
+    const item = checklist.sections[0].items[1];
+    item.requestedQuantity = 2;
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.setFulfillmentItemQuantity(item, item.fulfillmentItems![0], {
+      target: { value: '1' }
+    } as unknown as Event);
+    component.applySubstituteOption(
+      item,
+      inventoryService.inventory().find(inventory => inventory.internalID === 'INV-5')!
+    );
+
+    component.removeFulfillmentItem(item, item.fulfillmentItems![0]);
+
+    expect(item.selected).toBeTrue();
+    expect(item.substituteInventoryId).toBe('INV-5');
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-5'
+      })
+    ]);
+
+    component.removeFulfillmentItem(item, item.fulfillmentItems![0]);
+
+    expect(item.selected).toBeFalse();
+    expect(component.hasSubstitute(item)).toBeFalse();
+    expect(item.fulfillmentItems).toEqual([]);
+  });
+
+  it('allows finalizing linked substitute quantities above the requested amount', () => {
+    const item = checklist.sections[0].items[0];
+    item.requestedQuantity = 1;
+    checklist.sections[0].items[1].notPickedUpReason = 'available_didnt_need';
+
+    component.applySubstituteBarcode(item, 'UPC-2');
+    component.setFulfillmentItemQuantity(item, item.fulfillmentItems![0], {
+      target: { value: '12' }
+    } as unknown as Event);
+
+    component.saveCompletedSession();
+
+    const savedChecklist = familyService.saveFamilyHelpSessionAll.calls.mostRecent().args[1];
+    expect(savedChecklist.sections[0].items[0].fulfillmentItems![0].quantity).toBe(3);
+    expect(component.errorMessage).toBe('');
   });
 
   it('handles substitution scanner toggles, blank scans, and lookup failures', () => {
@@ -593,6 +1099,28 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(component.canSubstitute(item)).toBeTrue();
     expect(component.substitutionOptionsFor(item)).toEqual([]);
     expect(component.activeSubstitutionItemId).toBe(item.id);
+  });
+
+  it('does not open substitution workflow for selected items without a substitute', () => {
+    const item = checklist.sections[0].items[0];
+    item.selected = true;
+    component.activeSubstitutionItemId = 'other-item';
+    component.substituteErrorMessage = 'Keep this message';
+
+    expect(component.isSubstituted(item)).toBeFalse();
+    expect(component.canSubstitute(item)).toBeFalse();
+
+    component.toggleSubstitutionPanel(item);
+
+    expect(component.activeSubstitutionItemId).toBe('other-item');
+    expect(component.substituteErrorMessage).toBe('Keep this message');
+
+    component.setItemSelected(item, true);
+    expect(component.activeSubstitutionItemId).toBe('other-item');
+    expect(component.substituteErrorMessage).toBe('Keep this message');
+
+    component.setItemSelected(item, false);
+    expect(item.selected).toBeFalse();
   });
 
   it('allows matched inventory items to be substituted', () => {
@@ -667,6 +1195,13 @@ describe('PointOfSaleSessionDialogComponent', () => {
     } as unknown as Event);
 
     expect(component.substitutionOptionsFor(item).map(option => option.internalID)).toEqual(['INV-2']);
+
+    component.setSubstitutionDescriptionSearch(item, {
+      target: { value: '   ' }
+    } as unknown as Event);
+
+    expect(component.substitutionDescriptionSearchFor(item)).toBe('');
+    expect(component.substitutionOptionsFor(item).map(option => option.internalID)).toEqual(['INV-2', 'INV-5']);
   });
 
   it('applies a substitute from the suggestions list', () => {
@@ -681,6 +1216,71 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(item.substituteItem).toBe('Marker');
     expect(item.substituteDescription).toBe('Black Marker');
     expect(item.notPickedUpReason).toBe('substituted');
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        barcode: 'ITEM-00002',
+        quantity: 1
+      })
+    ]);
+  });
+
+  it('uses external barcodes and inventory ids when substitute inventory lacks an internal barcode', () => {
+    const item = checklist.sections[0].items[1];
+    const baseInventory = inventoryService.inventory()[0];
+
+    component.applySubstituteOption(item, {
+      ...baseInventory,
+      internalID: 'INV-EXT',
+      internalBarcode: '',
+      externalBarcode: ['EXT-ONLY'],
+      description: 'External Marker',
+      quantity: 2,
+      reservedQuantity: 0
+    });
+
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-EXT',
+        barcode: 'EXT-ONLY'
+      })
+    ]);
+
+    component.clearSubstitution(item);
+    component.applySubstituteOption(item, {
+      ...baseInventory,
+      internalID: 'INV-NO-BARCODE',
+      internalBarcode: '',
+      externalBarcode: undefined,
+      description: 'No Barcode Marker',
+      quantity: 2,
+      reservedQuantity: 0
+    });
+
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-NO-BARCODE',
+        barcode: ''
+      })
+    ]);
+  });
+
+  it('initializes fulfillment rows from selected legacy substitutes when a session is loaded', () => {
+    const item = checklist.sections[0].items[2];
+    item.selected = true;
+    item.requestedQuantity = 4;
+    item.fulfillmentItems = [];
+
+    component.restartSession();
+
+    expect(item.fulfillmentItems).toEqual([
+      jasmine.objectContaining({
+        inventoryId: 'INV-2',
+        barcode: 'ITEM-00002',
+        quantity: 4
+      })
+    ]);
+    expect(component.hasSubstitutionSuggestion(item)).toBeTrue();
   });
 
   it('clears substitution data when a substituted item is selected again', () => {
@@ -699,6 +1299,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
 
     expect(item.selected).toBeTrue();
     expect(component.hasSubstitute(item)).toBeFalse();
+    expect(item.fulfillmentItems).toEqual([]);
     expect(item.notPickedUpReason).toBeUndefined();
   });
 
@@ -716,6 +1317,7 @@ describe('PointOfSaleSessionDialogComponent', () => {
     expect(item.substituteInventoryId).toBeUndefined();
     expect(item.substituteItem).toBeUndefined();
     expect(item.substituteDescription).toBeUndefined();
+    expect(item.fulfillmentItems).toEqual([]);
     expect(item.notPickedUpReason).toBeUndefined();
   });
 

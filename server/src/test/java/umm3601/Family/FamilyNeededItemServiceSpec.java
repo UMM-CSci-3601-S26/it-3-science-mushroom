@@ -78,6 +78,34 @@ class FamilyNeededItemServiceSpec {
   }
 
   @Test
+  void recordNeededButNotAcquiredItemsIgnoresSubstitutedItems() {
+    Family family = buildFamilyWithChecklist();
+    Family.ChecklistItem item = buildItem(
+      "item-1",
+      "Dry-erase markers",
+      false,
+      "substituted");
+    item.substituteBarcode = "inventory-barcode-1";
+    family.checklist.sections.get(0).items.add(item);
+
+    assertTrue(familyNeededItemService.recordNeededButNotAcquiredItems(family).isEmpty());
+  }
+
+  @Test
+  void recordNeededButNotAcquiredItemsIgnoresFulfillmentItems() {
+    Family family = buildFamilyWithChecklist();
+    Family.ChecklistItem item = buildItem(
+      "item-1",
+      "Dry-erase markers",
+      false,
+      "item_not_avaliable");
+    item.fulfillmentItems = List.of(fulfillmentItem("inventory-1"));
+    family.checklist.sections.get(0).items.add(item);
+
+    assertTrue(familyNeededItemService.recordNeededButNotAcquiredItems(family).isEmpty());
+  }
+
+  @Test
   void recordNeededButNotAcquiredItemsNormalizesReasonFormatting() {
     Family family = buildFamilyWithChecklist();
     family.checklist.sections.get(0).items.add(buildItem(
@@ -180,5 +208,11 @@ class FamilyNeededItemServiceSpec {
     item.requestedQuantity = 2;
     item.notPickedUpReason = reason;
     return item;
+  }
+
+  private Family.FulfillmentItem fulfillmentItem(String inventoryId) {
+    Family.FulfillmentItem fulfillmentItem = new Family.FulfillmentItem();
+    fulfillmentItem.inventoryId = inventoryId;
+    return fulfillmentItem;
   }
 }

@@ -683,7 +683,7 @@ class FamilyControllerSpec {
     assertEquals(1, familyCaptor.getValue().checklist.sections.size());
   }
   @Test
-  void updateFamilyChecklistDoesNotRebuildReservationsForOpenDraft() {
+  void updateFamilyChecklistRebuildsReservationsForOpenDraft() {
     Family family = startHelpSessionAndGetFamily();
     Family.FamilyChecklist checklist = family.checklist;
 
@@ -694,10 +694,10 @@ class FamilyControllerSpec {
 
     Family.ChecklistItem item = new Family.ChecklistItem();
     item.id = "student-1-item-1";
-    item.label = "Backpack";
+    item.label = "Notebook";
     item.available = true;
-    item.matchedInventoryId = "ID-10000";
-    item.requestedQuantity = 1;
+    item.matchedInventoryId = "ID-10001";
+    item.requestedQuantity = 2;
     section.items = new ArrayList<>(List.of(item));
     checklist.sections = new ArrayList<>(List.of(section));
 
@@ -717,7 +717,11 @@ class FamilyControllerSpec {
     Document backpackInventory = db.getCollection("inventory")
       .find(eq("internalID", "ID-10000"))
       .first();
-    assertEquals(1, backpackInventory.getInteger("reservedQuantity"));
+    Document notebookInventory = db.getCollection("inventory")
+      .find(eq("internalID", "ID-10001"))
+      .first();
+    assertEquals(0, backpackInventory.getInteger("reservedQuantity"));
+    assertEquals(2, notebookInventory.getInteger("reservedQuantity"));
   }
 
   @Test
@@ -1787,13 +1791,25 @@ class FamilyControllerSpec {
   void privateNormalizeHelpersCoverDefaultBranches() throws Exception {
     Family.ChecklistSection section = new Family.ChecklistSection();
     section.printableTitle = "Printable";
-    section.items = new ArrayList<>(List.of(new Family.ChecklistItem()));
+    Family.ChecklistItem item = new Family.ChecklistItem();
+    Family.FulfillmentItem fulfillmentItem = new Family.FulfillmentItem();
+    fulfillmentItem.inventoryId = " NOTEBOOK-1 ";
+    fulfillmentItem.barcode = " NOTEBOOK-BARCODE ";
+    fulfillmentItem.item = " Notebook ";
+    fulfillmentItem.description = " Wide Ruled Notebook ";
+    item.fulfillmentItems = new ArrayList<>(List.of(fulfillmentItem));
+    section.items = new ArrayList<>(List.of(item));
 
     Family.ChecklistSection normalizedSection = invokeNormalizeSectionForSave("student-1", section);
     assertEquals("student-1", normalizedSection.id);
     assertEquals("Printable", normalizedSection.title);
     assertEquals("student-1-item-1", normalizedSection.items.get(0).id);
     assertEquals(1, normalizedSection.items.get(0).requestedQuantity);
+    Family.FulfillmentItem normalizedFulfillmentItem = normalizedSection.items.get(0).fulfillmentItems.get(0);
+    assertEquals("NOTEBOOK-1", normalizedFulfillmentItem.inventoryId);
+    assertEquals("NOTEBOOK-BARCODE", normalizedFulfillmentItem.barcode);
+    assertEquals("Notebook", normalizedFulfillmentItem.item);
+    assertEquals("Wide Ruled Notebook", normalizedFulfillmentItem.description);
 
     String beingHelped = invokeNormalizeStatusValue("being helped");
     assertEquals("being_helped", beingHelped);

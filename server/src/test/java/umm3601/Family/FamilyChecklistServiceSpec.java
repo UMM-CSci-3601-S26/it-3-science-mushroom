@@ -162,6 +162,15 @@ class FamilyChecklistServiceSpec {
     assertTrue(matches.stream().anyMatch(match -> List.of("Notebook").equals(match.item)));
     assertTrue(matches.stream().anyMatch(match -> List.of("Folder").equals(match.item)));
 
+    Family.StudentInfo eighthGradeHighSchoolStudent = new Family.StudentInfo();
+    eighthGradeHighSchoolStudent.school = "MAHS";
+    eighthGradeHighSchoolStudent.grade = "8th Grade";
+    eighthGradeHighSchoolStudent.teacher = "N/A";
+
+    List<SupplyList> eighthGradeHighSchoolMatches = invokeGetSupplyListsForStudent(eighthGradeHighSchoolStudent);
+    assertEquals(1, eighthGradeHighSchoolMatches.size());
+    assertEquals(List.of("Folder"), eighthGradeHighSchoolMatches.get(0).item);
+
     Family.StudentInfo middleSchoolStudent = new Family.StudentInfo();
     middleSchoolStudent.school = "MAMS";
     middleSchoolStudent.grade = "7";

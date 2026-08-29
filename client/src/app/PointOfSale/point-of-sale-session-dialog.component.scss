@@ -151,6 +151,76 @@
   overflow-wrap: anywhere;
 }
 
+.fulfillment-list {
+  display: grid;
+  gap: 0.45rem;
+  width: min(100%, 32rem);
+  margin-top: 0.6rem;
+  padding: 0.6rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface);
+}
+
+.fulfillment-summary,
+.fulfillment-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.fulfillment-summary {
+  color: var(--app-text-muted);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.fulfillment-summary strong {
+  color: var(--app-text);
+}
+
+.fulfillment-copy {
+  display: grid;
+  min-width: 0;
+}
+
+.fulfillment-copy strong,
+.fulfillment-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fulfillment-copy span,
+.fulfillment-quantity span {
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.fulfillment-quantity {
+  display: grid;
+  gap: 0.15rem;
+  width: 4.25rem;
+}
+
+.fulfillment-quantity input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  color: var(--app-text);
+  background: var(--app-surface-muted);
+}
+
+.remove-fulfillment-button {
+  width: 2rem;
+  height: 2rem;
+  line-height: 2rem;
+}
+
 .reason-field {
   display: block;
   margin-top: 0.6rem;
@@ -300,6 +370,15 @@
 
   .item-actions {
     justify-items: start;
+  }
+
+  .fulfillment-summary,
+  .fulfillment-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .remove-fulfillment-button {
+    grid-column: 2;
   }
 
   .student-card-header {

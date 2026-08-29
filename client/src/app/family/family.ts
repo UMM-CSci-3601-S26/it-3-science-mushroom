@@ -34,6 +34,15 @@ export interface ChecklistItem {
   substituteDescription?: string;
   substituteInventoryId?: string;
   notes?: string;
+  fulfillmentItems?: FulfillmentItem[];
+}
+
+export interface FulfillmentItem {
+  inventoryId: string;
+  barcode?: string;
+  item?: string;
+  description?: string;
+  quantity: number;
 }
 
 export interface ChecklistSection {
