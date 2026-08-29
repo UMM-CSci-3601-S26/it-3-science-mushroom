@@ -73,6 +73,38 @@ public class FamilyChecklistInventoryService {
     }
   }
 
+  void releaseChecklistReservations(Family.FamilyChecklist checklist) {
+    if (checklist == null || checklist.sections == null) {
+      return;
+    }
+
+    Map<String, Integer> heldQuantityByInventoryId = new HashMap<>();
+    for (Family.ChecklistSection section : checklist.sections) {
+      if (section.saved || section.items == null) {
+        continue;
+      }
+      for (Family.ChecklistItem item : section.items) {
+        addHeldReservationTarget(item, heldQuantityByInventoryId);
+      }
+    }
+    releaseHeldReservations(heldQuantityByInventoryId);
+  }
+
+  void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
+    if (checklist == null || checklist.sections == null) {
+      return;
+    }
+
+    for (Family.ChecklistSection section : checklist.sections) {
+      if (section.items == null) {
+        continue;
+      }
+      for (Family.ChecklistItem item : section.items) {
+        restoreChecklistItemInventory(item);
+      }
+    }
+  }
+
   void validateSectionsInventoryChanges(
       List<Family.ChecklistSection> sections,
       Map<String, Integer> heldQuantityByInventoryId
@@ -177,6 +209,27 @@ public class FamilyChecklistInventoryService {
     }
 
     return hasText(item.substituteBarcode) || hasText(item.notPickedUpReason) ? null : item.matchedInventoryId;
+  }
+
+  private void restoreChecklistItemInventory(Family.ChecklistItem item) {
+    if (hasFulfillmentItemTargets(item)) {
+      restoreFulfillmentItems(item);
+    } else if (isChosenSubstitution(item) && hasText(item.substituteInventoryId)) {
+      restoreInventory(item.substituteInventoryId, checklistItemQuantity(item));
+    } else if (isChosenSubstitution(item)) {
+      restoreSubstituteInventory(item);
+    } else if (item.selected) {
+      restoreInventory(item.matchedInventoryId, checklistItemQuantity(item));
+    }
+  }
+
+  private void restoreSubstituteInventory(Family.ChecklistItem item) {
+    Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
+    if (substituteInventory == null) {
+      throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
+    }
+    restoreInventory(substituteInventory.internalID, checklistItemQuantity(item));
+    item.substituteInventoryId = substituteInventory.internalID;
   }
 
   private void addRequestedInventoryTarget(
@@ -373,6 +426,29 @@ public class FamilyChecklistInventoryService {
       : fulfillmentItem.quantity;
   }
 
+  private void restoreFulfillmentItems(Family.ChecklistItem item) {
+    Inventory primaryFulfillmentInventory = null;
+    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
+      Inventory inventory = requireInventoryForFulfillmentItem(item, fulfillmentItem);
+      if (inventory == null) {
+        continue;
+      }
+
+      restoreInventory(inventory.internalID, fulfillmentItemQuantity(fulfillmentItem));
+      hydrateFulfillmentItem(fulfillmentItem, inventory);
+      if (primaryFulfillmentInventory == null) {
+        primaryFulfillmentInventory = inventory;
+      }
+    }
+
+    if (isChosenSubstitution(item) && primaryFulfillmentInventory != null) {
+      item.substituteInventoryId = primaryFulfillmentInventory.internalID;
+      item.substituteItem = primaryFulfillmentInventory.item;
+      item.substituteDescription = primaryFulfillmentInventory.description;
+      item.notPickedUpReason = REASON_SUBSTITUTED;
+    }
+  }
+
   private void consumeFulfillmentItems(Family.ChecklistItem item) {
     Inventory primaryFulfillmentInventory = null;
     for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
@@ -446,6 +522,21 @@ public class FamilyChecklistInventoryService {
     Updates.set("reservedQuantity", newReservedQuantity));
 
     inventory.reservedQuantity = newReservedQuantity;
+  }
+
+  private void restoreInventory(String internalId, int amount) {
+    if (!hasText(internalId)) {
+      throw new BadRequestResponse("A reverted checklist item is missing its inventory match.");
+    }
+
+    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
+    if (inventory == null) {
+      throw new NotFoundResponse("No item found for internalID: " + internalId);
+    }
+
+    int quantityToRestore = amount <= 0 ? 1 : amount;
+    inventoryCollection.updateOne(eq("_id",
+     new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
   }
 
   private boolean hasText(String value) {

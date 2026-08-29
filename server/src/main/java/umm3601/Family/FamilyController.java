@@ -45,7 +45,6 @@ import umm3601.Auth.Role;
 import umm3601.Auth.Route;
 import umm3601.Common.AuthContext;
 import umm3601.Common.InventoryMatcher;
-import umm3601.Inventory.Inventory;
 import umm3601.Settings.Settings;
 import umm3601.Users.Users;
 
@@ -103,13 +102,11 @@ public class FamilyController {
 
   // Database Collection
   private final JacksonMongoCollection<Family> familyCollection;
-  private final JacksonMongoCollection<Inventory> inventoryCollection;
   private final JacksonMongoCollection<Settings> settingsCollection;
   private final JacksonMongoCollection<Users> usersCollection;
   private final FamilyNeededItemService familyNeededItemService;
   private final FamilyChecklistInventoryService familyChecklistInventoryService;
   private final InventoryReservationService inventoryReservationService;
-  private final InventoryMatcher inventoryMatcher;
   private final FamilyChecklistService familyChecklistService;
   private final FamilySchedulingService familySchedulingService;
   private final Object helpSessionMutationQueueMonitor = new Object();
@@ -168,7 +165,6 @@ public class FamilyController {
       FamilySchedulingService familySchedulingService
   ) {
     this.inventoryReservationService = inventoryReservationService;
-    this.inventoryMatcher = inventoryMatcher;
     this.familyChecklistService = familyChecklistService;
     this.familySchedulingService = familySchedulingService;
     this.familyChecklistInventoryService = new FamilyChecklistInventoryService(database, inventoryMatcher);
@@ -176,11 +172,6 @@ public class FamilyController {
         database,
         "family",
         Family.class,
-        UuidRepresentation.STANDARD);
-    inventoryCollection = JacksonMongoCollection.builder().build(
-        database,
-        "inventory",
-        Inventory.class,
         UuidRepresentation.STANDARD);
     settingsCollection = JacksonMongoCollection.builder().build(
       database,
@@ -908,19 +899,7 @@ public class FamilyController {
   }
 
   private void releaseChecklistReservations(Family.FamilyChecklist checklist) {
-    if (checklist == null || checklist.sections == null) {
-      return;
-    }
-
-    for (Family.ChecklistSection section : checklist.sections) {
-      if (section.saved || section.items == null) {
-        continue;
-      }
-
-      for (Family.ChecklistItem item : section.items) {
-        releaseInventory(item.matchedInventoryId, item.requestedQuantity);
-      }
-    }
+    familyChecklistInventoryService.releaseChecklistReservations(checklist);
   }
 
   @Route(method = HttpMethod.POST, path = API_FAMILY_HELP_SESSION_CLEAR)
@@ -1225,25 +1204,6 @@ public class FamilyController {
     );
   }
 
-  private void releaseInventory(String internalId, int amount) {
-    if (!hasText(internalId)) {
-      return;
-    }
-
-    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
-    if (inventory == null) {
-      throw new NotFoundResponse("No item found for internalID: " + internalId);
-    }
-
-    int quantityToRelease = amount <= 0 ? 1 : amount;
-    int newReservedQuantity = Math.max(0, inventory.reservedQuantity - quantityToRelease);
-
-    inventoryCollection.updateOne(eq("_id", new ObjectId(inventory._id)),
-    Updates.set("reservedQuantity", newReservedQuantity));
-
-    inventory.reservedQuantity = newReservedQuantity;
-  }
-
   private void persistFamilyChecklistAndStatus(Family family) {
     familyCollection.updateOne(eq("_id", new ObjectId(family._id)), Updates.combine(
       Updates.set("checklist", checklistToDocument(family.checklist)),
@@ -1365,22 +1325,7 @@ public class FamilyController {
   }
 
   private void restoreChecklistInventoryChanges(Family.FamilyChecklist checklist) {
-    for (Family.ChecklistSection section : checklist.sections) {
-      for (Family.ChecklistItem item : section.items) {
-        if (isChosenSubstitution(item) && hasText(item.substituteInventoryId)) {
-          restoreInventory(item.substituteInventoryId, item.requestedQuantity);
-        } else if (isChosenSubstitution(item)) {
-          Inventory substituteInventory = inventoryMatcher.findInventoryByBarcode(item.substituteBarcode);
-          if (substituteInventory == null) {
-            throw new NotFoundResponse("No inventory item found for substitute barcode: " + item.substituteBarcode);
-          }
-          restoreInventory(substituteInventory.internalID, item.requestedQuantity);
-          item.substituteInventoryId = substituteInventory.internalID;
-        } else if (item.selected) {
-          restoreInventory(item.matchedInventoryId, item.requestedQuantity);
-        }
-      }
-    }
+    familyChecklistInventoryService.restoreChecklistInventoryChanges(checklist);
   }
 
   private void validateChecklistItemForSave(Family.ChecklistItem item) {
@@ -1413,21 +1358,6 @@ public class FamilyController {
 
   private void consumeInventory(String internalId, int amount) {
     familyChecklistInventoryService.consumeInventory(internalId, amount);
-  }
-
-  private void restoreInventory(String internalId, int amount) {
-    if (!hasText(internalId)) {
-      throw new BadRequestResponse("A reverted checklist item is missing its inventory match.");
-    }
-
-    Inventory inventory = inventoryCollection.find(eq("internalID", internalId)).first();
-    if (inventory == null) {
-      throw new NotFoundResponse("No item found for internalID: " + internalId);
-    }
-
-    int quantityToRestore = amount <= 0 ? 1 : amount;
-    inventoryCollection.updateOne(eq("_id",
-     new ObjectId(inventory._id)), Updates.set("quantity", inventory.quantity + quantityToRestore));
   }
 
   private boolean nameEquivalent(String left, String right) {

@@ -80,6 +80,46 @@ class FamilyChecklistInventoryServiceSpec {
   }
 
   @Test
+  void releaseChecklistReservationsReleasesFulfillmentItemReservations() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Backpack", 5, 0, "BACKPACK-1", "BACKPACK-BARCODE"),
+      inventoryDoc("Notebook", 4, 1, "NOTEBOOK-1", "NOTEBOOK-BARCODE"),
+      inventoryDoc("Eraser", 4, 2, "ERASER-1", "ERASER-BARCODE")));
+
+    Family.ChecklistSection section = sectionWithMatchedItem("BACKPACK-1", 3);
+    section.items.get(0).fulfillmentItems = List.of(
+      fulfillmentItem("NOTEBOOK-1", null, 1),
+      fulfillmentItem(null, "ERASER-BARCODE", 2));
+
+    inventoryService.releaseChecklistReservations(checklistWithSection(section));
+
+    assertEquals(0, findInventoryByInternalId("NOTEBOOK-1").getInteger("reservedQuantity"));
+    assertEquals(0, findInventoryByInternalId("ERASER-1").getInteger("reservedQuantity"));
+    assertEquals(0, findInventoryByInternalId("BACKPACK-1").getInteger("reservedQuantity"));
+  }
+
+  @Test
+  void restoreChecklistInventoryChangesRestoresFulfillmentItems() {
+    db.getCollection("inventory").insertMany(List.of(
+      inventoryDoc("Notebook", 3, 0, "NOTEBOOK-1", "NOTEBOOK-BARCODE"),
+      inventoryDoc("Eraser", 2, 0, "ERASER-1", "ERASER-BARCODE")));
+
+    Family.ChecklistSection section = sectionWithMatchedItem("NOTEBOOK-1", 3);
+    Family.ChecklistItem item = section.items.get(0);
+    item.selected = true;
+    item.fulfillmentItems = List.of(
+      fulfillmentItem("NOTEBOOK-1", null, 1),
+      fulfillmentItem(null, "ERASER-BARCODE", 2));
+
+    inventoryService.restoreChecklistInventoryChanges(checklistWithSection(section));
+
+    assertEquals(4, findInventoryByInternalId("NOTEBOOK-1").getInteger("quantity"));
+    assertEquals(4, findInventoryByInternalId("ERASER-1").getInteger("quantity"));
+    assertEquals("ERASER-1", item.fulfillmentItems.get(1).inventoryId);
+    assertEquals("Eraser", item.fulfillmentItems.get(1).item);
+  }
+
+  @Test
   void validateChecklistItemForSaveRejectsFulfillmentQuantityGreaterThanRequested() {
     Family.ChecklistItem item = new Family.ChecklistItem();
     item.available = true;
@@ -119,6 +159,12 @@ class FamilyChecklistInventoryServiceSpec {
     Family.ChecklistSection section = new Family.ChecklistSection();
     section.items = List.of(item);
     return section;
+  }
+
+  private Family.FamilyChecklist checklistWithSection(Family.ChecklistSection section) {
+    Family.FamilyChecklist checklist = new Family.FamilyChecklist();
+    checklist.sections = List.of(section);
+    return checklist;
   }
 
   private Family.FulfillmentItem fulfillmentItem(String inventoryId, String barcode, int quantity) {
