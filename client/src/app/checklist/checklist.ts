@@ -1,3 +1,5 @@
+import { FulfillmentItem } from "../family/family";
+
 export interface FamilyChecklist {
   templateId?: string;
   printableTitle?: string;
@@ -29,4 +31,6 @@ export interface ChecklistItem {
   substituteDescription?: string;
   substituteInventoryId?: string;
   notes?: string;
+  fulfillmentItems?: FulfillmentItem[];
 }
+
