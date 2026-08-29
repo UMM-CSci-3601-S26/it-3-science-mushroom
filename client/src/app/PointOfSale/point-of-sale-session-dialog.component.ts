@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { map, switchMap } from 'rxjs';
 
-import { ChecklistItem, Family, FamilyChecklist, StudentInfo } from '../family/family';
+import { ChecklistItem, Family, FamilyChecklist, FulfillmentItem, StudentInfo } from '../family/family';
 import { FamilyService } from '../family/family.service';
 import { Inventory } from '../inventory/inventory';
 import { InventoryService } from '../inventory/inventory.service';
@@ -96,6 +96,17 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   substituteDisplay(item: ChecklistItem): string {
+    const fulfillmentItems = this.fulfillmentItemsFor(item);
+    if (fulfillmentItems.length > 1) {
+      const fulfilledQuantity = this.fulfilledQuantity(item);
+      const linkedItemCount = this.linkedFulfillmentItemCount(item);
+      const requestedQuantity = this.requestedQuantity(item);
+      return `Quantity: ${fulfilledQuantity}, linked: ${linkedItemCount}, requested: ${requestedQuantity}`;
+    }
+    if (fulfillmentItems.length === 1) {
+      return this.fulfillmentItemDisplay(fulfillmentItems[0]);
+    }
+
     return item.substituteDescription || item.substituteItem || item.substituteBarcode || 'Unknown substitute item';
   }
 
@@ -114,14 +125,18 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   hasSubstitute(item: ChecklistItem): boolean {
-    return !!(item.substituteBarcode || item.substituteInventoryId || item.substituteItem || item.substituteDescription);
+    return this.hasFulfillmentItems(item)
+      || this.hasLegacySubstituteFields(item);
   }
 
   isSubstituted(item: ChecklistItem): boolean {
-    return item.selected && this.hasSubstitute(item);
+    return this.hasFulfillmentItems(item) || (item.selected && this.hasSubstitute(item));
   }
 
   itemStatusLabel(item: ChecklistItem): string {
+    if (this.isPartiallyFulfilled(item)) {
+      return 'Partial substitute';
+    }
     if (this.isSubstituted(item)) {
       return 'Substituted';
     }
@@ -133,10 +148,13 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   canSubstitute(item: ChecklistItem): boolean {
-    return !item.selected;
+    return !item.selected || this.hasSubstitute(item);
   }
 
   needsReason(item: ChecklistItem): boolean {
+    if (this.isPartiallyFulfilled(item)) {
+      return true;
+    }
     return item.available && !item.selected && !this.hasSubstitute(item);
   }
 
@@ -150,6 +168,8 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
         this.activeSubstitutionItemId = '';
         this.substituteErrorMessage = '';
       }
+    } else if (this.hasFulfillmentItems(item)) {
+      this.clearSubstitution(item);
     }
   }
 
@@ -190,6 +210,7 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     item.substituteInventoryId = undefined;
     item.substituteItem = undefined;
     item.substituteDescription = undefined;
+    item.fulfillmentItems = [];
     if (item.notPickedUpReason === 'substituted') {
       item.notPickedUpReason = undefined;
     }
@@ -199,10 +220,9 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
   }
 
   substitutionOptionsFor(item: ChecklistItem): Inventory[] {
-    const requestedQuantity = Math.max(1, item.requestedQuantity ?? 1);
     const descriptionSearch = this.normalizedSubstitutionDescriptionSearchFor(item);
     return this.inventoryService.inventory()
-      .filter(inventory => this.unreservedQuantity(inventory) >= requestedQuantity)
+      .filter(inventory => this.unreservedQuantity(inventory) > 0)
       .filter(inventory => this.substitutionOptionScore(item, inventory) > 0)
       .filter(inventory => this.inventoryMatchesDescriptionSearch(inventory, descriptionSearch))
       .sort((left, right) => this.substitutionOptionScore(item, right) - this.substitutionOptionScore(item, left));
@@ -231,13 +251,82 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     return inventory.description || inventory.item || inventory.internalBarcode || 'Unknown inventory item';
   }
 
-  applySubstituteOption(item: ChecklistItem, inventory: Inventory): void {
-    const barcode = this.substitutionBarcodeForInventory(inventory);
-    if (!barcode) {
-      this.substituteErrorMessage = 'The selected inventory item does not have a barcode.';
+  fulfillmentItemsFor(item: ChecklistItem): FulfillmentItem[] {
+    return (item.fulfillmentItems ?? []).filter(fulfillmentItem => this.hasFulfillmentItemTarget(fulfillmentItem));
+  }
+
+  hasFulfillmentItems(item: ChecklistItem): boolean {
+    return this.fulfillmentItemsFor(item).length > 0;
+  }
+
+  linkedFulfillmentItemCount(item: ChecklistItem): number {
+    return this.fulfillmentItemsFor(item).length;
+  }
+
+  maxFulfillmentItemQuantity(fulfillmentItem: FulfillmentItem): number | null {
+    const inventory = this.inventoryForFulfillmentItem(fulfillmentItem);
+    if (!inventory) {
+      return null;
+    }
+
+    return this.unreservedQuantity(inventory);
+  }
+
+  fulfillmentInventoryAvailableDisplay(fulfillmentItem: FulfillmentItem): string {
+    const quantity = this.maxFulfillmentItemQuantity(fulfillmentItem);
+    return quantity === null ? 'Unknown' : `${quantity}`;
+  }
+
+  fulfillmentItemDisplay(fulfillmentItem: FulfillmentItem): string {
+    return fulfillmentItem.description || fulfillmentItem.item || fulfillmentItem.barcode || 'Unknown substitute item';
+  }
+
+  requestedQuantity(item: ChecklistItem): number {
+    return Math.max(1, item.requestedQuantity ?? 1);
+  }
+
+  fulfillmentItemQuantity(fulfillmentItem: FulfillmentItem): number {
+    return Math.max(1, fulfillmentItem.quantity ?? 1);
+  }
+
+  fulfilledQuantity(item: ChecklistItem): number {
+    return this.fulfillmentItemsFor(item)
+      .reduce((quantity, fulfillmentItem) => quantity + this.fulfillmentItemQuantity(fulfillmentItem), 0);
+  }
+
+  setFulfillmentItemQuantity(
+    item: ChecklistItem,
+    fulfillmentItem: FulfillmentItem,
+    event: Event
+  ): void {
+    const input = event.target as HTMLInputElement;
+    const parsedQuantity = Number.parseInt(input.value, 10);
+    const quantity = Number.isFinite(parsedQuantity) ? parsedQuantity : 1;
+    const maxQuantity = this.maxFulfillmentItemQuantity(fulfillmentItem);
+    const cappedQuantity = maxQuantity === null ? quantity : Math.min(quantity, maxQuantity);
+    const normalizedQuantity = Math.max(1, cappedQuantity);
+
+    fulfillmentItem.quantity = normalizedQuantity;
+    input.value = `${normalizedQuantity}`;
+    item.selected = true;
+    this.syncPrimarySubstituteFields(item);
+    this.errorMessage = '';
+  }
+
+  removeFulfillmentItem(item: ChecklistItem, fulfillmentItem: FulfillmentItem): void {
+    item.fulfillmentItems = (item.fulfillmentItems ?? [])
+      .filter(existingFulfillmentItem => existingFulfillmentItem !== fulfillmentItem);
+
+    if (this.hasFulfillmentItems(item)) {
+      this.syncPrimarySubstituteFields(item);
       return;
     }
 
+    this.clearSubstitution(item);
+  }
+
+  applySubstituteOption(item: ChecklistItem, inventory: Inventory): void {
+    const barcode = this.substitutionBarcodeForInventory(inventory);
     this.substituteErrorMessage = '';
     this.applySubstituteInventory(item, barcode, inventory);
   }
@@ -335,27 +424,44 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
       ...checklist,
       sections: checklist.sections.map(section => ({
         ...section,
-        items: section.items.map(item => ({
-          ...item
-        }))
+        items: section.items.map(item => this.prepareChecklistItemForSave(item)),
+        notGivenItems: section.notGivenItems?.map(item => this.prepareChecklistItemForSave(item))
       }))
     };
   }
 
   private applySubstituteInventory(item: ChecklistItem, barcode: string, inventory: Inventory): void {
+    const quantityToLink = this.defaultFulfillmentQuantity(item, inventory);
+    if (quantityToLink <= 0) {
+      this.substituteErrorMessage = 'No unreserved quantity is available for that substitute item.';
+      return;
+    }
+
+    const existingFulfillmentItem = this.findFulfillmentItem(item, inventory, barcode);
+    if (existingFulfillmentItem) {
+      existingFulfillmentItem.quantity = this.fulfillmentItemQuantity(existingFulfillmentItem) + quantityToLink;
+    } else {
+      item.fulfillmentItems = [
+        ...(item.fulfillmentItems ?? []),
+        {
+          inventoryId: inventory.internalID,
+          barcode,
+          item: inventory.item,
+          description: inventory.description,
+          quantity: quantityToLink
+        }
+      ];
+    }
+
     item.selected = true;
-    item.substituteBarcode = barcode;
-    item.substituteInventoryId = inventory.internalID;
-    item.substituteItem = inventory.item;
-    item.substituteDescription = inventory.description;
-    item.notPickedUpReason = 'substituted';
-    this.activeSubstitutionItemId = '';
+    this.syncPrimarySubstituteFields(item);
   }
 
   private captureSubstitutionSuggestions(checklist: FamilyChecklist | null | undefined): void {
     this.originalSubstitutionSuggestions.clear();
     for (const section of checklist?.sections ?? []) {
       for (const item of section.items) {
+        this.ensureFulfillmentItemsForActiveSubstitution(item);
         if (this.hasSubstitute(item)) {
           this.originalSubstitutionSuggestions.set(item.id, {
             substituteBarcode: item.substituteBarcode,
@@ -368,16 +474,113 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
     }
   }
 
+  private prepareChecklistItemForSave(item: ChecklistItem): ChecklistItem {
+    const fulfillmentItems = this.normalizedFulfillmentItems(item);
+    const itemForSave: ChecklistItem = {
+      ...item,
+      fulfillmentItems
+    };
+
+    if (fulfillmentItems.length > 0) {
+      const primaryFulfillmentItem = fulfillmentItems[0];
+      itemForSave.selected = true;
+      itemForSave.substituteBarcode = primaryFulfillmentItem.barcode;
+      itemForSave.substituteInventoryId = primaryFulfillmentItem.inventoryId;
+      itemForSave.substituteItem = primaryFulfillmentItem.item;
+      itemForSave.substituteDescription = primaryFulfillmentItem.description;
+      itemForSave.notPickedUpReason = item.notPickedUpReason || 'substituted';
+    }
+
+    return itemForSave;
+  }
+
+  private normalizedFulfillmentItems(item: ChecklistItem): FulfillmentItem[] {
+    return this.fulfillmentItemsFor(item).map(fulfillmentItem => ({
+      inventoryId: fulfillmentItem.inventoryId,
+      barcode: fulfillmentItem.barcode,
+      item: fulfillmentItem.item,
+      description: fulfillmentItem.description,
+      quantity: this.fulfillmentItemQuantity(fulfillmentItem)
+    }));
+  }
+
+  private ensureFulfillmentItemsForActiveSubstitution(item: ChecklistItem): void {
+    if (!item.selected || this.hasFulfillmentItems(item) || !this.hasLegacySubstituteFields(item)) {
+      return;
+    }
+
+    item.fulfillmentItems = [{
+      inventoryId: item.substituteInventoryId ?? '',
+      barcode: item.substituteBarcode,
+      item: item.substituteItem,
+      description: item.substituteDescription,
+      quantity: this.requestedQuantity(item)
+    }];
+  }
+
+  private findFulfillmentItem(
+    item: ChecklistItem,
+    inventory: Inventory,
+    barcode: string
+  ): FulfillmentItem | undefined {
+    const inventoryBarcodes = this.barcodesForInventory(inventory);
+    return this.fulfillmentItemsFor(item).find(fulfillmentItem =>
+      fulfillmentItem.inventoryId === inventory.internalID
+      || (!!fulfillmentItem.barcode && inventoryBarcodes.includes(fulfillmentItem.barcode))
+      || (!!barcode && fulfillmentItem.barcode === barcode)
+    );
+  }
+
+  private syncPrimarySubstituteFields(item: ChecklistItem): void {
+    const primaryFulfillmentItem = this.fulfillmentItemsFor(item)[0];
+    if (!primaryFulfillmentItem) {
+      return;
+    }
+
+    item.substituteBarcode = primaryFulfillmentItem.barcode;
+    item.substituteInventoryId = primaryFulfillmentItem.inventoryId;
+    item.substituteItem = primaryFulfillmentItem.item;
+    item.substituteDescription = primaryFulfillmentItem.description;
+    item.notPickedUpReason = 'substituted';
+  }
+
+  private isPartiallyFulfilled(item: ChecklistItem): boolean {
+    return this.hasFulfillmentItems(item)
+      && this.fulfilledQuantity(item) < this.requestedQuantity(item);
+  }
+
+  private defaultFulfillmentQuantity(item: ChecklistItem, inventory: Inventory): number {
+    const unreservedQuantity = this.unreservedQuantity(inventory);
+    if (unreservedQuantity <= 0) {
+      return 0;
+    }
+
+    const quantityNeededToMeetRequest = Math.max(1, this.requestedQuantity(item) - this.fulfilledQuantity(item));
+    return Math.min(quantityNeededToMeetRequest, unreservedQuantity);
+  }
+
+  private hasLegacySubstituteFields(item: ChecklistItem): boolean {
+    return !!(item.substituteBarcode || item.substituteInventoryId || item.substituteItem || item.substituteDescription);
+  }
+
+  private hasFulfillmentItemTarget(fulfillmentItem: FulfillmentItem): boolean {
+    return !!(fulfillmentItem.inventoryId || fulfillmentItem.barcode);
+  }
+
+  private inventoryForFulfillmentItem(fulfillmentItem: FulfillmentItem): Inventory | undefined {
+    return this.inventoryService.inventory().find(inventory =>
+      (!!fulfillmentItem.inventoryId && inventory.internalID === fulfillmentItem.inventoryId)
+      || (!!fulfillmentItem.barcode && this.barcodesForInventory(inventory).includes(fulfillmentItem.barcode))
+    );
+  }
+
   private substitutionOptionScore(item: ChecklistItem, inventory: Inventory): number {
     const originalSuggestion = this.originalSubstitutionSuggestions.get(item.id);
     if (inventory.internalID && inventory.internalID === originalSuggestion?.substituteInventoryId) {
       return 1000;
     }
 
-    const inventoryBarcodes = [
-      inventory.internalBarcode,
-      ...(inventory.externalBarcode ?? [])
-    ].filter((barcode): barcode is string => !!barcode);
+    const inventoryBarcodes = this.barcodesForInventory(inventory);
     if (originalSuggestion?.substituteBarcode
         && inventoryBarcodes.some(barcode => this.normalizeDisplayText(barcode) === this.normalizeDisplayText(originalSuggestion.substituteBarcode ?? ''))) {
       return 1000;
@@ -404,6 +607,13 @@ export class PointOfSaleSessionDialogComponent implements OnInit {
 
   private substitutionBarcodeForInventory(inventory: Inventory): string {
     return inventory.internalBarcode || inventory.externalBarcode?.[0] || '';
+  }
+
+  private barcodesForInventory(inventory: Inventory): string[] {
+    return [
+      inventory.internalBarcode,
+      ...(inventory.externalBarcode ?? [])
+    ].filter((barcode): barcode is string => !!barcode);
   }
 
   private normalizedSubstitutionDescriptionSearchFor(item: ChecklistItem): string {

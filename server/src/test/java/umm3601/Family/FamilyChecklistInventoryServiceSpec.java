@@ -120,17 +120,30 @@ class FamilyChecklistInventoryServiceSpec {
   }
 
   @Test
-  void validateChecklistItemForSaveRejectsFulfillmentQuantityGreaterThanRequested() {
+  void validateChecklistItemForSaveAllowsFulfillmentQuantityGreaterThanRequested() {
     Family.ChecklistItem item = new Family.ChecklistItem();
     item.available = true;
     item.selected = true;
     item.requestedQuantity = 1;
     item.fulfillmentItems = List.of(fulfillmentItem("NOTEBOOK-1", null, 2));
 
+    inventoryService.validateChecklistItemForSave(item);
+
+    assertEquals(2, item.fulfillmentItems.get(0).quantity);
+  }
+
+  @Test
+  void validateChecklistItemForSaveRejectsPartialFulfillmentWithoutReason() {
+    Family.ChecklistItem item = new Family.ChecklistItem();
+    item.available = true;
+    item.selected = true;
+    item.requestedQuantity = 3;
+    item.fulfillmentItems = List.of(fulfillmentItem("NOTEBOOK-1", null, 2));
+
     BadRequestResponse exception = assertThrows(BadRequestResponse.class,
       () -> inventoryService.validateChecklistItemForSave(item));
 
-    assertEquals("Fulfilled quantity cannot exceed requested quantity.", exception.getMessage());
+    assertEquals("Partially fulfilled items must include a reason.", exception.getMessage());
   }
 
   private Document inventoryDoc(

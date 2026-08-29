@@ -108,6 +108,42 @@
                           {{ substituteMatchLabel(item) }}: {{ substituteDisplay(item) }}
                         </p>
                       }
+                      @if (hasFulfillmentItems(item)) {
+                        <div class="fulfillment-list">
+                          <div class="fulfillment-summary">
+                            <strong>Linked substitutes</strong>
+                            <span>Quantity: {{ fulfilledQuantity(item) }} / {{ requestedQuantity(item) }} requested; linked: {{ linkedFulfillmentItemCount(item) }}</span>
+                          </div>
+                          @for (fulfillmentItem of fulfillmentItemsFor(item); track fulfillmentItem.inventoryId || fulfillmentItem.barcode) {
+                            <div class="fulfillment-row">
+                              <div class="fulfillment-copy">
+                                <strong>{{ fulfillmentItemDisplay(fulfillmentItem) }}</strong>
+                                @if (fulfillmentItem.barcode) {
+                                  <span>{{ fulfillmentItem.barcode }}</span>
+                                }
+                                <span>Unreserved: {{ fulfillmentInventoryAvailableDisplay(fulfillmentItem) }}</span>
+                              </div>
+                              <label class="fulfillment-quantity">
+                                <span>Qty</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  [attr.max]="maxFulfillmentItemQuantity(fulfillmentItem)"
+                                  [value]="fulfillmentItemQuantity(fulfillmentItem)"
+                                  (input)="setFulfillmentItemQuantity(item, fulfillmentItem, $event)">
+                              </label>
+                              <button
+                                mat-icon-button
+                                type="button"
+                                class="remove-fulfillment-button"
+                                aria-label="Remove linked substitute"
+                                (click)="removeFulfillmentItem(item, fulfillmentItem)">
+                                <mat-icon>close</mat-icon>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
                       @if (needsReason(item)) {
                         <mat-form-field appearance="outline" class="reason-field">
                           <mat-label>Why not given?</mat-label>
@@ -115,6 +151,9 @@
                             [value]="item.notPickedUpReason || ''"
                             (selectionChange)="setNotPickedUpReason(item, $event.value)">
                             <mat-option value="">Choose a reason</mat-option>
+                            @if (hasFulfillmentItems(item)) {
+                              <mat-option value="substituted">Substituted</mat-option>
+                            }
                             <mat-option value="available_didnt_need">Family did not need this item</mat-option>
                             <mat-option value="item_not_avaliable">Item not available</mat-option>
                           </mat-select>
@@ -178,7 +217,7 @@
                                         mat-stroked-button
                                         type="button"
                                         (click)="applySubstituteOption(item, option)">
-                                        Use
+                                        Add
                                       </button>
                                     </div>
                                   }

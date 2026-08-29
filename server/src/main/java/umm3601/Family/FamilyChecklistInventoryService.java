@@ -364,9 +364,6 @@ public class FamilyChecklistInventoryService {
   private void validateFulfillmentQuantity(Family.ChecklistItem item) {
     int fulfilledQuantity = fulfilledQuantity(item);
     int requestedQuantity = checklistItemQuantity(item);
-    if (fulfilledQuantity > requestedQuantity) {
-      throw new BadRequestResponse("Fulfilled quantity cannot exceed requested quantity.");
-    }
     if (fulfilledQuantity < requestedQuantity && !hasText(item.notPickedUpReason)) {
       throw new BadRequestResponse("Partially fulfilled items must include a reason.");
     }
