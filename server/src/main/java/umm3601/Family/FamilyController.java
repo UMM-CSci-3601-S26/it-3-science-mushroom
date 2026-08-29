@@ -1306,6 +1306,48 @@ public class FamilyController {
       item.requestedQuantity = 1;
     }
     item.notPickedUpReason = normalizeReason(item.notPickedUpReason);
+    normalizeFulfillmentItems(item);
+  }
+
+  private void normalizeFulfillmentItems(Family.ChecklistItem item) {
+    if (item.fulfillmentItems == null) {
+      item.fulfillmentItems = new ArrayList<>();
+    }
+
+    if (item.fulfillmentItems.isEmpty() && isChosenSubstitution(item)) {
+      item.fulfillmentItems.add(legacySubstitutionAsFulfillmentItem(item));
+    }
+
+    List<Family.FulfillmentItem> normalizedItems = new ArrayList<>();
+    for (Family.FulfillmentItem fulfillmentItem : item.fulfillmentItems) {
+      if (fulfillmentItem == null) {
+        continue;
+      }
+
+      normalizeFulfillmentItem(fulfillmentItem);
+
+      if (hasText(fulfillmentItem.inventoryId) || hasText(fulfillmentItem.barcode)) {
+        normalizedItems.add(fulfillmentItem);
+      }
+    }
+
+    item.fulfillmentItems = normalizedItems;
+  }
+
+  private void normalizeFulfillmentItem(Family.FulfillmentItem fulfillmentItem) {
+    if (fulfillmentItem.quantity == null || fulfillmentItem.quantity <= 0) {
+      fulfillmentItem.quantity = 1;
+    }
+  }
+
+  private Family.FulfillmentItem legacySubstitutionAsFulfillmentItem(Family.ChecklistItem item) {
+    Family.FulfillmentItem fulfillmentItem = new Family.FulfillmentItem();
+    fulfillmentItem.inventoryId = item.substituteInventoryId;
+    fulfillmentItem.barcode = item.substituteBarcode;
+    fulfillmentItem.item = item.substituteItem;
+    fulfillmentItem.description = item.substituteDescription;
+    fulfillmentItem.quantity = item.requestedQuantity;
+    return fulfillmentItem;
   }
 
   private void commitSectionInventoryChanges(
@@ -1831,7 +1873,30 @@ public class FamilyController {
       .append("substituteBarcode", item.substituteBarcode)
       .append("substituteDescription", item.substituteDescription)
       .append("substituteInventoryId", item.substituteInventoryId)
-      .append("notes", item.notes);
+      .append("notes", item.notes)
+      .append("fulfillmentItems", fulfillmentItemsToDocuments(item.fulfillmentItems));
+  }
+
+  private List<Document> fulfillmentItemsToDocuments(List<Family.FulfillmentItem> fulfillmentItems) {
+    List<Document> documents = new ArrayList<>();
+    if (fulfillmentItems == null) {
+      return documents;
+    }
+
+    for (Family.FulfillmentItem fulfillmentItem : fulfillmentItems) {
+      if (fulfillmentItem == null) {
+        continue;
+      }
+
+      documents.add(new Document()
+        .append("inventoryId", fulfillmentItem.inventoryId)
+        .append("barcode", fulfillmentItem.barcode)
+        .append("item", fulfillmentItem.item)
+        .append("description", fulfillmentItem.description)
+        .append("quantity", fulfillmentItem.quantity));
+    }
+
+    return documents;
   }
 
   private Document deleteRequestToDocument(Family.DeleteRequest deleteRequest) {
