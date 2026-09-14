@@ -1,0 +1,18 @@
+@for (filter of filters; track filter.key) {
+  @if (filter.type === 'text') {
+    <mat-form-field appearance="outline">
+      <mat-label>
+        {{ filter.label }}
+      </mat-label>
+      <input matInput>
+    </mat-form-field>
+  }
+  @if (filter.type === 'number') {
+    <mat-form-field appearance="outline">
+      <mat-label>
+        {{ filter.label }}
+      </mat-label>
+      <input matInput>
+    </mat-form-field>
+  }
+}

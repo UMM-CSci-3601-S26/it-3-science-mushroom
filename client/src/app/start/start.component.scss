@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.start-page {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 960px;
+  padding: var(--app-space-md);
+}
+
+.start-header {
+  background: color-mix(in srgb, var(--app-primary) 8%, var(--app-surface));
+  border-left: 6px solid var(--app-primary);
+  box-sizing: border-box;
+  padding: var(--app-space-lg);
+
+  h1 {
+    color: var(--app-text);
+    font-size: 1.8rem;
+    margin: 0 0 0.4rem;
+  }
+
+  p {
+    color: var(--app-text-muted);
+    margin: 0;
+  }
+}

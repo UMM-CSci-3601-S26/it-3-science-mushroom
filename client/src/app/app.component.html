@@ -36,6 +36,9 @@
       @if (canAccessPath('/admin-panel')) {
         <a mat-button routerLink="/admin-panel" routerLinkActive="header-link-active">Admin Panel</a>
       }
+      @if (canAccessPath('/start')) {
+        <a mat-button routerLink="/start" routerLinkActive="header-link-active">Start</a>
+      }
       @if (canAccessPath('/supplylist') || canAccessPath('/stock-report') || canAccessPath('/family-schedule') || canAccessPath('/purchase-list')) {
         <button type="button" mat-button [matMenuTriggerFor]="operationsMenu">
           Operations
@@ -133,6 +136,18 @@
       <a mat-menu-item routerLink="/inventory">
         <mat-icon>inventory</mat-icon>
         <span>Inventory</span>
+      </a>
+    }
+    @if (canAccessPath('/admin-panel')) {
+      <a mat-menu-item routerLink="/admin-panel">
+        <mat-icon>admin_panel_settings</mat-icon>
+        <span>Admin Panel</span>
+      </a>
+    }
+    @if (canAccessPath('/start')) {
+      <a mat-menu-item routerLink="/start">
+        <mat-icon>play_arrow</mat-icon>
+        <span>Start</span>
       </a>
     }
     @if (canAccessPath('/supplylist')) {

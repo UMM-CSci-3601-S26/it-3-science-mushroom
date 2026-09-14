@@ -76,6 +76,8 @@ const routes: Routes = [
 
   {path: 'admin-panel', loadComponent: () => import('./admin/admin-panel.component').then(m => m.AdminPanelComponent), title: 'Admin Panel',
     canActivate: [AuthGuard,RoleGuard], data: { roles: ['ADMIN']}},
+  {path: 'start', loadComponent: () => import('./start/start.component').then(m => m.StartComponent), title: 'Start',
+    canActivate: [AuthGuard, RoleGuard], data: { roles: ['ADMIN']}},
 ];
 
 @NgModule({
