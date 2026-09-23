@@ -4,7 +4,10 @@
       <mat-label>
         {{ filter.label }}
       </mat-label>
-      <input matInput>
+      <input
+        matInput
+        [value]="filterValues[filter.key] ?? ''"
+        (input)="setFilterValue(filter.key, $any($event.target).value)">
     </mat-form-field>
   }
   @if (filter.type === 'number') {
@@ -12,7 +15,11 @@
       <mat-label>
         {{ filter.label }}
       </mat-label>
-      <input matInput>
+      <input
+        matInput
+        type="number"
+        [value]="filterValues[filter.key] ?? ''"
+        (input)="setFilterValue(filter.key, $any($event.target).value)">
     </mat-form-field>
   }
 }

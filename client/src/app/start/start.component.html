@@ -1,10 +1,17 @@
 <section class="start-page">
   <header class="start-header">
     <h1>Start</h1>
-    <p>This page is ready for the next Ready 4 Learning workflow.</p>
-    <app-advanced-filter [filters]="filters">
+    <p>Component Testing</p>
+    <app-advanced-filter
+      [filters]="filterFields"
+      [items]="inventoryItems()"
+      (filteredItemsChange)="filteredItems = $event">
 
     </app-advanced-filter>
 
+    <app-schema-table
+      [columns]="tableColumns"
+      [items]="filteredItems">
+    </app-schema-table>
   </header>
 </section>
