@@ -1,8 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { AdvancedFilterComponent } from '../SharedComponents/advanced-filter/advanced-filter.component';
 import { SchemaTableComponent } from '../SharedComponents/schema-table/schema-table.component';
-import { FilterField } from '../app.type';
+import { FilterField,InventoryFilters } from '../filter.types';
 import { InventoryService } from '../inventory/inventory.service';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, of, switchMap } from 'rxjs';
 import { Inventory } from '../inventory/inventory';
 
 @Component({
@@ -14,7 +16,6 @@ import { Inventory } from '../inventory/inventory';
 })
 export class StartComponent {
   private inventoryService = inject(InventoryService);
-
   filterFields: FilterField[] = [
     { key: 'item', label: 'Item', type: 'text' },
     { key: 'brand', label: 'Brand', type: 'text' },
@@ -23,6 +24,23 @@ export class StartComponent {
     { key: 'type', label: 'Type', type: 'text' },
     { key: 'material', label: 'Material', type: 'text' }
   ];
+
+  currentFilter = signal<InventoryFilters>({});
+
+  onFilterChange(filters: InventoryFilters): void {
+    this.currentFilter.set(filters);
+  }
+
+  serverFilterInventory = toSignal(
+    toObservable(this.currentFilter).pipe(
+      debounceTime(300),
+      switchMap(filter =>
+        this.inventoryService.getInventory(filter).pipe(catchError(() => of([]))
+        )
+      )
+    ),
+    { initialValue: [] as Inventory[]}
+  )
 
   tableColumns: FilterField[] = [
     { key: 'item', label: 'Item', type: 'text' },
@@ -36,6 +54,4 @@ export class StartComponent {
     { key: 'notes', label: 'Notes', type: 'text' }
   ];
 
-  inventoryItems = this.inventoryService.inventory;
-  filteredItems: Inventory[] = [];
 }

@@ -2,7 +2,7 @@ import { NgFor } from '@angular/common';
 import { AfterViewInit, Component, Input, ViewChild } from '@angular/core';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { FilterField } from 'src/app/app.type';
+import { FilterField } from 'src/app/filter.types';
 
 @Component({
   selector: 'app-schema-table',

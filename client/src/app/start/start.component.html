@@ -4,14 +4,12 @@
     <p>Component Testing</p>
     <app-advanced-filter
       [filters]="filterFields"
-      [items]="inventoryItems()"
-      (filteredItemsChange)="filteredItems = $event">
-
+      (filteredItemsChange)="onFilterChange($event)">
     </app-advanced-filter>
 
     <app-schema-table
       [columns]="tableColumns"
-      [items]="filteredItems">
+      [items]="serverFilterInventory()">
     </app-schema-table>
   </header>
 </section>
