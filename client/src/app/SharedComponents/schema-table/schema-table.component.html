@@ -1,0 +1,20 @@
+<div class="table-scroll-shell">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 schema-table">
+    <ng-container *ngFor="let column of tableColumns; trackBy: trackByColumn" [matColumnDef]="column.key">
+      <th mat-header-cell *matHeaderCellDef>{{ column.label }}</th>
+      <td mat-cell *matCellDef="let item">{{ cellValue(item, column.key) }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>
+
+<mat-paginator
+  data-cy="schema-table-paginator"
+  [length]="itemCount"
+  [pageSize]="pageSize"
+  [pageSizeOptions]="pageSizeOptions"
+  aria-label="Select page"
+>
+</mat-paginator>

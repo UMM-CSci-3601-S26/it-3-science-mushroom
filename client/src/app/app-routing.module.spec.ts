@@ -35,6 +35,11 @@ describe('AppRoutingModule', () => {
     expect(routeSummary).toContain({ path: 'point-of-sale', title: 'Point Of Sale' });
     expect(routeSummary).toContain({ path: 'style-guide', title: 'Frontend Style Template' });
     expect(routeSummary).toContain({ path: 'admin-panel', title: 'Admin Panel'});
+    expect(routeSummary).toContain({ path: 'start', title: 'Start'});
+
+    const adminPanelIndex = routeSummary.findIndex(route => route.path === 'admin-panel');
+    const startIndex = routeSummary.findIndex(route => route.path === 'start');
+    expect(startIndex).toBe(adminPanelIndex + 1);
   });
 
   it('protects point of sale with the bundled point of sale permission', () => {
@@ -64,6 +69,13 @@ describe('AppRoutingModule', () => {
     expect(purchaseListRoute?.canActivate).toEqual([AuthGuard, RoleGuard]);
     expect(purchaseListRoute?.data?.['roles']).toEqual(['ADMIN']);
     expect(purchaseListRoute?.data?.['permissions']).toBeUndefined();
+  });
+
+  it('protects the start page as an admin-only page', () => {
+    const startRoute = router.config.find(route => route.path === 'start');
+
+    expect(startRoute?.canActivate).toEqual([AuthGuard, RoleGuard]);
+    expect(startRoute?.data?.['roles']).toEqual(['ADMIN']);
   });
 
   // What is the point of this test? It is just testing that the same route is defined twice, which is not a good thing.

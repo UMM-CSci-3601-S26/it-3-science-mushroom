@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.table-scroll-shell {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.schema-table {
+  width: 100%;
+  margin-top: 1rem;
+  border-radius: var(--app-radius-lg);
+  overflow: hidden;
+}
+
+.mat-mdc-header-row {
+  background: var(--app-surface-muted);
+}
+
+.mat-mdc-header-cell {
+  font-weight: 700;
+}
+
+mat-paginator {
+  margin-top: 0.75rem;
+  border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
+}
