@@ -1,5 +1,5 @@
 # Build the server files in a build stage
-FROM eclipse-temurin:21 AS build
+FROM eclipse-temurin:24 AS build
 # Copy the project into /tmp/server
 COPY . /tmp/server
 WORKDIR /tmp/server
@@ -9,7 +9,7 @@ RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN ./gradlew assemble --no-daemon
 
 # Build the production server container
-FROM eclipse-temurin:21
+FROM eclipse-temurin:24
 EXPOSE 4567
 # Copy the distribution tar that was built in the build stage
 COPY --from=build /tmp/server/build/distributions/server.tar /app/
